@@ -1,0 +1,142 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+# Copyright (C) 2005 Vasily Khoruzhick <fenix-fen@mail.ru>
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = Belarusian
+@lang = BELARUSIAN
+@charset = RUSSIAN
+
+*Title = MPlayer for Windows
+*Status_Opening = Адчыненне ...
+*Status_Closing = Зачыненне ...
+*Status_Playing = Прайграванне...
+*Status_Paused = Прыпынены
+*Status_Stopped = Стоп
+*Status_Error = Немагчыма прайграць файл (Націскніце, каб атрымаць больш інфармацыі)
+Main:BPlaylist.Hint = Адлюстраваць\схаваць спіс файлаў
+Main:BStreamInfo.Hint = Адлюстраваць\схаваць інфармацыю пра файл
+Main:BFullscreen.Hint = Перайсці ў поўнаэкранны рэжым
+Main:OSDMenu* = Усталяваць рэжым OSD
+Main:MNoOSD* = Без OSD
+Main:MDefaultOSD* = Дэфолтавае OSD
+Main:MTimeOSD* = Адлюстроўваць пазіцыю
+Main:MFullOSD* = Адлюстроўваць пазіцыю\працягласць
+Main:LEscape* = Націскніце Escape, каб выйсці з поўнаэкраннага рэжыма
+Main:MFile* = Файл
+Main:MOpenFile* = Адчыніць файл ...
+Main:MOpenURL* = Адчыніць URL ...
+*OpenURL_Caption = Адчыніць URL
+*OpenURL_Prompt = Увядзіце жадаемы URL
+Main:MOpenDrive* = Прайграць CD/DVD
+Main:MClose* = Зачыніць
+Main:MQuit* = Выхад
+Main:MView* = Выгляд
+Main:MSizeAny* = Адвольны памер
+Main:MSize50* = 1/2 памера
+Main:MSize100* = Арыгінальны памер
+Main:MSize200* = Падвоены памер
+Main:MFullscreen* = Поўнаэкранный рэжым
+Main:MOSD* = Пераключыць OSD
+Main:MOnTop* = Заўсёды зверху
+Main:MCompact* = Кампактны
+Main:MSeek* = Прайграванне
+Main:MPlay* = Прайграваць
+Main:MPause* = Прыпыніць
+Main:MPrev* = Папярэдні трэк
+Main:MNext* = Наступны трэк
+Main:MShowPlaylist* = Спіс файлаў ...
+Main:MSeekF10* = Наперад на 10 секунд\tRight
+Main:MSeekR10* = Назад на 10 секунд\tLeft
+Main:MSeekF60* = Наперад на 1 хвіліну\tUp
+Main:MSeekR60* = Назад на 1 хвіліну\tDown
+Main:MSeekF600* = Наперад на 10 хвілін\tPgUp
+Main:MSeekR600* = Назад на 10 хвілін\tPgDn
+Main:MMute* = Выключыць гук
+Main:MExtra* = Налады
+Main:MAudio* = Аудыётрэк
+Main:MSubtitle* = Субтытры
+Main:MAspect* = Суадносіны старон
+Main:MAutoAspect* = Аўтавызначэнне
+Main:MForce43* = 4:3
+Main:MForce169* = 16:9
+Main:MForceCinemascope* = 2.35:1
+Main:MDeinterlace* = Дэінтэрлэйс
+Main:MNoDeint* = Выключыць
+Main:MSimpleDeint* = Просты
+Main:MAdaptiveDeint* = Адаптыўны
+Main:MOptions* = Опцыі ...
+Main:MLanguage* = Мова
+Main:MStreamInfo* = Адлюстраваць інфармацыю пра файл ...
+Main:MShowOutput* = Адлюстроўваць вывад MPlayer
+Main:MHelp* = Дапамога
+Main:MKeyHelp* = Дапамога па клавіятуры ...
+Main:MAbout* = Пра праграму ...
+LogForm* = Вывад MPlayer
+Log:BClose* = Зачыніць
+HelpForm* = Дапамога па клавіятуры
+Help:HelpText.Text = Клавішы навігацыі:\nПрабел\tПрайграваць/паўза\nУправа\tУперад на 10 секунд\nУлева\tНазад на 10 секунд\nУверх\tУперад на 1 хвіліну\nУніз\tНазад на 1 хвіліну\nPgUp\tУперад на 10 хвілін\nPgDn\tНазад на 10 хвілін\n\nІншыя клавішы:\nO\tПераключыць OSD\nF\tПереключыць поўнаэкранны рэжым\nQ\tВыйсці тэрмінова\n9/0\tНаладзіць гучнасць\n-/+\tНаладзіць аўдыё\відыё сінхранізацыю\n1/2\tНаладзіць яркасць\n3/4\tНаладзіць кантраст\n5/6\tНаладзіць гамму\n7/8\tНаладзіць цветавую насычанасць
+Help:BClose* = Зачыніць
+AboutForm* = Пра MPUI
+About:BClose* = Зачыніць
+About:LVersionMPUI* = Версія MPUI: 
+About:LVersionMPlayer* = Версія MPlayer: 
+OptionsForm* = Опцыі
+Options:BOK* = OK
+Options:BApply* = Прымяніць
+Options:BSave* = Захаваць
+Options:BClose* = Зачыніць
+Options:LAudioOut* = Драйвер вывада гука
+Options:CAudioOut#0 = (Не дэкадаваць гук)
+Options:CAudioOut#1 = (Не прайграваць гук)
+Options:LAudioDev* = Прылада DirectSound
+Options:LPostproc* = Постпрацэсс
+Options:CPostproc#0 = Адключаны
+Options:CPostproc#1 = Аўтаматычны
+Options:CPostproc#2 = Найлепшы
+Options:CLanguage#0 = (Аўтавызначэнне)
+Options:CIndex* = Перабудаваць табліцу індэксаў AVI, калі неабходна
+Options:CSoftVol* = Праграмная рэгуліроўка гуку
+Options:CPriorityBoost* = Выконваць з большым прыарытэтам
+Options:LParams* = Дадатковыя параметры MPlayer:
+Options:LHelp* = Дапамога
+PlaylistForm* = Спіс файлаў
+Playlist:BPlay* = Прайграць
+Playlist:BAdd* = Дадаць ...
+Playlist:BMoveUp* = Уверх
+Playlist:BMoveDown* = Уніз
+Playlist:BDelete* = Выдаліць
+Playlist:BClose* = Зачыніць
+Playlist:CShuffle* = Выбіраць адвольны трэк
+Playlist:CLoop* = Паўтараць
+Playlist:BSave* = Захаваць ...
+InfoForm* = Інфармацыя пра файл
+Info:BClose* = Зачыніць
+*NoInfo = На гэты час няма ніякай інфармацыі пра файл.
+*InfoFileFormat = Фармат
+*InfoPlaybackTime = Працягласць
+*InfoTags = Метададзеныя файла
+*InfoVideo = Відыётрэк
+*InfoAudio = Аудыётрэк
+*InfoDecoder = Дэкодэр
+*InfoCodec = Кодэк
+*InfoBitrate = Бітрэйт
+*InfoVideoSize = Памеры
+*InfoVideoFPS = Колькасць кадраў у секунду
+*InfoVideoAspect = Суадносіны старон
+*InfoAudioRate = Якасць сэмпліравання
+*InfoAudioChannels = Колькасць каналаў

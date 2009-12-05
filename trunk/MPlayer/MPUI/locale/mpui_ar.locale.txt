@@ -1,0 +1,145 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+# Copyright (C) 2006 Mohamed Magdy <alnokta@yahoo.com>
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = العربية
+@lang = ARABIC
+@charset = ARABIC
+
+*Title = للويندوز MPlayer
+*Status_Opening = جارى الفتح ...
+*Status_Closing = جارى الاغلاق ...
+*Status_Playing = جارى العرض
+*Status_Paused = ايقاف مؤقت
+*Status_Stopped = متوقف
+*Status_Error = غير قادر على العرض (اضغط لمزيد من المعلومات)
+Main:BPlaylist.Hint = اظهار/اخفاء نافذة العرض
+Main:BStreamInfo.Hint = اظهار/اخفاء معلومات ملف الفيديو
+Main:BFullscreen.Hint = تشغيل وضعية الشاشة الكاملة
+Main:BCompact.Hint = تفعيل الوضعية المضغوطة
+Main:BMute.Hint = تفعيل الوضع الصامت
+Main:MPFullscreenControls* = اظهار ازرار التحكم فى الشاشة الكاملة
+Main:OSDMenu* = OSD وضعية
+Main:MNoOSD* = OSDبدون
+Main:MDefaultOSD* = الافتراضى OSD
+Main:MTimeOSD* = اظهار الزمن
+Main:MFullOSD* = اظهار الزمن الكلى
+Main:LEscape* = اضغط زر اسك للخروج من وضعية الشاشة الكاملة
+Main:MFile* = ملف
+Main:MOpenFile* = عرض ملف
+Main:MOpenURL* = فتح عنوان ويب ...
+*OpenURL_Caption = عرض عنوان ويب
+*OpenURL_Prompt = ما عنوان الانترنت الذى تريد عرضه؟
+Main:MOpenDrive* = عرض CD/DVD
+Main:MClose* = اغلاق
+Main:MQuit* = خروج
+Main:MView* = مظهر
+Main:MSizeAny* = حجم معرف
+Main:MSize50* = نصف الحجم
+Main:MSize100* = الحجم الاصلى
+Main:MSize200* = الحجم مضاعف
+Main:MFullscreen* = الشاشة كلها
+Main:MCompact* = الوضعية المضغوطة
+Main:MOSD* = تفعيل OSD
+Main:MOnTop* = دائما على القمة
+Main:MSeek* = عرض
+Main:MPlay* = عرض
+Main:MPause* = وقف مؤقت
+Main:MPrev* = Previous title
+Main:MNext* = Next title
+Main:MShowPlaylist* = لائحة العرض ...
+Main:MMute* = صامت
+Main:MSeekF10* = تقدم عشر ثوان\tRight
+Main:MSeekR10* = رجوع عشر ثوان\tLeft
+Main:MSeekF60* = تقدم دقيقة واحدة\tUp
+Main:MSeekR60* = رجوع دقيقة واحدة\tDown
+Main:MSeekF600* = تقدم عشر دقائق\tPgUp
+Main:MSeekR600* = رجوع عشر دقائق\tPgDn
+Main:MExtra* = أدوات
+Main:MAudio* = تراك الصوت
+Main:MSubtitle* = تراك الترجمة
+Main:MAspect* = نسبة المظهر
+Main:MAutoAspect* = كشف تلقائى
+Main:MForce43* = اجبار 4:3
+Main:MForce169* = اجبار 16:9
+Main:MForceCinemascope* = اجبار 2.35:1
+Main:MDeinterlace* = Deinterlace
+Main:MNoDeint* = مغلق
+Main:MSimpleDeint* = بسيط
+Main:MAdaptiveDeint* = متكيف
+Main:MOptions* = خيارات ...
+Main:MLanguage* = اللغة
+Main:MStreamInfo* = اظهار معلومات الكليب ...
+Main:MShowOutput* = اظهار خرج امبلاير
+Main:MHelp* = مساعدة
+Main:MKeyHelp* = مساعدة لوحة المفاتيح ...
+Main:MAbout* = عن ...
+LogForm* = MPlayer خرج
+Log:BClose* = غلق
+HelpForm* = مساعدة لوحة المفاتيح
+Help:HelpText.Text = مفاتيح الملاحة:\nSpace\tعرض/وقف\nRight\tتقدم عشر ثوان\nLeft\tعودة عشر ثوان\nUp\tتقدم دقيقة واحدة\nDown\tعودة دقيقة واحدة\nPgUp\tتقدم عشر دقائق\nPgDn\tعودة عشر دقائق\nمفاتيح اخرى:\nO\tتفعيل OSD\nF\tتفعيل الشاشة الكاملة\nC\tتفعيل الوضعية المنضغطة\nT\tتفعيل دائما على الاعلى\nQ\tالخروج حالا\n9/0\tتعديل الصوت\n-/+\tAdjust audio/video sync\n1/2\tتعديل درجة فتاحية اللون\n3/4\tتعديل contrast\n5/6\tتعديل hue\n7/8\tتعديل saturation
+Help:BClose* = غلق
+AboutForm* = عن MPUI
+About:BClose* = غلق
+About:LVersionMPUI* = MPUI نسخة:
+About:LVersionMPlayer* = MPlayerنسخة صميم:
+OptionsForm* = خيارات
+Options:BOK* = نعم
+Options:BApply* = تنفيذ
+Options:BSave* = حفظ
+Options:BClose* = غلق
+Options:LAudioOut* = مشغل مخرج الصوت
+Options:CAudioOut#0 = (لا تفك شفرة الصوت)
+Options:CAudioOut#1 = (لا تقم بتشغيل الصوت)
+Options:LAudioDev* = DirectSound جهاز تخريج
+Options:LPostproc* = بعد المعالجة
+Options:CPostproc#0 = مطفأ
+Options:CPostproc#1 = تلقائى
+Options:CPostproc#2 = الكفاءة القصوى
+Options:CLanguage#0 = (اختيار تلقائى)
+Options:CIndex* = اعادة بناء فهرس الملف فى حالة الضرورة
+Options:CSoftVol* = Software volume control / Volume boost
+Options:CPriorityBoost* = تشغيل باأولوية عالية
+Options:LParams* = اوامر امبلاير اضافية:
+Options:LHelp* = مساعدة
+PlaylistForm* = لائحة العرض
+Playlist:BPlay* = عرض
+Playlist:BAdd* = اضف ...
+Playlist:BMoveUp* = انقل للأعلى
+Playlist:BMoveDown* = انقل للأسفل
+Playlist:BDelete* = ازالة
+Playlist:CShuffle* = عشوائى
+Playlist:CLoop* = اعادة
+Playlist:BSave* = حفظ ...
+Playlist:BClose* = غلق
+InfoForm* = معلومات الكليب
+Info:BClose* = غلق
+*NoInfo = لا توجد معلومات عن الكليب حاليا.
+*InfoFileFormat = النوعية
+*InfoPlaybackTime = المدة
+*InfoTags = معلومات الكليب الاولية
+*InfoVideo = تراك الصورة
+*InfoAudio = تراك الصوت
+*InfoDecoder = مفكك الشفرة
+*InfoCodec = التشفير
+*InfoBitrate = معدل الكسرة
+*InfoVideoSize = الابعاد
+*InfoVideoFPS = معدل الاطار
+*InfoVideoAspect = نسبة المظهر
+*InfoAudioRate = معدل العينة
+*InfoAudioChannels = القنوات

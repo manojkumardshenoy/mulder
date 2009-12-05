@@ -1,0 +1,98 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+# Copyright (C) 2006 Boyan Boychev <boyan7640@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = Bulgarian
+@lang = BULGARIAN
+@charset = RUSSIAN
+
+*Title = MPlayer за Windows
+Main:BFullscreen.Hint = На цял екран
+Main:OSDMenu* = Настройки на OSD стил
+Main:MNoOSD* = Без OSD
+Main:MDefaultOSD* = OSD по подразбиране
+Main:MTimeOSD* = Покажи времетраенето
+Main:MFullOSD* = Покажи пълното времетраене
+Main:MFile* = Файл
+Main:MOpenFile* = Отвори файл ...
+Main:MOpenURL* = Отвори URL ...
+*OpenURL_Caption = Отвори URL
+*OpenURL_Prompt = Кое URL желаете да отворите?
+Main:MOpenDrive* = Отвори CD/DVD
+Main:MClose* = Затвори
+Main:MQuit* = Изход\tQ
+Main:MView* = Изглед
+Main:MSizeAny* = Потребителски размер
+Main:MSize50* = Размер на половин�
+Main:MSize100* = Оригинален размер
+Main:MSize200* = Двоен размер
+Main:MFullscreen* = На цял екран\tF
+Main:MOSD* = Разреши OSD\tO
+Main:MOnTop* = Винаги най-отгоре
+Main:MSeek* = Навигация
+Main:MPlay* = Старт
+Main:MPause* = Пауз�
+Main:MSeekF10* = Напред с 10 секунди\tRight
+Main:MSeekR10* = Назад с 10 секунди\tLeft
+Main:MSeekF60* = Напред с 1 минута\tUp
+Main:MSeekR60* = Назад с 1 минута\tDown
+Main:MSeekF600* = Напред с 10 минути\tPgUp
+Main:MSeekR600* = Назад с 10 минути\tPgDn
+Main:MExtra* = Настройки
+Main:MAudio* = Зву�
+Main:MSubtitle* = Субтитри
+Main:MAspect* = Размер на изображението
+Main:MAutoAspect* = Автоматично
+Main:MForce43* = Размер 4:3
+Main:MForce169* = Размер 16:9
+Main:MForceCinemascope* = Размер 2.35:1
+Main:MDeinterlace* = Деинтерлейс
+Main:MNoDeint* = Изключено
+Main:MSimpleDeint* = Стандартно
+Main:MAdaptiveDeint* = Адаптивно
+Main:MOptions* = Настройки ...
+Main:MLanguage* = Ези�
+Main:MShowOutput* = Покажи резултата от MPlayer
+Main:MHelp* = Помощ
+Main:MKeyHelp* = Помощ за клавиатурата ...
+Main:MAbout* = Относно ...
+LogForm* = MPlayer репорт
+Log:BClose* = Затвори
+HelpForm* = Помощ за клавиатурат�
+Help:HelpText.Text = Клавиши за навигация:\nSpace\tСтарт/Пауза\nRight\tНапред с 10 секунди\nLeft\tНазад с 10 секунди\nUp\tНапред с 1 минута\nDown\tНазад с 1 минута\nPgUp\tНапред с 10 минути\nPgDn\tНазад с 10 минути\n\nДруги клавиши:\nO\tРазреши OSD\nF\tНа цял екран\nQ\tИзход\n9/0\tНамали/увеличи звука\n-/+\tКоригиране на аудио/видео синхронизация\n1/2\tКоригиране на осветеност\n3/4\tКоригиране на контраст\n5/6\tКоригиране на цветовете\n7/8\tКоригиране на наситеност
+Help:BClose* = Затвори
+AboutForm* = Относно MPUI
+About:BClose* = Затвори
+About:LVersionMPUI* = Версия на MPUI:
+About:LVersionMPlayer* = Версия на ядрото на MPlayer:
+OptionsForm* = Настройки
+Options:BOK* = ДА
+Options:BApply* = Приеми
+Options:BSave* = Запамети
+Options:BClose* = Затвори
+Options:LAudioOut* = Драйвер за звук�
+Options:CAudioOut#0 = (не декодирай звука)
+Options:CAudioOut#1 = (изключи звука)
+Options:LPostproc* = Последваща обработк�
+Options:CPostproc#0 = Изключено
+Options:CPostproc#1 = Автоматично
+Options:CPostproc#2 = Най-добро качество
+Options:CLanguage#0 = (автоматично)
+Options:CIndex* = Пресъздай файловия индекс, ако е необходимо
+Options:LParams* = Допълнителни параметри към MPlayer:
+Options:LHelp* = Помощ

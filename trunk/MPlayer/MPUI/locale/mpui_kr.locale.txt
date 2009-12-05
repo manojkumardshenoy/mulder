@@ -1,0 +1,144 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+# Copyright (C) 2006 Ken Y. Yun <dalbaragi@gmail.com>
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = 한국어
+@lang = KOREAN
+@charset = HANGEUL
+
+*Title = MPlayer
+*Status_Opening = 여는 중 ...
+*Status_Closing = 닫는 중 ...
+*Status_Playing = 재생
+*Status_Paused = 멈춤
+*Status_Stopped = 중지
+*Status_Error = 미디어 재생 불가 (정보 얻기 클릭)
+Main:BPlaylist.Hint = 재생목록 보임/숨김
+Main:BStreamInfo.Hint = 클립정보 보임/숨김
+Main:BFullscreen.Hint = 전체화면 모드
+Main:BCompact.Hint = 콤팩트 모드
+Main:BMute.Hint = 음소거
+Main:MPFullscreenControls* = 전체화면시 콘트롤 보이기
+Main:OSDMenu* = OSD 선택
+Main:MNoOSD* = OSD 없음
+Main:MDefaultOSD* = 기본 OSD
+Main:MTimeOSD* = 시간 나타냄
+Main:MFullOSD* = 전체시간 나타냄
+Main:LEscape* = 전체화면을 빠져나가려면 ESC 를 누르세요.
+Main:MFile* = 파일
+Main:MOpenFile* = 파일 재생 ...
+Main:MOpenURL* = URL 재생 ...
+*OpenURL_Caption = URL 재생
+*OpenURL_Prompt = 재생할 URL 을 입력하세요.
+Main:MOpenDrive* = CD/DVD 재생
+Main:MClose* = 닫기
+Main:MQuit* = 종료
+Main:MView* = 보기
+Main:MSizeAny* = 사용자 크기
+Main:MSize50* = 절반 크기
+Main:MSize100* = 원래 크기
+Main:MSize200* = 두배 크기
+Main:MFullscreen* = 전체화면
+Main:MCompact* = 콤팩트 모드
+Main:MOSD* = OSD 변경
+Main:MOnTop* = 항상 위에
+Main:MSeek* = 탐색
+Main:MPlay* = 재생
+Main:MPause* = 멈춤
+Main:MPrev* = 이전 제목
+Main:MNext* = 다음 제목
+Main:MShowPlaylist* = 재생목록 ...
+Main:MMute* = 음소거
+Main:MSeekF10* = 앞으로 10초 이동\tRight
+Main:MSeekR10* = 뒤로 10초 이동\tLeft
+Main:MSeekF60* = 앞으로 1분 이동\tUp
+Main:MSeekR60* = 뒤로 1분 이동\tDown
+Main:MSeekF600* = 앞으로 10분 이동\tPgUp
+Main:MSeekR600* = 뒤로 10분 이동\tPgDn
+Main:MExtra* = 도구
+Main:MAudio* = 음성언어선택
+Main:MSubtitle* = 자막언어선택
+Main:MAspect* = 화면비율
+Main:MAutoAspect* = 자동
+Main:MForce43* = 4:3 고정
+Main:MForce169* = 16:9 고정
+Main:MForceCinemascope* = 2.35:1 고정
+Main:MDeinterlace* = 잔상제거(Deinterlace)
+Main:MNoDeint* = 사용안함
+Main:MSimpleDeint* = Simple
+Main:MAdaptiveDeint* = Adaptive
+Main:MOptions* = 옵션 ...
+Main:MLanguage* = 언어
+Main:MStreamInfo* = 클립 정보 보기 ...
+Main:MShowOutput* = MPlayer 출력 보기 ...
+Main:MHelp* = 도움말
+Main:MKeyHelp* = 단축키 목록 ...
+Main:MAbout* = 이 프로그램은 ...
+LogForm* = MPlayer 출력
+Log:BClose* = 닫기
+HelpForm* = 단축키 목록
+Help:HelpText.Text = 탐색:\nSpace\t재생/멈춤\nRight\t앞으로 10초 이동\nLeft\t뒤로 10초 이동\nUp\t앞으로 1분 이동\nDown\t뒤로 1분 이동\nPgUp\t앞으로 10분 이동\nPgDn\t뒤로 10분 이동\n\n그외:\nO\tOSD 전환\nF\t전체화면으로 전환\nC\t콤팩트 모드로 전환\nT\t항상 위에 놓기\nQ\t종료\n9/0\t볼륨조절\n-/+\t오디오/비디오 싱크 조정\n1/2\t밝기 조정\n3/4\t선명도 조정\n5/6\t색상 조정\n7/8\t채도 조정
+Help:BClose* = 닫기
+AboutForm* = MPUI 정보
+About:BClose* = 닫기
+About:LVersionMPUI* = MPUI 버젼: 
+About:LVersionMPlayer* = MPlayer 코어 버젼: 
+OptionsForm* = 환경설정
+Options:BOK* = 확인
+Options:BApply* = 적용
+Options:BSave* = 저장
+Options:BClose* = 닫기
+Options:LAudioOut* = 사운드 출력 드라이버
+Options:CAudioOut#0 = (디코딩 않음)
+Options:CAudioOut#1 = (재생 않음)
+Options:LAudioDev* = 다이렉트 사운드 출력 장치
+Options:LPostproc* = 작업순위조정
+Options:CPostproc#0 = 없음
+Options:CPostproc#1 = 자동
+Options:CPostproc#2 = 최대
+Options:CLanguage#0 = (자동선택)
+Options:CIndex* = 필요시 파일 인덱스를 재구성
+Options:CSoftVol* = 소프트웨어 볼륨 조정 / 증폭
+Options:CPriorityBoost* = 높은 작업순위로 재생
+Options:LParams* = MPlayer 파라미터 추가:
+Options:LHelp* = 도움말(영문)
+PlaylistForm* = 재생목록
+Playlist:BPlay* = 재생
+Playlist:BAdd* = 추가 ...
+Playlist:BMoveUp* = 위로 이동
+Playlist:BMoveDown* = 밑으로 이동
+Playlist:BDelete* = 제거
+Playlist:CShuffle* = 무작위
+Playlist:CLoop* = 반복
+Playlist:BClose* = 닫기
+InfoForm* = 클립 정보
+Info:BClose* = 닫기
+*NoInfo = 클립 정보 보기는 현재 불가능 합니다.
+*InfoFileFormat = 포맷
+*InfoPlaybackTime = 길이
+*InfoTags = 메타데이터
+*InfoVideo = 비디오 트랙
+*InfoAudio = 오디오 트랙
+*InfoDecoder = 디코더
+*InfoCodec = 코덱
+*InfoBitrate = 비트레이트
+*InfoVideoSize = 화면크기
+*InfoVideoFPS = 프레임 레이트
+*InfoVideoAspect = 비율
+*InfoAudioRate = 샘플 레이트
+*InfoAudioChannels = 채널

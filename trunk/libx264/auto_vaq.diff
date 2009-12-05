@@ -1,0 +1,13 @@
+--- a/encoder/encoder.c
++++ b/encoder/encoder.c
+@@ -783,6 +783,10 @@
+         h->param.rc.i_lookahead += 10;
+     }
+ 
++    /* Force AutoVAQ */
++    if( h->param.rc.i_aq_mode == X264_AQ_VARIANCE )
++        h->param.rc.i_aq_mode = X264_AQ_AUTOVARIANCE;
++
+     if( param->param_free )
+         param->param_free( param );
+ 

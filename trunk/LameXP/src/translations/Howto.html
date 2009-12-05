@@ -1,0 +1,47 @@
+<html>
+<head>
+<title>Howto: Translate LameXP</title>
+<body>
+<h1>Howto: Translate LameXP</h1>
+<p>If you are willing to contribute a new LameXP translation or update/fix an existing translation, then this guide will help you to do so :-)</p>
+<br>
+<h3>The first step:</h3>
+<p>The latest versions of all existing LameXP language files can always be found on my public SVN server:<br><a href="https://opensvn.csie.org/traccgi/mulder1984/browser/LameXP/src/translations" target="_blank">https://opensvn.csie.org/traccgi/mulder1984/browser/LameXP/src/translations</a><br><br>I highly recommend to base new translations on the English translation (<a href="https://opensvn.csie.org/traccgi/mulder1984/export/head/LameXP/src/translations/LameXP-EN.loc" target="_blank">LameXP-EN.loc</a>), because I cannot guarantee the correctness of contributed translations.<br><b>Note:</b> Please don't apply updates to your own working copy. Before you do any updates, grab the latest version of the language file from the SVN server!<br><br>(If you encounter any "security" errors when accessing the SVN server, you must import the <a href="http://ca.csie.org/" traget="_blank">CSIE root certificate</a> into your browser first)</p>
+<br>
+<h3>Editing the language file:</h3>
+<p>You can edit the language file with your favorite text editor. Anyway, I highly recommend the <b>Notepad++</b> editor:<br><a href="http://notepad-plus.sourceforge.net/" target="_blank">http://notepad-plus.sourceforge.net/</a><br><br>(Hint: You should set the "Language" to "MS INI" in Notepad++ for proper syntax highlighting!)</p>
+<br>
+<h3>Language file editing rules:</h3>
+Only language files that have been edited according to the following rules can be accepted:
+<ul>
+<li>Don't remove any lines and don't add any new lines. The number of lines must be <i>identical</i> before and after your editing.
+<li>Don't change the order of the lines. Keep the sorting as-is.
+<li>For each line: Don't change the text <i>left</i> of the equals sign (=), only translate the text <i>right</i> of it.
+<li>Take care of the <a href="http://en.wikipedia.org/wiki/Printf" target="_blank">C printf</a> syntax: All the <tt>%s</tt> and <tt>%d</tt> placeholders <i>must</i> remain in the translated strings.
+<li>Don't touch the lines in square brackets (section headers) and don't remove the whitespace lines.
+</ul>
+<br>
+<h3>The proper Codepage:</h3>
+<p>Since LameXP does <i>not</i> support Unicode yet, we must use the proper <a href="http://en.wikipedia.org/wiki/Code_page" target="_blank">Codepage</a> for each language. The Codepage is specified in the corresponding line:<br></p>
+<ul>
+<li><tt>Codepage=1234</tt>
+</ul>
+<p>You must specify the correct Codepage here in order to make sure that your translation will be displayed properly on the Client's system.<br><br>A list of locales and the corresponding ANSI Codepages can be found in this article:<br><a href="http://msdn.microsoft.com/en-us/library/ms776260(VS.85).aspx" target="_blank">http://msdn.microsoft.com/en-us/library/ms776260(VS.85).aspx</a><br><br>If you still don't know what <i>your</i> Codepage is, simply use my tool here:<br><a href="https://opensvn.csie.org/traccgi/mulder1984/export/head/LameXP/src/translations/WhatsMyCodepage.exe" target="_blank">https://opensvn.csie.org/traccgi/mulder1984/export/head/LameXP/src/translations/WhatsMyCodepage.exe</a><br><br><font color="darkred"><b>Important:</b> Please note that in the language file we only need the <i>decimal</i> Codepage number, <i>not</i> the full codepage name or description!</font></p>
+<br>
+<h3>Personalization:</h3>
+<p>You can put the name of your language and your own name (will be displayed in the application) into the corresponding lines:</p>
+<ul>
+<li><tt>Language=English</tt>
+<li><tt>Contributor=John Doe</tt>
+</ul>
+<br>
+<h3>Testing your translation:</h3>
+<p>Since I probably don't understand your language, I can't check or correct your translation. So it's important that you test your language file <i>thoroughly</i>!<br><br>You can simply put your new language file (*.loc) into the same directory as 'LameXP.exe' and it will appear in LameXP's language menu upon next launch.<br>This way you can test your language file easily before submitting it. Only tested language files can be included in official LameXP releases.<br><br>When testing a translation the proper Codepage must be used. You can quickly switch the Codepage for LameXP with the <b>AppLocale</b> utility:<br><a href="http://www.microsoft.com/globaldev/tools/apploc.mspx" target="_blank">http://www.microsoft.com/globaldev/tools/apploc.mspx</a><br><br><font color="darkred"><b>Important:</b> Please make sure that your translation does <i>not</i> destroy LameXP's layout! You can feel free to use a shorter (but meaningful) text, if required.</font></p>
+<br>
+<h3>Submitting your translation:</h3>
+<p>Once you are done with your translation, you can submit it, so it can be included in the next LameXP release. You can contact me by e-mail:<br><b><a href="mailto:mulder2%20[at]%20gmx%20[dot]%20de">mulder2<font color="dimgray">[at]</font>gmx<font color="dimgray">[dot]</font>de</a></b><br><br>It is sufficient to submit the language file (*.loc). You don't need to compress the language file (ZIP, RAR, etc) and you don't need to attach a flag icon file.<br>Furthermore your language file should use the <tt>LameXP-XX.loc</tt> naming scheme, where <tt>XX</tt> is the corresponding upper-case <a href="http://www.loc.gov/standards/iso639-2/php/code_list.php" target="_blank">ISO 639-1</a> language code.<br><br>(Note: Advanced translators can get write-access to the SVN repository on request, so they can keep their translations up-to-date easily)</p>
+<br>
+<br>
+Thanks in advance !!!
+</body>
+</html>

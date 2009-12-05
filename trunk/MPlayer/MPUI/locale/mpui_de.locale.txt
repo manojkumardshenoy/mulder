@@ -1,0 +1,144 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = Deutsch
+@lang = GERMAN
+@charset = DEFAULT
+
+*Title = MPlayer für Windows
+*Status_Opening = Öffne ...
+*Status_Closing = Schließe ...
+*Status_Playing = Wiedergabe
+*Status_Paused = Angehalten
+*Status_Stopped = Abgebrochen
+*Status_Error = Abspielen fehlgeschlagen (Klicken für weitere Informationen)
+Main:BPlaylist.Hint = Wiedergabeliste anzeigen/verbergen
+Main:BStreamInfo.Hint = Clip-Informationen anzeigen/verbergen
+Main:BFullscreen.Hint = Vollbildmodus ein/ausschalten
+Main:BCompact.Hint = Kompakte Darstellung ein/ausschalten
+Main:MPFullscreenControls* = Steuerelemente im Vollbildmodus anzeigen
+Main:OSDMenu* = OSD-Modus
+Main:MNoOSD* = Kein OSD
+Main:MDefaultOSD* = Standard-OSD
+Main:MTimeOSD* = Zeitanzeige
+Main:MFullOSD* = Gesamtzeitanzeige
+Main:BMute.Hint = Stummschaltung ein/aus
+Main:LEscape* = Esc drücken, um den Vollbildmodus zu verlassen
+Main:MFile* = Datei
+Main:MOpenFile* = Datei abspielen ...
+Main:MOpenURL* = URL abspielen ...
+*OpenURL_Caption = URL abspielen
+*OpenURL_Prompt = Welche URL soll abgespielt werden?
+Main:MOpenDrive* = CD/DVD abspielen
+Main:MClose* = Schließen
+Main:MQuit* = Beenden
+Main:MView* = Ansicht
+Main:MSizeAny* = Beliebige Größe
+Main:MSize50* = Halbe Größe
+Main:MSize100* = Originalgröße
+Main:MSize200* = Doppelte Größe
+Main:MFullscreen* = Vollbildmodus
+Main:MCompact* = Kompakte Darstellung
+Main:MOSD* = OSD umschalten
+Main:MOnTop* = Immer im Vordergrund
+Main:MSeek* = Wiedergabe
+Main:MPlay* = Abspielen
+Main:MPause* = Pause
+Main:MPrev* = Voriger Titel
+Main:MNext* = Nächster Titel
+Main:MShowPlaylist* = Wiedergabeliste ...
+Main:MMute* = Stumm
+Main:MSeekF10* = 10 Sekunden vorwärts\tRechts
+Main:MSeekR10* = 10 Sekunden zurück\tLinks
+Main:MSeekF60* = 1 Minute vorwärts\tOben
+Main:MSeekR60* = 1 Minute zurück\tUnten
+Main:MSeekF600* = 10 Minuten vorwärts\tBildAuf
+Main:MSeekR600* = 10 Minuten zurück\tBildAb
+Main:MExtra* = Extras
+Main:MAudio* = Tonspur
+Main:MSubtitle* = Untertitelspur
+Main:MAspect* = Seitenverhältnis
+Main:MAutoAspect* = Automatisch
+Main:MForce43* = Immer 4:3
+Main:MForce169* = Immer 16:9
+Main:MForceCinemascope* = Immer 2.35:1
+Main:MDeinterlace* = Deinterlacing
+Main:MNoDeint* = Aus
+Main:MSimpleDeint* = Einfach
+Main:MAdaptiveDeint* = Adaptiv
+Main:MOptions* = Optionen ...
+Main:MLanguage* = Sprache
+Main:MStreamInfo* = Clip-Informationen anzeigen ...
+Main:MShowOutput* = MPlayer-Ausgabe anzeigen ...
+Main:MHelp* = Hilfe
+Main:MKeyHelp* = Tastaturhilfe ...
+Main:MAbout* = Über ...
+LogForm* = MPlayer-Ausgabe
+Log:BClose* = Schließen
+HelpForm* = Tastaturhilfe
+Help:HelpText.Text = Navigationstasten:\nLeertaste\tAbspielen/Pause\nRechts\t10 Sekunden vorwärts\nLinks\t10 Sekunden zurück\nOben\t1 Minute vorwärts\nUnten\t1 Minute zurück\nBildAuf\t10 Minuten vorwärts\nBildAb\t10 Minuten zurück\n\nSonstige Tasten:\nO\tOSD umschalten\nF\tVollbildmodus ein/aus\nC\tKompakte Darstellung ein/aus\nT\tImmer im Vordergrund ein/aus\nQ\tSofort beenden\n9/0\tLautstärke einstellen\n-/+\tBild/Ton-Synchronisation einstellen\n1/2\tHelligkeit einstellen\n3/4\tKontrast einstellen\n5/6\tFarbton einstellen\n7/8\tSättigung einstellen
+Help:BClose* = Schließen
+AboutForm* = Über MPUI
+About:BClose* = Schließen
+About:LVersionMPUI* = MPUI-Version:
+About:LVersionMPlayer* = MPlayer-Version:
+OptionsForm* = Optionen
+Options:BOK* = OK
+Options:BApply* = Übernehmen
+Options:BSave* = Speichern
+Options:BClose* = Schließen
+Options:LAudioOut* = Soundausgabetreiber
+Options:CAudioOut#0 = (keinen Sound decodieren)
+Options:CAudioOut#1 = (keinen Sound ausgeben)
+Options:LAudioDev* = DirectSound-Ausgabegerät
+Options:LPostproc* = Postprocessing
+Options:CPostproc#0 = Aus
+Options:CPostproc#1 = Automatisch
+Options:CPostproc#2 = Maximale Qualität
+Options:CLanguage#0 = (Automatisch)
+Options:CIndex* = Dateiindex rekonstruieren, wenn notwendig
+Options:CSoftVol* = Software-Lautstärkereglung (ermöglicht höhere Lautstärke)
+Options:CPriorityBoost* = Höhere Priorität
+Options:LParams* = Zusätzliche MPlayer-Parameter:
+Options:LHelp* = Hilfe
+PlaylistForm* = Wiedergabeliste
+Playlist:BPlay* = Abspielen
+Playlist:BAdd* = Hinzufügen ...
+Playlist:BMoveUp* = Nach oben
+Playlist:BMoveDown* = Nach unten
+Playlist:BDelete* = Entfernen
+Playlist:CShuffle* = Zufall
+Playlist:CLoop* = Wiederholen
+Playlist:BSave* = Speichern ...
+Playlist:BClose* = Schließen
+InfoForm* = Clip-Informationen
+Info:BClose* = Schließen
+*NoInfo = Zur Zeit sind keine Informationen verfügbar.
+*InfoFileFormat = Format
+*InfoPlaybackTime = Abspieldauer
+*InfoTags = Metadaten
+*InfoVideo = Videospur
+*InfoAudio = Tonspur
+*InfoDecoder = Decoder
+*InfoCodec = Codec
+*InfoBitrate = Bitrate
+*InfoVideoSize = Bildgröße
+*InfoVideoFPS = Framerate
+*InfoVideoAspect = Seitenverhältnis
+*InfoAudioRate = Samplerate
+*InfoAudioChannels = Kanäle

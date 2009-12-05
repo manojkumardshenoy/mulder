@@ -1,0 +1,145 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+# Copyright (C) 2006 Peter Habcak <p.habcak@zoznam.sk>
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = Slovenčina
+@lang = SLOVAK
+@charset = EASTEUROPE
+
+*Title = MPlayer pre Windows
+*Status_Opening = Otváranie...
+*Status_Closing = Zatváranie...
+*Status_Playing = Prehrávanie
+*Status_Paused = Pozastavené
+*Status_Stopped = Zastavené
+*Status_Error = Nie je možné prehrať (kliknite pre viac informácií)
+Main:BPlaylist.Hint = Zoznam skladieb
+Main:BStreamInfo.Hint = Informácie o klipe
+Main:BFullscreen.Hint = Celá obrazovka
+Main:BCompact.Hint = Kompaktný režim
+Main:BMute.Hint = Stlmiť
+Main:MPFullscreenControls* = Show fullscreen controls
+Main:OSDMenu* = Režim OSD
+Main:MNoOSD* = Bez OSD
+Main:MDefaultOSD* = Štandardné OSD
+Main:MTimeOSD* = Zobraziť odohraný čas
+Main:MFullOSD* = Zobraziť celkový čas
+Main:LEscape* = Stlačte Escape pre ukončenie celoobrazovkového režimu.
+Main:MFile* = Súbor
+Main:MOpenFile* = Prehrať súbor ...
+Main:MOpenURL* = Prehrať URL ...
+*OpenURL_Caption = Prehrať URL
+*OpenURL_Prompt = Zadajte URL, ktoré chcete prehrať
+Main:MOpenDrive* = Prehrať CD/DVD
+Main:MClose* = Zatvoriť
+Main:MQuit* = Koniec
+Main:MView* = Zobraziť
+Main:MSizeAny* = Vlastná veľkosť
+Main:MSize50* = Polovičná veľkosť
+Main:MSize100* = Pôvodná veľkosť
+Main:MSize200* = Dvojnásobná veľkosť
+Main:MFullscreen* = Celá obrazovka
+Main:MCompact* = Kompatný režim
+Main:MOSD* = Prepnúť OSD
+Main:MOnTop* = Vždy na vrchu
+Main:MSeek* = Prehrať
+Main:MPlay* = Prehrávať
+Main:MPause* = Pauza
+Main:MPrev* = Predchádzajúci
+Main:MNext* = Nasledujúci
+Main:MShowPlaylist* = Zoznam skladieb ...
+Main:MMute* = Stlmiť
+Main:MSeekF10* = Dopredu o 10 sekúnd\tŠípka vpravo
+Main:MSeekR10* = Dozadu o 10 sekúnd\tŠípka vľavo
+Main:MSeekF60* = Dopredu o 1 minútu\tŠípka hore
+Main:MSeekR60* = Dozadu o 1 minútu\tŠípka dole
+Main:MSeekF600* = Dopredu o 10 minút\tPgUp
+Main:MSeekR600* = Dozadu o 10 minút\tPgDn
+Main:MExtra* = Nástroje
+Main:MAudio* = Audio stopa
+Main:MSubtitle* = Titulková stopa
+Main:MAspect* = Pomer strán
+Main:MAutoAspect* = Automatický
+Main:MForce43* = Vždy 4:3
+Main:MForce169* = Vždy 16:9
+Main:MForceCinemascope* = Vždy 2.35:1
+Main:MDeinterlace* = Rozriadkovanie
+Main:MNoDeint* = Vypnuté
+Main:MSimpleDeint* = Jednoduché
+Main:MAdaptiveDeint* = Adaptívne
+Main:MOptions* = Nastavenia ...
+Main:MLanguage* = Jazyk
+Main:MStreamInfo* = Zobraziť informácie o klipe ...
+Main:MShowOutput* = Zobraziť výstup MPlayeru ...
+Main:MHelp* = Pomocník
+Main:MKeyHelp* = Klávesové skratky ...
+Main:MAbout* = O programe ...
+LogForm* = Výstup MPlayeru
+Log:BClose* = Zatvoriť
+HelpForm* = Klávesové skratky
+Help:HelpText.Text = Navigačné klávesy:\nMedzerník\tPrehrať/Pauza\nŠípka doprava\tDoperdu o 10 sekúnd\nŠípka doľava\tDozadu o 10 sekúnd\nŠípka hore\tDopredu o 1 minútu\nŠípka dole\tDozadu o 1 minútu\nPgUp\tDopredu o 10 minút\nPgDn\tDozadu o 10 minút\n\nIné klávesy:\nO\tPrepnúť OSD\nF\tCelá obrazovka\nC\tKompaktný režim\nT\tVždy na vrchu\nQ\tKoniec\n9/0\tNastavenie hlasitosti\n-/+\tNastavenie audio/video synchronizácie\n1/2\tNastavenie jasu\n3/4\tNastavenie kontrastu\n5/6\tNastavenie farieb\n7/8\tNastavenie sýtosti
+Help:BClose* = Zatvoriť
+AboutForm* = O programe MPUI
+About:BClose* = Zatvoriť
+About:LVersionMPUI* = Verzia MPUI:
+About:LVersionMPlayer* = Verzia MPlayer:
+OptionsForm* = Nastavenie
+Options:BOK* = OK
+Options:BApply* = Použiť
+Options:BSave* = Uložiť
+Options:BClose* = Zatvoriť
+Options:LAudioOut* = Výstupný ovládač zvuku
+Options:CAudioOut#0 = (nedekódovať zvuk)
+Options:CAudioOut#1 = (neprehrávať zvuk)
+Options:LAudioDev* = Výstupné zariadenie DirectSound
+Options:LPostproc* = Postprocessing
+Options:CPostproc#0 = Vypnutý
+Options:CPostproc#1 = Automatický
+Options:CPostproc#2 = Maximálna kvalita
+Options:CLanguage#0 = (Automatický výber)
+Options:CIndex* = Opraviť index súboru, ak je to nevyhnutné
+Options:CSoftVol* = Softwarové ovládanie hlasitosti / Volume boost
+Options:CPriorityBoost* = Spustiť s vyššou prioritou
+Options:LParams* = Dotatočné parametre MPlayera:
+Options:LHelp* = Pomocník
+PlaylistForm* = Zoznam skladieb
+Playlist:BPlay* = Prehrať
+Playlist:BAdd* = Pridať ...
+Playlist:BMoveUp* = Presunúť hore
+Playlist:BMoveDown* = Presunúť dole
+Playlist:BDelete* = Odstrániť
+Playlist:CShuffle* = Náhodne
+Playlist:CLoop* = Opakovať
+Playlist:BSave* = Uložiť ...
+Playlist:BClose* = Zatvoriť
+InfoForm* = Informácie o klipe
+Info:BClose* = Zatvoriť
+*NoInfo = V tejto chvíli nie sú dostupné žiadne informácie.
+*InfoFileFormat = Formát
+*InfoPlaybackTime = Trvanie
+*InfoTags = Metadáta klipu
+*InfoVideo = Video stopa
+*InfoAudio = Audio stopa
+*InfoDecoder = Dekóder
+*InfoCodec = Kodek
+*InfoBitrate = Bitrate
+*InfoVideoSize = Dimensions
+*InfoVideoFPS = Počet snímkov za sekundu
+*InfoVideoAspect = Pomer strán
+*InfoAudioRate = Vzorkovacia frekvencia
+*InfoAudioChannels = Kanály

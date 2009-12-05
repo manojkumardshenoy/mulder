@@ -1,0 +1,36 @@
+diff --git a/encoder/encoder.c b/encoder/encoder.c
+index 343e27c..841e097 100644
+--- a/encoder/encoder.c
++++ b/encoder/encoder.c
+@@ -758,6 +758,31 @@ x264_t *x264_encoder_open   ( x264_param_t *param )
+     /* Create a copy of param */
+     memcpy( &h->param, param, sizeof(x264_param_t) );
+ 
++    //Fast First Pass: --trellis 0 --no-8x8dct --partitions none --me dia --ref 1 --subme MIN(2, previous subme)
++    if( h->param.rc.b_stat_write && !h->param.rc.b_stat_read )
++    {
++        h->param.i_frame_reference = 1;
++        h->param.analyse.b_transform_8x8 = 0;
++        h->param.analyse.inter = 0;
++        h->param.analyse.i_me_method = X264_ME_DIA;
++        h->param.analyse.i_subpel_refine = X264_MIN( 2, param->analyse.i_subpel_refine );
++        h->param.analyse.i_trellis = 0;
++    }
++
++    //Enable SubeME=10
++    if( h->param.analyse.i_subpel_refine == 9 && param->analyse.i_me_method >= X264_ME_UMH && h->param.analyse.i_trellis == 2 )
++        h->param.analyse.i_subpel_refine++;
++
++    //Increase RC Lookahead
++    if( param->analyse.i_subpel_refine >= 9 && param->analyse.i_me_method >= X264_ME_UMH )
++    {
++        h->param.rc.i_lookahead += 20;
++    }
++    else if( param->analyse.i_subpel_refine >= 8 && param->analyse.i_me_method >= X264_ME_HEX )
++    {
++        h->param.rc.i_lookahead += 10;
++    }
++
+     if( param->param_free )
+         param->param_free( param );
+ 

@@ -1,0 +1,19 @@
+These people have contributed LameXP translations:
+
+[CN] Simplified Chinese ... LordFox <hh.feedback [at] gmail [dot] com>
+[EL] Greek/Hellenic ....... Parsifal <algida79 [at] gmail [dot] com>
+[EN] English .............. Brian Pugh <bdp47 [at] talktalk [dot] net>
+[ES] Español .............. Rub3n CT <rub3nct [at] gmail [dot] com>
+                            Legionario Extranjero <legionarioextranjero [at] gmail [dot] com>
+[FR] Français ............. Dodich Informatique <dodich [at] live [dot] fr>
+                            Matthieu <dotareaettsquvkim [at] mms [dot] sfr [dot] fr>
+[HU] Hungarian ............ Ezoh <ezoptt [at] nadlanu [dot] com>
+[IT] Italiano ............. Gulliver_69 <gulliver_69 [at] libero [dot] it>
+[JP] Japanese ............. Hachimaru <YFD48944 [at] nifty [dot] com>
+[NL] Nederlands ........... Anton
+[PL] Polski ............... Sir Daniel K <sir.daniel.k [at] gmail [dot] com>
+[RO] Romanian ............. Lia Remus Adrian <jobytoss [at] gmail [dot] com>
+[RU] Russian .............. Ambient <andreyot [at] gmail [dot] com>
+[SR] Serbian .............. Katic Svetislav <kalejug [at] nadlanu [dot] com>
+[TW] Taiwanese ............ chriszxl <chrisstudio [at] live [dot] com>
+[UK] Ukrainian ............ Arestarh <arestarh [at] ukr [dot] net>

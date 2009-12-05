@@ -1,0 +1,308 @@
+diff --git a/common/common.c b/common/common.c
+index 42f759b..a20f779 100644
+--- a/common/common.c
++++ b/common/common.c
+@@ -136,7 +136,7 @@ void    x264_param_default( x264_param_t *param )
+     param->analyse.i_chroma_qp_offset = 0;
+     param->analyse.b_fast_pskip = 1;
+     param->analyse.b_weighted_bipred = 1;
+-    param->analyse.i_weighted_pred = X264_WEIGHTP_SMART;
++    /* param->analyse.i_weighted_pred = X264_WEIGHTP_SMART; */
+     param->analyse.b_dct_decimate = 1;
+     param->analyse.b_transform_8x8 = 1;
+     param->analyse.i_trellis = 1;
+@@ -490,8 +490,8 @@ int x264_param_parse( x264_param_t *p, const char *name, const char *value )
+         p->analyse.b_transform_8x8 = atobool(value);
+     OPT2("weightb", "weight-b")
+         p->analyse.b_weighted_bipred = atobool(value);
+-    OPT("weightp")
+-        p->analyse.i_weighted_pred = atoi(value);
++    /* OPT("weightp")
++        p->analyse.i_weighted_pred = atoi(value); */
+     OPT2("direct", "direct-pred")
+         b_error |= parse_enum( value, x264_direct_pred_names, &p->analyse.i_direct_mv_pred );
+     OPT("chroma-qp-offset")
+@@ -906,7 +906,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
+                       p->i_bframe_pyramid, p->i_bframe_adaptive, p->i_bframe_bias,
+                       p->analyse.i_direct_mv_pred, p->analyse.b_weighted_bipred );
+     }
+-    s += sprintf( s, " wpredp=%d", p->analyse.i_weighted_pred > 0 ? p->analyse.i_weighted_pred : 0 );
++    s += sprintf( s, " wpredp=%d", x264_weighted_pred );
+ 
+     s += sprintf( s, " keyint=%d keyint_min=%d scenecut=%d",
+                   p->i_keyint_max, p->i_keyint_min, p->i_scenecut_threshold );
+diff --git a/common/macroblock.c b/common/macroblock.c
+index f5070e4..66bf395 100644
+--- a/common/macroblock.c
++++ b/common/macroblock.c
+@@ -706,16 +706,16 @@ int x264_macroblock_cache_init( x264_t *h )
+     for( i=0; i<2; i++ )
+     {
+         int i_refs = X264_MIN(16, (i ? 1 + !!h->param.i_bframe_pyramid : h->param.i_frame_reference) ) << h->param.b_interlaced;
+-        if( h->param.analyse.i_weighted_pred == X264_WEIGHTP_SMART )
++        if( x264_weighted_pred == X264_WEIGHTP_SMART )
+             i_refs = X264_MIN(16, i_refs + 2); //smart weights add two duplicate frames
+-        else if( h->param.analyse.i_weighted_pred == X264_WEIGHTP_BLIND )
++        else if( x264_weighted_pred == X264_WEIGHTP_BLIND )
+             i_refs = X264_MIN(16, i_refs + 1); //blind weights add one duplicate frame
+ 
+         for( j=0; j < i_refs; j++ )
+             CHECKED_MALLOC( h->mb.mvr[i][j], 2 * i_mb_count * sizeof(int16_t) );
+     }
+ 
+-    if( h->param.analyse.i_weighted_pred )
++    if( x264_weighted_pred )
+     {
+         int i_padv = PADV << h->param.b_interlaced;
+ #define ALIGN(x,a) (((x)+((a)-1))&~((a)-1))
+@@ -723,7 +723,7 @@ int x264_macroblock_cache_init( x264_t *h )
+         int i_stride, luma_plane_size;
+         int numweightbuf;
+ 
+-        if( h->param.analyse.i_weighted_pred == X264_WEIGHTP_FAKE )
++        if( x264_weighted_pred == X264_WEIGHTP_FAKE )
+         {
+             // only need buffer for lookahead thread
+             if( !h->param.i_sync_lookahead || h == h->thread[h->param.i_threads] )
+@@ -742,7 +742,7 @@ int x264_macroblock_cache_init( x264_t *h )
+             i_stride = ALIGN( h->sps->i_mb_width*16 + 2*PADH, align );
+             luma_plane_size = i_stride * (h->sps->i_mb_height*16+2*i_padv);
+ 
+-            if( h->param.analyse.i_weighted_pred == X264_WEIGHTP_SMART )
++            if( x264_weighted_pred == X264_WEIGHTP_SMART )
+                 //SMART can weight one ref and one offset -1
+                 numweightbuf = 2;
+             else
+diff --git a/encoder/encoder.c b/encoder/encoder.c
+index 907edfe..d41af55 100644
+--- a/encoder/encoder.c
++++ b/encoder/encoder.c
+@@ -423,10 +423,10 @@ static int x264_validate_parameters( x264_t *h )
+             x264_log( h, X264_LOG_WARNING, "interlace + direct=temporal is not implemented\n" );
+             h->param.analyse.i_direct_mv_pred = X264_DIRECT_PRED_SPATIAL;
+         }
+-        if( h->param.analyse.i_weighted_pred > 0 )
++        if( x264_weighted_pred > 0 )
+         {
+             x264_log( h, X264_LOG_WARNING, "interlace + weightp is not implemented\n" );
+-            h->param.analyse.i_weighted_pred = X264_WEIGHTP_NONE;
++            abort(); /* h->param.analyse.i_weighted_pred = X264_WEIGHTP_NONE; */
+         }
+     }
+ 
+@@ -672,9 +672,9 @@ static int x264_validate_parameters( x264_t *h )
+             h->param.analyse.i_mv_range = x264_clip3(h->param.analyse.i_mv_range, 32, 512 >> h->param.b_interlaced);
+     }
+ 
+-    h->param.analyse.i_weighted_pred = x264_clip3( h->param.analyse.i_weighted_pred, 0, X264_WEIGHTP_SMART );
+-    if( !h->param.analyse.i_weighted_pred && h->param.rc.b_mb_tree && h->param.analyse.b_psy && !h->param.b_interlaced )
+-        h->param.analyse.i_weighted_pred = X264_WEIGHTP_FAKE;
++    /* h->param.analyse.i_weighted_pred = x264_clip3( h->param.analyse.i_weighted_pred, 0, X264_WEIGHTP_SMART ); */
++    if( !x264_weighted_pred && h->param.rc.b_mb_tree && h->param.analyse.b_psy && !h->param.b_interlaced )
++        abort();
+ 
+     if( h->param.i_threads > 1 )
+     {
+@@ -863,7 +863,7 @@ x264_t *x264_encoder_open( x264_param_t *param )
+     CHECKED_MALLOCZERO( h->frames.unused[1], (h->param.i_threads + 20) * sizeof(x264_frame_t *) );
+     CHECKED_MALLOCZERO( h->frames.current, (h->param.i_sync_lookahead + h->param.i_bframe
+                         + h->param.i_threads + 3) * sizeof(x264_frame_t *) );
+-    if( h->param.analyse.i_weighted_pred > 0 )
++    if( x264_weighted_pred > 0 )
+         CHECKED_MALLOCZERO( h->frames.blank_unused, h->param.i_threads * 4 * sizeof(x264_frame_t *) );
+     h->i_ref0 = 0;
+     h->i_ref1 = 0;
+@@ -1204,7 +1204,7 @@ static void x264_weighted_pred_init( x264_t *h )
+             h->sh.weight[i_ref][i].weightfn = NULL;
+ 
+ 
+-    if( h->sh.i_type != SLICE_TYPE_P || h->param.analyse.i_weighted_pred <= 0 )
++    if( h->sh.i_type != SLICE_TYPE_P || x264_weighted_pred <= 0 )
+         return;
+ 
+     int i_padv = PADV << h->param.b_interlaced;
+@@ -1319,7 +1319,7 @@ static inline void x264_reference_build_list( x264_t *h, int i_poc )
+     /* add duplicates */
+     if( h->fenc->i_type == X264_TYPE_P )
+     {
+-        if( h->param.analyse.i_weighted_pred == X264_WEIGHTP_SMART )
++        if( x264_weighted_pred == X264_WEIGHTP_SMART )
+         {
+             x264_weight_t w[3];
+             w[1].weightfn = w[2].weightfn = NULL;
+@@ -1347,7 +1347,7 @@ static inline void x264_reference_build_list( x264_t *h, int i_poc )
+                 x264_weighted_reference_duplicate( h, 0, w );
+             }
+         }
+-        else if( h->param.analyse.i_weighted_pred == X264_WEIGHTP_BLIND )
++        else if( x264_weighted_pred == X264_WEIGHTP_BLIND )
+         {
+             //weighted offset=-1
+             x264_weight_t w[3];
+@@ -2215,7 +2215,7 @@ static int x264_encoder_frame_end( x264_t *h, x264_t *thread_current,
+     if( h->sh.i_type == SLICE_TYPE_P )
+     {
+         h->stat.i_consecutive_bframes[h->fdec->i_frame - h->fref0[0]->i_frame - 1]++;
+-        if( h->param.analyse.i_weighted_pred == X264_WEIGHTP_SMART )
++        if( x264_weighted_pred == X264_WEIGHTP_SMART )
+         {
+             for( i = 0; i < 3; i++ )
+                 for( j = 0; j < h->i_ref0; j++ )
+@@ -2559,7 +2559,7 @@ void    x264_encoder_close  ( x264_t *h )
+                           fixed_pred_modes[i][8] * 100.0 / sum_pred_modes[i] );
+         }
+ 
+-        if( h->param.analyse.i_weighted_pred == X264_WEIGHTP_SMART )
++        if( x264_weighted_pred == X264_WEIGHTP_SMART )
+             x264_log( h, X264_LOG_INFO, "Weighted P-Frames: Y:%.1f%%\n",
+                       h->stat.i_wpred[0] * 100.0 / h->stat.i_frame_count[SLICE_TYPE_P] );
+ 
+diff --git a/encoder/ratecontrol.c b/encoder/ratecontrol.c
+index 0694522..a96008d 100644
+--- a/encoder/ratecontrol.c
++++ b/encoder/ratecontrol.c
+@@ -561,7 +561,7 @@ int x264_ratecontrol_new( x264_t *h )
+             }
+ 
+             if( ( p = strstr( opts, "wpredp=" ) ) && sscanf( p, "wpredp=%d", &i ) &&
+-                X264_MAX( 0, h->param.analyse.i_weighted_pred ) != i )
++                X264_MAX( 0, x264_weighted_pred ) != i )
+             {
+                 x264_log( h, X264_LOG_ERROR, "different weightp option than 1st pass (had weightp=%d)\n", i );
+                 return -1;
+@@ -1272,7 +1272,7 @@ int x264_ratecontrol_slice_type( x264_t *h, int frame_num )
+ 
+ void x264_ratecontrol_set_weights( x264_t *h, x264_frame_t *frm )
+ {
+-    if( h->param.analyse.i_weighted_pred <= 0 )
++    if( x264_weighted_pred <= 0 )
+         return;
+     if( h->rc->entry[frm->i_frame].i_weight_denom >= 0 )
+         SET_WEIGHT( frm->weight[0][0], 1,
+diff --git a/encoder/set.c b/encoder/set.c
+index e4655cf..e78072e 100644
+--- a/encoder/set.c
++++ b/encoder/set.c
+@@ -81,7 +81,7 @@ void x264_sps_init( x264_sps_t *sps, int i_id, x264_param_t *param )
+         sps->i_profile_idc  = PROFILE_HIGH444_PREDICTIVE;
+     else if( param->analyse.b_transform_8x8 || param->i_cqm_preset != X264_CQM_FLAT )
+         sps->i_profile_idc  = PROFILE_HIGH;
+-    else if( param->b_cabac || param->i_bframe > 0 || param->b_interlaced || param->analyse.i_weighted_pred > 0 )
++    else if( param->b_cabac || param->i_bframe > 0 || param->b_interlaced || x264_weighted_pred > 0 )
+         sps->i_profile_idc  = PROFILE_MAIN;
+     else
+         sps->i_profile_idc  = PROFILE_BASELINE;
+@@ -376,7 +376,7 @@ void x264_pps_init( x264_pps_t *pps, int i_id, x264_param_t *param, x264_sps_t *
+     pps->i_num_ref_idx_l0_active = 1;
+     pps->i_num_ref_idx_l1_active = 1;
+ 
+-    pps->b_weighted_pred = param->analyse.i_weighted_pred > 0;
++    pps->b_weighted_pred = x264_weighted_pred > 0;
+     pps->b_weighted_bipred = param->analyse.b_weighted_bipred ? 2 : 0;
+ 
+     pps->i_pic_init_qp = param->rc.i_rc_method == X264_RC_ABR ? 26 : param->rc.i_qp_constant;
+diff --git a/encoder/slicetype.c b/encoder/slicetype.c
+index 13be9e7..d5fd9eb 100644
+--- a/encoder/slicetype.c
++++ b/encoder/slicetype.c
+@@ -264,7 +264,7 @@ void x264_weights_analyse( x264_t *h, x264_frame_t *fenc, x264_frame_t *ref, int
+     else
+         SET_WEIGHT( weights[0], 1, minscale, mindenom, minoff );
+ 
+-    if( h->param.analyse.i_weighted_pred == X264_WEIGHTP_FAKE && weights[0].weightfn )
++    if( x264_weighted_pred == X264_WEIGHTP_FAKE && weights[0].weightfn )
+         fenc->f_weighted_cost_delta[i_delta_index] = (float)minscore / origscore;
+ 
+     if( weights[0].weightfn && b_lookahead )
+@@ -548,8 +548,8 @@ static int x264_slicetype_frame_cost( x264_t *h, x264_mb_analysis_t *a,
+         if( do_search[0] )
+         {
+             /* weighted analyse can initialise lowres_mvs itself */
+-            if( ( h->param.analyse.i_weighted_pred == X264_WEIGHTP_SMART
+-                  || h->param.analyse.i_weighted_pred == X264_WEIGHTP_FAKE ) && b == p1 )
++            if( ( x264_weighted_pred == X264_WEIGHTP_SMART
++                  || x264_weighted_pred == X264_WEIGHTP_FAKE ) && b == p1 )
+             {
+                 x264_weights_analyse( h, frames[b], frames[p0], 1, 1 );
+                 w = frames[b]->weight[0];
+@@ -1299,7 +1299,7 @@ void x264_slicetype_decide( x264_t *h )
+     if( h->lookahead->next.list[bframes]->i_type == X264_TYPE_P )
+     {
+         memset( h->lookahead->next.list[bframes]->weight, 0, sizeof(h->lookahead->next.list[bframes]->weight) );
+-        if( h->param.analyse.i_weighted_pred == X264_WEIGHTP_SMART
++        if( x264_weighted_pred == X264_WEIGHTP_SMART
+             && h->param.i_threads > 1 )
+             x264_weights_analyse( h, h->lookahead->next.list[bframes], h->lookahead->last_nonb, 1, 0 );
+     }
+diff --git a/x264.c b/x264.c
+index 3e52503..8a2f33a 100644
+--- a/x264.c
++++ b/x264.c
+@@ -576,7 +576,7 @@ static int  Parse( int argc, char **argv,
+                 param->analyse.i_trellis = 0;
+                 param->i_bframe_adaptive = X264_B_ADAPT_NONE;
+                 param->rc.b_mb_tree = 0;
+-                param->analyse.i_weighted_pred = X264_WEIGHTP_NONE;
++                /* param->analyse.i_weighted_pred = X264_WEIGHTP_NONE; */
+             }
+             else if( !strcasecmp( optarg, "veryfast" ) )
+             {
+@@ -587,7 +587,7 @@ static int  Parse( int argc, char **argv,
+                 param->analyse.b_mixed_references = 0;
+                 param->analyse.i_trellis = 0;
+                 param->rc.b_mb_tree = 0;
+-                param->analyse.i_weighted_pred = X264_WEIGHTP_NONE;
++                /* param->analyse.i_weighted_pred = X264_WEIGHTP_NONE; */
+             }
+             else if( !strcasecmp( optarg, "faster" ) )
+             {
+@@ -595,7 +595,7 @@ static int  Parse( int argc, char **argv,
+                 param->i_frame_reference = 2;
+                 param->analyse.i_subpel_refine = 4;
+                 param->rc.b_mb_tree = 0;
+-                param->analyse.i_weighted_pred = X264_WEIGHTP_BLIND;
++                /* param->analyse.i_weighted_pred = X264_WEIGHTP_BLIND; */
+             }
+             else if( !strcasecmp( optarg, "fast" ) )
+             {
+@@ -717,7 +717,7 @@ static int  Parse( int argc, char **argv,
+                 param->b_deblocking_filter = 0;
+                 param->b_cabac = 0;
+                 param->analyse.b_weighted_bipred = 0;
+-                param->analyse.i_weighted_pred = X264_WEIGHTP_NONE;
++                /* param->analyse.i_weighted_pred = X264_WEIGHTP_NONE; */
+             }
+             else if( !strcasecmp( optarg, "touhou" ) )
+             {
+@@ -899,7 +899,7 @@ generic_option:
+             param->b_cabac = 0;
+             param->i_cqm_preset = X264_CQM_FLAT;
+             param->i_bframe = 0;
+-            param->analyse.i_weighted_pred = X264_WEIGHTP_NONE;
++            /* param->analyse.i_weighted_pred = X264_WEIGHTP_NONE; */
+             if( param->b_interlaced )
+             {
+                 fprintf( stderr, "x264 [error]: baseline profile doesn't support interlacing\n" );
+diff --git a/x264.h b/x264.h
+index 99cabba..266225f 100644
+--- a/x264.h
++++ b/x264.h
+@@ -148,6 +148,9 @@ static const char * const x264_colmatrix_names[] = { "GBR", "bt709", "undef", ""
+ #define X264_THREADS_AUTO 0 /* Automatically select optimal number of threads */
+ #define X264_SYNC_LOOKAHEAD_AUTO (-1) /* Automatically select optimal lookahead thread buffer size */
+ 
++/* Workaround */
++#define x264_weighted_pred X264_WEIGHTP_SMART
++
+ /* Zones: override ratecontrol or other options for specific sections of the video.
+  * See x264_encoder_reconfig() for which options can be changed.
+  * If zones overlap, whichever comes later in the list takes precedence. */
+@@ -238,7 +241,7 @@ typedef struct x264_param_t
+         unsigned int inter;     /* inter partitions */
+ 
+         int          b_transform_8x8;
+-        int          i_weighted_pred; /* weighting for P-frames */
++        /* int          i_weighted_pred; weighting for P-frames */
+         int          b_weighted_bipred; /* implicit weighting for B-frames */
+         int          i_direct_mv_pred; /* spatial vs temporal mv prediction */
+         int          i_chroma_qp_offset;

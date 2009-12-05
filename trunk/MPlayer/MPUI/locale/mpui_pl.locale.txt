@@ -1,0 +1,142 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+# Copyright (C) 2005 Pawel Wieczorek <platon@radio.ujscie.com>
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = Polski
+@lang = POLISH
+@charset = EASTEUROPE
+
+*Title = MPlayer dla Windows
+*Status_Opening = Otwieranie ...
+*Status_Closing = Zamykanie ...
+*Status_Playing = Odtwarzanie
+*Status_Paused = Pauza
+*Status_Stopped = Zatrzymane
+*Status_Error = Brak moźliwości otwarcia pliku (Nacisnij aby uzyskac wiecej informacji)
+Main:BPlaylist.Hint = Pokaź/ukryj okno playlisty
+Main:BStreamInfo.Hint = Pokaź/ukryj informacje o pliku
+Main:BFullscreen.Hint = Włącz tryb fullscreen
+Main:BCompact.Hint = Włącz tryb compact
+Main:BMute.Hint = Włącz Mute
+Main:MPFullscreenControls* = Pokaź ustawienia fullscreen
+Main:OSDMenu* = Ustawienia OSD
+Main:MNoOSD* = Wyłącz OSD
+Main:MDefaultOSD* = Domyślne OSD
+Main:MTimeOSD* = Pokaź czas
+Main:MFullOSD* = Pokaź całkowity czas
+Main:LEscape* = Wcisnij Esc aby wyłączyć fullscreen.
+Main:MFile* = Plik
+Main:MOpenFile* = Otwórz plik ...
+Main:MOpenURL* = Otwórz URL ...
+*OpenURL_Caption = Otwórz URL
+*OpenURL_Prompt = Jaki URL chciałbyś otworzyć?
+Main:MOpenDrive* = Otwórz CD/DVD
+Main:MClose* = Zamknij
+Main:MQuit* = Koniec
+Main:MView* = Widok
+Main:MSizeAny* = Własna wielkość
+Main:MSize50* = Połowa wielkości
+Main:MSize100* = Oryginalna wielkość
+Main:MSize200* = Podwójna wielkość
+Main:MFullscreen* = Fullscreen
+Main:MCompact* = Tryb Compact
+Main:MOSD* = Włącz OSD
+Main:MOnTop* = Zawsze na wierzchu
+Main:MSeek* = Film
+Main:MPlay* = Play
+Main:MPause* = Pause
+Main:MPrev* = Poprzedni tytół
+Main:MNext* = Następny tytół
+Main:MShowPlaylist* = Playlista ...
+Main:MMute* = Mute
+Main:MSeekF10* = Przewiń 10 sekund\tPrawo
+Main:MSeekR10* = Cofnij 10 sekund\tLewo
+Main:MSeekF60* = Przewiń 1 minute\tGóra
+Main:MSeekR60* = Cofnij 1 minute\tDół
+Main:MSeekF600* = Przewiń 10 minut\tPgUp
+Main:MSeekR600* = Cofnij 10 minut\tPgDn
+Main:MExtra* = Ustawienia
+Main:MAudio* = Ścieźka dźwiękowa
+Main:MSubtitle* = Ścieźka napisów
+Main:MAspect* = Format obrazu
+Main:MAutoAspect* = Automatycznie
+Main:MForce43* = Wymuszaj 4:3
+Main:MForce169* = Wymuszaj 16:9
+Main:MForceCinemascope* = Wymuszaj 2.35:1
+Main:MDeinterlace* = Przeplot
+Main:MNoDeint* = Wyłącz
+Main:MSimpleDeint* = Prosty
+Main:MAdaptiveDeint* = Automatyczny
+Main:MOptions* = Ustawienia ...
+Main:MLanguage* = Język
+Main:MStreamInfo* = Pokaź informacje o pliku ...
+Main:MShowOutput* = Pokaź konsole MPlayer
+Main:MHelp* = Pomoc
+Main:MKeyHelp* = Funkcje klawiatury ...
+Main:MAbout* = O programie ...
+LogForm* = Wyjście MPlayer
+Log:BClose* = Zamknij
+HelpForm* = Funkcje klawiatury
+Help:HelpText.Text = Klawisze nawigacji:\nSpacja\tPlay/Pause\nPrawo\tPrzewiń 10 sekund\nLewo\tCofnij 10 sekund\nGóra\tPrzewiń 1 minute\nDół\tCofnij 1 minute\nPgUp\tPrzewiń 10 minut\nPgDn\tCofnij 10 minut\n\nInne klawisze:\nO\tWłącz OSD\nF\tWłącz fullscreen\nC\tWłącz tryb compact\nT\tUstaw zawsze na wierzchu\nQ\tZakończenie programu\n9/0\tUstawienie głośności\n-/+\tUstawienie audio/video synchronizacji\n1/2\tUstawienie jasności\n3/4\tUstawienie kontrastu\n5/6\tUstawienie koloru\n7/8\tUstawienie nasycenia
+Help:BClose* = Zamknij
+AboutForm* = O programie MPUI
+About:BClose* = Zamknij
+About:LVersionMPUI* = Wersja MPUI: 
+About:LVersionMPlayer* = Wersja jądra MPlayer: 
+OptionsForm* = Ustawienia
+Options:BOK* = OK
+Options:BApply* = Zatwierdź
+Options:BSave* = Zapisz
+Options:BClose* = Zamknij
+Options:LAudioOut* = Sterownik dźwięku
+Options:CAudioOut#0 = (nie dekoduj dźwięku)
+Options:CAudioOut#1 = (nie odtwarzaj dźwięku)
+Options:LAudioDev* = Urządzenie wyjściowe DirectSound
+Options:LPostproc* = Postprocessing
+Options:CPostproc#0 = Wyłącz
+Options:CPostproc#1 = Automatycznie
+Options:CPostproc#2 = Maksymalna jakość
+Options:CLanguage#0 = (Wybór automaytczny)
+Options:CIndex* = Przebuduj index pliku jeśli konieczne
+Options:CSoftVol* = Programowe ustawienia głośności / Głośność zwiększona
+Options:CPriorityBoost* = Uruchom z wyrzszym priorytetem
+Options:LParams* = Dodatkowe parametry MPlayer:
+Options:LHelp* = Pomoc
+PlaylistForm* = Playlist
+Playlist:BPlay* = Play
+Playlist:BAdd* = Dodaj ...
+Playlist:BMoveUp* = Przesuń do góry
+Playlist:BMoveDown* = Przesuń w dół
+Playlist:BDelete* = Usuń
+Playlist:BClose* = Zamknij
+InfoForm* = Informacje o pliku
+Info:BClose* = Zamknij
+*NoInfo = Informacje o pilik niedostępne.
+*InfoFileFormat = Format
+*InfoPlaybackTime = Czas trwania
+*InfoTags = Clip Metadata
+*InfoVideo = Video Track
+*InfoAudio = Audio Track
+*InfoDecoder = Decoder
+*InfoCodec = Codec
+*InfoBitrate = Bitrate
+*InfoVideoSize = Dimensions
+*InfoVideoFPS = Frame Rate
+*InfoVideoAspect = Aspect Ratio
+*InfoAudioRate = Sample Rate
+*InfoAudioChannels = Kanały

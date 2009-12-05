@@ -1,0 +1,145 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+# Copyright (C) 2006 Florin Valcu <florin.valcu@gmail.com>
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = Română
+@lang = ENGLISH
+@charset = EASTEUROPE
+
+*Title = MPlayer pentru Windows
+*Status_Opening = Se deschide ...
+*Status_Closing = Se inchide ...
+*Status_Playing = Redare
+*Status_Paused = Pauză
+*Status_Stopped = Oprit
+*Status_Error = Fisierul multimedia nu poate fi redat (Click pentru informaţii suplimentare)
+Main:BPlaylist.Hint = Arată/ascunde lista de redare
+Main:BStreamInfo.Hint = Arată/ascunde informaţii despre fişierul curent
+Main:BFullscreen.Hint = Activează modul fullscreen
+Main:BCompact.Hint = Activează modul compact
+Main:BMute.Hint = Fără sonor
+Main:MPFullscreenControls* = Arată controalele in modul fullscreen
+Main:OSDMenu* = Mod OSD
+Main:MNoOSD* = Fără OSD
+Main:MDefaultOSD* = OSD-ul implicit
+Main:MTimeOSD* = Arată durata redării
+Main:MFullOSD* = Arată durata totală
+Main:LEscape* = Apasă tasta Escape pentru a ieşi din modul fullscreen.
+Main:MFile* = Fişier
+Main:MOpenFile* = Redă fişierul multimedia ...
+Main:MOpenURL* = Redă de la locaţia din Internet ...
+*OpenURL_Caption = Redă de la locaţia din Internet
+*OpenURL_Prompt = De la care locaţie din Internet doriţi sa se efectueze redarea?
+Main:MOpenDrive* = Redă CD/DVD
+Main:MClose* = Închide
+Main:MQuit* = Ieşire
+Main:MView* = Vizualizare
+Main:MSizeAny* = Mărime particulară
+Main:MSize50* = Jumătate din mărimea originală
+Main:MSize100* = Mărimea originală
+Main:MSize200* = Mărime dublă
+Main:MFullscreen* = Fullscreen
+Main:MCompact* = Modul compact
+Main:MOSD* = Activează OSD
+Main:MOnTop* = Fereastra întotdeauna vizibilă
+Main:MSeek* = Redare
+Main:MPlay* = Redare
+Main:MPause* = Pauză
+Main:MPrev* = Titlul anterior
+Main:MNext* = Titlul următor
+Main:MShowPlaylist* = Lista de redare ...
+Main:MMute* = Fără sonor
+Main:MSeekF10* = Înainte 10 secunde\tRight
+Main:MSeekR10* = Înapoi 10 secunde\tLeft
+Main:MSeekF60* = Înainte 1 minut\tUp
+Main:MSeekR60* = Înapoi 1 minut\tDown
+Main:MSeekF600* = Înainte 10 minute\tPgUp
+Main:MSeekR600* = Înapoi 10 minute\tPgDn
+Main:MExtra* = Opţiuni
+Main:MAudio* = Canal audio
+Main:MSubtitle* = Canal subtitrări
+Main:MAspect* = Aspectul redării
+Main:MAutoAspect* = Detectează automat
+Main:MForce43* = Forţează 4:3
+Main:MForce169* = Forţează 16:9
+Main:MForceCinemascope* = Forţează 2.35:1
+Main:MDeinterlace* = Filtrare de tip deinterlace
+Main:MNoDeint* = Dezactivată
+Main:MSimpleDeint* = Simplă
+Main:MAdaptiveDeint* = Adaptivă
+Main:MOptions* = Reglaje ...
+Main:MLanguage* = Limbă
+Main:MStreamInfo* = Arată informaţii despre fişierul multimedia ...
+Main:MShowOutput* = Arată mesajele de informare de la MPlayer ...
+Main:MHelp* = Ajutor
+Main:MKeyHelp* = Operare cu tastele ...
+Main:MAbout* = Despre ...
+LogForm* = Mesajele de informare de la MPlayer
+Log:BClose* = Închide
+HelpForm* = Operare cu tastele
+Help:HelpText.Text = Taste de navigare:\nSpace\tRedare/Pauză\nRight\tÎnainte 10 secunde\nLeft\tÎnapoi 10 secunde\nUp\tÎnainte 1 minut\nDown\tÎnapoi 1 minut\nPgUp\tÎnainte 10 minute\nPgDn\tÎnapoi 10 minute\n\nAlte taste:\nO\tActivează/dezactivează OSD\nF\tActivează/dezactivează mod fullscreen\nC\tActivează/dezactivează mod compact\nT\tActivează/dezactivează opţiune fereastră întotdeauna vizibilă\nQ\tAbandonare program\n9/0\tAjustează volumul\n-/+\tAjustează sincronizarea audio/video\n1/2\tAjustează strălucirea\n3/4\tAjustează contrastul\n5/6\tAjustează nuanţele\n7/8\tAjustează saturaţia
+Help:BClose* = Închide
+AboutForm* = Despre MPUI
+About:BClose* = Închide
+About:LVersionMPUI* = Versiunea MPUI:
+About:LVersionMPlayer* = Versiunea MPlayer:
+OptionsForm* = Opţiuni
+Options:BOK* = OK
+Options:BApply* = Aplică
+Options:BSave* = Salvează
+Options:BClose* = Închide
+Options:LAudioOut* = Driver-ul pentru sunet
+Options:CAudioOut#0 = (nu decodifica sunetul)
+Options:CAudioOut#1 = (nu reda sunetul)
+Options:LAudioDev* = Ieşire DirectSound
+Options:LPostproc* = Postprocesare
+Options:CPostproc#0 = Dezactivată
+Options:CPostproc#1 = Automată
+Options:CPostproc#2 = Calitate maximă
+Options:CLanguage#0 = (Selecţie automată)
+Options:CIndex* = Reconstruieşte indecşii fişierului multimedia dacă este necesar
+Options:CSoftVol* = Control software al volumului / Amplificarea Volumului
+Options:CPriorityBoost* = Execută aplicaţia cu prioritate de tip higher
+Options:LParams* = Parametri adiţionali pentru MPlayer:
+Options:LHelp* = Ajutor
+PlaylistForm* = Lista de redare
+Playlist:BPlay* = Redă
+Playlist:BAdd* = Adaugă ...
+Playlist:BMoveUp* = Deplasează in sus
+Playlist:BMoveDown* = Deplasează in jos
+Playlist:BDelete* = Elimină
+Playlist:CShuffle* = Amestecă
+Playlist:CLoop* = Repetă
+Playlist:BSave* = Salvează ...
+Playlist:BClose* = Închide
+InfoForm* = Informaţii despre fişierul multimedia
+Info:BClose* = Închide
+*NoInfo = Acum nu este disponibilă nici o informaţie despre fisierul multimedia.
+*InfoFileFormat = Format
+*InfoPlaybackTime = Întindere
+*InfoTags = Date suplimentare
+*InfoVideo = Canalul video
+*InfoAudio = Canalul audio
+*InfoDecoder = Decodor
+*InfoCodec = Codec
+*InfoBitrate = Rata de transfer
+*InfoVideoSize = Dimensiuni
+*InfoVideoFPS = Numărul de cadre
+*InfoVideoAspect = Aspect
+*InfoAudioRate = Rata sample-urilor
+*InfoAudioChannels = Numărul de canale
