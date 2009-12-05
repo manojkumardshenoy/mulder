@@ -36,7 +36,7 @@ diff --git a/configure b/configure
 index f4b5344..d45dd07 100755
 --- a/configure
 +++ b/configure
-@@ -524,6 +524,7 @@ Libs: $pclibs
+@@ -536,6 +536,7 @@ Libs: $pclibs
  Cflags: -I$includedir
  EOF
  

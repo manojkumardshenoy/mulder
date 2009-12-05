@@ -110,7 +110,7 @@ make_x264() {
     NAME=$3-$NAME
   fi
 
-  PATCHES="weighted_pred print_params psy_trellis fast_firstpass"
+  PATCHES="print_params psy_trellis fast_firstpass"
   
   if [ $2 != "noasm" ]; then
     ECFLAGS="-march=$2"
@@ -235,7 +235,7 @@ do
   for l in $CPUS
   do
     make_x264 "$k" "$l" "" ""
-    make_x264 "$k" "$l" "noweightp" "no_weightp no_mbtree"
+    #make_x264 "$k" "$l" "noweightp" "no_weightp"
     #make_x264 "$k" "$l" "slices" "four_slices"
     #make_x264 "$k" "$l" "autovaq" "auto_vaq"
     #make_x264 "$k" "$l" "nombtree" "no_mbtree"
