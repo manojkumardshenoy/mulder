@@ -1,0 +1,117 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+# Copyright (C) 2005 MrG <mrguba@gmail.com>
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = Magyar
+@lang = HUNGARIAN
+@charset = EASTEUROPE
+
+*Title = MPlayer Windowsra
+*Status_Opening = Megnyitás ...
+*Status_Closing = Bezárás ...
+*Status_Playing = Lejátszás
+*Status_Paused = Szünet
+*Status_Stopped = Leállítva
+*Status_Error = Nem lejátszható média (Kattints ide több infoért)
+Main:BPlaylist.Hint = Lejátszási lista ablakának mutatása/elrejtése
+Main:BFullscreen.Hint = Teljes képernyõ ki/be
+Main:OSDMenu* = OSD mód beállítása
+Main:MNoOSD* = Nincs OSD
+Main:MDefaultOSD* = Alapértelmezett OSD
+Main:MTimeOSD* = Idõ kijelzése
+Main:MFullOSD* = Összes idõ kijelzése
+Main:LEscape* = Nyomj Escape-t a teljes képernyõs módból való kilépéshez.
+Main:MFile* = File
+Main:MOpenFile* = File lejátszása ...
+Main:MOpenURL* = URL lejátszása ...
+*OpenURL_Caption = URL lejátszása
+*OpenURL_Prompt = A lejátszandó URL
+Main:MOpenDrive* = CD/DVD lejátszása
+Main:MClose* = Bezárás
+Main:MQuit* = Kilépés
+Main:MView* = Nézet
+Main:MSizeAny* = Más méret
+Main:MSize50* = Feleakkora méret
+Main:MSize100* = Eredeti méret
+Main:MSize200* = Dupla méret
+Main:MFullscreen* = Teljes képernyõ
+Main:MOSD* = OSD ki/be
+Main:MOnTop* = Mindig látható
+Main:MSeek* = Navigáció
+Main:MPlay* = Lejátszás
+Main:MPause* = Szünet
+Main:MPrev* = Elõzõ cím
+Main:MNext* = Következõ cím
+Main:MShowPlaylist* = Lejátszási lista ...
+Main:MSeekF10* = Elõre 10 másodpercet\tRight
+Main:MSeekR10* = Vissza 10 másodpercet\tLeft
+Main:MSeekF60* = Elõre 1 percet\tUp
+Main:MSeekR60* = Vissza 1 percet\tDown
+Main:MSeekF600* = Elõre 10 percet\tPgUp
+Main:MSeekR600* = Vissza 10 percet\tPgDn
+Main:MExtra* = Beállítások
+Main:MAudio* = Hangsáv
+Main:MSubtitle* = Felirat
+Main:MAspect* = Képarány
+Main:MAutoAspect* = Automatikus detektálás
+Main:MForce43* = Mindig 4:3
+Main:MForce169* = Mindig 16:9
+Main:MForceCinemascope* = Mindig 2.35:1
+Main:MDeinterlace* = Deinterlace
+Main:MNoDeint* = Ki
+Main:MSimpleDeint* = Egyszerû
+Main:MAdaptiveDeint* = Adaptív
+Main:MOptions* = Beállítások ...
+Main:MLanguage* = Nyelv
+Main:MShowOutput* = MPlayer kimenet mutatása
+Main:MHelp* = Súgó
+Main:MKeyHelp* = Billentyûparancsok ...
+Main:MAbout* = Névjegy ...
+LogForm* = MPlayer kimenet
+Log:BClose* = Bezárás
+HelpForm* = Billentyûparancsok
+Help:HelpText.Text = Navigáló billentyûk:\nSpace\tLejátszás/Szünet\nRight\tElõre 10 másodpercet\nLeft\tVissza 10 másodpercet\nUp\tElõre 1 percet\nDown\tVissza 1 percet\nPgUp\tElõre 10 percet\nPgDn\tVissza 10 percet\n\nTovábbi billentyûk:\nO\tOSD ki/be\nF\tTeljes képernyõ ki/be\nQ\tQuit immediately\n9/0\tHangerõ beállítása\n-/+\tHang/videó szinkron beállítása\n1/2\tFényesség beállítása\n3/4\tKontraszt beállítása\n5/6\tÁrnyalat beállítása\n7/8\tTelítettség beállítása
+Help:BClose* = Bezárás
+AboutForm* = Az MPUI névjegye
+About:BClose* = Bezárás
+About:LVersionMPUI* = MPUI verzió: 
+About:LVersionMPlayer* = MPlayer core verzió: 
+OptionsForm* = Beállítások
+Options:BOK* = OK
+Options:BApply* = Alkalmaz
+Options:BSave* = Mentés
+Options:BClose* = Bezárás
+Options:LAudioOut* = Hang kimeneti driver
+Options:CAudioOut#0 = (nincs hangdekódolás)
+Options:CAudioOut#1 = (nincs hanglejátszás)
+Options:LAudioDev* = DirectSound output device
+Options:LPostproc* = Postprocessing
+Options:CPostproc#0 = Ki
+Options:CPostproc#1 = Automatikus
+Options:CPostproc#2 = Maximális minõség
+Options:CLanguage#0 = (Automatikus kiválasztás)
+Options:CIndex* = File index újraépítése, ha szükséges
+Options:LParams* = További MPlayer paraméterek:
+Options:LHelp* = Súgó
+PlaylistForm* = Lejátszási lista
+Playlist:BPlay* = Lejátszás
+Playlist:BAdd* = Hozzáadás ...
+Playlist:BMoveUp* = Felfelé mozgat
+Playlist:BMoveDown* = Lefelé mozgat
+Playlist:BDelete* = Eltávolít
+Playlist:BClose* = Bezár

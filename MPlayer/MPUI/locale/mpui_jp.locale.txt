@@ -1,0 +1,145 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+# Copyright (C) 2006 Masayuki Mogi <mogmog9@gmail.com>
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = Japanese
+@lang = JAPANESE
+@charset = SHIFTJIS
+
+*Title = MPlayer for Windows
+*Status_Opening = 開く ...
+*Status_Closing = 閉じる ...
+*Status_Playing = 再生
+*Status_Paused = 一時停止
+*Status_Stopped = 停止
+*Status_Error = 再生不可能です(クリックで詳細)
+Main:BPlaylist.Hint = 再生リストウインドウ 表示/非表示
+Main:BStreamInfo.Hint = クリップ情報 表示/非表示
+Main:BFullscreen.Hint = 全画面モードに切り替え
+Main:BCompact.Hint = コンパクトモードに切り替え
+Main:BMute.Hint = ミュート
+Main:MPFullscreenControls* = 全画面時にコントロールを表示
+Main:OSDMenu* = OSD モード
+Main:MNoOSD* = OSD なし
+Main:MDefaultOSD* = デフォルト OSD
+Main:MTimeOSD* = 時間を表示
+Main:MFullOSD* = 総計時間を表示
+Main:LEscape* = Escキーで全画面を終了.
+Main:MFile* = ファイル
+Main:MOpenFile* = ファイルから再生 ...
+Main:MOpenURL* = URLから再生 ...
+*OpenURL_Caption = URLから再生
+*OpenURL_Prompt = どのURLから再生しますか?
+Main:MOpenDrive* = CD/DVDから再生
+Main:MClose* = 閉じる
+Main:MQuit* = 終了
+Main:MView* = 表示
+Main:MSizeAny* = カスタムサイズ
+Main:MSize50* = 1/2 サイズ
+Main:MSize100* = オリジナルサイズ
+Main:MSize200* = X2 サイズ
+Main:MFullscreen* = 全画面
+Main:MCompact* = コンパクトモード
+Main:MOSD* = OSDの切り替え
+Main:MOnTop* = 常に手前に表示
+Main:MSeek* = 再生
+Main:MPlay* = 再生
+Main:MPause* = 一時停止
+Main:MPrev* = 前のタイトル
+Main:MNext* = 次のタイトル
+Main:MShowPlaylist* = 再生リスト ...
+Main:MMute* = ミュート
+Main:MSeekF10* = 10 秒早送り\tRight
+Main:MSeekR10* = 10 秒巻き戻す\tLeft
+Main:MSeekF60* = 1 分早送り\tUp
+Main:MSeekR60* = 1 分巻き戻す\tDown
+Main:MSeekF600* = 10 分早送り\tPgUp
+Main:MSeekR600* = 10 分巻き戻す\tPgDn
+Main:MExtra* = ツール
+Main:MAudio* = 音声トラック
+Main:MSubtitle* = 字幕トラック
+Main:MAspect* = アスペクト比
+Main:MAutoAspect* = 自動検知
+Main:MForce43* = 4:3 に強制
+Main:MForce169* = 16:9 に強制
+Main:MForceCinemascope* = 2.35:1 に強制
+Main:MDeinterlace* = デインターレース
+Main:MNoDeint* = off
+Main:MSimpleDeint* = Simple
+Main:MAdaptiveDeint* = Adaptive
+Main:MOptions* = オプション ...
+Main:MLanguage* = 言語
+Main:MStreamInfo* = クリップ情報を表示 ...
+Main:MShowOutput* = MPlayer出力を表示 ...
+Main:MHelp* = ヘルプ
+Main:MKeyHelp* = キーボードヘルプ ...
+Main:MAbout* = MPUIについて ...
+LogForm* = MPlayer出力
+Log:BClose* = 閉じる
+HelpForm* = キーボードヘルプ
+Help:HelpText.Text = 操作キー:\nSpace\t再生/一時停止\nRight\t10 秒早送り\nLeft\t10 秒巻き戻し\nUp\t1 分早送り\nDown\t1 分巻き戻し\nPgUp\t10 分早送り\nPgDn\t10 分巻き戻し\n\nその他のキー:\nO\t切り替え OSD\nF\t切り替え 全画面\nC\t切り替え コンパクト\nT\t切り替え 前面表示\nQ\t直ちに終了\n9/0\t調整 音量\n-/+\t調整 音声/映像の同期\n1/2\t調整 明るさ\n3/4\t調整 コントラスト\n5/6\t調節 色合い\n7/8\t調節 彩度
+Help:BClose* = 閉じる
+AboutForm* = MPUIについて
+About:BClose* = 閉じる
+About:LVersionMPUI* = MPUIのバージョン:
+About:LVersionMPlayer* = MPlayerコアのバージョン:
+OptionsForm* = オプション
+Options:BOK* = OK
+Options:BApply* = 適用
+Options:BSave* = 保存
+Options:BClose* = 閉じる
+Options:LAudioOut* = サウンド出力ドライバ
+Options:CAudioOut#0 = (サウンドをデコードしない)
+Options:CAudioOut#1 = (サウンドを再生しない)
+Options:LAudioDev* = DirectSound出力デバイス
+Options:LPostproc* = ポストプロセッシング
+Options:CPostproc#0 = オフ
+Options:CPostproc#1 = 自動
+Options:CPostproc#2 = 最高品質
+Options:CLanguage#0 = (自動選択)
+Options:CIndex* = 必要ならファイルのインデックスを再構築
+Options:CSoftVol* = ソフトウェア音量調整 / 音量ブースト
+Options:CPriorityBoost* = 起動時に優先度を高める
+Options:LParams* = MPlayerに追加のパラメータ:
+Options:LHelp* = ヘルプ
+PlaylistForm* = 再生リスト
+Playlist:BPlay* = 再生
+Playlist:BAdd* = 追加 ...
+Playlist:BMoveUp* = 上に移動
+Playlist:BMoveDown* = 下に移動
+Playlist:BDelete* = 除去
+Playlist:CShuffle* = シャッフル
+Playlist:CLoop* = 繰り返し
+Playlist:BSave* = 保存 ...
+Playlist:BClose* = 閉じる
+InfoForm* = クリップ情報
+Info:BClose* = 閉じる
+*NoInfo = 利用可能なクリップ情報がありません.
+*InfoFileFormat = 形式
+*InfoPlaybackTime = 合計時間
+*InfoTags = クリップのメタデータ
+*InfoVideo = 映像トラック
+*InfoAudio = 音声トラック
+*InfoDecoder = デコーダ
+*InfoCodec = コーデック
+*InfoBitrate = ビットレート
+*InfoVideoSize = サイズ
+*InfoVideoFPS = フレームレート
+*InfoVideoAspect = アスペクト比
+*InfoAudioRate = サンプルレート
+*InfoAudioChannels = チャンネル

@@ -1,0 +1,159 @@
+<html>
+<head><title>LameXP - Version History</title></head>
+<body><pre>
+LameXP - Version History
+------------------------
+
+Changes between v3.13 and v3.14:
+* Added Suspend and Resume buttons to the processing window
+* Added another language: Castilian Spanish (Spanish from north/central Spain)
+* Updated mpg123 decoder to v1.9.2 (2009-11-20)
+* Updated MediaInfo to v0.7.25 (2009-11-13), compiled with ICL 11.1.046
+* Updated AC3Filter Tools to v0.31b (2009-10-01), compiled with ICL 11.1.046
+* Updated language files (big "thank you" to all contributors !!!)
+* Updated JEDI-VCL from v3.38 to v3.39 (2009-11-05)
+* Various minor fixes and improvements
+
+Changes between v3.12 and v3.13:
+* Updated LAME encoder to v3.98.2 (2009-09-26), compiled with ICL 11.1.046
+* Updated FLAC encoder to v1.2.1b (2009-10-01), compiled with ICL 11.1.046
+* Updated MediaInfo to v0.7.23 (2009-10-16), using statically linked build (MSVC 9.0)
+* Updated AC3Filter Tools to v0.31b (2009-10-01)
+* Updated TAK decoder to v1.1.2 (2009-07-27)
+* Updated mpg123 decoder to v1.9.1 (2009-10-09)
+* Updated language files (big "thank you" to all contributors !!!)
+* Updated the Splash screen and modified the sound that plays on very first launch
+* Updated JEDI-VCL from v3.34 to v3.38 (2009-08-27)
+* Updated GnuPG to v1.4.10 (2009-09-02)
+
+Changes between v3.11 and v3.12:
+* Added support for FLAC (Free Lossless Audio Codec) output
+* Added progress display for individual files (for the "encoding" step only)
+* Added a SSE2 (Pentium 4) build of the Ogg Vorbis encoder that will be used if supported by the CPU
+* Added options to override the Nero AAC profile (be aware: it's not recommended to do that!)
+* Added an option to analyze media files (powered by MediaInfo™)
+* Added experimental support for Windows 7 taskbar progress indicator and overlay icons
+* Updated LAME encoder to v3.98.2 (2009-09-05), compiled with ICL 11.0
+* Updated MediaInfo to v0.7.21 (2009-09-04), using statically linked build
+* Updated mpg123 decoder to v1.9.0 (2009-08-14)
+* Updated Speex decoder to v1.2 RC-1 (2009-07-04)
+* Updated AC3Filter Tools to v0.3b (2009-09-19)
+* Updated Auto-Update tool, from now on only signed updates will be accepted (using GnuPG)
+* Fixed a number of minor glitches
+
+Changes between v3.10 and v3.11:
+* Added options to sort the source files (by title, by filename or by track number)
+* Updated language files (big "thank you" to all contributors !!!)
+* Updated mpg123 decoder to v1.8.1 (2009-06-14)
+* Updated FLAC decoder, now using the ICL 9.1 build of FLAC v1.2.1b
+* Updated MediaInfo to v0.7.17 (statically linked)
+* Updated the "Normalization" filter to v0.41 (2009-06-16)
+* Fixed a few minor issues in meta tag processing
+
+Changes between v3.09 and v3.10:
+* Added a NSIS-based installer (will be released in addition to the ZIP package)
+* Added support for the TAK lossless audio format
+* Added two new languages: Serbian (Latin) and Ukrainian
+* Updated language files (big "thank you" to all contributors !!!)
+* Updated MediaInfo to a custom build of v0.7.16 that is statically linked (and removed the DLL)
+* Updated mpg123 decoder to v1.8.0 RC-3 (2009-06-03)
+* Updated Musepack decoder to v1.0.0 (2009-04-02) and fixed Musepack VS8 support
+* Updated Monkey's Audio decoder to v4.06 (2009-03-17)
+* Updated the "Normalization" filter to allow multiple instances running in parallel
+* Updated Auto-Update tool
+* Fixed a few minor issues and refactored the code
+
+Changes between v3.08 and v3.09:
+* Added support for detecting the file type via MediaInfo instead of guessing the type from file extension
+* Updated mpg123 decoder to v1.7.3 (2009-04-27)
+* Updated FAAD decoder to v2.7 (2009-05-13)
+* Updated MediaInfo to v0.7.16.0 (2009-05-20)
+* Fixed detection of the WMA decoder under certain circumstances (e.g. Windows 7)
+
+Changes between v3.07 and v3.08:
+* Updated Ogg Vorbis encoder to v2.85, libvorbis v1.2.1 RC2, aoTuV b5.7 (2009-03-04)
+* Updated mpg123 decoder to v1.6.4 (2009-01-10)
+* Updated MediaInfo to v0.7.11.0 (2009-02-13)
+
+Changes between v3.06 and v3.07:
+* Added an option to disable multi-threading on multi-core machines
+* Updated Ogg Vorbis encoder to v2.85, libvorbis v1.2.1 RC2, aoTuV b5.61 (2008-12-24)
+* Updated mpg123 decoder to v1.6.3 (2008-12-20)
+* Updated MediaInfo to v0.7.8.0 (2008-12-10)
+* Updated language files (big "thank you" to all contributors !!!)
+
+Changes between v3.05 and v3.06:
+* Added a custom build of the mpg123 decoder v1.5.1
+* Added two more languages: Romanian and Polish
+* Added support for the ALAC audio format
+* Updated MediaInfo to v0.7.7.7 (2008-10-17)
+* Updated AC3 Filter Tools to v0.2a (2008-06-30)
+* Updated language files (big "thank you" to all contributors !!!)
+* Fixed and improved "Normalization" filter
+* Fixed a few minor bugs
+
+Changes between v3.04 and v3.05:
+* Added support for Nero AAC encoder v1.3.3.0
+* Added option to add an entire directory or an entire directory-tree
+* Added new languages: Russian, Nederlands, Greek and Hungarian
+* Added Dropbox for improved Drag&Drop support
+* Updated language files (big "thank you" to all contributors !!!)
+* Updated LAME encoder to v3.98.2 Final (2008-09-24)
+* Updated MediaInfo to v0.7.7.6 (2008-09-12)
+
+Changes between v3.03 and v3.04:
+* Added support for reading Meta Data from source files (using MediaInfo)
+* Added support for languages: English, German, French, Spanish, Italian, Japanese, Chinese (Simplified) and Taiwanese
+* Added support for WMA, Shorten and TTA files (input only)
+* Added support for various playlist formats (M3U, PLS, ASX, CueSheet)
+* Added an option to permanently disable the Shell Intgegration (Explorer Conext Menus)
+* Added an option to disable the periodic Update Reminder
+* Added an option to shutdown the computer automatically as soon as all files are completed
+* Added code to minimize the LameXP window into the taskbar notification area
+* Added balloon tooltip to inform the user about "hidden" options
+* Updated Ogg Vorbis encoder to v2.85, libvorbis v1.2.1 RC2, aoTuV b5.6 (2008-09-05)
+* Improved code to handle child processes and capture the console output
+
+Changes between v3.02 and v3.03:
+* Added generic support for pre-processing filters
+* Added "Normalization" filter, based on Volumax by John33
+* Improved code to add/remove context menus in Window Explorer
+* Improved code to handle multiple instances of LameXP
+
+Changes between v3.01 and v3.02:
+* Added support for new input format: MPEG Audio Layer-2 (mp2)
+* Added option to choose a custom TEMP folder
+
+Changes between v3.00 and v3.01:
+* Added an option to disable all sounds in LameXP
+* Added warning message for bitrates that violate the current bitrate restriction
+* Fixed bitrate restrictions for LAME encoder (strictly enforce bitrate restrictions using "-F" parameter)
+* Fixed file associations code (set file associations only for the current user)
+* Updated load/save configuration code (store settings in an INI file instead of the registry)
+
+Changes between v2.03 and v3.00:
+* Added support for Nero's AAC Encoder (not included, available as free download from Nero website)
+* Added support for more input formats: Wave, MP3, Ogg Vorbis, AAC/MP4, FLAC, Speex, WavPack, Musepack, Monkey's Audio
+* Added support for uncompressed Wave output
+* Added support for Multi-Threading (use multiple instances for batch processing)
+* Added shell integration for Windows Explorer (Context-Menus and "Send To" folder)
+* Added commandline support: LameXP.exe -add &lt;File 1&gt; [&lt;File 2&gt; ... &lt;File N&gt;]
+* Added Auto-Update utility to periodically check for new updates
+* Updated LAME encoder to v3.98 Final (2008-07-04)
+* Updated Ogg Vorbis encoder to v2.85, aoTuV Beta-5.5 (2008-03-31)
+
+Changes between v2.00 and v2.03:
+* Updated LAME encoder to v3.98 to Beta-5 (2007-08-13)
+* Updated Ogg Vorbis encoder to v2.84 aoTuV Beta-5 (2007-08-17)
+* Fixed a bug with 'title' meta tags
+* Fixed a few typos
+
+Changes between v1.xx and v2.00:
+* Added Ogg Vorbis encoder
+* Updated LAME encoder to latest builds
+* Improved progress display (parsing encoder progress from console output now)
+* Improved ID3-Tag support (now supports "title" and "track" fields)
+* Added feature to automatically generate playlists (.m3u)
+* Many bug-fixes and GUI improvements
+</pre></body>
+</html>

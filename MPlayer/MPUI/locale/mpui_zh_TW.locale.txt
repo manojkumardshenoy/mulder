@@ -1,0 +1,145 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+# Copyright (C) 2006 Kene Lin <kenelin@gmail.com>
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = Chinese (Traditional)
+@lang = CHINESE
+@charset = CHINESEBIG5
+
+*Title = MPlayer for Windows
+*Status_Opening = 正在開啟 ...
+*Status_Closing = 正在關閉 ...
+*Status_Playing = 播放中
+*Status_Paused = 暫停
+*Status_Stopped = 停止
+*Status_Error = 無法播放媒體（點此查看更多訊息）
+Main:BPlaylist.Hint = 顯示/隱藏播放清單
+Main:BStreamInfo.Hint = 顯示/隱藏影片資訊
+Main:BFullscreen.Hint = 切換全螢幕模式
+Main:BCompact.Hint = 切換精簡模式
+Main:BMute.Hint = 切換靜音
+Main:MPFullscreenControls* = 顯示全螢幕控制項
+Main:OSDMenu* = OSD 模式
+Main:MNoOSD* = 關閉 OSD
+Main:MDefaultOSD* = 預設 OSD
+Main:MTimeOSD* = 顯示時間
+Main:MFullOSD* = 顯示完整時間
+Main:LEscape* = 按 Escape 跳出全螢幕模式
+Main:MFile* = 檔案
+Main:MOpenFile* = 播放檔案 ...
+Main:MOpenURL* = 播放網址 ...
+*OpenURL_Caption = 播放網址
+*OpenURL_Prompt = 請輸入您想播放的網址
+Main:MOpenDrive* = 播放 CD/DVD
+Main:MClose* = 關閉
+Main:MQuit* = 退出
+Main:MView* = 檢視
+Main:MSizeAny* = 自訂畫面大小
+Main:MSize50* = 一半大小
+Main:MSize100* = 原始大小
+Main:MSize200* = 兩倍大小
+Main:MFullscreen* = 全螢幕
+Main:MCompact* = 精簡模式
+Main:MOSD* = 切換 OSD
+Main:MOnTop* = 永遠在視窗最上層
+Main:MSeek* = 播放
+Main:MPlay* = 播放
+Main:MPause* = 暫停
+Main:MPrev* = 上一個主題
+Main:MNext* = 下一個主題
+Main:MShowPlaylist* = 播放清單 ...
+Main:MMute* = 靜音
+Main:MSeekF10* = 向前 10s\tRight
+Main:MSeekR10* = 向後 10s\tLeft
+Main:MSeekF60* = 向前 1m\tUp
+Main:MSeekR60* = 向後 1m\tDown
+Main:MSeekF600* = 向前 10m\tPgUp
+Main:MSeekR600* = 向後 10m\tPgDn
+Main:MExtra* = 工具
+Main:MAudio* = 聲音軌
+Main:MSubtitle* = 字幕軌
+Main:MAspect* = 顯示比例
+Main:MAutoAspect* = 自動偵測
+Main:MForce43* = 強制使用 4:3
+Main:MForce169* = 強制使用 16:9
+Main:MForceCinemascope* = 強制使用 2.35:1
+Main:MDeinterlace* = 去交錯
+Main:MNoDeint* = 關閉
+Main:MSimpleDeint* = 簡單模式
+Main:MAdaptiveDeint* = 適應模式
+Main:MOptions* = 選項 ...
+Main:MLanguage* = 語系
+Main:MStreamInfo* = 顯示影片訊息 ...
+Main:MShowOutput* = 顯示 MPlayer 輸出 ...
+Main:MHelp* = 說明
+Main:MKeyHelp* = 快速鍵說明 ...
+Main:MAbout* = 關於 ...
+LogForm* = MPlayer 輸出
+Log:BClose* = 關閉
+HelpForm* = 快速鍵說明
+Help:HelpText.Text = 導覽快速鍵\nSpace\t播放/暫停\nRight\t向前10秒\nLeft\t向後10秒\nUp\t向前1分\nDown\t向後1分\nPgUp\t向前10分\nPgDn\t向後10分\n\n其他快速鍵:\nO\t切換 OSD\nF\t切換全螢幕模式\nC\t切換精簡模式\nT\t切換視窗最上層\nQ\t立即退出\n9/0\t調整音量\n-/+\t調整音視訊同步\n1/2\t調整亮度\n3/4\t調整對比\n5/6\t調整色調\n7/8\t調整飽和度
+Help:BClose* = 關閉
+AboutForm* = 關於 MPUI
+About:BClose* = 關閉
+About:LVersionMPUI* = MPUI 版本: 
+About:LVersionMPlayer* = MPlayer 核心版本
+OptionsForm* = 選項
+Options:BOK* = 確認
+Options:BApply* = 套用
+Options:BSave* = 儲存
+Options:BClose* = 關閉
+Options:LAudioOut* = 音效輸出驅動程式
+Options:CAudioOut#0 = (不解碼音效)
+Options:CAudioOut#1 = (不播放音效)
+Options:LAudioDev* = DirectSound 輸出裝置
+Options:LPostproc* = 後置處理
+Options:CPostproc#0 = 關閉
+Options:CPostproc#1 = 自動
+Options:CPostproc#2 = 最佳品質
+Options:CLanguage#0 = (自動選擇)
+Options:CIndex* = 必要時重建檔案索引
+Options:CSoftVol* = 軟體音量控制/音量增強
+Options:CPriorityBoost* = 使用更高的優先權
+Options:LParams* = 其它 MPlayer 播放參數: 
+Options:LHelp* = 說明
+PlaylistForm* = 播放清單
+Playlist:BPlay* = 播放
+Playlist:BAdd* = 新增 ...
+Playlist:BMoveUp* = 上移
+Playlist:BMoveDown* = 下移
+Playlist:BDelete* = 移除
+Playlist:CShuffle* = 隨機播放
+Playlist:CLoop* = 重複播放
+Playlist:BSave* = 儲存為 ...
+Playlist:BClose* = 關閉
+InfoForm* = 影片資訊
+Info:BClose* = 關閉
+*NoInfo = 目前沒有可用的影片資訊
+*InfoFileFormat = 影片格式
+*InfoPlaybackTime = 影片長度
+*InfoTags = 影片 metadata
+*InfoVideo = 影像軌
+*InfoAudio = 聲音軌
+*InfoDecoder = 解碼器
+*InfoCodec = CODEC
+*InfoBitrate = 平均流量
+*InfoVideoSize = 畫面大小
+*InfoVideoFPS = 畫面頻率
+*InfoVideoAspect = 顯示比例
+*InfoAudioRate = 取樣率
+*InfoAudioChannels =  聲道數

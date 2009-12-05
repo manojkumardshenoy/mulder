@@ -1,0 +1,145 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+# Copyright (C) 2006 Tommy He <lovenemesis@163.com>
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = Chinese (Simplified)
+@lang = CHINESE
+@charset = GB2312
+
+*Title = MPlayer for Windows
+*Status_Opening = 打开 ...
+*Status_Closing = 关闭 ...
+*Status_Playing = 播放
+*Status_Paused = 暂停
+*Status_Stopped = 停止
+*Status_Error = 无法播放剪辑（点击查看更多信息）
+Main:BPlaylist.Hint = 显示/隐藏播放列表
+Main:BStreamInfo.Hint = 显示/隐藏剪辑信息
+Main:BFullscreen.Hint = 切换全屏幕模式
+Main:BCompact.Hint = 切换完整模式
+Main:BMute.Hint = 切换静音
+Main:MPFullscreenControls* = 显示全屏幕控制
+Main:OSDMenu* = OSD 模式
+Main:MNoOSD* = 无 OSD
+Main:MDefaultOSD* = 默认 OSD
+Main:MTimeOSD* = 显示时间
+Main:MFullOSD* = 显示完整时间
+Main:LEscape* = 使用Escape退出全屏幕模式
+Main:MFile* = 文件
+Main:MOpenFile* = 播放文件 ...
+Main:MOpenURL* = 播放 URL ...
+*OpenURL_Caption = 播放 URL
+*OpenURL_Prompt = 请输入你想播放的URL
+Main:MOpenDrive* = 播放 CD/DVD
+Main:MClose* = 关闭
+Main:MQuit* = 退出
+Main:MView* = 查看
+Main:MSizeAny* = 自定义尺寸
+Main:MSize50* = 半尺寸
+Main:MSize100* = 原始尺寸
+Main:MSize200* = 双倍尺寸
+Main:MFullscreen* = 全屏幕
+Main:MCompact* = 完整模式
+Main:MOSD* = 切换 OSD
+Main:MOnTop* = 保持在窗口最上端
+Main:MSeek* = 播放
+Main:MPlay* = 播放
+Main:MPause* = 暂停
+Main:MPrev* = 上一个标题
+Main:MNext* = 下一个标题
+Main:MShowPlaylist* = 播放列表 ...
+Main:MMute* = 静音
+Main:MSeekF10* = 快进10秒\tRight
+Main:MSeekR10* = 后退10秒\tLeft
+Main:MSeekF60* = 快进1分\tUp
+Main:MSeekR60* = 后退1分\tDown
+Main:MSeekF600* = 快进10分\tPgUp
+Main:MSeekR600* = 后退10分\tPgDn
+Main:MExtra* = 工具
+Main:MAudio* = 音轨
+Main:MSubtitle* = 字幕
+Main:MAspect* = 外观比例
+Main:MAutoAspect* = 自动检测
+Main:MForce43* = 强制 4:3
+Main:MForce169* = 强制 16:9
+Main:MForceCinemascope* = 强制 2.35:1
+Main:MDeinterlace* = 去交错
+Main:MNoDeint* = 关闭
+Main:MSimpleDeint* = 简单
+Main:MAdaptiveDeint* = 适应
+Main:MOptions* = 设置 ...
+Main:MLanguage* = 语言
+Main:MStreamInfo* = 显示剪辑信息 ...
+Main:MShowOutput* = 显示 MPlayer 输出 ...
+Main:MHelp* = 帮助
+Main:MKeyHelp* = 热键帮助 ...
+Main:MAbout* = 关于 ...
+LogForm* = MPlayer 输出
+Log:BClose* = 关闭
+HelpForm* = 热键帮助
+Help:HelpText.Text = 浏览热键\nSpace\t播放/暂停\nRight\t快进10秒\nLeft\t后退10秒\nUp\t快进1分\nDown\t后退1分\nPgUp\t快进10分\nPgDn\t后退10分\n\n其他热键:\nO\t切换 OSD\nF\t切换全屏幕模式\nC\t切换完整模式\nT\t切换静音\nQ\t立刻退出\n9/0\t调整音量\n-/+\t调整音频/视频同步\n1/2\t调整亮度\n3/4\t调整对比度\n5/6\t调整色调\n7/8\t调整饱和度
+Help:BClose* = 关闭
+AboutForm* = 关于 MPUI
+About:BClose* = 关闭
+About:LVersionMPUI* = MPUI 版本：
+About:LVersionMPlayer* = MPlayer 核心版本
+OptionsForm* = 设置
+Options:BOK* = 确认
+Options:BApply* = 应用
+Options:BSave* = 保存
+Options:BClose* = 关闭
+Options:LAudioOut* = 音频输出设备
+Options:CAudioOut#0 = (不解码音频)
+Options:CAudioOut#1 = (不播放声音)
+Options:LAudioDev* = DirectSound 输出设备
+Options:LPostproc* = 后处理
+Options:CPostproc#0 = 关闭
+Options:CPostproc#1 = 自动
+Options:CPostproc#2 = 最佳质量
+Options:CLanguage#0 = (自动选择)
+Options:CIndex* = 如果必要重建剪辑索引
+Options:CSoftVol* = 软件音量控制/提升
+Options:CPriorityBoost* = 使用更高的运行级别
+Options:LParams* = 额外的MPlayer 参数：
+Options:LHelp* = 帮助
+PlaylistForm* = 播放列表
+Playlist:BPlay* = 播放
+Playlist:BAdd* = 添加 ...
+Playlist:BMoveUp* = 上移
+Playlist:BMoveDown* = 下移
+Playlist:BDelete* = 删除
+Playlist:CShuffle* = 随机
+Playlist:CLoop* = 重复
+Playlist:BSave* = 保存 ...
+Playlist:BClose* = 关闭
+InfoForm* = 剪辑信息
+Info:BClose* = 关闭
+*NoInfo = 当前没有可用的剪辑信息
+*InfoFileFormat = 格式
+*InfoPlaybackTime = 长度
+*InfoTags = 剪辑元数据
+*InfoVideo = 视频
+*InfoAudio = 音频
+*InfoDecoder = 解码器
+*InfoCodec = 编码器
+*InfoBitrate = 比特率
+*InfoVideoSize = 大小
+*InfoVideoFPS = 帧率
+*InfoVideoAspect = 外观比例
+*InfoAudioRate = 采样率
+*InfoAudioChannels = 声道数

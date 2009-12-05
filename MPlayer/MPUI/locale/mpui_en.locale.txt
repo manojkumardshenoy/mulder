@@ -1,0 +1,145 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = English
+@lang = ENGLISH
+@charset = ANSI
+
+*Title = MPlayer for Windows
+*Status_Opening = Opening ...
+*Status_Closing = Closing ...
+*Status_Playing = Playing
+*Status_Paused = Paused
+*Status_Stopped = Stopped
+*Status_Error = Unable to play media (Click for more info)
+Main:BPlaylist.Hint = Show/hide playlist window
+Main:BStreamInfo.Hint = Show/hide clip information
+Main:BFullscreen.Hint = Toggle fullscreen mode
+Main:BCompact.Hint = Toggle compact mode
+Main:BMute.Hint = Toggle Mute
+Main:MPFullscreenControls* = Show fullscreen controls
+Main:OSDMenu* = OSD mode
+Main:MNoOSD* = No OSD
+Main:MDefaultOSD* = Default OSD
+Main:MTimeOSD* = Show time
+Main:MFullOSD* = Show total time
+Main:LEscape* = Press Escape to exit fullscreen mode.
+Main:MFile* = File
+Main:MOpenFile* = Play file ...
+Main:MOpenURL* = Play URL ...
+*OpenURL_Caption = Play URL
+*OpenURL_Prompt = Which URL do you want to play?
+Main:MOpenDrive* = Play CD/DVD
+Main:MClose* = Close
+Main:MQuit* = Quit
+Main:MView* = View
+Main:MSizeAny* = Custom size
+Main:MSize50* = Half size
+Main:MSize100* = Original size
+Main:MSize200* = Double size
+Main:MFullscreen* = Fullscreen
+Main:MCompact* = Compact mode
+Main:MOSD* = Toggle OSD
+Main:MOnTop* = Always on top
+Main:MSeek* = Play
+Main:MPlay* = Play
+Main:MPause* = Pause
+Main:MPrev* = Previous title
+Main:MNext* = Next title
+Main:MShowPlaylist* = Playlist ...
+Main:MMute* = Mute
+Main:MSeekF10* = Forward 10 seconds\tRight
+Main:MSeekR10* = Rewind 10 seconds\tLeft
+Main:MSeekF60* = Forward 1 minute\tUp
+Main:MSeekR60* = Rewind 1 minute\tDown
+Main:MSeekF600* = Forward 10 minutes\tPgUp
+Main:MSeekR600* = Rewind 10 minutes\tPgDn
+Main:MExtra* = Tools
+Main:MAudio* = Audio track
+Main:MSubtitle* = Subtitle track
+Main:MAspect* = Aspect ratio
+Main:MAutoAspect* = Autodetect
+Main:MForce43* = Force 4:3
+Main:MForce169* = Force 16:9
+Main:MForceCinemascope* = Force 2.35:1
+Main:MDeinterlace* = Deinterlace
+Main:MNoDeint* = Off
+Main:MSimpleDeint* = Simple
+Main:MAdaptiveDeint* = Adaptive
+Main:MOptions* = Options ...
+Main:MLanguage* = Language
+Main:MStreamInfo* = Show clip information ...
+Main:MShowOutput* = Show MPlayer output ...
+Main:MHelp* = Help
+Main:MKeyHelp* = Keyboard help ...
+Main:MAbout* = About ...
+LogForm* = MPlayer output
+Log:BClose* = Close
+HelpForm* = Keyboard help
+Help:HelpText.Text = Navigation keys:\nSpace\tPlay/Pause\nRight\tForward 10 seconds\nLeft\tRewind 10 seconds\nUp\tForward 1 minute\nDown\tRewind 1 minute\nPgUp\tForward 10 minutes\nPgDn\tRewind 10 minutes\n\nOther keys:\nO\tToggle OSD\nF\tToggle fullscreen\nC\tToggle compact mode\nT\tToggle always on top\nQ\tQuit immediately\n9/0\tAdjust volume\n-/+\tAdjust audio/video sync\n1/2\tAdjust brightness\n3/4\tAdjust contrast\n5/6\tAdjust hue\n7/8\tAdjust saturation
+Help:BClose* = Close
+AboutForm* = About MPUI
+About:BClose* = Close
+About:LVersionMPUI* = MPUI version:
+About:LVersionMPlayer* = MPlayer core version:
+OptionsForm* = Options
+Options:BOK* = OK
+Options:BApply* = Apply
+Options:BSave* = Save
+Options:BClose* = Close
+Options:LAudioOut* = Sound output driver
+Options:CAudioOut#0 = (don't decode sound)
+Options:CAudioOut#1 = (don't play sound)
+Options:LAudioDev* = DirectSound output device
+Options:LPostproc* = Postprocessing
+Options:CPostproc#0 = Off
+Options:CPostproc#1 = Automatic
+Options:CPostproc#2 = Maximum quality
+Options:CLanguage#0 = (Auto-select)
+Options:CLanguage#1 = (External file)
+Options:CIndex* = Rebuild file index if necessary
+Options:CSoftVol* = Software volume control / Volume boost
+Options:CPriorityBoost* = Run with higher priority
+Options:LParams* = Additional MPlayer parameters:
+Options:LHelp* = Help
+PlaylistForm* = Playlist
+Playlist:BPlay* = Play
+Playlist:BAdd* = Add ...
+Playlist:BMoveUp* = Move up
+Playlist:BMoveDown* = Move down
+Playlist:BDelete* = Remove
+Playlist:CShuffle* = Shuffle
+Playlist:CLoop* = Repeat
+Playlist:BSave* = Save ...
+Playlist:BClose* = Close
+InfoForm* = Clip information
+Info:BClose* = Close
+*NoInfo = No clip information is available at the moment.
+*InfoFileFormat = Format
+*InfoPlaybackTime = Duration
+*InfoTags = Clip Metadata
+*InfoVideo = Video Track
+*InfoAudio = Audio Track
+*InfoDecoder = Decoder
+*InfoCodec = Codec
+*InfoBitrate = Bitrate
+*InfoVideoSize = Dimensions
+*InfoVideoFPS = Frame Rate
+*InfoVideoAspect = Aspect Ratio
+*InfoAudioRate = Sample Rate
+*InfoAudioChannels = Channels

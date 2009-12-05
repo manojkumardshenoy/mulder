@@ -1,0 +1,98 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+# Copyright (C) 2005 Anton�n Fujera <fujera@seznam.cz>
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = Cesky
+@lang = CZECH
+@charset = EASTEUROPE
+
+*Title = MPlayer pro Windows
+Main:BFullscreen.Hint = Celá obrazovka
+Main:OSDMenu* = Nastavit OSD Mód
+Main:MNoOSD* = Žádný OSD
+Main:MDefaultOSD* = Standardní OSD
+Main:MTimeOSD* = Zobraz odehraný čas
+Main:MFullOSD* = Zobraz celkový čas
+Main:MFile* = Soubor
+Main:MOpenFile* = Otevřít ...
+Main:MOpenURL* = Otevřít URL ...
+*OpenURL_Caption = Otevřít URL
+*OpenURL_Prompt = Zadejte URL, která má být otevřena
+Main:MOpenDrive* = Otevřít disk CD/DVD
+Main:MClose* = Zavřít
+Main:MQuit* = Ukončit
+Main:MView* = Zobrazit
+Main:MSizeAny* = Vlastní velikost
+Main:MSize50* = Poloviční velikost
+Main:MSize100* = Originální velikost
+Main:MSize200* = Dvojnásobná velikost
+Main:MFullscreen* = Celá obrazovka
+Main:MOSD* = Přepnout OSD
+Main:MOnTop* = Vždy nahoře
+Main:MSeek* = Přehrát
+Main:MPlay* = Přehrávat
+Main:MPause* = Pozastavit
+Main:MSeekF10* = O 10 sekund vpřed\tŠipka vpravo
+Main:MSeekR10* = O 10 sekund zpět\tŠipka vlevo
+Main:MSeekF60* = O 1 minutu vpřed\tŠipka nahoru
+Main:MSeekR60* = O 1 minutu zpět\tŠipka dolů
+Main:MSeekF600* = O 10 minut vpřed\tPgUp
+Main:MSeekR600* = O 10 minut zpět\tPgDn
+Main:MExtra* = Nastavení
+Main:MAudio* = Zvuková stopa
+Main:MSubtitle* = Stopa titulků
+Main:MAspect* = Formát obrazu
+Main:MAutoAspect* = Automatický
+Main:MForce43* = Vždy 4:3
+Main:MForce169* = Vždy 16:9
+Main:MForceCinemascope* = Vždy 2.35:1
+Main:MDeinterlace* = Deinterlacing
+Main:MNoDeint* = Vypnuto
+Main:MSimpleDeint* = Jednoduché
+Main:MAdaptiveDeint* = Adaptivní
+Main:MOptions* = Nastavení ...
+Main:MLanguage* = Jazyk
+Main:MShowOutput* = Zobraz konzoli MPlayeru
+Main:MHelp* = Nápověda
+Main:MKeyHelp* = Klávesové zkratky ...
+Main:MAbout* = O programu ...
+LogForm* = Výstup Mplayeru
+Log:BClose* = Zavřít
+HelpForm* = Klávesové zkratky
+Help:HelpText.Text = Navigační klávesy:\nMezerník\tPřehrávat/Pozastavit\nŠipka vpravo\tO 10 sekund vpřed\nŠipka vlevo\tO 10 sekund zpět\nŠipka nahoru\tO 1 minutu vpřed\nŠipka dolů\tO 1 minutu zpět\nPgUp\tO deset minut vpřed\nPgDn\tO deset minut zpět\n\nJiné klávesy:\nO\tPřepnout OSD\nF\tCelá obrazovka\nQ\tUkončení programu\n9/0\tNastavení hlasitosti\n-/+\tNastavení Audio/Video Synchronizace\n1/2\tNastavení jasu\n3/4\tNastavení kontrastu\n5/6\tNastavení barev\n7/8\tNastavení sytosti
+Help:BClose* = Zavřít
+AboutForm* = O programu MPUI
+About:BClose* = Zavřít
+About:LVersionMPUI* = Verze MPUI: 
+About:LVersionMPlayer* = Verze Mplayeru:
+OptionsForm* = Nastavení
+Options:BOK* = OK
+Options:BApply* = Použít
+Options:BSave* = Uložit
+Options:BClose* = Zavřít
+Options:LAudioOut* = Výstupní ovladač zvuku
+Options:CAudioOut#0 = (nedekódovat zvuk)
+Options:CAudioOut#1 = (nepřehrávat zvuk)
+Options:LPostproc* = Postprocessing
+Options:CPostproc#0 = Vypnuto
+Options:CPostproc#1 = Automatické
+Options:CPostproc#2 = Maximální kvalita
+Options:CLanguage#0 = Automatický výběr
+Options:CIndex* = Zrekonstruování indexu souboru, pokud je to nezbytné
+Options:LParams* = Dodatkové parametry MPlayeru:
+Options:LHelp* = Nápověda

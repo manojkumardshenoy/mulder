@@ -1,0 +1,13 @@
+diff --git a/common/common.c b/common/common.c
+index ce7a613..105c7a3 100644
+--- a/common/common.c
++++ b/common/common.c
+@@ -126,7 +126,7 @@ void    x264_param_default( x264_param_t *param )
+     param->analyse.i_me_method = X264_ME_HEX;
+     param->analyse.f_psy_rd = 1.0;
+     param->analyse.b_psy = 1;
+-    param->analyse.f_psy_trellis = 0;
++    param->analyse.f_psy_trellis = 0.15f;
+     param->analyse.i_me_range = 16;
+     param->analyse.i_subpel_refine = 7;
+     param->analyse.b_mixed_references = 1;

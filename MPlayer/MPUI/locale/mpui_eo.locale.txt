@@ -1,0 +1,142 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+# Copyright (C) 2006 Kristjan Schmidt <Kristjan@yandex.ru>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = Esperanto
+# @lang = NEUTRAL
+@charset = TURKISH
+
+*Title = MPlayer por Vindozo
+*Status_Opening = malfermi ...
+*Status_Closing = fermi ...
+*Status_Playing = ludigo
+*Status_Paused = haltigita
+*Status_Stopped = rompita
+*Status_Error = ludigo malsukcesis (klaku por pli da informoj)
+Main:BPlaylist.Hint = ludigoliston montri/kaŝi
+Main:BStreamInfo.Hint = Clip-informoj montri/kaŝi
+Main:BFullscreen.Hint = tutekrano-moduson enŝalti/elŝalti
+Main:BCompact.Hint = kompaktan vidaĵon enŝalti/elŝalti
+Main:MPFullscreenControls* = montri direktilojn en la tutekrano-moduso
+Main:OSDMenu* = OSD-moduso
+Main:MNoOSD* = sen OSD
+Main:MDefaultOSD* = kutima OSD
+Main:MTimeOSD* = tempoindiko
+Main:MFullOSD* = tuttempoindiko
+Main:BMute.Hint = mutigon enŝalti/elŝalti
+Main:LEscape* = Prenu Esc, for forlasi la tutekrano-moduson
+Main:MFile* = dosiero
+Main:MOpenFile* = ludi dosieron ...
+Main:MOpenURL* = ludi adreson ...
+*OpenURL_Caption = ludi adreson
+*OpenURL_Prompt = Kiun adreson ekludu?
+Main:MOpenDrive* = ludi CD/DVD
+Main:MClose* = fermi
+Main:MQuit* = eliro
+Main:MView* = vidaĵo
+Main:MSizeAny* = ajna grandeco
+Main:MSize50* = duona grandeco
+Main:MSize100* = ĝusta grandeco
+Main:MSize200* = duopla grandeco
+Main:MFullscreen* = tutekrano-moduso
+Main:MCompact* = kompakta vidaĵo
+Main:MOSD* = ŝanĝi OSDn
+Main:MOnTop* = ĉiam antaŭe
+Main:MSeek* = ludigo
+Main:MPlay* = ludi
+Main:MPause* = paŭzo
+Main:MPrev* = antaŭa titolo
+Main:MNext* = sekva titolo
+Main:MShowPlaylist* = ludigolisto ...
+Main:MMute* = muta
+Main:MSeekF10* = dek sekundoj antaŭen\tdekstre
+Main:MSeekR10* = dek sekundoj reen\tmaldekstre
+Main:MSeekF60* = unu minuto antaŭen\tsupre
+Main:MSeekR60* = unu minuto reen\tsube
+Main:MSeekF600* = dek minutoj antaŭen\tBildoSupren
+Main:MSeekR600* = dek minutoj reen\tBildoSuben
+Main:MExtra* = aliaĵoj
+Main:MAudio* = sonoŝpuro
+Main:MSubtitle* = subtitoloŝpuro
+Main:MAspect* = rilato inter la flankoj
+Main:MAutoAspect* = aŭtomata
+Main:MForce43* = ĉiam 4:3
+Main:MForce169* = ĉiam 16:9
+Main:MForceCinemascope* = ĉiam 2.35:1
+Main:MDeinterlace* = Deinterlacing
+Main:MNoDeint* = elŝaltita
+Main:MSimpleDeint* = simpla
+Main:MAdaptiveDeint* = Adaptiv
+Main:MOptions* = kalibrigoj ...
+Main:MLanguage* = lingvo
+Main:MStreamInfo* = montri Clip-informojn ...
+Main:MShowOutput* = montri MPlayer-indikon ...
+Main:MHelp* = helpo
+Main:MKeyHelp* = klavarohelpo ...
+Main:MAbout* = pri ...
+LogForm* = MPlayer-indiko
+Log:BClose* = fermi
+HelpForm* = klavarohelpo
+Help:HelpText.Text = navigada klavoj:\nspacoklavo\tludi/paŭzo\ndekstre\tdek sekundoj antaŭen\nmaldekstres\tdek sekundoj reen\nsupre\tunu minuto antaŭen\nsube\tunu minuto reen\nBildoSupren\tdek minutoj antauen\nBildSuben\tdek minutoj reen\n\naliaj klavoj:\nO\tŝanĝi OSD\nF\ttutekrano-moduson enŝalti/elŝalti\nC\tkompaktan vidaĵon enŝalti/elŝalti\nT\tĉiam antaŭe enŝalti/elŝalti\nQ\tfermi tuj\n9/0\treguli sonfortecon\n-/+\treguli bildo/sono-sinkronigon\n1/2\treguli helecon\n3/4\treguli kontraston\n5/6\treguli kolortonon\n7/8\treguli saturitecon
+Help:BClose* = fermi
+AboutForm* = pri MPUI
+About:BClose* = fermi
+About:LVersionMPUI* = MPUI-versio:
+About:LVersionMPlayer* = MPlayer-versio:
+OptionsForm* = kalibrigoj
+Options:BOK* = okej
+Options:BApply* = akcepti
+Options:BSave* = konservi
+Options:BClose* = fermi
+Options:LAudioOut* = sonoeligilo
+Options:CAudioOut#0 = (ne malkodadi sonon)
+Options:CAudioOut#1 = (ne eligi sonon)
+Options:LAudioDev* = DirectSound-eligilo
+Options:LPostproc* = Postprocessing
+Options:CPostproc#0 = elŝalti
+Options:CPostproc#1 = aŭtomata
+Options:CPostproc#2 = plej bona kvalito
+Options:CLanguage#0 = (aŭtomata)
+Options:CIndex* = rekonstrui dosieran indekson, se estas necesa
+Options:CSoftVol* = softvara sonregulado (ebligas pli laŭta sono)
+Options:CPriorityBoost* = pli alta prioritato
+Options:LParams* = pliaj MPlayer-parametro:
+Options:LHelp* = helpo
+PlaylistForm* = ludigolisto
+Playlist:BPlay* = ludi
+Playlist:BAdd* = aldoni ...
+Playlist:BMoveUp* = supren
+Playlist:BMoveDown* = suben
+Playlist:BDelete* = forigi
+Playlist:BClose* = fermi
+InfoForm* = Clip-informoj
+Info:BClose* = fermi
+*NoInfo = Ĉitempe informoj ne estas disponebla.
+*InfoFileFormat = formato
+*InfoPlaybackTime = ludodaŭro
+*InfoTags = informdataoj
+*InfoVideo = videoŝpuro
+*InfoAudio = sonoŝpuro
+*InfoDecoder = malkodadilo
+*InfoCodec = Codec
+*InfoBitrate = bitkvoto
+*InfoVideoSize = bildograndeco
+*InfoVideoFPS = framokvoto
+*InfoVideoAspect = rilato inter la flankoj
+*InfoAudioRate = Samplerate
+*InfoAudioChannels = kanaloj

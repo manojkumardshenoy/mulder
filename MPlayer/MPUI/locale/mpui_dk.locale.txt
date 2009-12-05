@@ -1,0 +1,145 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+# Copyright (C) 2006 Jens Kikkenborg <flanke@gmail.com>
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = Dansk
+@lang = ENGLISH
+@charset = ANSI
+
+*Title = MPlayer til Windows
+*Status_Opening = Åbner ...
+*Status_Closing = Lukker ...
+*Status_Playing = Spiller
+*Status_Paused = Pauset
+*Status_Stopped = Stoppet
+*Status_Error = Kan ikke afspille media  (klik for mere info)
+Main:BPlaylist.Hint = Vis/skjul spilleliste vindue
+Main:BStreamInfo.Hint = Vis/skjul klip information
+Main:BFullscreen.Hint = Skift fuldskærms mode
+Main:BCompact.Hint = Kompakt mode til/fra
+Main:BMute.Hint = Lydløs til/fra
+Main:MPFullscreenControls* = Vis fuldskærms controls
+Main:OSDMenu* = OSD mode
+Main:MNoOSD* = Ingen OSD
+Main:MDefaultOSD* = Normal OSD
+Main:MTimeOSD* = Vis tid
+Main:MFullOSD* = Vis sammenlagt tid
+Main:LEscape* = Tryk Escape for at afslutte fuldskærms mode.
+Main:MFile* = Filer
+Main:MOpenFile* = Afspil fil ...
+Main:MOpenURL* = Afspil Internetadresse ...
+*OpenURL_Caption = Afspil Internetadresse
+*OpenURL_Prompt = Hvilken Internetadresse vil du gerne afspille?
+Main:MOpenDrive* = Afspil CD/DVD
+Main:MClose* = Luk
+Main:MQuit* = Afslut
+Main:MView* = Vis
+Main:MSizeAny* = Normal størrelse
+Main:MSize50* = Halv størrelse
+Main:MSize100* = Original størrelse
+Main:MSize200* = Dobbelt størrelse
+Main:MFullscreen* = Fuldskærm
+Main:MCompact* = Kompakt mode
+Main:MOSD* = Skift OSD
+Main:MOnTop* = Altid på toppen
+Main:MSeek* = Afspil
+Main:MPlay* = Afspil
+Main:MPause* = Pause
+Main:MPrev* = Forrige titel
+Main:MNext* = Næste titel
+Main:MShowPlaylist* = Afspilningsliste ...
+Main:MMute* = Lydløs
+Main:MSeekF10* = Spol 10 sekunder fremad\thøjre
+Main:MSeekR10* = Spol 10 Sekunder tilbage\tVenstre
+Main:MSeekF60* = Spol 1 minut fremad\tOp
+Main:MSeekR60* = Spol 1 minut tilbage\tNed
+Main:MSeekF600* = Spol 10 minutter fremad\tPgUp
+Main:MSeekR600* = Spol 10 minutter tilbage\tPgDn
+Main:MExtra* = Værktøjer
+Main:MAudio* = Lydspor
+Main:MSubtitle* = Undertextspor
+Main:MAspect* = Aspekt Forhold
+Main:MAutoAspect* = Opfang Automatisk
+Main:MForce43* = Tving 4:3
+Main:MForce169* = Tving 16:9
+Main:MForceCinemascope* = Tving 2.35:1
+Main:MDeinterlace* = Fjern Interfacet
+Main:MNoDeint* = Slået fra
+Main:MSimpleDeint* = Simpel
+Main:MAdaptiveDeint* = Tilpasselig
+Main:MOptions* = Funktioner ...
+Main:MLanguage* = Sprog
+Main:MStreamInfo* = Vis Klip information ...
+Main:MShowOutput* = Vis MPlayer udlæsning ...
+Main:MHelp* = Hjælp
+Main:MKeyHelp* = Tastaturhjælp ...
+Main:MAbout* = Om ...
+LogForm* = MPlayer udlæsning
+Log:BClose* = Luk
+HelpForm* = Tastaturhjælp
+Help:HelpText.Text = Navigationstast:\nMellemrum\tAfspil/pause\nHøjre\tSpol 10 sekunder fremad\nVenstre\tSpol 10 sekunder tilbage\nOp\tSpol 1 minut fremad\nNed\tSpol 1 minut tilbage\nPgUp\tSpol 10 minutter fremad\nPgDn\tSpol 10 minutter Tilbage\n\nAndre taster:\nO\tOSD\nF\tFuldskærm til/fra\nC\tKompakt mode til/fra\nT\tAltid på toppen til/fra\nQ\tAfslut med det samme\n9/0\tTilpas lydstyrke\n-/+\tTilpas lyd/video sync\n1/2\tTilpas lysstyrke\n3/4\tTilpas kontrast\n5/6\tTilpas farve\n7/8\tTilpas mætning
+Help:BClose* = Luk
+AboutForm* = Om MPUI
+About:BClose* = Luk
+About:LVersionMPUI* = MPUI version:
+About:LVersionMPlayer* = MPlayer kerne version:
+OptionsForm* = Funktioner
+Options:BOK* = OK
+Options:BApply* = Tilføj
+Options:BSave* = Gem
+Options:BClose* = Luk
+Options:LAudioOut* = Lydudlæsnings driver
+Options:CAudioOut#0 = (Lad være med at afkode lyd)
+Options:CAudioOut#1 = (Lad være med at afspille lyd)
+Options:LAudioDev* = DirectSound udlæsnings apparat
+Options:LPostproc* = Efterprocessering
+Options:CPostproc#0 = Slået fra
+Options:CPostproc#1 = Automatisk
+Options:CPostproc#2 = Maksimal kvalitet
+Options:CLanguage#0 = (Vælg Automatisk)
+Options:CIndex* = Genopbyg filindekset hvis det er nødvendigt
+Options:CSoftVol* = Software lydstyrke kontrol / Forstærk lydstyrken
+Options:CPriorityBoost* = Kør med højere prioritet
+Options:LParams* = Flere MPlayer parametre:
+Options:LHelp* = Hjælp
+PlaylistForm* = Spilleliste
+Playlist:BPlay* = Afspil
+Playlist:BAdd* = Tilføj ...
+Playlist:BMoveUp* = Flyt op
+Playlist:BMoveDown* = Flyt ned
+Playlist:BDelete* = Fjern
+Playlist:CShuffle* = Bland
+Playlist:CLoop* = Gentag
+Playlist:BSave* = Gem ...
+Playlist:BClose* = Luk
+InfoForm* = Klip information
+Info:BClose* = Luk
+*NoInfo = Ingen klip information er tilgængelig i øjeblikket.
+*InfoFileFormat = Format
+*InfoPlaybackTime = Varighed
+*InfoTags = Klip Metadata
+*InfoVideo = Videospor
+*InfoAudio = Lydspor
+*InfoDecoder = Afkoder
+*InfoCodec = Codec
+*InfoBitrate = Bithastighed
+*InfoVideoSize = Dimensioner
+*InfoVideoFPS = Formhastighed
+*InfoVideoAspect = Aspekt Forhold
+*InfoAudioRate = Prøvehastighed
+*InfoAudioChannels = Kanaler

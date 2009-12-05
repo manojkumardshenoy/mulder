@@ -1,0 +1,59 @@
+diff --git a/encoder/encoder.c b/encoder/encoder.c
+index 43a9b95..c57ee7a 100644
+--- a/encoder/encoder.c
++++ b/encoder/encoder.c
+@@ -31,6 +31,7 @@
+ #include "analyse.h"
+ #include "ratecontrol.h"
+ #include "macroblock.h"
++#include "config.h"
+ 
+ #if VISUALIZE
+ #include "common/visualize.h"
+@@ -935,6 +935,20 @@ x264_t *x264_encoder_open   ( x264_param_t *param )
+         h->sps->i_profile_idc == PROFILE_HIGH ? "High" :
+         "High 4:4:4 Predictive", h->sps->i_level_idc/10, h->sps->i_level_idc%10 );
+ 
++    x264_log( h, X264_LOG_INFO, "version: %s\n", X264_POINTVER );
++    x264_log( h, X264_LOG_INFO, "built date: %s  (%s)\n", __DATE__, __TIME__ );
++#ifdef __GNUC__
++    x264_log( h, X264_LOG_INFO, "compiler: gcc %s\n", __VERSION__ );
++#else
++    x264_log( h, X264_LOG_INFO, "compiler: none-gcc\n" );
++#endif
++#ifdef X264_CFLAGS
++    x264_log( h, X264_LOG_INFO, "cflags: %s\n", X264_CFLAGS );
++#endif
++    char *print_opts = x264_param2string( &h->param, 0 );
++    x264_log( h, X264_LOG_INFO, "options: %s\n", print_opts );
++    x264_free( print_opts );
++
+     return h;
+ fail:
+     x264_free( h );
+
+diff --git a/configure b/configure
+index f4b5344..d45dd07 100755
+--- a/configure
++++ b/configure
+@@ -519,6 +519,7 @@ Libs: $pclibs
+ Cflags: -I$includedir
+ EOF
+ 
++echo "#define X264_CFLAGS \"$CFLAGS\"" >> config.h
+ 
+ echo "Platform:   $ARCH"
+ echo "System:     $SYS"
+diff --git a/common/common.c b/common/common.c
+index ce7a613..b230f3e 100644
+--- a/common/common.c
++++ b/common/common.c
+@@ -875,7 +875,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
+     s += sprintf( s, " subme=%d", p->analyse.i_subpel_refine );
+     s += sprintf( s, " psy=%d", p->analyse.b_psy );
+     if( p->analyse.b_psy )
+-        s += sprintf( s, " psy_rd=%.1f:%.1f", p->analyse.f_psy_rd, p->analyse.f_psy_trellis );
++        s += sprintf( s, " psy_rd=%.2f:%.2f", p->analyse.f_psy_rd, p->analyse.f_psy_trellis );
+     s += sprintf( s, " mixed_ref=%d", p->analyse.b_mixed_references );
+     s += sprintf( s, " me_range=%d", p->analyse.i_me_range );
+     s += sprintf( s, " chroma_me=%d", p->analyse.b_chroma_me );

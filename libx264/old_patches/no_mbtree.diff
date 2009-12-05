@@ -1,0 +1,13 @@
+diff --git a/common/common.c b/common/common.c
+index ce7a613..91bff9f 100644
+--- a/common/common.c
++++ b/common/common.c
+@@ -110,7 +110,7 @@ void    x264_param_default( x264_param_t *param )
+     param->rc.f_qblur = 0.5;
+     param->rc.f_complexity_blur = 20;
+     param->rc.i_zones = 0;
+-    param->rc.b_mb_tree = 1;
++    param->rc.b_mb_tree = 0;
+ 
+     /* Log */
+     param->pf_log = x264_log_default;

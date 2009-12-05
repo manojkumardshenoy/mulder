@@ -1,0 +1,213 @@
+[2009-11-11]
+* MPlayer binaries updated to SVN-r29851
+* SMPlayer updated to Version 0.6.8 (SVN-r3306)
+* File permission workaround for UAC
+
+[2009-10-12]
+* SMPlayer updated to Version 0.6.8 (SVN-r3286)
+* QT Runtime Libs updated to Version 4.5.3
+
+[2009-07-24]
+* SMPlayer updated to Version 0.6.8 (SVN-r3213)
+* NSIS updated to Version 2.45
+* Now using the UAC Plugin for NSIS
+* UMUI updated to 2009-06-14
+* QT Runtime Libs updated to Version 4.5.2
+
+[2009-06-12]
+* MPlayer binaries updated to SVN-r29355
+* SMPlayer updated to Version 0.6.7 (SVN-r3073)
+* Fix buttons for Windows 7 and Vista (again)
+
+[2009-05-18]
+* MPlayer binaries updated to SVN-r29312
+* SMPlayer updated to Version 0.6.7 (SVN-r3042)
+* Fix buttons for Windows 7 (and Vista)
+
+[2009-05-10]
+* MPlayer binaries updated to SVN-r29280
+* SMPlayer updated to Version 0.6.7 (SVN-r3017)
+
+[2009-04-27]
+* MPlayer binaries updated to SVN-r29238
+* SMPlayer updated to Version 0.6.7 (SVN-r2987)
+* QT Runtime Libs updated to Version 4.5.1
+
+[2009-03-12]
+* SMPlayer updated to Version 0.6.7 (SVN-r2831)
+* Installer updates
+
+[2009-03-05]
+* QT Runtime Libs updated to Version 4.5.0
+* SMPlayer updated to Version 0.6.6 (SVN-r2818)
+* NSIS updated to Version 2.43
+* UMUI updated to 2009-02-06
+
+[2009-01-18]
+* SMPlayer updated to Version 0.6.6 (SVN-r2697)
+* Add an option to enable/disable UPX to the installer
+* Minor installer improvements
+
+[2009-01-14]
+* MPlayer binaries updated to SVN-r28311
+* SMPlayer updated to Version 0.6.6 (SVN-r2680)
+
+[2008-12-11]
+* MPlayer binaries updated to SVN-r28126
+* SMPlayer updated to Version 0.6.5 (SVN-r2420)
+
+[2008-11-25]
+* SMPlayer updated to Version 0.6.5 (SVN-r2301)
+* Workaround for "startup delay" annoyance
+
+[2008-11-13]
+* SMPlayer updated to Version 0.6.5 (SVN-r2231)
+
+[2008-11-05]
+* SMPlayer updated to Version 0.6.4 (SVN-r2188)
+
+[2008-10-27]
+* SMPlayer updated to Version 0.6.4 (SVN-r2102)
+* Installer improvements
+
+[2008-10-23]
+* MPlayer binaries updated to SVN-r27811
+* SMPlayer updated to Version 0.6.3 (SVN-r2083)
+
+[2008-10-15]
+* MPlayer binaries updated to SVN-r27770
+* SMPlayer updated to Version 0.6.3 (SVN-r2030)
+* NSIS downgraded to v2.38, because v2.40 is broken
+
+[2008-10-11]
+* SMPlayer updated to Version 0.6.3 (SVN-r1997)
+* NSIS updated to Version 2.40
+* QT Runtime Libs updated to Version 4.4.3
+* UMUI updated to 2008-10-11
+
+[2008-09-29]
+* SMPlayer updated to Version 0.6.3.1 (SVN-r1904)
+
+[2008-09-27]
+* SMPlayer updated to Version 0.6.3 (SVN-r1882)
+* QT Runtime Libs updated to Version 4.4.2
+* UMUI updated to 2008-09-20
+
+[2008-09-17]
+* SMPlayer updated to Version 0.6.2 (SVN-r1814)
+
+[2008-09-03]
+* SMPlayer updated to Version 0.6.2 (SVN-r1738)
+* QT Runtime Libs updated to Version 4.4.1
+* UMUI updated to 2008-08-16
+
+[2008-08-15]
+* SMPlayer updated to Version 0.6.2 (SVN-r1661)
+
+[2008-07-26]
+* SMPlayer updated to Version 0.6.1 (SVN-r1583)
+* NSIS updated to v2.38, UMUI updated to 2008-07-19
+* Workaround for "Vista missing buttons" bug
+
+[2008-07-19]
+* MPlayer binaries updated to SVN-r27323
+
+[2008-07-17]
+* MPlayer binaries updated to SVN-r27305
+* SMPlayer updated to Version 0.6.1 (SVN-r1573)
+
+[2008-07-13]
+* SMPlayer updated to Version 0.6.1 (SVN-r1566)
+* Tweaked automated CPU type detection
+
+[2008-07-02]
+* SMPlayer updated to Version 0.6.1 (SVN-r1515)
+* Installer improvements
+
+[2008-06-27]
+* SMPlayer updated to Version 0.6.1 (SVN-r1505)
+* Installer improvements
+
+[2008-06-16]
+* MPlayer binaries updated to SVN-r27081
+* Uninstaller bugfix (reported by Guti)
+
+[2008-06-14]
+* SMPlayer updated to Version 0.6.1 (SVN-r1390)
+* Installer updates
+
+[2008-06-01]
+* MPlayer binaries updated to SVN-r26924
+* SMPlayer updated to Version 0.6.1 (SVN-r1321)
+* Added CPU detection code to the installer
+
+[2008-05-27]
+* MPlayer binaries updated to SVN-r26874
+* SMPlayer updated to Version 0.6.0 (SVN-r1299)
+* Ported the installer to NSIS UltraModern UI
+
+[2008-05-13]
+* SMPlayer updated to Version 0.6.0 Final
+* Updated UPX from Version 3.02 to 3.03
+
+[2008-05-08]
+* SMPlayer updated to Version 0.6.0 (SVN-r1227)
+* NSIS updated to Version 2.37
+* Qt Runtime Libraries updated to Version 4.4.0
+
+[2008-04-26]
+* SMPlayer updated to Version 0.6.0 (SVN-r1188)
+* Installer updates
+
+[2008-04-14]
+* MPlayer binaries updated to SVN-r26446
+* SMPlayer updated to Version 0.6.0 (SVN-r1117)
+
+[2008-04-13]
+* MPlayer binaries updated to SVN-r26430
+* SMPlayer updated to Version 0.6.0 (SVN-r1087)
+* The SSE crash in MPlayer was fixed
+
+[2008-04-05]
+* MPlayer binaries updated to SVN-r26334
+* SMPlayer updated to Version 0.6.0 (SVN-r1067)
+* NSIS updated to Version 2.36
+
+[2008-02-10]
+* MPlayer binaries updated to SVN-r25962
+* SMPlayer updated to Version 0.6.0 (SVN-r827)
+* NSIS updated to Version 2.35
+
+[2008-01-20]
+* MPlayer binaries updated to SVN-r25803
+* SMPlayer updated to Version 0.5.62 (SVN-r693)
+* MPUI compatibility fixes (Build 38)
+
+[2007-12-27]
+* Installer updated to NSIS Modern UI 2.0
+* SMPlayer updated to Version 0.5.62 (SVN-r538)
+* NSIS updated to Version 2.34
+
+[2007-12-24]
+* MPlayer binaries updated to SVN-r25513
+* SMPlayer updated to Version 0.5.62 (SVN-r533)
+
+[2007-11-18]
+* MPlayer binaries updated to SVN-r25088
+* SMPlayer updated to Version 0.5.62 (SVN-r418)
+* QT Runtime Libs updated to Version 4.3.2
+* NSIS updated to Version 2.33
+
+[2007-11-02]
+* MPlayer binaries updated to SVN-r24930
+* SMPlayer updated to Version 0.5.61+SVN-r348
+
+[2007-10-11]
+* MPlayer binaries updated to SVN-r24762
+* SMPlayer updated to Version 0.5.61+SVN-r159
+
+[2007-10-10]
+* MPlayer binaries updated to Version 1.0rc2 (SVN-r24722)
+* SMPlayer updated to Version 0.5.60+SVN-r158
+* Binary Codec Package updated to 2007-10-07
+* AutoUpdate tool improved

@@ -1,0 +1,145 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+# Copyright (C) 2006 Michal Sindlar <sindlar@gmail.com>
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = Nederlands
+@lang = DUTCH
+@charset = ANSI
+
+*Title = MPlayer voor Windows
+*Status_Opening = Openen ...
+*Status_Closing = Sluiten ...
+*Status_Playing = Speelt
+*Status_Paused = Gepauseerd
+*Status_Stopped = Gestopt
+*Status_Error = Media niet afspeelbaar (Klik voor meer info)
+Main:BPlaylist.Hint = Toon/verberg speellijst
+Main:BStreamInfo.Hint = Toon/verberg media-informatie
+Main:BFullscreen.Hint = Beeldvullend afspelen
+Main:BCompact.Hint = Compacte modus
+Main:BMute.Hint = Geluid aan/uit
+Main:MPFullscreenControls* = Knoppen in beeldvullende modus
+Main:OSDMenu* = OSD (on-screen display) modus
+Main:MNoOSD* = Geen OSD
+Main:MDefaultOSD* = Standaard OSD
+Main:MTimeOSD* = Verstreken speeltijd
+Main:MFullOSD* = Totale speeltijd
+Main:LEscape* = Druk Escape om beeldvullende modus te verlaten.
+Main:MFile* = Bestand
+Main:MOpenFile* = Bestand laden ...
+Main:MOpenURL* = URL laden ...
+*OpenURL_Caption = URL afspelen
+*OpenURL_Prompt = Welke URL wenst u af te spelen?
+Main:MOpenDrive* = Laad CD/DVD
+Main:MClose* = Media sluiten
+Main:MQuit* = Afsluiten
+Main:MView* = Beeld
+Main:MSizeAny* = Willekeurig formaat
+Main:MSize50* = Half formaat
+Main:MSize100* = Origineel formaat
+Main:MSize200* = Dubbel formaat
+Main:MFullscreen* = Beeldvullend
+Main:MCompact* = Compacte modus
+Main:MOSD* = OSD-modus wijzigen
+Main:MOnTop* = Venster altijd zichtbaar
+Main:MSeek* = Afspelen
+Main:MPlay* = Afspelen
+Main:MPause* = Pause
+Main:MPrev* = Vorig item in speellijst
+Main:MNext* = Volgend item in speellijst
+Main:MShowPlaylist* = Speellijst ...
+Main:MMute* = Geluid aan/uit
+Main:MSeekF10* = 10 seconden doorspoelen\tRechts
+Main:MSeekR10* = 10 seconden terugspoelen\tLinks
+Main:MSeekF60* = 1 minuut doorspoelen\tBoven
+Main:MSeekR60* = 1 minuut terugspoelen\tBeneden
+Main:MSeekF600* = 10 minuten doorspoelen\tPgUp
+Main:MSeekR600* = 10 minuten terugspoelen\tPgDn
+Main:MExtra* = Extra
+Main:MAudio* = Audiospoor
+Main:MSubtitle* = Ondertitelspoor
+Main:MAspect* = Verhouding
+Main:MAutoAspect* = Detecteren
+Main:MForce43* = 4:3 forceren
+Main:MForce169* = 16:9 forceren
+Main:MForceCinemascope* = 2.35:1 Forceren
+Main:MDeinterlace* = Deinterlacing
+Main:MNoDeint* = Uit
+Main:MSimpleDeint* = Eenvoudig
+Main:MAdaptiveDeint* = Adaptief
+Main:MOptions* = Opties ...
+Main:MLanguage* = Taal
+Main:MStreamInfo* = Toon media-informatie ...
+Main:MShowOutput* = Toon MPlayer output ...
+Main:MHelp* = Help
+Main:MKeyHelp* = Toetsenbord help ...
+Main:MAbout* = Info ...
+LogForm* = MPlayer output
+Log:BClose* = Sluiten
+HelpForm* = Toetsenbord help
+Help:HelpText.Text = Navigatietoetsen:\nSpatie\tAfspelen/Pause\nRechts\t10 seconden doorspoelen\nLinks\t10 seconden terugspoelen\nBoven\t1 minuut doorspoelen\nBeneden\t1 minuut terugspoelen\nPgUp\t10 minuten doorspoelen\nPgDn\t10 minuten terugspoelen\n\nOverige toetsen:\nO\tOSD-modus wijzigen\nF\tBeeldvullend\nC\tCompact modus\nT\tVenster altijd zichtbaar\nQ\tAfsluiten\n9/0\tVolume aanpassen\n-/+\tAudio/video sync aanpassen\n1/2\tHelderheid aanpassen\n3/4\tContrast aanpassen\n5/6\tKleurbalans aanpassen\n7/8\tKleurverzadiging aanpassen
+Help:BClose* = Sluiten
+AboutForm* = Over MPUI
+About:BClose* = Sluiten
+About:LVersionMPUI* = MPUI versie:
+About:LVersionMPlayer* = MPlayer core versie:
+OptionsForm* = Opties
+Options:BOK* = OK
+Options:BApply* = Toepassen
+Options:BSave* = Opslaan
+Options:BClose* = Sluiten
+Options:LAudioOut* = Stuurprogramma voor geluid
+Options:CAudioOut#0 = (geluidsspoor niet decoderen)
+Options:CAudioOut#1 = (geluidsspoor niet afspelen)
+Options:LAudioDev* = DirectSound stuurprogramma
+Options:LPostproc* = Postprocessing
+Options:CPostproc#0 = Uit
+Options:CPostproc#1 = Automatisch
+Options:CPostproc#2 = Beste kwaliteit
+Options:CLanguage#0 = (Automatisch)
+Options:CIndex* = Video-index hergenereren indien nodig
+Options:CSoftVol* = Softwarematige volumeregeling / Volume boost
+Options:CPriorityBoost* = Afspelen met hogere prioriteit
+Options:LParams* = Additionele MPlayer parameters:
+Options:LHelp* = Help
+PlaylistForm* = Speellijst
+Playlist:BPlay* = Afspelen
+Playlist:BAdd* = Toevoegen ...
+Playlist:BMoveUp* = Naar boven
+Playlist:BMoveDown* = Naar beneden
+Playlist:BDelete* = Verwijderen
+Playlist:CShuffle* = Shuffle
+Playlist:CLoop* = Herhalen
+Playlist:BSave* = Opslaan ...
+Playlist:BClose* = Sluiten
+InfoForm* = Media-informatie
+Info:BClose* = Sluiten
+*NoInfo = Momenteel geen media-informatie beschikbaar.
+*InfoFileFormat = Bestandsformaat
+*InfoPlaybackTime = Speelduur
+*InfoTags = Metadata
+*InfoVideo = Videospoor
+*InfoAudio = Audiospoor
+*InfoDecoder = Decoder
+*InfoCodec = Codec
+*InfoBitrate = Bitrate
+*InfoVideoSize = Afmetingen
+*InfoVideoFPS = Beelden per seconde
+*InfoVideoAspect = Verhoudingen
+*InfoAudioRate = Samplerate
+*InfoAudioChannels = Kanalen

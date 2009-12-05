@@ -1,0 +1,117 @@
+# MPUI, an MPlayer frontend for Windows
+# Copyright (C) 2005 Martin J. Fiedler <martin.fiedler@gmx.net>
+# Copyright (C) 2005 Fran�ois Gagn� <frenchfrog@gmail.com>
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+@name = Français
+@lang = FRENCH
+@charset = DEFAULT
+
+*Title = MPlayer pour Windows
+*Status_Opening = Ouverture ...
+*Status_Closing = Fermeture ...
+*Status_Playing = Joue
+*Status_Paused = Suspendu
+*Status_Stopped = Arrêté
+*Status_Error = Incapable de jouer le média (Cliquer pour plus d'information)
+Main:BPlaylist.Hint = Ouvrir/fermer la liste d'écoute
+Main:BFullscreen.Hint = Basculer en mode plein écran
+Main:OSDMenu* = Choisir le mode OSD
+Main:MNoOSD* = Aucun OSD
+Main:MDefaultOSD* = OSD par défaud
+Main:MTimeOSD* = Afficher le temps
+Main:MFullOSD* = Afficher le temps total
+Main:LEscape* = Press Escape to exit fullscreen mode.
+Main:MFile* = Fichier
+Main:MOpenFile* = Jouer un fichier ...
+Main:MOpenURL* = Jouer un URL ...
+*OpenURL_Caption = Jouer un URL
+*OpenURL_Prompt = Quel URL voulez-vous jouer?
+Main:MOpenDrive* = Jouer un CD/DVD
+Main:MClose* = Fermer
+Main:MQuit* = Quitter
+Main:MView* = Affichage
+Main:MSizeAny* = Dimension sur mesure
+Main:MSize50* = Demi taille
+Main:MSize100* = Taille originale
+Main:MSize200* = Double taille
+Main:MFullscreen* = Plein écran
+Main:MOSD* = Cycler les modes OSD
+Main:MOnTop* = Toujours sur le dessus
+Main:MSeek* = Visualisation
+Main:MPlay* = Jouer
+Main:MPause* = Suspendre
+Main:MPrev* = Titre précédent
+Main:MNext* = Titre suivant
+Main:MShowPlaylist* = Liste d'écoute ...
+Main:MSeekF10* = Avancer 10 secondes\tDroite
+Main:MSeekR10* = Reculer 10 secondes\tGauche
+Main:MSeekF60* = Avancer 1 minute\tHaut
+Main:MSeekR60* = Reculer 1 minute\tBas
+Main:MSeekF600* = Avancer 10 minutes\tPgHaut
+Main:MSeekR600* = Reculer 10 minutes\tPgBas
+Main:MExtra* = Préférences
+Main:MAudio* = Audio
+Main:MSubtitle* = Sous-titres
+Main:MAspect* = Format de l'image
+Main:MAutoAspect* = Auto-détection
+Main:MForce43* = Forcer 4:3
+Main:MForce169* = Forcer 16:9
+Main:MForceCinemascope* = Forcer 2.35:1
+Main:MDeinterlace* = Dé-entrelacer
+Main:MNoDeint* = Aucun
+Main:MSimpleDeint* = Simple
+Main:MAdaptiveDeint* = Adaptatif
+Main:MOptions* = Préférences ...
+Main:MLanguage* = Langue
+Main:MShowOutput* = Afficher la sortie de MPlayer
+Main:MHelp* = Aide
+Main:MKeyHelp* = Aide du clavier ...
+Main:MAbout* = À propos ...
+LogForm* = Sortie MPlayer
+Log:BClose* = Fermer
+HelpForm* = Aide du clavier
+Help:HelpText.Text = Clefs de navigation:\nEspace\tJouer/Suspendre\nDroite\tAvancer 10 secondes\nGauche\tReculer 10 secondes\nHaut\tAvancer 1 minute\nBas\tReculer 1 minute\nPgHaut\tAvancer 10 minutes\nPgBas\tReculer 10 minutes\n\nAutre clefs:\nO\tCycler les modes OSD\nF\tBasculer en plein écran\nQ\tQuitter immediatement\n9/0\tAjuster le volume\n-/+\tAjuster la sync audio/video\n1/2\tAjuster la luminosité\n3/4\tAjuster le contraste\n5/6\tAjuster la hue\n7/8\tAjuster la saturation
+Help:BClose* = Fermer
+AboutForm* = À propos de MPUI
+About:BClose* = Fermer
+About:LVersionMPUI* = MPUI version:
+About:LVersionMPlayer* = MPlayer version:
+OptionsForm* = Préférences
+Options:BOK* = OK
+Options:BApply* = Appliquer
+Options:BSave* = Sauver
+Options:BClose* = Fermer
+Options:LAudioOut* = Pilote de sortie audio
+Options:CAudioOut#0 = (ne pas décoder le son)
+Options:CAudioOut#1 = (ne pas jouer le son)
+Options:LAudioDev* = Unité de sortie DirectSound
+Options:LPostproc* = Post-traitement
+Options:CPostproc#0 = Aucun
+Options:CPostproc#1 = Automatique
+Options:CPostproc#2 = Qualité maximum
+Options:CLanguage#0 = (Auto-sélection)
+Options:CIndex* = Reconstruire l'index du fichier au besoin
+Options:LParams* = Paramètres MPlayer additionnels:
+Options:LHelp* = Aide
+PlaylistForm* = Liste d'écoute
+Playlist:BPlay* = Jouer
+Playlist:BAdd* = Ajouter ...
+Playlist:BMoveUp* = Monter
+Playlist:BMoveDown* = Descendre
+Playlist:BDelete* = Enlever
+Playlist:BClose* = Fermer
