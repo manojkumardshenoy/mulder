@@ -10,7 +10,7 @@ index 43a9b95..c57ee7a 100644
  
  #if VISUALIZE
  #include "common/visualize.h"
-@@ -935,6 +935,20 @@ x264_t *x264_encoder_open   ( x264_param_t *param )
+@@ -976,6 +976,20 @@ x264_t *x264_encoder_open   ( x264_param_t *param )
          h->sps->i_profile_idc == PROFILE_HIGH ? "High" :
          "High 4:4:4 Predictive", h->sps->i_level_idc/10, h->sps->i_level_idc%10 );
  
@@ -36,7 +36,7 @@ diff --git a/configure b/configure
 index f4b5344..d45dd07 100755
 --- a/configure
 +++ b/configure
-@@ -519,6 +519,7 @@ Libs: $pclibs
+@@ -524,6 +524,7 @@ Libs: $pclibs
  Cflags: -I$includedir
  EOF
  
@@ -48,7 +48,7 @@ diff --git a/common/common.c b/common/common.c
 index ce7a613..b230f3e 100644
 --- a/common/common.c
 +++ b/common/common.c
-@@ -875,7 +875,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
+@@ -878,7 +878,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
      s += sprintf( s, " subme=%d", p->analyse.i_subpel_refine );
      s += sprintf( s, " psy=%d", p->analyse.b_psy );
      if( p->analyse.b_psy )
