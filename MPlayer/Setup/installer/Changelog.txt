@@ -1,3 +1,9 @@
+[2009-12-06]
+* SMPlayer updated to Version 0.6.8 (SVN-r3336)
+* NSIS updated to Version 2.46
+* QT Runtime Libs updated to Version 4.6.0
+* UMUI updated to 2009-12-06
+
 [2009-11-11]
 * MPlayer binaries updated to SVN-r29851
 * SMPlayer updated to Version 0.6.8 (SVN-r3306)
