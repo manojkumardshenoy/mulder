@@ -1,15 +1,15 @@
 ; ////////////////////////////////////////////////////////////////
 ; // MPlayer for Windows - Install Script
 ; // Written by MuldeR <MuldeR2@GMX.de> - http://mulder.at.gg/
-; // Developed and tested with NSIS v2.38
+; // Developed and tested with NSIS v2.46
 ; ////////////////////////////////////////////////////////////////
 
-!define BUILD_NO "63"
-!define COMPILE_DATE "2009-11-11"
+!define BUILD_NO "64"
+!define COMPILE_DATE "2009-12-06"
 !define VER_MPLAYER "SVN-r29851 (2009-11-08)"
-!define VER_SMPLAYER "v0.6.8 (SVN-r3306)"
+!define VER_SMPLAYER "v0.6.8 (SVN-r3336)"
 !define VER_MPUI "v1.2-pre3 (Build 38)"
-!define VER_NSIS "v2.45"
+!define VER_NSIS "v2.46"
 !define VER_CODECS "(2007-10-07)"
 
 ; ----------------------------------------------------------------------------------------------

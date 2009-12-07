@@ -1,7 +1,7 @@
 ; ////////////////////////////////////////////////////////////////////////////////////////////////
 ; // MPlayer for Windows - Install Script
 ; // Written by MuldeR <MuldeR2@GMX.de> - http://mulder.at.gg/
-; // Developed and tested with NSIS v2.45, UMUI v1.00b2
+; // Developed and tested with NSIS v2.46, UMUI v1.00b2
 ; ////////////////////////////////////////////////////////////////////////////////////////////////
 
 !ifndef Compile_Date | Build_Number | Version_MPlayer | Version_MPUI | Version_SMPlayer | Version_Codecs | Version_NSIS | Path_Out
@@ -84,6 +84,7 @@ ReserveFile "${NSISDIR}\Plugins\AccessControl.dll"
 ReserveFile "installer\page_cpu.ini"
 ReserveFile "installer\page_tweak.ini"
 ReserveFile "installer\splash.gif"
+ReserveFile "installer\check.exe"
 ReserveFile "installer\cpuinfo.exe"
 ReserveFile "installer\upx.exe"
 
@@ -299,6 +300,9 @@ LangString NotAllowedToInstall ${LANG_GERMAN} "Sie haben nicht die benötigten Re
 
 LangString FileExtractError ${LANG_ENGLISH} "Setup failed to extract a required file, please try again!"
 LangString FileExtractError ${LANG_GERMAN} "Setup konnte eine benötigte Datei nicht extrahieren, bitte noch einmal versuchen!"
+
+LangString ExecBlockedAbort ${LANG_ENGLISH} "The installer is unable to launch external programs, which means the installer cannot operate properly. This usually indicates that a buggy antivirus software is blocking the installer. Please report the problem to your antivirus company, we cannot do anything to fix this!"
+LangString ExecBlockedAbort ${LANG_GERMAN} "Das Installations-Programm kann keine externen Programme aufrufen, d.h. die Installation kann nicht durchgeführt werden. Dieses Problem wird höchstwahrscheinlich von einer fehlerhfaten Antiviren Software verursacht, die den Installer blockiert. Bitte melden Sie das Problem dem Hersteller der Antiviren Software, da wir nichts tun können, um das Problem zu beheben!"
 
 LangString CPUTypeCaption ${LANG_ENGLISH} "CPU Type"
 LangString CPUTypeCaption ${LANG_GERMAN} "CPU Typ"
@@ -1262,6 +1266,7 @@ SectionEnd
     !insertmacro FileEx "" "QtNetwork4.dll"
     !insertmacro FileEx "" "QtXml4.dll"
     !insertmacro FileEx "" "QxtCore.dll"
+    !insertmacro FileEx "" "libgcc_s_dw2-1.dll"
 
     SetOutPath "$INSTDIR\shortcuts"
     !insertmacro FileEx "" "shortcuts\*.keys"
@@ -1371,6 +1376,7 @@ Section "$(Section_Optimize_Caption)" SectionOptimize
   !insertmacro PackFile "$INSTDIR\QtNetwork4.dll"
   !insertmacro PackFile "$INSTDIR\QtXml4.dll"
   !insertmacro PackFile "$INSTDIR\QxtCore.dll"
+  !insertmacro PackFile "$INSTDIR\libgcc_s_dw2-1.dll"
   
   !ifdef FullPackage
     !insertmacro PackAll "$INSTDIR\codecs" "acm"
@@ -1534,7 +1540,12 @@ Section "-Regsitry"
   WriteRegDWORD HKLM ${MPlayer_RegPath} "NoModify" 1
   WriteRegDWORD HKLM ${MPlayer_RegPath} "NoRepair" 1
   WriteRegDWORD HKCU ${MPlayer_RegPath} "LastUpdateCheck" 0
+  DeleteRegValue HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "MPlayerForWindows_UpdateReminder"
 SectionEnd
+
+; ---------------------------------------
+; Update Reminder
+; ---------------------------------------
 
 Section "$(Section_UpdateReminder_Caption)" SectionUpdateReminder
   SectionIn 1 2
@@ -1703,6 +1714,15 @@ Function .onInit
   !insertmacro GetCommandlineParameter "UPDATE" "error" $0
   StrCmp $0 "error" +2
   SelfDel::del
+  
+  ; make sure we aren't blockey by buggy A/V software
+  File /oname=$PLUGINSDIR\check.exe "installer\check.exe"
+  nsExec::Exec /TIMEOUT=2500 "$PLUGINSDIR\check.exe"
+  Pop $0
+  StrCmp $0 42 ExecIsNotBlocked
+  MessageBox MB_ICONSTOP|MB_TOPMOST|MB_OK "$(ExecBlockedAbort)$\n$\nCode: $0"
+  Quit
+  ExecIsNotBlocked:
 FunctionEnd
 
 Function un.onInit
