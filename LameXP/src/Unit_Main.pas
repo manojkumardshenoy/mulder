@@ -38,9 +38,9 @@ uses
 ///////////////////////////////////////////////////////////////////////////////
 
 const
-  VersionStr: String = 'v3.14 Final';
-  BuildNo: Integer = 78;
-  BuildDate: String = '2009-12-01';
+  VersionStr: String = 'v3.15 Alpha-1';
+  BuildNo: Integer = 79;
+  BuildDate: String = '2009-12-09';
 
 ///////////////////////////////////////////////////////////////////////////////
 //{$DEFINE BUILD_DEBUG}
@@ -55,7 +55,7 @@ const
     ('Lame', 'v3.98.2, Final (2009-09-26)'), 
     ('OggVorbis', 'v2.85, libVorbis v1.2.1 RC2, aoTuV b5.7 (2009-03-04)'), 
     ('NeroAAC', '1.3.3.0'), // <-- Used for update-check!
-    ('MPG123', 'v1.9.2 (2009-11-20)'), 
+    ('MPG123', 'v1.10.0 (2009-12-05)'), 
     ('FAAD', 'v2.7 (2009-05-13)'), 
     ('FLAC', 'v1.2.1b (2009-10-01)'), 
     ('Speex', 'v1.2rc1 (2009-07-04)'), 

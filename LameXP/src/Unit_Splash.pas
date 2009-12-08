@@ -70,9 +70,8 @@ end;
 
 procedure TForm_Splash.FormActivate(Sender: TObject);
 begin
-  ForceUpdate(16);
+  ForceUpdate(10);
   SetCursor(Screen.Cursors[crHourGlass]);
-  Sleep(10);
   Animator.Animate := True;
 end;
 
@@ -83,7 +82,7 @@ end;
 
 procedure TForm_Splash.CreateForm(InstanceClass: TComponentClass; var Reference);
 begin
-  ForceUpdate(1);
+  ForceUpdate(2);
   SetCursor(Screen.Cursors[crHourGlass]);
   Application.CreateForm(InstanceClass, Reference);
   Sleep(125);
@@ -95,9 +94,12 @@ var
 begin
   for i := 1 to Loops do
   begin
-    Invalidate;
-    Update;
-    Application.ProcessMessages;
+    with Application do
+    begin
+      Invalidate;
+      Update;
+      ProcessMessages;
+    end;
   end;
 end;
 
