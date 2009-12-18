@@ -103,7 +103,7 @@ begin
 
   Application.Initialize;
   Application.Title := 'LameXP';
-
+  
   with TForm_Splash.Create(Application) do
   begin
     Show;
