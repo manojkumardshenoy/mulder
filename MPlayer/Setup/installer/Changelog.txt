@@ -1,3 +1,8 @@
+[2009-12-20]
+* MPlayer binaries updated to SVN-r30075
+* SMPlayer updated to Version 0.6.8 (SVN-r3355)
+* Clean-up the "VirtualStore" on Vista/Win7
+
 [2009-12-06]
 * SMPlayer updated to Version 0.6.8 (SVN-r3336)
 * NSIS updated to Version 2.46

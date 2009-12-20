@@ -120,7 +120,9 @@ Section
   SetDetailsPrint textonly
   DetailPrint "Resetting MPlayer configuration, please wait..."
   SetDetailsPrint listonly
-
+  
+  InitPluginsDir
+  
   MessageBox MB_YESNO|MB_ICONEXCLAMATION "Are you sure you want to reset all MPlayer settings now?" /SD IDYES IDYES DoResetMPlayer
   Quit
 
@@ -152,9 +154,37 @@ Section
   Delete "$EXEDIR\MPUI.ini"
   Delete "$EXEDIR\smplayer.ini"
   Delete "$EXEDIR\mplayer\config"
+  Delete "$EXEDIR\styles.ass"
+  Delete "$EXEDIR\tv.m3u8"
+  Delete "$EXEDIR\radio.m3u8"
   Delete "$EXEDIR\mplayer\*.conf"
+
   Delete "$APPDATA\mplayer\config"
   Delete "$APPDATA\mplayer\*.conf"
+  Delete "$APPDATA\fontconfig\cache\*.*"
+
+  Delete "$LOCALAPPDATA\mplayer\config"
+  Delete "$LOCALAPPDATA\mplayer\*.conf"
+  Delete "$LOCALAPPDATA\fontconfig\cache\*.*"
+  
+  Delete "$PROFILE\.smplayer\smplayer.ini"
+  Delete "$PROFILE\.smplayer\styles.ass"
+  Delete "$PROFILE\.smplayer\tv.m3u8"
+  Delete "$PROFILE\.smplayer\radio.m3u8"
+  Delete "$PROFILE\mplayer\config"
+  Delete "$PROFILE\mplayer\*.conf"
+  Delete "$PROFILE\fontconfig\cache\*.*"
+
+  ; -------------------------------------------------------------------
+    
+  StrCmp $LOCALAPPDATA "" SkipVStoreClean 0
+  File /oname=$PLUGINSDIR\cleaner.exe "installer\cleaner.exe"
+  nsExec::ExecToLog /TIMEOUT=30000 '"$PLUGINSDIR\cleaner.exe" "$LOCALAPPDATA\VirtualStore" "MPUI.ini:SMPlayer.ini:styles.ass:tv.m3u8:radio.m3u8:config"'
+  Delete "$PLUGINSDIR\cleaner.exe"
+  
+  SkipVStoreClean:
+  
+  ; -------------------------------------------------------------------
 
   SetOutPath "$EXEDIR\mplayer"
   File "installer\config"
@@ -163,6 +193,9 @@ Section
   !insertmacro MakeFilePublic "$EXEDIR\MPUI.ini"
   !insertmacro MakeFilePublic "$EXEDIR\mplayer\config"
   !insertmacro MakeFilePublic "$EXEDIR\smplayer.ini"
+  !insertmacro MakeFilePublic "$EXEDIR\styles.ass"
+  !insertmacro MakeFilePublic "$EXEDIR\tv.m3u8"
+  !insertmacro MakeFilePublic "$EXEDIR\radio.m3u8"
 
   ; -------------------------------------------------------------------
 
