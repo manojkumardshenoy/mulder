@@ -1191,8 +1191,6 @@ Section "!MPlayer ${Version_MPlayer}" SectionMPlayer
   !insertmacro FileEx "/oname=mplayer.exe" "installer\dummy.exe"
   !insertmacro FileEx "" "${Path_Builds}\rtm\mplayer\input.conf"
   !insertmacro FileEx "" "${Path_Builds}\rtm\mplayer\subfont.ttf"
-  !insertmacro MakeFilePublic "$INSTDIR\mplayer\config"
-  !insertmacro MakeFilePublic "$INSTDIR\mplayer\input.conf"
   
   SetOutPath "$INSTDIR\fonts"
   !insertmacro FileEx "" "${Path_Builds}\rtm\fonts\*.*"
@@ -1203,6 +1201,12 @@ Section "!MPlayer ${Version_MPlayer}" SectionMPlayer
   !insertmacro CreateRedirHTML "$INSTDIR\MPlayerHQ.html" "http://www.mplayerhq.hu/"
   !insertmacro CreateRedirHTML "$INSTDIR\MPlayerWin32.html" "http://oss.netfarm.it/mplayer-win32.php"
   !insertmacro CreateRedirHTML "$INSTDIR\CelticDruid.html" "http://celticdruid.no-ip.com/xvid/"
+  
+  !insertmacro MakeFilePublic "$INSTDIR\styles.ass"
+  !insertmacro MakeFilePublic "$INSTDIR\tv.m3u8"
+  !insertmacro MakeFilePublic "$INSTDIR\radio.m3u8"
+  !insertmacro MakeFilePublic "$INSTDIR\mplayer\config"
+  !insertmacro MakeFilePublic "$INSTDIR\mplayer\input.conf"
 SectionEnd
 
 ; ---------------------------------------
@@ -1235,11 +1239,11 @@ Section "!MPUI ${Version_MPUI}" SectionMPUI
   SetOutPath $INSTDIR
   !insertmacro FileEx "" "MPUI.exe"
   !insertmacro FileEx "" "SetFileAssoc.exe"
-  !insertmacro MakeFilePublic "$INSTDIR\MPUI.ini"
-
+  
   SetOutPath "$INSTDIR\locale"
   !insertmacro FileEx "" "locale\*.txt"
 
+  !insertmacro MakeFilePublic "$INSTDIR\MPUI.ini"
   !insertmacro CreateRedirHTML "$INSTDIR\MPUI.html" "http://mpui.sourceforge.net/"
 SectionEnd
 
@@ -1280,6 +1284,7 @@ SectionEnd
     SetOutPath "$INSTDIR\docs"
     !insertmacro FileEx "/r" "docs\*.*"
  
+    !insertmacro MakeFilePublic "$INSTDIR\smplayer.ini"
     !insertmacro CreateRedirHTML "$INSTDIR\SMPlayer.html" "http://smplayer.sourceforge.net/"
 
     DetailPrint "Modifying: $INSTDIR\smplayer.ini"
@@ -1288,7 +1293,6 @@ SectionEnd
     WriteINIStr "$INSTDIR\smplayer.ini" "mplayer_info" "mplayer_detected_version" "$R0"
     WriteINIStr "$INSTDIR\smplayer.ini" "mplayer_info" "mplayer_user_supplied_version" "$R0"
 
-    !insertmacro MakeFilePublic "$INSTDIR\smplayer.ini"
   SectionEnd
 
   ; ---------------------------------------
