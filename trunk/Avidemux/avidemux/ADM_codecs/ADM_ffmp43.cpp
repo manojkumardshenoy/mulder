@@ -192,12 +192,8 @@ decoderFF::decoderFF (uint32_t w, uint32_t h):decoders (w, h)
   _context = NULL;
   _refCopy = 0;
   _usingMT = 0;
-#if LIBAVCODEC_BUILD >= 4624
+
   _context = avcodec_alloc_context ();
-#else
-  _context = new AVCodecContext;
-  memset (_context, 0, sizeof (AVCodecContext));
-#endif
   ADM_assert (_context);
   memset (&_frame, 0, sizeof (_frame));
 
@@ -234,7 +230,7 @@ decoderFF::~decoderFF ()
     }
 
   avcodec_close (_context);
-  ADM_dealloc (_context);
+  av_free(_context);
   delete[]_internalBuffer;
   printf ("[lavc] Destroyed\n");
 }
@@ -308,6 +304,8 @@ uint8_t   decoderFF::uncompress (ADMCompressedImage * in, ADMImage * out)
   int strideTab2[3];
   int ret = 0;
   out->_noPicture = 0;
+  AVPacket avpkt;
+
   if (_showMv)
     {
       _context->debug_mv |= FF_SHOW;
@@ -340,7 +338,11 @@ uint8_t   decoderFF::uncompress (ADMCompressedImage * in, ADMImage * out)
   
   _frame.opaque=(void *)in->demuxerFrameNo;
   
-  ret = avcodec_decode_video (_context, &_frame, &got_picture, in->data, in->dataLength);
+  av_init_packet(&avpkt);
+  avpkt.data = in->data;
+  avpkt.size = in->dataLength;
+
+  ret = avcodec_decode_video2(_context, &_frame, &got_picture, &avpkt);
   out->_qStride = 0;		//Default = no quant
   if (0 > ret && !_context->hurry_up)
     {
@@ -759,9 +761,14 @@ uint8_t decoderFFSubs::uncompress (ADMCompressedImage * in, AVSubtitle * out)
 {
   int ret=0;
   int got_picture=0;
-  ret=avcodec_decode_subtitle(_context, out,
-                            &got_picture,
-                            in->data, in->dataLength); 
+  AVPacket avpkt;
+
+  av_init_packet(&avpkt);
+  avpkt.data = in->data;
+  avpkt.size = in->dataLength;
+
+  ret=avcodec_decode_subtitle2(_context, out, &got_picture, &avpkt); 
+
      if(ret<0) 
      {
         printf("[lavc] FFSUB Error %d\n",ret);
