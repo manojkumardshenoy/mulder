@@ -38,9 +38,9 @@ uses
 ///////////////////////////////////////////////////////////////////////////////
 
 const
-  VersionStr: String = 'v3.15 Alpha-2';
-  BuildNo: Integer = 79;
-  BuildDate: String = '2009-12-18';
+  VersionStr: String = 'v3.15 Xmas-Edition';
+  BuildNo: Integer = 80;
+  BuildDate: String = '2009-12-24';
 
 ///////////////////////////////////////////////////////////////////////////////
 //{$DEFINE BUILD_DEBUG}
@@ -54,7 +54,7 @@ const
   (
     ('Lame', 'v3.98.2, Final (2009-09-26)'), 
     ('OggVorbis', 'v2.85, libVorbis v1.2.1 RC2, aoTuV b5.7 (2009-03-04)'), 
-    ('NeroAAC', '1.3.3.0'), // <-- Used for update-check!
+    ('NeroAAC', '1.5.1.0'), // <-- Used for update-check!
     ('MPG123', 'v1.10.0 (2009-12-05)'), 
     ('FAAD', 'v2.7 (2009-05-13)'), 
     ('FLAC', 'v1.2.1b (2009-10-01)'), 
@@ -917,7 +917,7 @@ begin
       end;
       if not CheckNeroVersion(Lookup(ToolVersionStr, 'NeroAAC', 'N/A')) then
       begin
-        if ID_YES = MyLangBoxEx(self, 'Message_NeroAacUpdateSuggestion', '%s' + #10#10 + NeroDownloadURL, MB_ICONQUESTION or MB_YESNO) then
+        if ID_YES = MyLangBoxEx(self, 'Message_NeroAacUpdateSuggestion', '%s' + #10#10 + ShortenURL(NeroDownloadURL, 56), MB_ICONQUESTION or MB_YESNO) then
         begin
           HandleURL(NeroDownloadURL);
         end;
@@ -1105,6 +1105,18 @@ begin
     MessageBeep(MB_ICONWARNING);
     Exit;
   end;
+
+  if Options.Encoder = ENCODER_NERO then
+  begin
+    if not CheckNeroVersion(Lookup(ToolVersionStr, 'NeroAAC', 'N/A')) then
+    begin
+      if ID_YES = MyLangBoxEx(self, 'Message_NeroAacUpdateSuggestion', '%s' + #10#10 + ShortenURL(NeroDownloadURL, 56), MB_ICONWARNING or MB_YESNO) then
+      begin
+        HandleURL(NeroDownloadURL);
+        Exit;
+      end;
+    end;
+  end;  
 
   RequiredSpace := MinSpace_MB * 1048576;
   FreeSpace := GetFreeDiskspace(Path.Temp);
@@ -1418,7 +1430,7 @@ begin
     Options.NeroAccepted := false;
     MyLangBox(self, 'Message_NeroAacNotAvailable', 'Nero AAC', MB_ICONWARNING or MB_TOPMOST);
     MyLangBox(self, 'Message_NeroAacInstallInfo', 'Nero AAC', MB_ICONINFORMATION or MB_TOPMOST);
-    if ID_YES = MyLangBoxEx(self, 'Message_NeroAacDownloadSuggestion', '%s' + #10#10 + NeroDownloadURL, 'Nero AAC', MB_ICONQUESTION or MB_YESNO) then
+    if ID_YES = MyLangBoxEx(self, 'Message_NeroAacDownloadSuggestion', '%s' + #10#10 + ShortenURL(NeroDownloadURL, 56), 'Nero AAC', MB_ICONQUESTION or MB_YESNO) then
     begin
       HandleURL(NeroDownloadURL);
     end;
