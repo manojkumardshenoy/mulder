@@ -139,7 +139,7 @@ begin
   LogFileBucket := TObjectBucketList.Create;
   PlayList := TStringList.Create;
   WorkerThreads := TObjectList.Create(False);
-  Label_Version.Caption := Format('%s (Build %d)', [Unit_Main.VersionStr, Unit_Main.BuildNo]);
+  Label_Version.Caption := Format('%s (#%d)', [Unit_Main.VersionStr, Unit_Main.BuildNo]);
   ListView.DoubleBuffered := True;
   TaskbarProgress := False;
 

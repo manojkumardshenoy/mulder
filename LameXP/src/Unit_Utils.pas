@@ -55,6 +55,7 @@ procedure MyPlaySound(const Name: String; const Async: Boolean);
 function PlayResoureSound(const LibFile: String; const SoundId: Cardinal; const Async: Boolean): Boolean;
 function PlaySystemSound(const Name: String; const Async: Boolean): Boolean; overload;
 function PlaySystemSound(const Name: array of String; const Async: Boolean): Boolean; overload;
+function ShortenURL(const URL: String; const MaxLen: Integer): String;
 function ShutdownComputer: Boolean;
 function TrimEx(const Input: String; const MinChar: Char; const MaxChar: Char): String;
 function VerStrToDate(const Str: String): Integer;
@@ -732,6 +733,55 @@ begin
   end;
 
   Result := Default;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+
+function ShortenURL(const URL: String; const MaxLen: Integer): String;
+var
+  i,x: Integer;
+  PreFix,PostFix: String;
+begin
+  if MaxLen < 9 then
+  begin
+    Result := URL;
+    Exit;
+  end;
+
+  PreFix := '';
+  PostFix := '';
+  x := 0;
+
+  for i := 1 to Length(URL) do
+  begin
+    if URL[i] = '/' then
+    begin
+      x := x + 1;
+      if x = 3 then
+      begin
+        PreFix := Copy(URL, 1, i);
+        PostFix := Copy(URL, i+1, Length(URL));
+      end;
+    end;
+  end;
+
+  if (PreFix = '') or (PostFix = '') then
+  begin
+    Result := URL;
+    Exit;
+  end;
+
+  while (Length(PreFix) + Length(PostFix) + 3 > MaxLen) and (Length(PreFix) > 0) and (Length(PostFix) > 0) do
+  begin
+    if Length(PostFix) > 3 then
+    begin
+      PostFix := Copy(PostFix, 2, Length(PostFix));
+    end else begin
+      PreFix := Copy(PreFix, 1, Length(PreFix) - 1);
+    end;
+  end;
+
+  Result := Format('%s...%s', [PreFix, PostFix]);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
