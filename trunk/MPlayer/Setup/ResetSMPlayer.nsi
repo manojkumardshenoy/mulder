@@ -3,6 +3,7 @@
 # ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 !packhdr "exehead.tmp" '"installer\upx.exe" --brute exehead.tmp"'
+
 !include "StrFunc.nsh"
 !include "FileFunc.nsh"
 
@@ -207,8 +208,6 @@ Section
   ; -------------------------------------------------------------------
 
   !insertmacro SetPreference "mplayer_bin" "MPlayer.exe"
-  !insertmacro SetPreference "driver\vo" "directx"
-  !insertmacro SetPreference "driver\ao" "dsound"
   !insertmacro SetPreference "dont_remember_time_pos" "true"
   !insertmacro SetPreference "dont_remember_media_settings" "true"
   !insertmacro SetPreference "use_volume_option" "1"
@@ -283,12 +282,32 @@ Section
   NoCDRomFound:
 
   ; -------------------------------------------------------------------
- 
+
+  IfSilent NoUpdateFontCache
+
+  SetDetailsPrint textonly
+  DetailPrint "Updating MPlayer font cache, please wait..."
+  SetDetailsPrint listonly
+
+  nsExec::Exec /TIMEOUT=30000 '"$EXEDIR\MPlayer.exe" -fontconfig -ass -vo null -ao null "$EXEDIR\mplayer\sample.avi"'
+
+  NoUpdateFontCache:
   
-  IfErrors 0 +3
+  ; -------------------------------------------------------------------
+  
+  IfErrors 0 NoErrorsOccurred
+
+  SetDetailsPrint textonly
+  DetailPrint "Stopped. Errors have been detected!"
+  SetDetailsPrint listonly
+
   MessageBox MB_ICONSTOP "Error: Faild to reset the MPlayer configuration! Problems might occure..."
   Quit
   
+  NoErrorsOccurred:
+  
+  ; -------------------------------------------------------------------
+
   SetDetailsPrint textonly
   DetailPrint "MPlayer configuration has been reset!"
   SetDetailsPrint listonly

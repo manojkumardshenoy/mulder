@@ -447,6 +447,9 @@ LangString Section_Shortcuts_Staus ${LANG_GERMAN} "Verknüpfungen werden erstellt
 LangString Section_Registry ${LANG_ENGLISH} "Updating the Registry"
 LangString Section_Registry ${LANG_GERMAN} "Registrierung wird aktualisiert"
 
+LangString Section_FontCache ${LANG_ENGLISH} "Updating the Font Cache"
+LangString Section_FontCache ${LANG_GERMAN} "Schriftarten Cache wird aktualisiert"
+
 LangString Section_Done ${LANG_ENGLISH} "Setup completed successfully :-D"
 LangString Section_Done ${LANG_GERMAN} "Setup erfolgreich abgeschlossen :-D"
 
@@ -1009,8 +1012,8 @@ Function _DetectCPUType
   Pop $1
 
   ; -------------- DEBUG --------------
-  ;StrLen $2 $1
-  ;MessageBox MB_ICONEXCLAMATION "Length of STDOUT data: $2"
+  ; StrLen $2 $1
+  ; MessageBox MB_ICONEXCLAMATION "Length of STDOUT data: $2"
   ; -------------- DEBUG --------------
 
   Delete "$PLUGINSDIR\cpuinfo.exe"
@@ -1191,6 +1194,7 @@ Section "!MPlayer ${Version_MPlayer}" SectionMPlayer
   !insertmacro FileEx "/oname=mplayer.exe" "installer\dummy.exe"
   !insertmacro FileEx "" "${Path_Builds}\rtm\mplayer\input.conf"
   !insertmacro FileEx "" "${Path_Builds}\rtm\mplayer\subfont.ttf"
+  !insertmacro FileEx "" "installer\sample.avi"
   
   SetOutPath "$INSTDIR\fonts"
   !insertmacro FileEx "" "${Path_Builds}\rtm\fonts\*.*"
@@ -1461,6 +1465,15 @@ Section "-Tweaks"
   StrCmp $R0 0 +3
   WriteINIStr "$INSTDIR\smplayer.ini" "gui" "mouse_left_click_function" "dvdnav_mouse"
   WriteINIStr "$INSTDIR\smplayer.ini" "drives" "use_dvdnav" "true"
+SectionEnd
+
+; ---------------------------------------
+; Init Font Cache
+; ---------------------------------------
+
+Section "-FontCache"
+  !insertmacro PrintStatusWait "$(Section_FontCache)"
+  nsExec::ExecToLog /TIMEOUT=30000 '"$INSTDIR\MPlayer.exe" -fontconfig -ass -vo null -ao null "$INSTDIR\mplayer\sample.avi"'
 SectionEnd
 
 ; ---------------------------------------

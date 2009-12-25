@@ -4,8 +4,8 @@
 ; // Developed and tested with NSIS v2.46
 ; ////////////////////////////////////////////////////////////////
 
-!define BUILD_NO "65"
-!define COMPILE_DATE "2009-12-20"
+!define BUILD_NO "66"
+!define COMPILE_DATE "2009-12-25"
 !define VER_MPLAYER "SVN-r30075 (2009-12-20)"
 !define VER_SMPLAYER "v0.6.8 (SVN-r3355)"
 !define VER_MPUI "v1.2-pre3 (Build 38)"
