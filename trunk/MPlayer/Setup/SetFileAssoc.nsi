@@ -192,7 +192,8 @@ Var extlist
   DeleteRegKey HKCR ".${extension}\OpenWithProgids"
   DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.${extension}\OpenWithList"
   DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.${extension}\OpenWithProgids"
-
+  DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.${extension}\UserChoice"
+  
   !insertmacro RevertRegValue HKCR ".${extension}" "" "MPlayer_Backup" "${type}"
   !insertmacro RevertRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.${extension}" "Progid" "MPlayer_Backup_Progid" "${type}"
   !insertmacro RevertRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.${extension}" "Application" "MPlayer_Backup_Application" "MPlayer.exe"
