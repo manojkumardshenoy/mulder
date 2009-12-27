@@ -188,6 +188,9 @@ Section
   
   ; -------------------------------------------------------------------
 
+  SetOutPath $EXEDIR
+  File "installer\radio.m3u8"
+  
   SetOutPath "$EXEDIR\mplayer"
   File "installer\config"
   File "${Path_Builds}\rtm\mplayer\input.conf"
@@ -289,7 +292,8 @@ Section
   SetDetailsPrint textonly
   DetailPrint "Updating MPlayer font cache, please wait..."
   SetDetailsPrint listonly
-
+  
+  DetailPrint 'Exec: "$EXEDIR\MPlayer.exe" -fontconfig -ass -vo null -ao null "$EXEDIR\mplayer\sample.avi"'
   nsExec::Exec /TIMEOUT=30000 '"$EXEDIR\MPlayer.exe" -fontconfig -ass -vo null -ao null "$EXEDIR\mplayer\sample.avi"'
 
   NoUpdateFontCache:

@@ -1170,6 +1170,7 @@ Section "!MPlayer ${Version_MPlayer}" SectionMPlayer
   !insertmacro FileEx "" "mplayer.html"
   !insertmacro FileEx "/oname=License.txt" "installer\GPL.txt"
   !insertmacro FileEx "" "ResetSMPlayer.exe"
+  !insertmacro FileEx "" "installer\radio.m3u8"
 
   StrCmp $CPU_TYPE "" 0 CPUAlreadDetected
   !insertmacro DetectCPUType $CPU_TYPE $CPU_NAME $0
@@ -1194,6 +1195,7 @@ Section "!MPlayer ${Version_MPlayer}" SectionMPlayer
   !insertmacro FileEx "/oname=mplayer.exe" "installer\dummy.exe"
   !insertmacro FileEx "" "${Path_Builds}\rtm\mplayer\input.conf"
   !insertmacro FileEx "" "${Path_Builds}\rtm\mplayer\subfont.ttf"
+  !insertmacro FileEx "" "installer\extreme.ico"
   !insertmacro FileEx "" "installer\sample.avi"
   
   SetOutPath "$INSTDIR\fonts"
