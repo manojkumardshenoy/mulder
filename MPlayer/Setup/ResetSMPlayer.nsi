@@ -20,6 +20,7 @@
 ${StrRep}
 
 XPStyle on
+RequestExecutionLevel admin
 InstallColors /windows
 
 Name "MPlayer Reset"
