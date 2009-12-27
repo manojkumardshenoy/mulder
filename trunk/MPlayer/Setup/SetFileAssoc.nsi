@@ -1,6 +1,7 @@
 !packhdr "exehead.tmp" '"installer\upx.exe" --brute exehead.tmp'
 
 XPStyle on
+RequestExecutionLevel admin
 InstallColors /windows
 
 Name "MPlayer File Associations"
@@ -172,6 +173,7 @@ Var extlist
   DeleteRegKey HKCR ".${extension}\OpenWithProgids"
   DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.${extension}\OpenWithList"
   DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.${extension}\OpenWithProgids"
+  DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.${extension}\UserChoice"
 
   !insertmacro ChangeRegValue HKCR ".${extension}" "" "MPlayer_Backup" "${type}"
   !insertmacro ChangeRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.${extension}" "Progid" "MPlayer_Backup_Progid" "${type}"
@@ -244,6 +246,7 @@ Section "Video Files (AVI, MPEG, MP4, etc.)"
   !insertmacro Associate "jsv" "MPlayerFileVideo"
   !insertmacro Associate "m1v" "MPlayerFileVideo"
   !insertmacro Associate "m2p" "MPlayerFileVideo"
+  !insertmacro Associate "m2ts" "MPlayerFileVideo"
   !insertmacro Associate "m2v" "MPlayerFileVideo"
   !insertmacro Associate "m4v" "MPlayerFileVideo"
   !insertmacro Associate "mkv" "MPlayerFileVideo"
@@ -278,6 +281,7 @@ Section "Audio Files (MP3, WAV, WMA, etc.)"
   !insertmacro Associate "ac3" "MPlayerFileAudio"
   !insertmacro Associate "aiff" "MPlayerFileAudio"
   !insertmacro Associate "ape" "MPlayerFileAudio"
+  !insertmacro Associate "dts" "MPlayerFileAudio"
   !insertmacro Associate "fla" "MPlayerFileAudio"
   !insertmacro Associate "flac" "MPlayerFileAudio"
   !insertmacro Associate "m4a" "MPlayerFileAudio"
@@ -291,7 +295,10 @@ Section "Audio Files (MP3, WAV, WMA, etc.)"
   !insertmacro Associate "mpp" "MPlayerFileAudio"
   !insertmacro Associate "nsa" "MPlayerFileAudio"
   !insertmacro Associate "ogg" "MPlayerFileAudio"
+  !insertmacro Associate "shn" "MPlayerFileAudio"
   !insertmacro Associate "spx" "MPlayerFileAudio"
+  !insertmacro Associate "tak" "MPlayerFileAudio"
+  !insertmacro Associate "tta" "MPlayerFileAudio"
   !insertmacro Associate "wav" "MPlayerFileAudio"
   !insertmacro Associate "wma" "MPlayerFileAudio"
   !insertmacro Associate "wv" "MPlayerFileAudio"
