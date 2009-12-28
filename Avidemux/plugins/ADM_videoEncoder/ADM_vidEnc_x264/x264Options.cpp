@@ -30,10 +30,9 @@
 #include "ADM_inttype.h"
 #include "ADM_files.h"
 
-#include "../common/PluginOptions.cpp"
 #include "x264Options.h"
 
-x264Options::x264Options(void) : PluginOptions("x264", "x264Param.xsd", DEFAULT_ENCODE_MODE, DEFAULT_ENCODE_MODE_PARAMETER)
+x264Options::x264Options(void) : PluginOptions(PLUGIN_CONFIG_DIR, "x264", "x264Param.xsd", DEFAULT_ENCODE_MODE, DEFAULT_ENCODE_MODE_PARAMETER)
 {
 	memset(&_param, 0, sizeof(x264_param_t));
 
@@ -1460,7 +1459,7 @@ void x264Options::parseOptions(xmlNode *node)
 
 				if (strcmp(content, "strict") == 0)
 					bFrameReferences = 1;
-				else if (strcmp(content, "normal") == 0 || strcmp(content, "1") == 0)
+				else if (strcmp(content, "normal") == 0 || strcmp(content, "1") == 0 || strcmp(content, "true") == 0)
 #if X264_BUILD >= 78
 					bFrameReferences = 2;
 #else
