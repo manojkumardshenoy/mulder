@@ -85,7 +85,7 @@ extern uint8_t AVDM_setVolume(int volume);
 /*
     Declare the table converting widget name to our internal signal           
 */
-typedef struct adm_qt4_translation
+struct adm_qt4_translation
 {
 	const char *name;
 	Action     action; 
@@ -683,6 +683,7 @@ int UI_Init(int nargc,char **nargv)
 QWidget *QuiMainWindows=NULL;
 QGraphicsView *drawWindow=NULL;
 uint8_t UI_updateRecentMenu( void );
+void UI_updateRecentProjectsMenu(void);
 
 void UI_refreshCustomMenu(void)
 {
@@ -767,6 +768,7 @@ int UI_RunApp(void)
 
 	UI_QT4VideoWidget(mw->ui.frame_video);  // Add the widget that will handle video display
 	UI_updateRecentMenu();
+	UI_updateRecentProjectsMenu();
 	setupMenus();
 	ADM_setCrashHook(&saveCrashProject, &FatalFunctionQt);
 	checkCrashFile();
@@ -802,13 +804,13 @@ uint8_t UI_updateRecentMenu( void )
 {
 	const char **names;
 	uint32_t nb_item=0;
-	QAction *actions[4]={WIDGET(actionRecent0),WIDGET(actionRecent1),WIDGET(actionRecent2),WIDGET(actionRecent3)};
+	QAction *actions[6]={WIDGET(actionRecent0),WIDGET(actionRecent1),WIDGET(actionRecent2),WIDGET(actionRecent3),WIDGET(actionRecent4),WIDGET(actionRecent5)};
 	names=prefs->get_lastfiles();
 
 	// hide them all
-	for(int i=0;i<4;i++) actions[i]->setVisible(0);
+	for(int i=0;i<6;i++) actions[i]->setVisible(0);
 	// Redraw..
-	for( nb_item=0;nb_item<4;nb_item++)
+	for( nb_item=0;nb_item<6;nb_item++)
 	{
 		if(!names[nb_item]) 
 		{
@@ -825,6 +827,28 @@ uint8_t UI_updateRecentMenu( void )
 	}
 	return 1;
 }
+
+void UI_updateRecentProjectsMenu(void)
+{
+	const char **names = prefs->getLastProjects();
+	QAction *actions[6] = {WIDGET(actionRecentProject0), WIDGET(actionRecentProject1), WIDGET(actionRecentProject2),
+		WIDGET(actionRecentProject3), WIDGET(actionRecentProject4), WIDGET(actionRecentProject5)};
+
+	for(int index = 0; index < 6; index++)
+		actions[index]->setVisible(false);
+
+	for (int index = 0; index < 6; index++)
+	{
+		if (!names[index])
+			break;
+		else
+		{
+			actions[index]->setText(QString::fromUtf8(names[index]));
+			actions[index]->setVisible(true);
+		}
+	}
+}
+
 /** 
   \fn    setupMenus(void)
   \brief Fill in video & audio co
