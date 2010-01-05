@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2009 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -87,7 +87,7 @@ const
     ('TTADec', 'CF1603EA02EA8B530A7A91409A080D891C3DD85E'),
     ('ALAC', '79364E837ABA9E547285E6882338EF5E52152EDA'),
     ('TAKDec', '812A216705D3137820BBB0AA37C4BD7AFFD3D830'),
-    ('MediaInfo', '5D4E60A9F2F623B0AB783B6EA0625A1BCEB0967D'),
+    ('MediaInfo', '1183D367228AFEBC7D599A9F7CF99AE6ADF506FB'),
     ('Volumax', 'A3BCD0BF45BB20BBE603462C34E20550FFF5F936'),
     ('WGet', 'C0F2E57ABACF1D1CC7DDBBD3C59A993C1CACDC3E'),
     ('WUpdate', '90539D90C203CDD58BF975D8F6603AA95521A2C8'),
