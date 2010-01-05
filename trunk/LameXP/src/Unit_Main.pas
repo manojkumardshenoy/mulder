@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2009 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -38,9 +38,9 @@ uses
 ///////////////////////////////////////////////////////////////////////////////
 
 const
-  VersionStr: String = 'v3.15 Xmas-Edition';
-  BuildNo: Integer = 80;
-  BuildDate: String = '2009-12-24';
+  VersionStr: String = 'v3.16 Alpha-1';
+  BuildNo: Integer = 81;
+  BuildDate: String = '2010-01-06';
 
 ///////////////////////////////////////////////////////////////////////////////
 //{$DEFINE BUILD_DEBUG}
