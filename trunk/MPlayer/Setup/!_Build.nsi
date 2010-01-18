@@ -4,10 +4,10 @@
 ; // Developed and tested with NSIS v2.46
 ; ////////////////////////////////////////////////////////////////
 
-!define BUILD_NO "66"
-!define COMPILE_DATE "2009-12-27"
-!define VER_MPLAYER "SVN-r30075 (2009-12-20)"
-!define VER_SMPLAYER "v0.6.8 (SVN-r3355)"
+!define BUILD_NO "67"
+!define COMPILE_DATE "2010-01-17"
+!define VER_MPLAYER "SVN-r30322 (2010-01-16)"
+!define VER_SMPLAYER "v0.6.8 (SVN-r3392)"
 !define VER_MPUI "v1.2-pre3 (Build 38)"
 !define VER_NSIS "v2.46"
 !define VER_CODECS "(2007-10-07)"
@@ -20,6 +20,8 @@
 !system 'md "${PATH_OUT}"'
 
 ; ----------------------------------------------------------------------------------------------
+
+!echo "SteLen: ${__NSIS_MAX_STRLEN__}"
 
 SilentInstall silent
 OutFile "${Path_Out}\Dummy.exe"
