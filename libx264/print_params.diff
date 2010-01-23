@@ -1,16 +1,41 @@
+diff --git a/common/common.c b/common/common.c
+index c1c075a..c409318 100644
+--- a/common/common.c
++++ b/common/common.c
+@@ -885,7 +885,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
+     s += sprintf( s, " subme=%d", p->analyse.i_subpel_refine );
+     s += sprintf( s, " psy=%d", p->analyse.b_psy );
+     if( p->analyse.b_psy )
+-        s += sprintf( s, " psy_rd=%.1f:%.1f", p->analyse.f_psy_rd, p->analyse.f_psy_trellis );
++        s += sprintf( s, " psy_rd=%.2f:%.2f", p->analyse.f_psy_rd, p->analyse.f_psy_trellis );
+     s += sprintf( s, " mixed_ref=%d", p->analyse.b_mixed_references );
+     s += sprintf( s, " me_range=%d", p->analyse.i_me_range );
+     s += sprintf( s, " chroma_me=%d", p->analyse.b_chroma_me );
+diff --git a/configure b/configure
+index 0cc246d..c0a61b2 100755
+--- a/configure
++++ b/configure
+@@ -577,6 +577,7 @@ Libs: $pclibs
+ Cflags: -I$includedir
+ EOF
+ 
++echo "#define X264_CFLAGS \"$CFLAGS\"" >> config.h
+ 
+ echo "Platform:   $ARCH"
+ echo "System:     $SYS"
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 43a9b95..c57ee7a 100644
+index 032366d..63e3aef 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -31,6 +31,7 @@
- #include "analyse.h"
+@@ -32,6 +32,7 @@
  #include "ratecontrol.h"
  #include "macroblock.h"
+ #include "me.h"
 +#include "config.h"
  
  #if VISUALIZE
  #include "common/visualize.h"
-@@ -976,6 +976,20 @@ x264_t *x264_encoder_open   ( x264_param_t *param )
+@@ -1047,6 +1047,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
          h->sps->i_profile_idc == PROFILE_HIGH ? "High" :
          "High 4:4:4 Predictive", h->sps->i_level_idc/10, h->sps->i_level_idc%10 );
  
@@ -31,29 +56,3 @@ index 43a9b95..c57ee7a 100644
      return h;
  fail:
      x264_free( h );
-
-diff --git a/configure b/configure
-index f4b5344..d45dd07 100755
---- a/configure
-+++ b/configure
-@@ -536,6 +536,7 @@ Libs: $pclibs
- Cflags: -I$includedir
- EOF
- 
-+echo "#define X264_CFLAGS \"$CFLAGS\"" >> config.h
- 
- echo "Platform:   $ARCH"
- echo "System:     $SYS"
-diff --git a/common/common.c b/common/common.c
-index ce7a613..b230f3e 100644
---- a/common/common.c
-+++ b/common/common.c
-@@ -878,7 +878,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
-     s += sprintf( s, " subme=%d", p->analyse.i_subpel_refine );
-     s += sprintf( s, " psy=%d", p->analyse.b_psy );
-     if( p->analyse.b_psy )
--        s += sprintf( s, " psy_rd=%.1f:%.1f", p->analyse.f_psy_rd, p->analyse.f_psy_trellis );
-+        s += sprintf( s, " psy_rd=%.2f:%.2f", p->analyse.f_psy_rd, p->analyse.f_psy_trellis );
-     s += sprintf( s, " mixed_ref=%d", p->analyse.b_mixed_references );
-     s += sprintf( s, " me_range=%d", p->analyse.i_me_range );
-     s += sprintf( s, " chroma_me=%d", p->analyse.b_chroma_me );

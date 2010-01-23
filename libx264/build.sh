@@ -3,8 +3,8 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
-COMPILERS="442"
-CPUS="core2 amdfam10 pentium3 noasm"
+COMPILERS="450"
+CPUS="i686 core2 amdfam10 pentium3 noasm"
 
 ######################################################
 
@@ -118,9 +118,9 @@ make_x264() {
     ECFLAGS="-march=i686"
   fi
 
-  #if [ $1 -ge 440 ]; then
-  #  ECFLAGS="$ECFLAGS -floop-interchange -floop-strip-mine -floop-block"
-  #fi
+  if [ $1 -ge 440 ]; then
+    ECFLAGS="$ECFLAGS -fno-tree-vectorize" #"-floop-interchange -floop-strip-mine -floop-block"
+  fi
     
   if [ "$4" != "" ]; then
     PATCHES="$PATCHES $4"
@@ -193,8 +193,6 @@ make_x264() {
   echo ""
 
   make clean
-  
-  cp ../pthreadGC2.dll ./pthreadGC2.dll
   cp ../readme.1st ./readme.txt
   
   git log > history.txt
@@ -220,8 +218,8 @@ make_x264() {
     return
   fi
 
-  if [ -f "./libx264-$API.dll" -a -f "./pthreadGC2.dll" -a -f "./history.txt" -a -f "./readme.txt" -a -f "./patches.tar" ]; then
-    7z a "libx264-$API-$VER-$NAME-fprofiled.7z" "libx264-$API.dll" "pthreadGC2.dll" "readme.txt" "history.txt" "patches.tar"
+  if [ -f "./libx264-$API.dll" -a -f "./history.txt" -a -f "./readme.txt" -a -f "./patches.tar" ]; then
+    7z a "libx264-$API-$VER-$NAME-fprofiled.7z" "libx264-$API.dll" "readme.txt" "history.txt" "patches.tar"
   fi
   
   cd ..
@@ -235,12 +233,10 @@ do
   for l in $CPUS
   do
     make_x264 "$k" "$l" "" ""
-    #make_x264 "$k" "$l" "noweightp" "no_weightp"
-    #make_x264 "$k" "$l" "slices" "four_slices"
-    #make_x264 "$k" "$l" "autovaq" "auto_vaq"
-    #make_x264 "$k" "$l" "nombtree" "no_mbtree"
   done
 done
+
+make_x264 "345" "i686" "" ""
 
 ######################################################
 
