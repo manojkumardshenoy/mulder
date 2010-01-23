@@ -43,8 +43,8 @@ Any Avidemux discussion NOT directly related to my libx264 builds should go here
 Install instructions:
 ---------------------
 
-Simply replace the "libx264-XX.dll" and "pthreadGC2.dll" files in your Avidemux folder with the ones from the 7z archive.
-You should backup (rename, copy, whatever) your old DLL's before you replace them, so you can restore them later.
+Simply replace the existing "libx264-XX.dll" file in your Avidemux install folder with the ones from the 7z archive.
+You should backup (rename, copy, whatever) your old DLL before you replace it, so you can restore it later.
 
 BIG FAT WARNING:
 Never rename "libx264-XX.dll" to make Avidemux recognize the DLL file. The "XX" suffix in the filename must NOT be changed!
