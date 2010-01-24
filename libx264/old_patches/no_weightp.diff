@@ -1,0 +1,13 @@
+diff --git a/x264.h b/x264.h
+index 55f271b..b5fde74 100644
+--- a/x264.h
++++ b/x264.h
+@@ -149,7 +149,7 @@ static const char * const x264_colmatrix_names[] = { "GBR", "bt709", "undef", ""
+ #define X264_SYNC_LOOKAHEAD_AUTO (-1) /* Automatically select optimal lookahead thread buffer size */
+ 
+ /* Workaround */
+-#define x264_weighted_pred      X264_WEIGHTP_SMART
++#define x264_weighted_pred      X264_WEIGHTP_NONE
+ 
+ /* Zones: override ratecontrol or other options for specific sections of the video.
+  * See x264_encoder_reconfig() for which options can be changed.
