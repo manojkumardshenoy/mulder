@@ -3,7 +3,7 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
-COMPILERS="450"
+COMPILERS="443 450"
 CPUS="i686 core2 amdfam10 pentium3 noasm"
 
 ######################################################

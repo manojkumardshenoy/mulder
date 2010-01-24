@@ -34,7 +34,7 @@ The original x264 source codes are available at this location:
 * http://git.videolan.org/gitweb.cgi?p=x264.git
 
 The unofficial(!) patches used for my builds can be found here:
-* http://mplayer.somestuff.org/misc/libx264/patches/
+* https://opensvn.csie.org/traccgi/mulder1984/browser/libx264
 
 Any Avidemux discussion NOT directly related to my libx264 builds should go here:
 * http://avidemux.org/admForum/viewforum.php?id=6
@@ -43,7 +43,7 @@ Any Avidemux discussion NOT directly related to my libx264 builds should go here
 Install instructions:
 ---------------------
 
-Simply replace the existing "libx264-XX.dll" file in your Avidemux install folder with the ones from the 7z archive.
+Simply replace the existing "libx264-XX.dll" file in your Avidemux install folder with the one from the 7z archive.
 You should backup (rename, copy, whatever) your old DLL before you replace it, so you can restore it later.
 
 BIG FAT WARNING:
@@ -58,10 +58,16 @@ Therefore I recommend that you remove all "libx264-XX.dll" files from your Avide
 License information:
 --------------------
 
-Copyright (C) 2003-2009 x264 project
+Copyright (C) 2003-2010 x264 project
 
 Authors: Loren Merritt <lorenm@u.washington.edu>
          Laurent Aimar <fenrir@via.ecp.fr>
+         Eric Petit <titer@videolan.org>
+         Min Chen <chenm001@163.com>
+         Måns Rullgård <mru@mru.ath.cx>
+         Jason Garrett-Glaser <darkshikari@gmail.com>
+         Steven Walters <kemuri9@gmail.com>
+         Kieran Kunhya <kieran@kunhya.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -76,3 +82,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02111, USA.
+
+http://www.gnu.org/licenses/gpl-2.0.txt
+
+
+eof
