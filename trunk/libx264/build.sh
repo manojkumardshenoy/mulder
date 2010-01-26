@@ -206,11 +206,24 @@ make_x264() {
 
   VER=$(grep X264_VERSION < config.h | cut -f 4 -d ' ')
   API=$(grep '#define X264_BUILD' < x264.h | cut -f 3 -d ' ')
-
+  
   if [ $2 != "noasm" ]; then
     make fprofiled VIDS="../sample.avs"
   else
     make
+  fi
+  
+  if [ $? -ne 0 ]; then
+    cd ..
+    return
+  fi
+
+  echo ""
+  echo "------------------------------------------------------------------------------"
+  echo ""
+
+  if [ $2 != "noasm" ]; then
+    make checkasm
   fi
 
   if [ $? -ne 0 ]; then
@@ -218,8 +231,17 @@ make_x264() {
     return
   fi
 
-  if [ -f "./libx264-$API.dll" -a -f "./history.txt" -a -f "./readme.txt" -a -f "./patches.tar" ]; then
-    7z a "libx264-$API-$VER-$NAME-fprofiled.7z" "libx264-$API.dll" "readme.txt" "history.txt" "patches.tar"
+  if [ -f "./checkasm.exe" ]; then
+    ./checkasm.exe 2> ./checkasm.log
+  fi
+  
+  if [ $? -ne 0 ]; then
+    cd ..
+    return
+  fi
+
+  if [ -f "./libx264-$API.dll" -a -f "./history.txt" -a -f "./readme.txt" -a -f "./patches.tar" -a -f "./checkasm.log" ]; then
+    7z a "libx264-$API-$VER-$NAME-fprofiled.7z" "libx264-$API.dll" "readme.txt" "history.txt" "patches.tar" "checkasm.log"
   fi
   
   cd ..
