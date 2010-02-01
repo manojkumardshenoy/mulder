@@ -1,0 +1,88 @@
+diff --git a/common/common.c b/common/common.c
+index b454e37..0e57b06 100644
+--- a/common/common.c
++++ b/common/common.c
+@@ -157,7 +157,7 @@ void    x264_param_default( x264_param_t *param )
+     param->b_annexb = 1;
+     param->b_aud = 0;
+     param->b_vfr_input = 1;
+-    param->b_dts_compress = 0;
++    /* param->b_dts_compress = 0; */
+ }
+ 
+ static int parse_enum( const char *arg, const char * const *names, int *dst )
+diff --git a/encoder/encoder.c b/encoder/encoder.c
+index 0a16a6b..da1096a 100644
+--- a/encoder/encoder.c
++++ b/encoder/encoder.c
+@@ -863,7 +863,7 @@ x264_t *x264_encoder_open( x264_param_t *param )
+     h->i_frame = -1;
+     h->i_frame_num = 0;
+     h->i_idr_pic_id = 0;
+-    if( h->param.b_dts_compress )
++    if( X264_DTS_COMPRESS )
+     {
+         /* h->i_dts_compress_multiplier == h->frames.i_bframe_delay + 1 */
+         h->i_dts_compress_multiplier = h->param.i_bframe ? (h->param.i_bframe_pyramid ? 3 : 2) : 1;
+diff --git a/x264.c b/x264.c
+index 7098b0f..2615021 100644
+--- a/x264.c
++++ b/x264.c
+@@ -683,7 +683,7 @@ static int select_output( const char *muxer, char *filename, x264_param_t *param
+         output = mp4_output;
+         param->b_annexb = 0;
+         param->b_aud = 0;
+-        param->b_dts_compress = 0;
++        assert( X264_DTS_COMPRESS == 0 );
+         param->b_repeat_headers = 0;
+ #else
+         fprintf( stderr, "x264 [error]: not compiled with MP4 output support\n" );
+@@ -695,7 +695,7 @@ static int select_output( const char *muxer, char *filename, x264_param_t *param
+         output = mkv_output;
+         param->b_annexb = 0;
+         param->b_aud = 0;
+-        param->b_dts_compress = 0;
++        assert( X264_DTS_COMPRESS == 0 );
+         param->b_repeat_headers = 0;
+     }
+     else if( !strcasecmp( ext, "flv" ) )
+@@ -703,7 +703,7 @@ static int select_output( const char *muxer, char *filename, x264_param_t *param
+         output = flv_output;
+         param->b_annexb = 0;
+         param->b_aud = 0;
+-        param->b_dts_compress = 1;
++        assert( X264_DTS_COMPRESS == 1 );
+         param->b_repeat_headers = 0;
+     }
+     else
+diff --git a/x264.h b/x264.h
+index 2550864..809d9fd 100644
+--- a/x264.h
++++ b/x264.h
+@@ -35,7 +35,7 @@
+ 
+ #include <stdarg.h>
+ 
+-#define X264_BUILD 84
++#define X264_BUILD 83
+ 
+ /* x264_t:
+  *      opaque handler for encoder */
+@@ -148,6 +148,8 @@ static const char * const x264_colmatrix_names[] = { "GBR", "bt709", "undef", ""
+ #define X264_THREADS_AUTO 0 /* Automatically select optimal number of threads */
+ #define X264_SYNC_LOOKAHEAD_AUTO (-1) /* Automatically select optimal lookahead thread buffer size */
+ 
++#define X264_DTS_COMPRESS 0
++
+ /* Zones: override ratecontrol or other options for specific sections of the video.
+  * See x264_encoder_reconfig() for which options can be changed.
+  * If zones overlap, whichever comes later in the list takes precedence. */
+@@ -316,7 +318,7 @@ typedef struct x264_param_t
+     int b_vfr_input;            /* VFR input */
+     int i_timebase_num;         /* Timebase numerator */
+     int i_timebase_den;         /* Timebase denominator */
+-    int b_dts_compress;         /* DTS compression: this algorithm eliminates negative DTS
++    /* int b_dts_compress;         DTS compression: this algorithm eliminates negative DTS
+                                  * by compressing them to be less than the second PTS.
+                                  * Warning: this will change the timebase! */
+ 

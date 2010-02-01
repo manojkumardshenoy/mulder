@@ -110,7 +110,7 @@ make_x264() {
     NAME=$3-$NAME
   fi
 
-  PATCHES="print_params psy_trellis fast_firstpass"
+  PATCHES="core84to83 print_params psy_trellis fast_firstpass"
   
   if [ $2 != "noasm" ]; then
     ECFLAGS="-march=$2"
@@ -233,11 +233,8 @@ make_x264() {
 
   if [ -f "./checkasm.exe" ]; then
     ./checkasm.exe 2> ./checkasm.log
-  fi
-  
-  if [ $? -ne 0 ]; then
-    cd ..
-    return
+  else
+    echo "NOASM" > ./checkasm.log
   fi
 
   if [ -f "./libx264-$API.dll" -a -f "./history.txt" -a -f "./readme.txt" -a -f "./patches.tar" -a -f "./checkasm.log" ]; then
@@ -255,6 +252,7 @@ do
   for l in $CPUS
   do
     make_x264 "$k" "$l" "" ""
+    #make_x264 "$k" "$l" "PIR" "periodic_intra_refresh"
   done
 done
 
