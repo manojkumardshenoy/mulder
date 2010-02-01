@@ -138,7 +138,7 @@ begin
     Reg.CloseKey;
   end;
 
-  if Reg.OpenKey('Control Panel\Desktop\WindowMetrics', false) then
+  {if Reg.OpenKey('Control Panel\Desktop\WindowMetrics', false) then
   begin
     if Reg.GetDataType('AppliedDPI') = rdInteger then
     begin
@@ -148,7 +148,7 @@ begin
       end;
     end;
     Reg.CloseKey;
-  end;
+  end;}
 
   Reg.Free;
 end;
@@ -1164,6 +1164,15 @@ begin
           Break;
         end;
       end;
+    end;
+  end;
+
+  // Check DPI setting on OS prior to Vista, Vista and newer handles DPI scaling much better
+  if Form_Main.ComputerInfo.OS.VersionMajor < 6 then
+  begin
+    if Screen.PixelsPerInch <> 96 then
+    begin
+      Form_Main.Flags.UnsupportedDPI := True;
     end;
   end;
 end;

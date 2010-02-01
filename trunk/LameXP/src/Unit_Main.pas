@@ -38,9 +38,9 @@ uses
 ///////////////////////////////////////////////////////////////////////////////
 
 const
-  VersionStr: String = 'v3.16 Alpha-1';
-  BuildNo: Integer = 81;
-  BuildDate: String = '2010-01-06';
+  VersionStr: String = 'v3.17 Alpha-1';
+  BuildNo: Integer = 83;
+  BuildDate: String = '2010-01-31';
 
 ///////////////////////////////////////////////////////////////////////////////
 //{$DEFINE BUILD_DEBUG}
@@ -54,7 +54,7 @@ const
   (
     ('Lame', 'v3.98.2, Final (2009-09-26)'), 
     ('OggVorbis', 'v2.85, libVorbis v1.2.1 RC2, aoTuV b5.7 (2009-03-04)'), 
-    ('NeroAAC', '1.5.1.0'), // <-- Used for update-check!
+    ('NeroAAC', '1.5.3.0'), // <-- Used for update-check!
     ('MPG123', 'v1.10.0 (2009-12-05)'), 
     ('FAAD', 'v2.7 (2009-05-13)'), 
     ('FLAC', 'v1.2.1b (2009-10-01)'), 
@@ -65,7 +65,7 @@ const
     ('AC3Filter', 'v0.31b (2009-10-01)'), 
     ('Shorten', 'v3.6.1 (2007-05-26)'), 
     ('TTA', 'v3.4.1 (2007-07-27)'), 
-    ('TAK', 'v1.1.2 (2009-07-27)'), 
+    ('TAK', 'v2.0.0 (2010-01-07)'), 
     ('MediaInfo', 'v0.7.27 (2010-01-04)'), 
     ('Volumax', 'v0.41 (2009-06-16)'), 
     ('GnuPG', 'v1.4.10b (2009-09-03)'), 
@@ -471,13 +471,15 @@ var
   InitialCurrentDir: String;
 
 {$R *.DFM}
-
 {$R Waves.res}
 {$R Icons.res}
 
 ///////////////////////////////////////////////////////////////////////////////
 
 procedure TForm_Main.FormCreate(Sender: TObject);
+const
+  CSIDL_PROGRAM_FILES = $0026;
+  CSIDL_MYMUSIC = $000d;
 begin
   if Application.Terminated then
   begin
@@ -549,9 +551,9 @@ begin
   Path.System := GetSysDirectory;
   Path.Personal := GetShellDirectory(CSIDL_PERSONAL);
   Path.Desktop := GetShellDirectory(CSIDL_DESKTOP);
-  Path.Programs := GetShellDirectory($26); //CSIDL_PROGRAM_FILES
+  Path.Programs := GetShellDirectory(CSIDL_PROGRAM_FILES);
   Path.AppData := GetShellDirectory(CSIDL_APPDATA);
-  Path.Music := GetShellDirectory($d); //CSIDL_MYMUSIC
+  Path.Music := GetShellDirectory(CSIDL_MYMUSIC);
   Path.Temp := GetTempDirectory;
 
   if (Path.AppData <> '?') and DirectoryExists(Path.AppData) then
