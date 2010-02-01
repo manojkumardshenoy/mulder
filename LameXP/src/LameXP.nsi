@@ -6,9 +6,9 @@
 ;--------------------------------
 
 ;Version Info
-!define Version "3.15 Xmas-Edition"
-!define Build_Number "80"
-!define Build_Date "2009-12-24"
+!define Version "3.16 Final"
+!define Build_Number "82"
+!define Build_Date "2010-01-26"
 
 ;UUID
 !define RegPath "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{54dcbccb-c905-46dc-b6e6-48563d0e9e55}"
