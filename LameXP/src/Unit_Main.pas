@@ -38,9 +38,9 @@ uses
 ///////////////////////////////////////////////////////////////////////////////
 
 const
-  VersionStr: String = 'v3.17 Alpha-1';
+  VersionStr: String = 'v3.17 Alpha-3';
   BuildNo: Integer = 83;
-  BuildDate: String = '2010-01-31';
+  BuildDate: String = '2010-02-03';
 
 ///////////////////////////////////////////////////////////////////////////////
 //{$DEFINE BUILD_DEBUG}

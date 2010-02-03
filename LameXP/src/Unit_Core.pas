@@ -551,13 +551,13 @@ begin
   UpdateTrackbar;
 
   Temp := ReadSetting('Outpath', '');
-  if (Temp <> '') and DirectoryExists(Temp) and IsFixedDrive(Temp) then
+  if (Temp <> '') and IsDriveReady(Temp) and DirectoryExists(Temp) and IsFixedDrive(Temp) then
   begin
     Form_Main.DirectoryListBox.Directory := Temp;
   end;
 
   Temp := ReadSetting('Inpath', '');
-  if (Temp <> '') and DirectoryExists(Temp) then
+  if (Temp <> '') and IsDriveReady(Temp) and DirectoryExists(Temp) then
   begin
     Form_Main.Dialog_AddFiles.InitialDir := Temp;
   end;
@@ -3227,7 +3227,7 @@ begin
 
   if (not b) then
   begin
-    FatalAppExit(0, 'Invalid version information. LameXP was built incorrectly!');
+    FatalAppExit(0, 'Invalid version information. LameXP was built incorrectly or hacked afterwards!');
     TerminateProcess(GetCurrentProcess, DWORD(-1));
   end;
 end;
