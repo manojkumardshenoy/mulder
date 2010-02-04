@@ -38,9 +38,9 @@ uses
 ///////////////////////////////////////////////////////////////////////////////
 
 const
-  VersionStr: String = 'v3.17 Alpha-3';
+  VersionStr: String = 'v3.17 Alpha-4';
   BuildNo: Integer = 83;
-  BuildDate: String = '2010-02-03';
+  BuildDate: String = '2010-02-04';
 
 ///////////////////////////////////////////////////////////////////////////////
 //{$DEFINE BUILD_DEBUG}
@@ -556,7 +556,7 @@ begin
   Path.Music := GetShellDirectory(CSIDL_MYMUSIC);
   Path.Temp := GetTempDirectory;
 
-  if (Path.AppData <> '?') and DirectoryExists(Path.AppData) then
+  if (Path.AppData <> '?') and SafeDirectoryExists(Path.AppData) then
   begin
     Path.LameXP := Path.AppData + '\MuldeR\LameXP';
     ForceDirectories(Path.LameXP);
@@ -820,12 +820,12 @@ begin
 
   for i := 1 to 100 do
   begin
-    if not DirectoryExists(Path.Tools) then break;
+    if not SafeDirectoryExists(Path.Tools) then break;
     RemoveDirectory(PAnsiChar(Path.Tools));
     Sleep(100);
   end;
 
-  if DirectoryExists(Path.Tools) and (not Flags.ShutdownOnTerminate) then
+  if SafeDirectoryExists(Path.Tools) and (not Flags.ShutdownOnTerminate) then
   begin
     MyLangBox(self, 'Message_CleanTempFilesError', MB_ICONWARNING or MB_TOPMOST);
   end;
@@ -1601,7 +1601,7 @@ begin
     begin
       AddInputFile(FilesToAdd[i], False, True);
     end
-    else if DirectoryExists(FilesToAdd[i]) then
+    else if SafeDirectoryExists(FilesToAdd[i]) then
     begin
       a := False;
       AddSourceFolder(FilesToAdd[i], False, a);

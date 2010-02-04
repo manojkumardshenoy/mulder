@@ -63,6 +63,8 @@ procedure HandleURL(const URL: String);
 function IntToStrEx(const Value: Int64; const Digits:Integer): String; overload;
 function IntToStrEx(const Value: Integer; const Digits:Integer): String; overload;
 function IsDebuggerPresent: Boolean;
+function IsDriveReady(const Path: String): Boolean;
+function IsFixedDrive(const Path: String):Boolean;
 function IsWow64Process: Boolean;
 function MakeTempFolder(const RootDirectory: String; const Prefix: String; const Extension: String): String;
 function MsgBox(const Parent: THandle; const Text: String; const Title: String; const Flags: Cardinal): Cardinal; overload;
@@ -72,6 +74,7 @@ function MsgBox(const Text: String; const Title: String; const Flags: Cardinal):
 function RemoveExtension(const FileName: String): String;
 function RemoveFile(const FileName: String): Boolean;
 function ReplaceSubStr(const Str: String; const SubStr: String; const NewStr: String): String;
+function SafeDirectoryExists(const Path: String): Boolean;
 function SearchFiles(const Filter: String; const ReturnFullPath: Boolean): TStringList;
 function StrEq(const Str1: String; const Str2: String): Boolean; deprecated;
 function StrToAnsi(const Str: String): String;
@@ -377,7 +380,7 @@ var
   FileName: String;
   Ext,Pref: String;
 begin
-  if not DirectoryExists(Directory) then begin
+  if not SafeDirectoryExists(Directory) then begin
     Result := '';
     Exit;
   end;
@@ -405,7 +408,7 @@ var
   FolderName: String;
   Ext,Pref: String;
 begin
-  if not DirectoryExists(RootDirectory) then begin
+  if not SafeDirectoryExists(RootDirectory) then begin
     Result := '';
     Exit;
   end;
@@ -421,7 +424,7 @@ begin
   repeat
     FolderName := RootDirectory + '\' + Pref + IntToHex(Random($FFFFFFFF),8) + Ext;
   until
-    not (FileExists(FolderName) or DirectoryExists(FolderName));
+    not (FileExists(FolderName) or SafeDirectoryExists(FolderName));
 
   ForceDirectories(FolderName);
   Result := FolderName;
@@ -921,6 +924,42 @@ begin
     SetString(Result, Buffer, ExpandEnvironmentStrings(PAnsiChar(EnvStr), Buffer, Length));
     MyFreeBuffer(Buffer);
   end;
+end;
+
+//-----------------------------------------------------------------------------
+
+function SafeDirectoryExists(const Path: String): Boolean;
+var
+  ErrorMode: UINT;
+begin
+  ErrorMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    Result := DirectoryExists(Trim(Path));
+  finally
+    SetErrorMode(ErrorMode);
+  end;
+end;
+
+//-----------------------------------------------------------------------------
+
+function IsDriveReady(const Path: String): Boolean;
+var
+  ErrorMode: UINT;
+  c1,c2: Cardinal;
+begin
+  ErrorMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    Result := GetVolumeInformation(PAnsiChar(Format('%s:\', [Copy(Trim(Path), 1, 1)])), nil, 0, nil, c1, c2, nil, 0);
+  finally
+    SetErrorMode(ErrorMode);
+  end;
+end;
+
+//-----------------------------------------------------------------------------
+
+function IsFixedDrive(const Path: String):Boolean;
+begin
+  Result := GetDriveType(PAnsiChar(Format('%s:\', [Copy(Trim(Path), 1, 1)]))) = DRIVE_FIXED;
 end;
 
 //-----------------------------------------------------------------------------
