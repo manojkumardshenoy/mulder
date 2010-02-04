@@ -37,8 +37,6 @@ function FilenameToTitle(FileName: String): String;
 function FixString(Str: String): String;
 function IntToCodepage(CodepageIdentifier: Cardinal): String;
 function IntToStrF(Value: Integer):String;
-function IsDriveReady(const Path: String): Boolean;
-function IsFixedDrive(const Path: String):Boolean;
 function IsProcessElevated: Boolean;
 function IsRegString(RegType: TRegDataType): Boolean;
 function Lookup(const Map: array of TMapEntry; const Key: String; const Default: String): String;
@@ -177,13 +175,6 @@ begin
     end;
     PlaySound(PAnsiChar(Name), hInstance, Flags);
   end;
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-
-function IsFixedDrive(const Path: String):Boolean;
-begin
-  Result := GetDriveType(PAnsiChar(Copy(Path, 1, 3))) = DRIVE_FIXED;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -783,15 +774,6 @@ begin
   end;
 
   Result := Format('%s...%s', [PreFix, PostFix]);
-end;
-
-///////////////////////////////////////////////////////////////////////////////
-
-function IsDriveReady(const Path: String): Boolean;
-var
-  Dummy1,Dummy2: Cardinal;
-begin
-  Result := GetVolumeInformation(PAnsiChar(Format('%s:\', [Copy(Path, 1, 1)])), nil, 0, nil, Dummy1, Dummy2, nil, 0);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

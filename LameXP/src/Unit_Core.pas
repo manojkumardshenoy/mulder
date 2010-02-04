@@ -551,19 +551,19 @@ begin
   UpdateTrackbar;
 
   Temp := ReadSetting('Outpath', '');
-  if (Temp <> '') and IsDriveReady(Temp) and DirectoryExists(Temp) and IsFixedDrive(Temp) then
+  if (Temp <> '') and IsFixedDrive(Temp) and SafeDirectoryExists(Temp) then
   begin
     Form_Main.DirectoryListBox.Directory := Temp;
   end;
 
   Temp := ReadSetting('Inpath', '');
-  if (Temp <> '') and IsDriveReady(Temp) and DirectoryExists(Temp) then
+  if (Temp <> '') and SafeDirectoryExists(Temp) then
   begin
     Form_Main.Dialog_AddFiles.InitialDir := Temp;
   end;
 
   Temp := ReadSetting('Temp', '');
-  if (Temp <> '') and DirectoryExists(Temp) and IsFixedDrive(Temp) then
+  if (Temp <> '') and IsFixedDrive(Temp) and SafeDirectoryExists(Temp) then
   begin
     Form_Main.Path.Temp := Temp;
   end;
@@ -1742,7 +1742,7 @@ var
   begin
     for i := 1 to 100 do
     begin
-      if not DirectoryExists(TempDir) then break;
+      if not SafeDirectoryExists(TempDir) then break;
       RemoveFile(TempFile);
       RemoveDirectory(PAnsiChar(TempDir));
       Sleep(100);
@@ -2765,7 +2765,7 @@ var
 begin
   Result := False;
 
-  if (not DirectoryExists(FolderPath)) or Aborted then
+  if (not SafeDirectoryExists(FolderPath)) or Aborted then
   begin
     Exit;
   end;  
@@ -2987,7 +2987,7 @@ begin
 
     if Filename <> '' then
     begin
-      if DirectoryExists(Filename) then
+      if SafeDirectoryExists(Filename) then
       begin
         Dirs.Add(Filename);
       end
