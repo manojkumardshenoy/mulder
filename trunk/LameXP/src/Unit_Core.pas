@@ -833,7 +833,7 @@ begin
   Result := False;
   UpdateStatusPanel(ExtractFilename(FileName));
 
-  if not FileExists(FileName) then
+  if not SafeFileExists(FileName) then
   begin
     Exit;
   end;
@@ -1437,7 +1437,7 @@ begin
 
     q.OutputFile := BaseDir + '\' + BaseName + q.GetExt;
 
-    while FileExists(q.OutputFile) or (FilesToCreate.IndexOf(q.OutputFile) <> -1) do
+    while SafeFileExists(q.OutputFile) or (FilesToCreate.IndexOf(q.OutputFile) <> -1) do
     begin
       j := j + 1;
       q.OutputFile := BaseDir + '\' + BaseName + ' (' + IntToStr(j) + ')' + q.GetExt;
@@ -1875,7 +1875,7 @@ begin
 
       Str := ExpandPath(ExtractDirectory(FileName), Str);
 
-      if FileExists(Str) then
+      if SafeFileExists(Str) then
       begin
         if AddInputFile(Str, True, False) then Found := True;
       end;
@@ -1923,7 +1923,7 @@ begin
 
     Str := ExpandPath(ExtractDirectory(FileName), Str);
 
-    if FileExists(Str) then
+    if SafeFileExists(Str) then
     begin
       if AddInputFile(Str, True, False) then Found := True;
     end;
@@ -1979,7 +1979,7 @@ begin
           if Str <> '' then
           begin
             Str := ExpandPath(ExtractDirectory(FileName), Str);
-            if FileExists(Str) then
+            if SafeFileExists(Str) then
             begin
               if AddInputFile(Str, True, False) then Found := True;
             end;
@@ -2059,7 +2059,7 @@ begin
 
       Str := ExpandPath(ExtractDirectory(FileName), SubStr[1]);
 
-      if FileExists(Str) then
+      if SafeFileExists(Str) then
       begin
         if AddInputFile(Str, True, False) then Found := True;
       end else begin
@@ -2529,7 +2529,7 @@ begin
       if Assigned(Form_Main.LanguageFiles.Objects[i]) then
       begin
         Temp := ExtractDirectory(TLockedFile(Form_Main.LanguageFiles.Objects[i]).Location) + '\' + RemoveExtension(ExtractFileName(TLockedFile(Form_Main.LanguageFiles.Objects[i]).Location)) + '.bmp';
-        if not FileExists(Temp) then
+        if not SafeFileExists(Temp) then
         begin
           Temp := Form_Main.Path.Tools + '\locale_EU.bmp';
         end;
@@ -2991,7 +2991,7 @@ begin
       begin
         Dirs.Add(Filename);
       end
-      else if FileExists(Filename) then
+      else if SafeFileExists(Filename) then
       begin
         Files.Add(Filename);
       end;

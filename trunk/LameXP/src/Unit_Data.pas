@@ -25,7 +25,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, JvDataEmbedded, Unit_LockedFile, Unit_Utils;
+  Dialogs, JvDataEmbedded, Unit_LockedFile, Unit_Utils, MuldeR_Toolz;
 
 type
   TForm_Data = class(TForm)
@@ -126,13 +126,13 @@ begin
     Exit;
   end;
 
-  if FileExists(Format('%s\dev\%d\bin\%s', [UserDir, Build, AnsiLowerCase(ExeName)])) then
+  if SafeFileExists(Format('%s\dev\%d\bin\%s', [UserDir, Build, AnsiLowerCase(ExeName)])) then
   begin
     Store := TLockedFile.Create(Format('%s\dev\%d\bin\%s', [UserDir, Build, AnsiLowerCase(ExeName)]));
     Exit;
   end;
 
-  if FileExists(Format('%s\dev\%d\bin\%s', [AppDir, Build, AnsiLowerCase(ExeName)])) then
+  if SafeFileExists(Format('%s\dev\%d\bin\%s', [AppDir, Build, AnsiLowerCase(ExeName)])) then
   begin
     Store := TLockedFile.Create(Format('%s\dev\%d\bin\%s', [AppDir, Build, AnsiLowerCase(ExeName)]));
     Exit;

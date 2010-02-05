@@ -45,7 +45,7 @@ var
 const
   MutexUUID = '{31c5f63a-ce23-407d-3bfb-04f52042b666-668610de}';
 begin
-  if (Input = '') or (not FileExists(Input)) then
+  if (Input = '') or (not SafeFileExists(Input)) then
   begin
     Result := procFaild;
     Exit;
@@ -85,7 +85,7 @@ begin
     end;
   end;
 
-  if (Result = procDone) and (not FileExists(Output)) then
+  if (Result = procDone) and (not SafeFileExists(Output)) then
   begin
     Result := procError;
   end;

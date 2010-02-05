@@ -26,7 +26,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, IniFiles, Menus, Buttons, ComCtrls,
-  JvDriveCtrls, JvCheckBox;
+  JvDriveCtrls, JvCheckBox, MuldeR_Toolz;
 
 type
   TString = class(TObject)
@@ -243,7 +243,7 @@ var
   Temp: TStringList;
   i,j: Integer;
 begin
-  if not FileExists(Name) then
+  if not SafeFileExists(Name) then
   begin
     Result := False;
     Exit;

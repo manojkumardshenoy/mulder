@@ -69,7 +69,7 @@ function TNormalizationFilter.ProcessFile(const Filename: String; const Process:
 var
   cmd: String;
 begin
-  if (Filename = '') or (not FileExists(Filename)) then
+  if (Filename = '') or (not SafeFileExists(Filename)) then
   begin
     Result := procFaild;
     Exit;

@@ -75,6 +75,7 @@ function RemoveExtension(const FileName: String): String;
 function RemoveFile(const FileName: String): Boolean;
 function ReplaceSubStr(const Str: String; const SubStr: String; const NewStr: String): String;
 function SafeDirectoryExists(const Path: String): Boolean;
+function SafeFileExists(const Path: String): Boolean;
 function SearchFiles(const Filter: String; const ReturnFullPath: Boolean): TStringList;
 function StrEq(const Str1: String; const Str2: String): Boolean; deprecated;
 function StrToAnsi(const Str: String): String;
@@ -396,7 +397,7 @@ begin
   repeat
     FileName := Directory + '\' + Pref + IntToHex(Random($FFFFFFFF),8) + Ext;
   until
-    not FileExists(FileName);
+    not SafeFileExists(FileName);
 
   Result := FileName;
 end;
@@ -424,7 +425,7 @@ begin
   repeat
     FolderName := RootDirectory + '\' + Pref + IntToHex(Random($FFFFFFFF),8) + Ext;
   until
-    not (FileExists(FolderName) or SafeDirectoryExists(FolderName));
+    not (SafeFileExists(FolderName) or SafeDirectoryExists(FolderName));
 
   ForceDirectories(FolderName);
   Result := FolderName;
@@ -759,7 +760,7 @@ end;
 
 function RemoveFile(const FileName: String): Boolean;
 begin
-  if not FileExists(FileName) then
+  if not SafeFileExists(FileName) then
   begin
     Result := True;
     Exit;
@@ -934,7 +935,21 @@ var
 begin
   ErrorMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
-    Result := DirectoryExists(Trim(Path));
+    Result := DirectoryExists(Path);
+  finally
+    SetErrorMode(ErrorMode);
+  end;
+end;
+
+//-----------------------------------------------------------------------------
+
+function SafeFileExists(const Path: String): Boolean;
+var
+  ErrorMode: UINT;
+begin
+  ErrorMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    Result := FileExists(Path);
   finally
     SetErrorMode(ErrorMode);
   end;

@@ -57,7 +57,7 @@ begin
   Process.Filter := Filter2;
   Result := Process.Execute(cmd);
 
-  if (Result = procDone) and (not FileExists(Output)) then
+  if (Result = procDone) and (not SafeFileExists(Output)) then
   begin
     Result := procError;
   end;
