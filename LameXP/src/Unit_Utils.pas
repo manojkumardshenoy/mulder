@@ -590,7 +590,7 @@ begin
             if IsRegString(Reg.GetDataType('')) then
             begin
               s := ExpandEnvStr(Trim(Reg.ReadString('')));
-              if (s <> '') and FileExists(s) then
+              if (s <> '') and SafeFileExists(s) then
               begin
                 if SystemSoundCache.IndexOf(Keys[i]) < 0 then
                 begin

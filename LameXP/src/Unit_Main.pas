@@ -645,19 +645,19 @@ begin
 
   /////////////////////////////////////////////////////////////////
 
-  if ((not Assigned(Tools.NeroEnc_Enc)) or (not Assigned(Tools.NeroEnc_Tag))) and FileExists(Path.AppRoot + '\neroAacEnc.exe') and FileExists(Path.AppRoot + '\neroAacTag.exe') then
+  if ((not Assigned(Tools.NeroEnc_Enc)) or (not Assigned(Tools.NeroEnc_Tag))) and SafeFileExists(Path.AppRoot + '\neroAacEnc.exe') and SafeFileExists(Path.AppRoot + '\neroAacTag.exe') then
   begin
     Tools.NeroEnc_Enc := TLockedFile.Create(Path.AppRoot + '\neroAacEnc.exe');
     Tools.NeroEnc_Tag := TLockedFile.Create(Path.AppRoot + '\neroAacTag.exe');
   end;
 
-  if ((not Assigned(Tools.NeroEnc_Enc)) or (not Assigned(Tools.NeroEnc_Tag))) and FileExists(Path.LameXP + '\neroAacEnc.exe') and FileExists(Path.LameXP + '\neroAacTag.exe') then
+  if ((not Assigned(Tools.NeroEnc_Enc)) or (not Assigned(Tools.NeroEnc_Tag))) and SafeFileExists(Path.LameXP + '\neroAacEnc.exe') and SafeFileExists(Path.LameXP + '\neroAacTag.exe') then
   begin
     Tools.NeroEnc_Enc := TLockedFile.Create(Path.LameXP + '\neroAacEnc.exe');
     Tools.NeroEnc_Tag := TLockedFile.Create(Path.LameXP + '\neroAacTag.exe');
   end;
 
-  if ((not Assigned(Tools.NeroEnc_Enc)) or (not Assigned(Tools.NeroEnc_Tag))) and FileExists(Path.System + '\neroAacEnc.exe') and FileExists(Path.System + '\neroAacTag.exe') then
+  if ((not Assigned(Tools.NeroEnc_Enc)) or (not Assigned(Tools.NeroEnc_Tag))) and SafeFileExists(Path.System + '\neroAacEnc.exe') and SafeFileExists(Path.System + '\neroAacTag.exe') then
   begin
     Tools.NeroEnc_Enc := TLockedFile.Create(Path.System + '\neroAacEnc.exe');
     Tools.NeroEnc_Tag := TLockedFile.Create(Path.System + '\neroAacTag.exe');
@@ -687,22 +687,22 @@ begin
 
   /////////////////////////////////////////////////////////////////
 
-  if (not Assigned(Tools.WMADec)) and FileExists(Path.AppRoot + '\wmawav.exe') then
+  if (not Assigned(Tools.WMADec)) and SafeFileExists(Path.AppRoot + '\wmawav.exe') then
   begin
     Tools.WMADec := TLockedFile.Create(Path.AppRoot + '\wmawav.exe');
   end;
 
-  if (not Assigned(Tools.WMADec)) and FileExists(Path.LameXP + '\wmawav.exe') then
+  if (not Assigned(Tools.WMADec)) and SafeFileExists(Path.LameXP + '\wmawav.exe') then
   begin
     Tools.WMADec := TLockedFile.Create(Path.LameXP + '\wmawav.exe');
   end;
 
-  if (not Assigned(Tools.WMADec)) and FileExists(Path.Programs + '\NCH Software\Components\wmawav\wmawav.exe') then
+  if (not Assigned(Tools.WMADec)) and SafeFileExists(Path.Programs + '\NCH Software\Components\wmawav\wmawav.exe') then
   begin
     Tools.WMADec := TLockedFile.Create(Path.Programs + '\NCH Software\Components\wmawav\wmawav.exe');
   end;
 
-  if (not Assigned(Tools.WMADec)) and FileExists(Path.AppData + '\NCH Software\Components\wmawav\wmawav.exe') then
+  if (not Assigned(Tools.WMADec)) and SafeFileExists(Path.AppData + '\NCH Software\Components\wmawav\wmawav.exe') then
   begin
     Tools.WMADec := TLockedFile.Create(Path.AppData + '\NCH Software\Components\wmawav\wmawav.exe');
   end;
@@ -716,7 +716,7 @@ begin
   /////////////////////////////////////////////////////////////////
 
   try
-    if FileExists(Path.AppRoot + '\background.bmp') then
+    if SafeFileExists(Path.AppRoot + '\background.bmp') then
     begin
       Background_Form.Image.Picture.LoadFromFile(Path.AppRoot + '\background.bmp');
     end;
@@ -1597,7 +1597,7 @@ begin
   begin
     if GetAsyncKeyState(VK_ESCAPE) <> 0 then Break;
 
-    if FileExists(FilesToAdd[i]) then
+    if SafeFileExists(FilesToAdd[i]) then
     begin
       AddInputFile(FilesToAdd[i], False, True);
     end

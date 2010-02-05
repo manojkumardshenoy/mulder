@@ -45,7 +45,7 @@ end;
 
 function TWaveEncoder.DoEncode(const Process: TRunProcess):TProcessResult;
 begin
-  if (SourceFile = '') or (not FileExists(SourceFile)) then
+  if (SourceFile = '') or (not SafeFileExists(SourceFile)) then
   begin
     Result := procFaild;
     Exit;

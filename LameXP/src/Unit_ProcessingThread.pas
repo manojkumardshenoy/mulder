@@ -158,7 +158,7 @@ begin
   Name_Output := ExtractFilename(Encoder.OutputFile);
   Encoder.UpdateProgessProc := UpdateProgress;
 
-  if not FileExists(Encoder.InputFile) then
+  if not SafeFileExists(Encoder.InputFile) then
   begin
     UpdateCaption(LangStr_File + ': ' + Name_Input + ' [' + LangStr_NotFound + ']', 2);
     DoCleanUp;

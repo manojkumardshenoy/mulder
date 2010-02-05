@@ -51,7 +51,7 @@ function TFLACEncoder.DoEncode(const Process: TRunProcess):TProcessResult;
 var
   cmd: String;
 begin
-  if (SourceFile = '') or (not FileExists(SourceFile)) then
+  if (SourceFile = '') or (not SafeFileExists(SourceFile)) then
   begin
     Result := procFaild;
     Exit;

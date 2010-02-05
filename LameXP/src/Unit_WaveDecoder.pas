@@ -40,7 +40,7 @@ implementation
 
 function TWaveDecoder.DecodeFile(const Input: String; const Output: String; const Process: TRunProcess): TProcessResult;
 begin
-  if (Input = '') or (not FileExists(Input)) then
+  if (Input = '') or (not SafeFileExists(Input)) then
   begin
     Result := procFaild;
     Exit;

@@ -534,7 +534,7 @@ end;
 
 procedure TForm_About.Label2Click(Sender: TObject);
 begin
-  if FileExists(Form_Main.Path.AppRoot + '\License.txt') then
+  if SafeFileExists(Form_Main.Path.AppRoot + '\License.txt') then
   begin
     if ShellExecute(WindowHandle, '', PAnsiChar(Form_Main.Path.AppRoot + '\License.txt'), nil, nil, SW_MAXIMIZE) > 32 then
     begin
