@@ -25,7 +25,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, JvExControls, JvAnimatedImage, JvGIFCtrl;
+  Dialogs, ExtCtrls, JvExControls, JvAnimatedImage, JvGIFCtrl, Unit_Utils;
 
 type
   TForm_Splash = class(TForm)
@@ -78,13 +78,14 @@ end;
 procedure TForm_Splash.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Animator.Animate := False;
+  Release;
 end;
 
 procedure TForm_Splash.CreateForm(InstanceClass: TComponentClass; var Reference);
 begin
   ForceUpdate(2);
   SetCursor(Screen.Cursors[crHourGlass]);
-  Application.CreateForm(InstanceClass, Reference);
+  MyCreateForm(Application, InstanceClass, Reference);
   Sleep(125);
 end;
 

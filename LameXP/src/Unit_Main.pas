@@ -38,12 +38,13 @@ uses
 ///////////////////////////////////////////////////////////////////////////////
 
 const
-  VersionStr: String = 'v3.17 Alpha-4';
+  VersionStr: String = 'v3.17 Alpha-5';
   BuildNo: Integer = 83;
-  BuildDate: String = '2010-02-04';
+  BuildDate: String = '2010-02-05';
 
 ///////////////////////////////////////////////////////////////////////////////
 //{$DEFINE BUILD_DEBUG}
+//{$DEFINE DISABLE_ENCODE}
 ///////////////////////////////////////////////////////////////////////////////
 
 const
@@ -1102,6 +1103,11 @@ var
   FreeSpace: Int64;
   RequiredSpace: Int64;
 begin
+  {$IF Defined(DISABLE_ENCODE)}
+  MyMsgBox('Sorry, encoding is disabled in this special build!', MB_ICONWARNING);
+  Exit;
+  {$IFEND}
+
   if Timer_AddFiles.Enabled then
   begin
     MessageBeep(MB_ICONWARNING);

@@ -41,6 +41,8 @@ function IsProcessElevated: Boolean;
 function IsRegString(RegType: TRegDataType): Boolean;
 function Lookup(const Map: array of TMapEntry; const Key: String; const Default: String): String;
 function MillisecondsToStr(const msec: DWORD; const suffixes: array of String): String;
+procedure MyCreateForm(const AppObject: TApplication; const InstanceClass: TComponentClass; var Reference); overload;
+function MyCreateForm(const InstanceClass: TComponentClass; const AOwner: TComponent): TComponent;  overload;
 function MyLangBox(const Parent: TWinControl; const Name: String; const Flags: UINT): Integer; overload;
 function MyLangBox(const Parent: TWinControl; const Name: String; const Title: String; const Flags: UINT): Integer; overload;
 function MyLangBoxEx(const Parent: TWinControl; const Name: String; const FormatStr: String; const Flags: UINT): Integer; overload;
@@ -774,6 +776,32 @@ begin
   end;
 
   Result := Format('%s...%s', [PreFix, PostFix]);
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+
+procedure MyCreateForm(const AppObject: TApplication; const InstanceClass: TComponentClass; var Reference);
+var
+  ErrorMode: UINT;
+begin
+  ErrorMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    AppObject.CreateForm(InstanceClass, Reference);
+  finally
+    SetErrorMode(ErrorMode);
+  end;
+end;
+
+function MyCreateForm(const InstanceClass: TComponentClass; const AOwner: TComponent): TComponent;
+var
+  ErrorMode: UINT;
+begin
+  ErrorMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    Result := InstanceClass.Create(AOwner);
+  finally
+    SetErrorMode(ErrorMode);
+  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

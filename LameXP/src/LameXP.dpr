@@ -103,8 +103,8 @@ begin
 
   Application.Initialize;
   Application.Title := 'LameXP';
-  
-  with TForm_Splash.Create(Application) do
+
+  with MyCreateForm(TForm_Splash, Application) as TForm_Splash do
   begin
     Show;
     CreateForm(TForm_Main, Form_Main);
@@ -113,7 +113,6 @@ begin
     CreateForm(TForm_DisplayMetaData, Form_DisplayMetaData);
     CreateForm(TForm_Dropbox, Form_Dropbox);
     Close;
-    Free;
   end;
 
   Application.Run;
