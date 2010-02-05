@@ -393,9 +393,9 @@ object Form_Main: TForm_Main
       object Label_Outdir: TLabel
         Left = 8
         Top = 8
-        Width = 17
+        Width = 16
         Height = 13
-        Caption = 'D:\'
+        Caption = 'C:\'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -553,7 +553,7 @@ object Form_Main: TForm_Main
         Height = 145
         BorderStyle = bsNone
         BevelKind = bkFlat
-        Directory = 'D:\'
+        Directory = 'C:\'
         DirLabel = Label_Outdir
         DriveCombo = JvDriveCombo1
         ItemHeight = 17
