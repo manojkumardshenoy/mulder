@@ -40,7 +40,7 @@ uses
 const
   VersionStr: String = 'v3.17 Alpha-5';
   BuildNo: Integer = 83;
-  BuildDate: String = '2010-02-05';
+  BuildDate: String = '2010-02-06';
 
 ///////////////////////////////////////////////////////////////////////////////
 //{$DEFINE BUILD_DEBUG}

@@ -105,7 +105,8 @@ var
 
 //--- Critical Section for Thread-Safety ---//
 var
-  CriticalSectionObject: TRTLCriticalSection;
+  GlobalLock: TRTLCriticalSection;
+  InternalLock: TRTLCriticalSection;
 
 //-----------------------------------------------------------------------------
 // Internal Support Functions
@@ -113,33 +114,42 @@ var
 
 procedure MyInitLibraray(var h: HMODULE; Name: String);
 begin
-  EnterCriticalSection(CriticalSectionObject);
-  if h = 0 then
-  begin
-    h := SafeLoadLibrary(PAnsiChar(Name));
+  EnterCriticalSection(InternalLock);
+  try
+    if h = 0 then
+    begin
+      h := SafeLoadLibrary(PAnsiChar(Name));
+    end;
+  finally
+    LeaveCriticalSection(InternalLock);
   end;
-  LeaveCriticalSection(CriticalSectionObject);
 end;
 
 procedure MyFreeLibrary(var h: HMODULE);
 begin
-  EnterCriticalSection(CriticalSectionObject);
-  if h <> 0 then
-  begin
-    FreeLibrary(h);
-    h := 0;
+  EnterCriticalSection(InternalLock);
+  try
+    if h <> 0 then
+    begin
+      FreeLibrary(h);
+      h := 0;
+    end;
+  finally
+    LeaveCriticalSection(InternalLock);
   end;
-  LeaveCriticalSection(CriticalSectionObject);
 end;
 
 procedure MyInitFunction(h: HMODULE; Name: String; var p: Pointer);
 begin
-  EnterCriticalSection(CriticalSectionObject);
-  if (not Assigned(p)) and (h <> 0) then
-  begin
-    p := GetProcAddress(h, PAnsiChar(Name));
-  end;
-  LeaveCriticalSection(CriticalSectionObject);
+  EnterCriticalSection(InternalLock);
+  try
+    if (not Assigned(p)) and (h <> 0) then
+    begin
+      p := GetProcAddress(h, PAnsiChar(Name));
+    end;
+  finally
+    LeaveCriticalSection(InternalLock);
+  end;  
 end;
 
 function MyInitBuffer(var Buffer: PAnsiChar; Size: Cardinal): Cardinal;
@@ -933,11 +943,16 @@ function SafeDirectoryExists(const Path: String): Boolean;
 var
   ErrorMode: UINT;
 begin
-  ErrorMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  EnterCriticalSection(GlobalLock);
   try
-    Result := DirectoryExists(Path);
+    ErrorMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+    try
+      Result := DirectoryExists(Path);
+    finally
+      SetErrorMode(ErrorMode);
+    end;
   finally
-    SetErrorMode(ErrorMode);
+    LeaveCriticalSection(GlobalLock);
   end;
 end;
 
@@ -947,11 +962,16 @@ function SafeFileExists(const Path: String): Boolean;
 var
   ErrorMode: UINT;
 begin
-  ErrorMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  EnterCriticalSection(GlobalLock);
   try
-    Result := FileExists(Path);
+    ErrorMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+    try
+      Result := FileExists(Path);
+    finally
+      SetErrorMode(ErrorMode);
+    end;
   finally
-    SetErrorMode(ErrorMode);
+    LeaveCriticalSection(GlobalLock);
   end;
 end;
 
@@ -962,11 +982,16 @@ var
   ErrorMode: UINT;
   c1,c2: Cardinal;
 begin
-  ErrorMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  EnterCriticalSection(GlobalLock);
   try
-    Result := GetVolumeInformation(PAnsiChar(Format('%s:\', [Copy(Trim(Path), 1, 1)])), nil, 0, nil, c1, c2, nil, 0);
+    ErrorMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+    try
+      Result := GetVolumeInformation(PAnsiChar(Format('%s:\', [Copy(Trim(Path), 1, 1)])), nil, 0, nil, c1, c2, nil, 0);
+    finally
+      SetErrorMode(ErrorMode);
+    end;
   finally
-    SetErrorMode(ErrorMode);
+    LeaveCriticalSection(GlobalLock);
   end;
 end;
 
@@ -1004,7 +1029,8 @@ end;
 //-----------------------------------------------------------------------------
 
 initialization
-  InitializeCriticalSection(CriticalSectionObject);
+  InitializeCriticalSection(InternalLock);
+  InitializeCriticalSection(GlobalLock);
   DLL_Kernel := 0;
   DLL_URL := 0;
   IsDebuggerPresenProc := nil;
@@ -1014,7 +1040,8 @@ initialization
 finalization
   MyFreeLibrary(DLL_URL);
   MyFreeLibrary(DLL_Kernel);
-  DeleteCriticalSection(CriticalSectionObject);
+  DeleteCriticalSection(InternalLock);
+  DeleteCriticalSection(GlobalLock);
 
 end.
 
