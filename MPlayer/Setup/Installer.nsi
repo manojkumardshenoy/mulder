@@ -35,9 +35,10 @@ RequestExecutionLevel user
 !include installer\GetParameters.nsh
 
 ; Pack EXE header
+!packhdr "exehead.tmp" '"installer\upx.exe" exehead.tmp'
+
 ; <FIXME>
-;   !packhdr "exehead.tmp" '"installer\upx.exe" exehead.tmp'
-;   !packhdr "exehead.tmp" 'upack.exe exehead.tmp -rai -red'
+; !packhdr "exehead.tmp" 'upack.exe exehead.tmp -rai -red'
 ; </FIXME>
 
 ; UUID
@@ -817,13 +818,17 @@ Function _PackFile
   IfFileExists "$0" 0 PackSuccess
 
   DetailPrint "$(PackingEXE) $0"
-  nsExec::ExecToLog '"$PLUGINSDIR\upx.exe" --compress-icons=0 "$0"'
+  nsExec::Exec /TIMEOUT=60000 '"$PLUGINSDIR\upx.exe" --compress-icons=0 "$0"'
   Pop $1
 
-  StrCmp $1 "error" 0 PackSuccess
+  StrCmp $1 "error" PackFailed
+  StrCmp $1 "timeout" PackFailed
+  Goto PackSuccess
+  
+  PackFailed:
   DetailPrint "$(PackFile_Failed) $0"
   MessageBox MB_ICONSTOP "$(PackFile_Failed) $0"
-  Abort "$(InstallFailed)"
+  #Abort "$(InstallFailed)"
   
   PackSuccess:
   Pop $1
@@ -1041,6 +1046,7 @@ Function _DetectCPUType
   ${StrTok} $3 $1 " " "$0" "1"
   IntOp $0 $0 + 1
   StrCmp $3 "" CPU_LOOP_END
+  StrCmp $3 "CMOV" CPU_LOOP_FOUND
   StrCmp $3 "MMX" CPU_LOOP_FOUND
   StrCmp $3 "MMX2" CPU_LOOP_FOUND
   StrCmp $3 "MMXEXT" CPU_LOOP_FOUND
@@ -1061,30 +1067,34 @@ Function _DetectCPUType
   
   ; ------------------------------
   
-  !insertmacro CheckCPUExt "$2" "MMX" HAS_MMX
+  !insertmacro CheckCPUExt "$2" "MMX" CPU_HAS_MMX
   Goto CPU_DETECTION_DONE
 
-  HAS_MMX:
-  !insertmacro CheckCPUExt "$2" "SSE2" HAS_SSE2
-  !insertmacro CheckCPUExt "$2" "SSE" HAS_SSE
-  !insertmacro CheckCPUExt "$2" "MMX2" HAS_MMX2
-  !insertmacro CheckCPUExt "$2" "MMXEXT" HAS_MMX2
+  CPU_HAS_MMX:
+  !insertmacro CheckCPUExt "$2" "CMOV" CPU_HAS_CMOV
   Goto CPU_DETECTION_DONE
   
-  HAS_MMX2:
-  !insertmacro CheckCPUExt "$2" "3DNOWEXT" HAS_3DNOWEXT
+  CPU_HAS_CMOV:
+  !insertmacro CheckCPUExt "$2" "MMX2" CPU_HAS_MMX2
+  !insertmacro CheckCPUExt "$2" "MMXEXT" CPU_HAS_MMX2
+  !insertmacro CheckCPUExt "$2" "SSE" CPU_HAS_MMX2
   Goto CPU_DETECTION_DONE
 
-  HAS_3DNOWEXT:
+  CPU_HAS_MMX2:
+  !insertmacro CheckCPUExt "$2" "3DNOWEXT" CPU_HAS_3DNOWEXT
+  !insertmacro CheckCPUExt "$2" "SSE2" CPU_HAS_SSE2
+  !insertmacro CheckCPUExt "$2" "SSE" CPU_HAS_SSE
+  Goto CPU_DETECTION_DONE
+
+  CPU_HAS_3DNOWEXT:
   StrCpy $4 2 #Athlon
   Goto CPU_DETECTION_DONE
 
-  HAS_SSE:
+  CPU_HAS_SSE:
   StrCpy $4 3 #P3
-  !insertmacro CheckCPUExt "$2" "3DNOWEXT" HAS_3DNOWEXT
   Goto CPU_DETECTION_DONE
 
-  HAS_SSE2:
+  CPU_HAS_SSE2:
   StrCpy $4 4 #P4
   Goto CPU_DETECTION_DONE
   
