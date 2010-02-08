@@ -818,7 +818,7 @@ Function _PackFile
   IfFileExists "$0" 0 PackSuccess
 
   DetailPrint "$(PackingEXE) $0"
-  nsExec::Exec /TIMEOUT=60000 '"$PLUGINSDIR\upx.exe" --compress-icons=0 "$0"'
+  nsExec::Exec /TIMEOUT=180000 '"$PLUGINSDIR\upx.exe" --compress-icons=0 "$0"'
   Pop $1
 
   StrCmp $1 "error" PackFailed
@@ -1075,23 +1075,17 @@ Function _DetectCPUType
   Goto CPU_DETECTION_DONE
   
   CPU_HAS_CMOV:
-  !insertmacro CheckCPUExt "$2" "MMX2" CPU_HAS_MMX2
-  !insertmacro CheckCPUExt "$2" "MMXEXT" CPU_HAS_MMX2
-  !insertmacro CheckCPUExt "$2" "SSE" CPU_HAS_MMX2
-  Goto CPU_DETECTION_DONE
-
-  CPU_HAS_MMX2:
-  !insertmacro CheckCPUExt "$2" "3DNOWEXT" CPU_HAS_3DNOWEXT
-  !insertmacro CheckCPUExt "$2" "SSE2" CPU_HAS_SSE2
   !insertmacro CheckCPUExt "$2" "SSE" CPU_HAS_SSE
   Goto CPU_DETECTION_DONE
 
-  CPU_HAS_3DNOWEXT:
-  StrCpy $4 2 #Athlon
+  CPU_HAS_SSE:
+  !insertmacro CheckCPUExt "$2" "3DNOWEXT" CPU_HAS_3DNOWEXT
+  !insertmacro CheckCPUExt "$2" "SSE2" CPU_HAS_SSE2
+  StrCpy $4 3 #P3
   Goto CPU_DETECTION_DONE
 
-  CPU_HAS_SSE:
-  StrCpy $4 3 #P3
+  CPU_HAS_3DNOWEXT:
+  StrCpy $4 2 #AthlonXP
   Goto CPU_DETECTION_DONE
 
   CPU_HAS_SSE2:
@@ -1202,11 +1196,15 @@ Section "!MPlayer ${Version_MPlayer}" SectionMPlayer
   SetOutPath "$INSTDIR\mplayer"
 
   !insertmacro FileEx "" "installer\config"
+  !insertmacro FileEx "" "installer\codecs.conf"
   !insertmacro FileEx "/oname=mplayer.exe" "installer\dummy.exe"
   !insertmacro FileEx "" "${Path_Builds}\rtm\mplayer\input.conf"
   !insertmacro FileEx "" "${Path_Builds}\rtm\mplayer\subfont.ttf"
   !insertmacro FileEx "" "installer\extreme.ico"
   !insertmacro FileEx "" "installer\sample.avi"
+
+  SetFileAttributes "$INSTDIR\mplayer\config" FILE_ATTRIBUTE_READONLY
+  SetFileAttributes "$INSTDIR\mplayer\codecs.conf" FILE_ATTRIBUTE_READONLY
   
   SetOutPath "$INSTDIR\fonts"
   !insertmacro FileEx "" "${Path_Builds}\rtm\fonts\*.*"

@@ -193,7 +193,11 @@ Section
   
   SetOutPath "$EXEDIR\mplayer"
   File "installer\config"
+  File "installer\codecs.conf"
   File "${Path_Builds}\rtm\mplayer\input.conf"
+
+  SetFileAttributes "$EXEDIR\mplayer\config" FILE_ATTRIBUTE_READONLY
+  SetFileAttributes "$EXEDIR\mplayer\codecs.conf" FILE_ATTRIBUTE_READONLY
 
   !insertmacro MakeFilePublic "$EXEDIR\MPUI.ini"
   !insertmacro MakeFilePublic "$EXEDIR\mplayer\config"
@@ -267,6 +271,7 @@ Section
  
   !insertmacro SetPerformance "frame_drop" "true"
   !insertmacro SetPerformance "hard_frame_drop" "false"
+  !insertmacro SetPerformance "threads" "2"
    
   ; -------------------------------------------------------------------
 
