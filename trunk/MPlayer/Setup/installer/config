@@ -30,4 +30,4 @@ quiet=yes
 #font=Arial
 
 ## Multithreads
-#lavdopts=threads=2
+lavdopts=threads=2
