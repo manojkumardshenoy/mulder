@@ -114,6 +114,16 @@ page instfiles
   !undef ID
 !macroend
 
+!macro GetNumberOfProcessors var_out
+  !define ID ${__LINE__}
+  SysInfo::GetNumberOfProcessors
+  Pop ${var_out}
+  IntCmp ${var_out} 1 GetNumberOfProcessorsSuccess_${ID} 0 GetNumberOfProcessorsSuccess_${ID}
+  StrCpy ${var_out} 1
+  GetNumberOfProcessorsSuccess_${ID}:
+  !undef ID
+!macroend
+
 # ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 # // Sections
 # ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -156,10 +166,10 @@ Section
   Delete "$EXEDIR\MPUI.ini"
   Delete "$EXEDIR\smplayer.ini"
   Delete "$EXEDIR\mplayer\config"
+  Delete "$EXEDIR\mplayer\*.conf"
   Delete "$EXEDIR\styles.ass"
   Delete "$EXEDIR\tv.m3u8"
   Delete "$EXEDIR\radio.m3u8"
-  Delete "$EXEDIR\mplayer\*.conf"
 
   Delete "$APPDATA\mplayer\config"
   Delete "$APPDATA\mplayer\*.conf"
@@ -271,7 +281,8 @@ Section
  
   !insertmacro SetPerformance "frame_drop" "true"
   !insertmacro SetPerformance "hard_frame_drop" "false"
-  !insertmacro SetPerformance "threads" "2"
+  !insertmacro GetNumberOfProcessors $0
+  !insertmacro SetPerformance "threads" "$0"
    
   ; -------------------------------------------------------------------
 
