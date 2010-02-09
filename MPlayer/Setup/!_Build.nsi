@@ -5,7 +5,7 @@
 ; ////////////////////////////////////////////////////////////////
 
 !define BUILD_NO "70"
-!define COMPILE_DATE "2010-02-08"
+!define COMPILE_DATE "2010-02-09"
 !define VER_MPLAYER "SVN-r30521 (2010-02-06)"
 !define VER_SMPLAYER "v0.6.8 (SVN-r3423)"
 !define VER_MPUI "v1.2-pre3 (Build 38)"

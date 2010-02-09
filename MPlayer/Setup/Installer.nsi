@@ -213,6 +213,28 @@ InstType "$(UMUI_TEXT_SETUPTYPE_MINIMAL_TITLE)"
 ; More Installer Attributes
 CheckBitmap "${NSISDIR}\Contrib\Graphics\Checks\colorful.bmp"
 
+; ---------------------------------------
+; Version Info
+; ---------------------------------------
+
+!searchreplace ProductVersion "${Compile_Date}" "-" "."
+VIProductVersion "${ProductVersion}.${Build_Number}"
+
+VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "MPlayer for Windows (${Compile_Date})"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "Free Software Foundation"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "© 2000-2010 The MPlayer Project"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${Compile_Date} (Build #${Build_Number})"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductVersion" "${Compile_Date} (Build #${Build_Number})"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "Comments" "Packaged and maintained by LoRd_MuldeR"
+
+!ifdef FullPackage
+  VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "MPlayer for Windows (${Compile_Date}), Full Package"
+  VIAddVersionKey /LANG=${LANG_ENGLISH} "OriginalFilename" "MPUI.${Compile_Date}.Full-Package.exe"
+!else
+  VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "MPlayer for Windows (${Compile_Date}), Light Package"
+  VIAddVersionKey /LANG=${LANG_ENGLISH} "OriginalFilename" "MPUI.${Compile_Date}.Light-Package.exe"
+!endif
+
 
 ; ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ; // Translation
@@ -328,6 +350,9 @@ LangString CPUNotSelected ${LANG_GERMAN} "Bitte wählen Sie zunächst den CPU Typ 
 
 LangString CPUTypeConfirm ${LANG_ENGLISH} "Selected CPU type:"
 LangString CPUTypeConfirm ${LANG_GERMAN} "Ausgewählter CPU Typ:"
+
+LangString CPUBetter ${LANG_ENGLISH} "or better"
+LangString CPUBetter ${LANG_GERMAN} "oder besser"
 
 LangString TweaksCaption ${LANG_ENGLISH} "MPlayer Tweaks"
 LangString TweaksCaption ${LANG_GERMAN} "MPlayer Einstellungen"
@@ -1152,8 +1177,16 @@ Section "-CleanUp"
   !insertmacro PrintStatusWait "$(Section_Clean)"
 
   SetOutPath $INSTDIR
+  
+  IfFileExists "$INSTDIR\explorer.exe" EmergencySkip
+  IfFileExists "$INSTDIR\kernel32.dll" EmergencySkip
+  
   Delete "$INSTDIR\*.exe"
   Delete "$INSTDIR\*.dll"
+
+  EmergencySkip:
+  Delete "$INSTDIR\mplayer\config"
+  Delete "$INSTDIR\mplayer\*.conf"
   Delete "CheckUpdate.html"
 SectionEnd
 
@@ -1811,6 +1844,13 @@ Function SetCustom_CPU
   ;-------------------------------
 
   WriteINIStr "$PLUGINSDIR\page_cpu.ini" "Field $CPU_TYPE" "State" "1"
+
+  ReadINIStr $0 "$PLUGINSDIR\page_cpu.ini" "Field 2" "Text"
+  WriteINIStr "$PLUGINSDIR\page_cpu.ini" "Field 2" "Text" "$0 $(CPUBetter)"
+
+  ReadINIStr $0 "$PLUGINSDIR\page_cpu.ini" "Field 4" "Text"
+  WriteINIStr "$PLUGINSDIR\page_cpu.ini" "Field 4" "Text" "$0 $(CPUBetter)"
+  
   ReadINIStr $0 "$PLUGINSDIR\page_cpu.ini" "Field $CPU_TYPE" "Text"
   WriteINIStr "$PLUGINSDIR\page_cpu.ini" "Field $CPU_TYPE" "Text" "$0   <--   $(CPUDetected)"
 
