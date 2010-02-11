@@ -563,18 +563,32 @@ Function Halt
 FunctionEnd
 
 ; ---------------------------------------
-; File
+; File Extraction
 ; ---------------------------------------
 
-!macro FileEx switches name
-  SetOverwrite try
+!macro FileEx destdir destname srcname 
+  !if "${destname}" == ""
+    !error "FileEx: Bad arguments !!!"
+  !else if "${destname}" == "*" 
+    !define destpath ""
+  !else if "${destname}" == "/r" 
+    !define destpath "/r"
+  !else if "${destdir}" != ""
+    !define destpath '"/oname=${destdir}\${destname}"'
+    Delete "${destdir}\${destname}"
+  !else
+    !define destpath '"/oname=$OUTDIR\${destname}"'
+    Delete "$OUTDIR\${destname}"
+  !endif
+  SetOverwrite on
   ClearErrors
-  File ${switches} "${name}"
+  File ${destpath} "${srcname}"
   IfErrors 0 +4
-  MessageBox MB_ICONEXCLAMATION|MB_OKCANCEL "$(FileExtractError)" IDOK -3
+  MessageBox MB_ICONEXCLAMATION|MB_OKCANCEL "$(FileExtractError)$\n$\n${srcname} => $OUTDIR" IDOK -3
   MessageBox MB_ICONSTOP "$(InstallFailed)"
   Abort "$(InstallFailed)"
-  SetOverwrite on
+  SetOverwrite lastused
+  !undef destpath
 !macroend
 
 ; ---------------------------------------
@@ -728,11 +742,11 @@ UAC_Success_${ID}:
 ; Extract file conditionally
 ; ---------------------------------------
 
-!macro FileConditionally var value filename label
+!macro FileConditionally var value outfname filename label
   !define ID ${__LINE__}
   
   StrCmp ${var} "${value}" 0 SkipFile_${ID}
-  !insertmacro FileEx "" "${filename}"
+  !insertmacro FileEx "" "${outfname}" "${filename}"
 
   !if ${label} != ""
     Goto ${label}
@@ -1035,7 +1049,7 @@ Function _DetectCPUType
   IfSilent +2
   Banner::show /NOUNLOAD "$(DetectingCPUType)"
 
-  File /oname=$PLUGINSDIR\cpuinfo.exe "installer\cpuinfo.exe"
+  !insertmacro FileEx "$PLUGINSDIR" "cpuinfo.exe" "installer\cpuinfo.exe"
   nsExec::ExecToStack '"$PLUGINSDIR\cpuinfo.exe"'
   
   Pop $0
@@ -1183,11 +1197,9 @@ Section "-CleanUp"
   
   Delete "$INSTDIR\*.exe"
   Delete "$INSTDIR\*.dll"
-
-  EmergencySkip:
-  Delete "$INSTDIR\mplayer\config"
-  Delete "$INSTDIR\mplayer\*.conf"
   Delete "CheckUpdate.html"
+  
+  EmergencySkip:
 SectionEnd
 
 ; ---------------------------------------
@@ -1204,10 +1216,10 @@ Section "!MPlayer ${Version_MPlayer}" SectionMPlayer
 
   SetOutPath $INSTDIR
 
-  !insertmacro FileEx "" "mplayer.html"
-  !insertmacro FileEx "/oname=License.txt" "installer\GPL.txt"
-  !insertmacro FileEx "" "ResetSMPlayer.exe"
-  !insertmacro FileEx "" "installer\radio.m3u8"
+  !insertmacro FileEx "" "mplayer.html" "mplayer.html"
+  !insertmacro FileEx "" "License.txt" "installer\GPL.txt"
+  !insertmacro FileEx "" "ResetSMPlayer.exe" "ResetSMPlayer.exe"
+  !insertmacro FileEx "" "radio.m3u8" "installer\radio.m3u8"
 
   StrCmp $CPU_TYPE "" 0 CPUAlreadDetected
   !insertmacro DetectCPUType $CPU_TYPE $CPU_NAME $0
@@ -1217,10 +1229,10 @@ Section "!MPlayer ${Version_MPlayer}" SectionMPlayer
   CPUAlreadDetected:
   DetailPrint "$(CPUTypeConfirm) $CPU_NAME"
 
-  !insertmacro FileConditionally $CPU_TYPE "2" "${Path_Builds}\athlon\MPlayer.exe" MPlayerExtracted
-  !insertmacro FileConditionally $CPU_TYPE "3" "${Path_Builds}\p3\MPlayer.exe" MPlayerExtracted
-  !insertmacro FileConditionally $CPU_TYPE "4" "${Path_Builds}\p4\MPlayer.exe" MPlayerExtracted
-  !insertmacro FileConditionally $CPU_TYPE "5" "${Path_Builds}\rtm\MPlayer.exe" MPlayerExtracted
+  !insertmacro FileConditionally $CPU_TYPE "2" "MPlayer.exe" "${Path_Builds}\athlon\MPlayer.exe" MPlayerExtracted
+  !insertmacro FileConditionally $CPU_TYPE "3" "MPlayer.exe" "${Path_Builds}\p3\MPlayer.exe" MPlayerExtracted
+  !insertmacro FileConditionally $CPU_TYPE "4" "MPlayer.exe" "${Path_Builds}\p4\MPlayer.exe" MPlayerExtracted
+  !insertmacro FileConditionally $CPU_TYPE "5" "MPlayer.exe" "${Path_Builds}\rtm\MPlayer.exe" MPlayerExtracted
   Abort "$(InstallFailed)"
   
   ; --------------------------
@@ -1228,19 +1240,19 @@ Section "!MPlayer ${Version_MPlayer}" SectionMPlayer
   MPlayerExtracted:
   SetOutPath "$INSTDIR\mplayer"
 
-  !insertmacro FileEx "" "installer\config"
-  !insertmacro FileEx "" "installer\codecs.conf"
-  !insertmacro FileEx "/oname=mplayer.exe" "installer\dummy.exe"
-  !insertmacro FileEx "" "${Path_Builds}\rtm\mplayer\input.conf"
-  !insertmacro FileEx "" "${Path_Builds}\rtm\mplayer\subfont.ttf"
-  !insertmacro FileEx "" "installer\extreme.ico"
-  !insertmacro FileEx "" "installer\sample.avi"
+  !insertmacro FileEx "" "config" "installer\config"
+  !insertmacro FileEx "" "codecs.conf" "installer\codecs.conf"
+  !insertmacro FileEx "" "mplayer.exe" "installer\dummy.exe"
+  !insertmacro FileEx "" "input.conf" "${Path_Builds}\rtm\mplayer\input.conf"
+  !insertmacro FileEx "" "subfont.ttf" "${Path_Builds}\rtm\mplayer\subfont.ttf"
+  !insertmacro FileEx "" "extreme.ico" "installer\extreme.ico"
+  !insertmacro FileEx "" "sample.avi" "installer\sample.avi"
 
   SetFileAttributes "$INSTDIR\mplayer\config" FILE_ATTRIBUTE_READONLY
   SetFileAttributes "$INSTDIR\mplayer\codecs.conf" FILE_ATTRIBUTE_READONLY
   
   SetOutPath "$INSTDIR\fonts"
-  !insertmacro FileEx "" "${Path_Builds}\rtm\fonts\*.*"
+  !insertmacro FileEx "" "*" "${Path_Builds}\rtm\fonts\*.*"
 
   CreateDirectory "$INSTDIR\codecs"
   
@@ -1261,9 +1273,9 @@ SectionEnd
 ; ---------------------------------------
 
 Section "-MPlayer Readme"
-  !insertmacro FileEx "/oname=$PLUGINSDIR\mplayer_license.txt" "installer\License.txt"
-  !insertmacro FileEx "/oname=$PLUGINSDIR\mplayer_copyright.txt" "installer\Copyright.txt"
-  !insertmacro FileEx "/oname=$PLUGINSDIR\mplayer_changelog.txt" "installer\Changelog.txt"
+  !insertmacro FileEx "$PLUGINSDIR" "mplayer_license.txt" "installer\License.txt"
+  !insertmacro FileEx "$PLUGINSDIR" "mplayer_copyright.txt" "installer\Copyright.txt"
+  !insertmacro FileEx "$PLUGINSDIR" "mplayer_changelog.txt" "installer\Changelog.txt"
   
   ClearErrors
   FileOpen $0 "$INSTDIR\readme.html" w
@@ -1284,12 +1296,12 @@ Section "!MPUI ${Version_MPUI}" SectionMPUI
   !insertmacro PrintStatusWait "$(Section_MPUI) ${Version_MPUI}"
 
   SetOutPath $INSTDIR
-  !insertmacro FileEx "" "MPUI.exe"
-  !insertmacro FileEx "" "SetFileAssoc.exe"
+  !insertmacro FileEx "" "MPUI.exe" "MPUI.exe"
+  !insertmacro FileEx "" "SetFileAssoc.exe" "SetFileAssoc.exe"
   
   SetOutPath "$INSTDIR\locale"
-  !insertmacro FileEx "" "locale\*.txt"
-
+  !insertmacro FileEx "" "*" "locale\*.txt"
+  
   !insertmacro MakeFilePublic "$INSTDIR\MPUI.ini"
   !insertmacro CreateRedirHTML "$INSTDIR\MPUI.html" "http://mpui.sourceforge.net/"
 SectionEnd
@@ -1310,26 +1322,26 @@ SectionEnd
     !insertmacro PrintStatusWait "$(Section_SMPlayer) ${Version_SMPlayer}"
 
     SetOutPath $INSTDIR
-    !insertmacro FileEx "/oname=smplayer_portable.exe" "SMPlayer.exe"
-    !insertmacro FileEx "" "mingwm10.dll"
-    !insertmacro FileEx "" "QtCore4.dll"
-    !insertmacro FileEx "" "QtGui4.dll"
-    !insertmacro FileEx "" "QtNetwork4.dll"
-    !insertmacro FileEx "" "QtXml4.dll"
-    !insertmacro FileEx "" "QxtCore.dll"
-    !insertmacro FileEx "" "libgcc_s_dw2-1.dll"
+    !insertmacro FileEx "" "smplayer_portable.exe" "SMPlayer.exe"
+    !insertmacro FileEx "" "mingwm10.dll" "mingwm10.dll"
+    !insertmacro FileEx "" "QtCore4.dll" "QtCore4.dll"
+    !insertmacro FileEx "" "QtGui4.dll" "QtGui4.dll"
+    !insertmacro FileEx "" "QtNetwork4.dll" "QtNetwork4.dll"
+    !insertmacro FileEx "" "QtXml4.dll" "QtXml4.dll"
+    !insertmacro FileEx "" "QxtCore.dll" "QxtCore.dll"
+    !insertmacro FileEx "" "libgcc_s_dw2-1.dll" "libgcc_s_dw2-1.dll"
 
     SetOutPath "$INSTDIR\shortcuts"
-    !insertmacro FileEx "" "shortcuts\*.keys"
+    !insertmacro FileEx "" "*" "shortcuts\*.keys"
 
     SetOutPath "$INSTDIR\themes"
-    !insertmacro FileEx "/r" "themes\*.*"
+    !insertmacro FileEx "" "/r" "themes\*.*"
 
     SetOutPath "$INSTDIR\translations"
-    !insertmacro FileEx "" "translations\*.qm"
+    !insertmacro FileEx "" "*" "translations\*.qm"
 
     SetOutPath "$INSTDIR\docs"
-    !insertmacro FileEx "/r" "docs\*.*"
+    !insertmacro FileEx "" "/r" "docs\*.*"
  
     !insertmacro MakeFilePublic "$INSTDIR\smplayer.ini"
     !insertmacro CreateRedirHTML "$INSTDIR\SMPlayer.html" "http://smplayer.sourceforge.net/"
@@ -1339,7 +1351,6 @@ SectionEnd
     StrCpy $R0 "${Version_MPlayer}" 5 5
     WriteINIStr "$INSTDIR\smplayer.ini" "mplayer_info" "mplayer_detected_version" "$R0"
     WriteINIStr "$INSTDIR\smplayer.ini" "mplayer_info" "mplayer_user_supplied_version" "$R0"
-
   SectionEnd
 
   ; ---------------------------------------
@@ -1352,7 +1363,7 @@ SectionEnd
     !insertmacro PrintStatusWait "$(Section_Codecs_Status) ${Version_Codecs}"
 
     SetOutPath "$INSTDIR\codecs"
-    !insertmacro FileEx "" "codecs\*.*"
+    !insertmacro FileEx "" "/r" "codecs\*.*"
   SectionEnd
   
 !endif
@@ -1370,12 +1381,12 @@ Section "-Auto Update"
   
   ClearErrors
   WriteINIStr "$INSTDIR\AutoUpdate.dat" "AutoUpdate" "BuildNo" "${Build_Number}"
-  SetFileAttributes "$INSTDIR\AutoUpdate.dat" FILE_ATTRIBUTE_READONLY
 
   IfErrors 0 +2
   Abort "$(InstallFailed)"
-  
-  !insertmacro FileEx "" "AutoUpdate.exe"
+
+  SetFileAttributes "$INSTDIR\AutoUpdate.dat" FILE_ATTRIBUTE_READONLY
+  !insertmacro FileEx "" "AutoUpdate.exe" "AutoUpdate.exe"
 SectionEnd
 
 ; ---------------------------------------
@@ -1413,23 +1424,24 @@ Section "$(Section_Optimize_Caption)" SectionOptimize
 
   !insertmacro PrintStatusWait "$(Section_Optimize)"
   
-  !insertmacro FileEx "/oname=$PLUGINSDIR\upx.exe" "installer\upx.exe"
+  !insertmacro FileEx "$PLUGINSDIR" "upx.exe" "installer\upx.exe"
   FileOpen $0 "$PLUGINSDIR\upx.exe" r
   
   ; ---------------------------------------
   
   !insertmacro PackFile "$INSTDIR\MPlayer.exe"
   !insertmacro PackFile "$INSTDIR\MPUI.exe"
-  !insertmacro PackFile "$INSTDIR\smplayer_portable.exe"
-  !insertmacro PackFile "$INSTDIR\mingwm10.dll"
-  !insertmacro PackFile "$INSTDIR\QtCore4.dll"
-  !insertmacro PackFile "$INSTDIR\QtGui4.dll"
-  !insertmacro PackFile "$INSTDIR\QtNetwork4.dll"
-  !insertmacro PackFile "$INSTDIR\QtXml4.dll"
-  !insertmacro PackFile "$INSTDIR\QxtCore.dll"
-  !insertmacro PackFile "$INSTDIR\libgcc_s_dw2-1.dll"
   
   !ifdef FullPackage
+    !insertmacro PackFile "$INSTDIR\smplayer_portable.exe"
+    !insertmacro PackFile "$INSTDIR\mingwm10.dll"
+    !insertmacro PackFile "$INSTDIR\QtCore4.dll"
+    !insertmacro PackFile "$INSTDIR\QtGui4.dll"
+    !insertmacro PackFile "$INSTDIR\QtNetwork4.dll"
+    !insertmacro PackFile "$INSTDIR\QtXml4.dll"
+    !insertmacro PackFile "$INSTDIR\QxtCore.dll"
+    !insertmacro PackFile "$INSTDIR\libgcc_s_dw2-1.dll"
+
     !insertmacro PackAll "$INSTDIR\codecs" "acm"
     !insertmacro PackAll "$INSTDIR\codecs" "ax"
     !insertmacro PackAll "$INSTDIR\codecs" "dll"
@@ -1445,6 +1457,29 @@ Section "$(Section_Optimize_Caption)" SectionOptimize
   Delete /REBOOTOK "$PLUGINSDIR\upx.exe"
 
   SkipPackFiles:
+SectionEnd
+
+; ---------------------------------------
+; Protect Binaries
+; ---------------------------------------
+
+Section "-Protect Binaries"
+  SetFileAttributes "$INSTDIR\MPlayer.exe" FILE_ATTRIBUTE_READONLY
+  SetFileAttributes "$INSTDIR\mplayer\mplayer.exe" FILE_ATTRIBUTE_READONLY
+  SetFileAttributes "$INSTDIR\MPUI.exe" FILE_ATTRIBUTE_READONLY
+  SetFileAttributes "$INSTDIR\ResetSMPlayer.exe" FILE_ATTRIBUTE_READONLY
+  SetFileAttributes "$INSTDIR\SetFileAssoc.exe" FILE_ATTRIBUTE_READONLY
+  
+  !ifdef FullPackage
+    SetFileAttributes "$INSTDIR\smplayer_portable.exe" FILE_ATTRIBUTE_READONLY
+    SetFileAttributes "$INSTDIR\mingwm10.dll" FILE_ATTRIBUTE_READONLY
+    SetFileAttributes "$INSTDIR\QtCore4.dll" FILE_ATTRIBUTE_READONLY
+    SetFileAttributes "$INSTDIR\QtGui4.dll" FILE_ATTRIBUTE_READONLY
+    SetFileAttributes "$INSTDIR\QtNetwork4.dll" FILE_ATTRIBUTE_READONLY
+    SetFileAttributes "$INSTDIR\QtXml4.dll" FILE_ATTRIBUTE_READONLY
+    SetFileAttributes "$INSTDIR\QxtCore.dll" FILE_ATTRIBUTE_READONLY
+    SetFileAttributes "$INSTDIR\libgcc_s_dw2-1.dll" FILE_ATTRIBUTE_READONLY
+  !endif
 SectionEnd
 
 ; ---------------------------------------
@@ -1637,7 +1672,7 @@ Section "Uninstall"
   !insertmacro PrintStatusWait "$(UnSection_RestoreAsscos)" 
 
   SetOutPath "$PLUGINSDIR\UnFileAssoc"
-  !insertmacro FileEx "" "SetFileAssoc.exe"
+  !insertmacro FileEx "" "SetFileAssoc.exe" "SetFileAssoc.exe"
   ExecWait '"$PLUGINSDIR\UnFileAssoc\SetFileAssoc.exe" /MODE=RESTORE /S'
   Sleep 1000
 
