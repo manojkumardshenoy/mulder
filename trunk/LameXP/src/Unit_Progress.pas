@@ -139,7 +139,6 @@ begin
   LogFileBucket := TObjectBucketList.Create;
   PlayList := TStringList.Create;
   WorkerThreads := TObjectList.Create(False);
-  Label_Version.Caption := Format('%s (#%d)', [Unit_Main.VersionStr, Unit_Main.BuildNo]);
   ListView.DoubleBuffered := True;
   TaskbarProgress := False;
 
@@ -250,6 +249,8 @@ end;
 procedure TForm_Progress.FormResize(Sender: TObject);
 var
   x: Integer;
+const
+  MinDist = 25;
 begin
   x := ClientWidth - 32;
   Progress_Total.Width := x;
@@ -275,6 +276,16 @@ begin
   Button_Pause.Left := Button_Resume.Left;
 
   Label_Version.Top := ClientHeight - Label_Version.Height - 10;
+  Label_Version.Caption := Format('%s (Build #%d)', [Unit_Main.VersionStr, Unit_Main.BuildNo]);
+
+  if Label_Version.Width > (Button_Pause.Left - Label_Version.Left - MinDist) then
+  begin
+    Label_Version.Caption := Format('%s (#%d)', [Unit_Main.VersionStr, Unit_Main.BuildNo]);
+  end;
+  if Label_Version.Width > (Button_Pause.Left - Label_Version.Left - MinDist) then
+  begin
+    Label_Version.Caption := Unit_Main.VersionStr;
+  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
