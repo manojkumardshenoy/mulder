@@ -30,9 +30,11 @@ uses
 type
   TMapEntry = array [0..1] of String;
 
+procedure AddTimerEvent(const Text: String);
 function BytesToStr(const Value: Int64):String;
 procedure CleanUp(Files: TStringList);
 function ExpandPath(Root:String; Path:String):String;
+procedure ForceApplicationUpdate(const Cursor: TCursor);
 function FilenameToTitle(FileName: String): String;
 function FixString(Str: String): String;
 function IntToCodepage(CodepageIdentifier: Cardinal): String;
@@ -56,10 +58,14 @@ procedure MyPlaySound(const Name: String; const Async: Boolean);
 function PlayResoureSound(const LibFile: String; const SoundId: Cardinal; const Async: Boolean): Boolean;
 function PlaySystemSound(const Name: String; const Async: Boolean): Boolean; overload;
 function PlaySystemSound(const Name: array of String; const Async: Boolean): Boolean; overload;
+procedure SaveTimerEvents(const Filename: String);
 function ShortenURL(const URL: String; const MaxLen: Integer): String;
 function ShutdownComputer: Boolean;
 function TrimEx(const Input: String; const MinChar: Char; const MaxChar: Char): String;
 function VerStrToDate(const Str: String): Integer;
+
+var
+  CaptureTimerEvents: Boolean;
 
 ///////////////////////////////////////////////////////////////////////////////
 implementation
@@ -70,6 +76,9 @@ uses
 
 var
   SystemSoundCache: TStrings;
+  TimerEvents: TStrings;
+  InitialTickCount: Cardinal;
+  PreviousTickCount: Cardinal;
 
 procedure CleanUp(Files: TStringList);
 var
@@ -786,6 +795,7 @@ var
 begin
   ErrorMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
+    AddTimerEvent('CreateForm: ' + InstanceClass.ClassName);
     AppObject.CreateForm(InstanceClass, Reference);
   finally
     SetErrorMode(ErrorMode);
@@ -806,7 +816,72 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+procedure ForceApplicationUpdate(const Cursor: TCursor);
+begin
+  Application.ProcessMessages;
+  SetCursor(Screen.Cursors[Cursor]);
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+
+procedure AddTimerEvent(const Text: String);
+var
+  CurrentTickCount: Cardinal;
+begin
+  if not CaptureTimerEvents then
+  begin
+    Exit;
+  end;  
+
+  if not Assigned(TimerEvents) then
+  begin
+    InitialTickCount := GetTickCount;
+    PreviousTickCount := InitialTickCount;
+    try
+      TimerEvents := TStringList.Create;
+      TimerEvents.Add(Format('[%.8u] [%.8u] %s', [0, 0, Text]));
+    except
+      TimerEvents := nil;
+    end;
+  end else begin
+    try
+      CurrentTickCount := GetTickCount();
+      TimerEvents.Add(Format('[%.8u] [%.8u] %s', [CurrentTickCount - InitialTickCount, CurrentTickCount - PreviousTickCount, Text]));
+      PreviousTickCount := CurrentTickCount;
+    except
+      TimerEvents := nil;
+    end;
+  end;
+end;
+
+procedure SaveTimerEvents(const Filename: String);
+begin
+  if not CaptureTimerEvents then
+  begin
+    Exit;
+  end;  
+
+  if Assigned(TimerEvents) then
+  begin
+    try
+      TimerEvents.SaveToFile(Filename);
+    except
+      MessageBeep(MB_ICONERROR);
+    end;
+  end;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+
 initialization
   SystemSoundCache := nil;
+  CaptureTimerEvents := False;
+  TimerEvents := nil;
+  InitialTickCount := 0;
+  PreviousTickCount := 0;
+
+finalization
+  if Assigned(SystemSoundCache) then FreeAndNil(SystemSoundCache);
+  if Assigned(TimerEvents) then FreeAndNil(TimerEvents);
 
 end.

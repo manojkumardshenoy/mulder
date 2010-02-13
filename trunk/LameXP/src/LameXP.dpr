@@ -101,6 +101,8 @@ begin
     Exit;
   end;
 
+  {Unit_Utils.CaptureTimerEvents := True;}
+
   Application.Initialize;
   Application.Title := 'LameXP';
 
