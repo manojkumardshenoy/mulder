@@ -38,9 +38,9 @@ uses
 ///////////////////////////////////////////////////////////////////////////////
 
 const
-  VersionStr: String = 'v3.17 Beta-1';
+  VersionStr: String = 'v3.17 Beta-2';
   BuildNo: Integer = 83;
-  BuildDate: String = '2010-02-12';
+  BuildDate: String = '2010-02-13';
 
 ///////////////////////////////////////////////////////////////////////////////
 //{$DEFINE BUILD_DEBUG}
@@ -488,7 +488,9 @@ begin
   end;
 
   /////////////////////////////////////////////////////////////////
-
+  ForceApplicationUpdate(crHourGlass);
+  /////////////////////////////////////////////////////////////////
+  
   {$IF NOT Defined(BUILD_DEBUG)}
   AppOnIdleProc := Application.OnIdle;
   Application.OnIdle := AppOnIdle;
@@ -546,6 +548,8 @@ begin
   end;
 
   /////////////////////////////////////////////////////////////////
+  ForceApplicationUpdate(crHourGlass);
+  /////////////////////////////////////////////////////////////////
 
   Path.AppRoot := GetAppDirectory;
   Path.StartFrom := InitialCurrentDir;
@@ -584,6 +588,8 @@ begin
   Path.Tools := MakeTempFolder(GetTempDirectory,'LameXP_','tmp');
 
   /////////////////////////////////////////////////////////////////
+  ForceApplicationUpdate(crHourGlass);
+  /////////////////////////////////////////////////////////////////
 
   with TForm_Data.Create(self, Path.Tools, Path.AppRoot, Path.LameXP, BuildNo) do
   begin
@@ -618,6 +624,8 @@ begin
   Tools.WMADec := nil;
 
   /////////////////////////////////////////////////////////////////
+  ForceApplicationUpdate(crHourGlass);
+  /////////////////////////////////////////////////////////////////
 
   with TForm_Languages.Create(self, Path.Tools, LanguageFiles, LanguageFlags) do
   begin
@@ -645,6 +653,8 @@ begin
   InitializeLanguages;
 
   /////////////////////////////////////////////////////////////////
+  ForceApplicationUpdate(crHourGlass);
+  /////////////////////////////////////////////////////////////////
 
   if ((not Assigned(Tools.NeroEnc_Enc)) or (not Assigned(Tools.NeroEnc_Tag))) and SafeFileExists(Path.AppRoot + '\neroAacEnc.exe') and SafeFileExists(Path.AppRoot + '\neroAacTag.exe') then
   begin
@@ -670,6 +680,8 @@ begin
   end;
 
   /////////////////////////////////////////////////////////////////
+  ForceApplicationUpdate(crHourGlass);
+  /////////////////////////////////////////////////////////////////
 
   DecoderList.Add(TWaveDecoder.Create(nil));
   DecoderList.Add(TMP3Decoder.Create(Tools.MP3Dec));
@@ -686,6 +698,8 @@ begin
   DecoderList.Add(TTTADecoder.Create(Tools.TTADec));
   DecoderList.Add(TTAKDecoder.Create(Tools.TAKDec));
 
+  /////////////////////////////////////////////////////////////////
+  ForceApplicationUpdate(crHourGlass);
   /////////////////////////////////////////////////////////////////
 
   if (not Assigned(Tools.WMADec)) and SafeFileExists(Path.AppRoot + '\wmawav.exe') then
@@ -715,6 +729,8 @@ begin
   end;
 
   /////////////////////////////////////////////////////////////////
+  ForceApplicationUpdate(crHourGlass);
+  /////////////////////////////////////////////////////////////////
 
   try
     if SafeFileExists(Path.AppRoot + '\background.bmp') then
@@ -725,6 +741,8 @@ begin
     Background_Form.Image.Picture.Bitmap.FreeImage;
   end;
 
+  /////////////////////////////////////////////////////////////////
+  ForceApplicationUpdate(crHourGlass);
   /////////////////////////////////////////////////////////////////
 
   try
@@ -748,6 +766,10 @@ begin
     end;
   end;
 
+  /////////////////////////////////////////////////////////////////
+  ForceApplicationUpdate(crHourGlass);
+  /////////////////////////////////////////////////////////////////
+
   if Options.ShellIntegration then
   begin
     try
@@ -758,6 +780,10 @@ begin
   end else begin
     Menu_DisableShellIntegration.Checked := True;
   end;
+
+  /////////////////////////////////////////////////////////////////
+  ForceApplicationUpdate(crHourGlass);
+  /////////////////////////////////////////////////////////////////
 
   try
     InitRegistry;
@@ -835,6 +861,8 @@ begin
   begin
     ShutdownComputer;
   end;
+
+  SaveTimerEvents(Format('%s\TimerEvents.log', [Path.LameXP]));
 end;
 
 ///////////////////////////////////////////////////////////////////////////////

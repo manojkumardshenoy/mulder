@@ -132,6 +132,8 @@ begin
   Self.Path := Path;
   Self.Languages := Languages;
   Self.Flags := Flags;
+
+  ForceApplicationUpdate(crHourGlass);
 end;
 
 procedure TForm_Languages.MakeLanguage(const LangID: String);
@@ -158,6 +160,7 @@ var
       Result := Format('%s_%s', [Prefix, LangID]);
     end;
   end;
+
   function HashID: String;
   begin
     if SubLang <> '' then
@@ -167,6 +170,7 @@ var
       Result := LangID;
     end;
   end;
+
   function FileID(Extension: String): String;
   begin
     if SubLang <> '' then
@@ -226,6 +230,8 @@ begin
       end;
     end;
   end;
+
+  ForceApplicationUpdate(crHourGlass);
 end;
 
 end.

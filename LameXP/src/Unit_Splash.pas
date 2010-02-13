@@ -83,7 +83,7 @@ end;
 
 procedure TForm_Splash.CreateForm(InstanceClass: TComponentClass; var Reference);
 begin
-  ForceUpdate(2);
+  ForceUpdate(1);
   SetCursor(Screen.Cursors[crHourGlass]);
   MyCreateForm(Application, InstanceClass, Reference);
   Sleep(125);

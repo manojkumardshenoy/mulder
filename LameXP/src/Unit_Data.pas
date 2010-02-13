@@ -106,6 +106,8 @@ begin
   Self.AppDir := AppDir;
   Self.UserDir := UserDir;
   Self.Build := Build;
+
+  ForceApplicationUpdate(crHourGlass);
 end;
 
 procedure TForm_Data.MakeTool(var Store: TLockedFile; const ToolID: String);
@@ -129,12 +131,14 @@ begin
   if SafeFileExists(Format('%s\dev\%d\bin\%s', [UserDir, Build, AnsiLowerCase(ExeName)])) then
   begin
     Store := TLockedFile.Create(Format('%s\dev\%d\bin\%s', [UserDir, Build, AnsiLowerCase(ExeName)]));
+    ForceApplicationUpdate(crHourGlass);
     Exit;
   end;
 
   if SafeFileExists(Format('%s\dev\%d\bin\%s', [AppDir, Build, AnsiLowerCase(ExeName)])) then
   begin
     Store := TLockedFile.Create(Format('%s\dev\%d\bin\%s', [AppDir, Build, AnsiLowerCase(ExeName)]));
+    ForceApplicationUpdate(crHourGlass);
     Exit;
   end;
 
@@ -152,6 +156,7 @@ begin
         FatalAppExit(0, 'Data verification failed. File checksum is missing!');
         TerminateProcess(GetCurrentProcess, DWORD(-1));
       end;
+      ForceApplicationUpdate(crHourGlass);
       Exit;
     end;
   end;
