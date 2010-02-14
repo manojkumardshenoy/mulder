@@ -6,9 +6,9 @@
 ;--------------------------------
 
 ;Version Info
-!define Version "3.16 Final"
-!define Build_Number "82"
-!define Build_Date "2010-01-26"
+!define Version "3.17 Beta"
+!define Build_Number "83"
+!define Build_Date "2010-02-14"
 
 ;UUID
 !define RegPath "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{54dcbccb-c905-46dc-b6e6-48563d0e9e55}"
@@ -166,6 +166,7 @@ BrandingText "LameXP, Build #${Build_Number} (${Build_Date})"
 
 ReserveFile "${NSISDIR}\Plugins\UAC.DLL"
 ReserveFile "${NSISDIR}\Plugins\SYSTEM.DLL"
+ReserveFile "${NSISDIR}\Plugins\LangDLL.DLL"
 ReserveFile "${NSISDIR}\Plugins\SELFDEL.DLL"
 ReserveFile "${NSISDIR}\Plugins\NSDIALOGS.DLL"
 ReserveFile "${NSISDIR}\Plugins\STARTMENU.DLL"
@@ -259,6 +260,40 @@ UAC_Success_${ID}:
 !macroend
 
 ;--------------------------------
+;Create Shortcuts
+;--------------------------------
+
+!macro CREATE_SHORTCUT shortcut_file target_file icon_file icon_idx
+  SetFileAttributes "${shortcut_file}" FILE_ATTRIBUTE_NORMAL
+  CreateShortCut "${shortcut_file}" "${target_file} "" "${icon_file}" ${icon_idx}
+  SetFileAttributes "${shortcut_file}" FILE_ATTRIBUTE_READONLY
+!macroend
+
+!macro CREATE_WEB_SHORTCUT shortcut_file target_url
+  Push $0
+  Push $1
+  StrCpy $0 "${shortcut_file}"
+  StrCpy $1 "${target_url}"
+  Call _CreateWebShortcut
+  Pop $1
+  Pop $0
+!macroend
+
+Function _CreateWebShortcut
+  FlushINI "$0"
+  SetFileAttributes "$0" FILE_ATTRIBUTE_NORMAL
+  DeleteINISec "$0" "DEFAULT"
+  DeleteINISec "$0" "InternetShortcut"
+  WriteINIStr "$0" "DEFAULT" "BASEURL" "$1"
+  WriteINIStr "$0" "InternetShortcut" "ORIGURL" "$1"
+  WriteINIStr "$0" "InternetShortcut" "URL" "$1"
+  WriteINIStr "$0" "InternetShortcut" "IconFile" "$SYSDIR\SHELL32.dll"
+  WriteINIStr "$0" "InternetShortcut" "IconIndex" "150"
+  FlushINI "$0"
+  SetFileAttributes "$0" FILE_ATTRIBUTE_READONLY
+FunctionEnd
+
+;--------------------------------
 ;Installer Sections
 ;--------------------------------
 
@@ -291,17 +326,13 @@ Section
     Delete "$SMPROGRAMS\$StartMenuFolder\*.lnk"
     Delete "$SMPROGRAMS\$StartMenuFolder\*.pif"
     Delete "$SMPROGRAMS\$StartMenuFolder\*.url"
-    
-    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk"                 "$INSTDIR\LameXP.exe"    "" "$INSTDIR\LameXP.exe"    0
-    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Changelog.lnk"              "$INSTDIR\Changelog.htm" "" "$INSTDIR\LameXP.exe"    2
-    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Howto Translate LameXP.lnk" "$INSTDIR\Howto.html"    "" "$INSTDIR\LameXP.exe"    2
-    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk"              "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
-    
-    WriteINIStr "$SMPROGRAMS\$StartMenuFolder\Web Site.url" "DEFAULT"          "BASEURL"   "http://mulder.dummwiedeutsch.de/"
-    WriteINIStr "$SMPROGRAMS\$StartMenuFolder\Web Site.url" "InternetShortcut" "ORIGURL"   "http://mulder.dummwiedeutsch.de/"
-    WriteINIStr "$SMPROGRAMS\$StartMenuFolder\Web Site.url" "InternetShortcut" "URL"       "http://mulder.dummwiedeutsch.de/home/?page=home"
-    WriteINIStr "$SMPROGRAMS\$StartMenuFolder\Web Site.url" "InternetShortcut" "IconFile"  "$INSTDIR\LameXP.exe"
-    WriteINIStr "$SMPROGRAMS\$StartMenuFolder\Web Site.url" "InternetShortcut" "IconIndex" "1"
+    !insertmacro CREATE_SHORTCUT "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk" "$INSTDIR\LameXP.exe" "$INSTDIR\LameXP.exe" 0
+    !insertmacro CREATE_SHORTCUT "$SMPROGRAMS\$StartMenuFolder\Changelog.lnk" "$INSTDIR\Changelog.htm" "$SYSDIR\SHELL32.dll" 23
+    !insertmacro CREATE_SHORTCUT "$SMPROGRAMS\$StartMenuFolder\Howto Translate LameXP.lnk" "$INSTDIR\Howto.html" "$SYSDIR\SHELL32.dll" 23
+    !insertmacro CREATE_SHORTCUT "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\Uninstall.exe" "$INSTDIR\Uninstall.exe" 0
+    !insertmacro CREATE_WEB_SHORTCUT "$SMPROGRAMS\$StartMenuFolder\Official LameXP Homepage.url" "http://mulder.dummwiedeutsch.de/"
+    !insertmacro CREATE_WEB_SHORTCUT "$SMPROGRAMS\$StartMenuFolder\RareWares.org.url" "http://rarewares.org/"
+    !insertmacro CREATE_WEB_SHORTCUT "$SMPROGRAMS\$StartMenuFolder\Hydrogenaudio Forums.url" "http://www.hydrogenaudio.org/"
   !insertmacro MUI_STARTMENU_WRITE_END
 
   ;Store installation folder & uinstaller
@@ -321,6 +352,7 @@ Section
   ;Reset license
   IntFmt $0 "LameXP_%08X" ${Build_Number}
   DeleteINIStr "$APPDATA\MuldeR\LameXP\Settings.ini" "$0" "GNULicenseAgreed"
+  FlushINI "$APPDATA\MuldeR\LameXP\Settings.ini"
   
   ;Complete
   !insertmacro MyPrintComplete "Setup completed"
@@ -419,8 +451,11 @@ DeletedExeSuccessfully:
 
   ;Uninstall files
   Delete /REBOOTOK "$INSTDIR\LameXP.exe"
+  Delete /REBOOTOK "$INSTDIR\LameXP.exe.sig"
   Delete /REBOOTOK "$INSTDIR\Changelog.htm"
   Delete /REBOOTOK "$INSTDIR\License.txt"
+  Delete /REBOOTOK "$INSTDIR\Contributors.txt"
+  Delete /REBOOTOK "$INSTDIR\Howto.html"
   Delete /REBOOTOK "$INSTDIR\Uninstall.exe"
 
   ;Delete personal settings
@@ -440,9 +475,8 @@ NoDeletePersonal:
   !insertmacro MyPrintProgress "Removing shortcuts"
   !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder
   IfFileExists "$SMPROGRAMS\$StartMenuFolder\*.*" 0 NoStartmenu
-  Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk"
-  Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\Changelog.lnk"
-  Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk"
+  Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.lnk"
+  Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.url"
   RMDir "$SMPROGRAMS\$StartMenuFolder"
 
 NoStartmenu:
