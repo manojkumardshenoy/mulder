@@ -38,9 +38,9 @@ uses
 ///////////////////////////////////////////////////////////////////////////////
 
 const
-  VersionStr: String = 'v3.17 Beta-2';
+  VersionStr: String = 'v3.17 RC-1';
   BuildNo: Integer = 83;
-  BuildDate: String = '2010-02-13';
+  BuildDate: String = '2010-02-15';
 
 ///////////////////////////////////////////////////////////////////////////////
 //{$DEFINE BUILD_DEBUG}
@@ -198,7 +198,7 @@ type
     N9: TMenuItem;
     PageControl: TPageControl;
     Panel_DragIn: TPanel;
-    Panel_Working: TPanel;
+    Panel_Working_Outer: TPanel;
     Popup_AddFiles: TPopupMenu;
     Popup_DevTools: TJvPopupMenu;
     Popup_Folder: TPopupMenu;
@@ -221,6 +221,10 @@ type
     TrackBar: TTrackBar;
     Trackbar_AlogorithmQuality: TTrackBar;
     XPManifest1: TXPManifest;
+    Panel_Working_Inner: TPanel;
+    Icon_Working: TImage;
+    Panel_Working_Status: TPanel;
+    ImageList2: TImageList;
     procedure ApplicationEvents1Exception(Sender: TObject; E: Exception);
     procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure Button5Click(Sender: TObject);
@@ -1724,7 +1728,7 @@ end;
 procedure TForm_Main.Menu_CheckforUpdatesClick(Sender: TObject);
 begin
   ShowStatusPanel(true);
-  UpdateStatusPanel(LangStr('Message_CheckUpdatesWait', self.Name));
+  UpdateStatusPanel(2, LangStr('Message_CheckUpdatesWait', self.Name));
   CheckUpdate;
   ShowStatusPanel(false);
 end;
