@@ -80,7 +80,7 @@ procedure SortListItemsByTrack(const Reverse: Boolean);
 procedure SwitchListItems(const i: Integer; const j: Integer);
 procedure ToggleShellIntegration(const Enable: Boolean);
 procedure UpdateIndex;
-procedure UpdateStatusPanel(const Text: String);
+procedure UpdateStatusPanel(const Index: Integer; const Text: String);
 procedure UpdateTrackbar;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -375,7 +375,7 @@ begin
   if Enable then
   begin
     ShowStatusPanel(true);
-    UpdateStatusPanel(LangStr('Message_CreateShellContextMenus', 'Core'));
+    UpdateStatusPanel(0, LangStr('Message_CreateShellContextMenus', 'Core'));
     try
       CreateFileAssocs;
     except
@@ -386,7 +386,7 @@ begin
     Form_Main.Options.ShellIntegration := True;
   end else begin
     ShowStatusPanel(true);
-    UpdateStatusPanel(LangStr('Message_RemoveShellContextMenus', 'Core'));
+    UpdateStatusPanel(0, LangStr('Message_RemoveShellContextMenus', 'Core'));
     try
       RemoveFileAssocs;
     except
@@ -831,7 +831,7 @@ var
   m:TMetaData;
 begin
   Result := False;
-  UpdateStatusPanel(ExtractFilename(FileName));
+  UpdateStatusPanel(1, ExtractFilename(FileName));
 
   if not SafeFileExists(FileName) then
   begin
@@ -1104,7 +1104,7 @@ begin
 
   for i := 0 to Filenames.Count-1 do
   begin
-    UpdateStatusPanel(ExtractFilename(Filenames[i]));
+    UpdateStatusPanel(3, ExtractFilename(Filenames[i]));
     SetCursor(Screen.Cursors[crHourglass]);
     Process.AddToLog('');
     Process.AddToLog('--------------------------------------------------------------------------');
@@ -1757,7 +1757,7 @@ begin
   Process.HideConsole := True;
 
   ShowStatusPanel(True);
-  UpdateStatusPanel(LangStr('Message_WMADecInstallWait', 'Core'));
+  UpdateStatusPanel(4, LangStr('Message_WMADecInstallWait', 'Core'));
   SetCursor(Screen.Cursors[crHourGlass]);
 
   if Process.Execute('"' + Form_Main.Tools.WGet.Location + '" --output-document="' + TempFile + '" ' + URL) <>  procDone then
@@ -1791,8 +1791,6 @@ begin
     end;
   end;
 
-  ShowStatusPanel(False);
-
   if (not b) then
   begin
     Log.Insert(0, '');
@@ -1803,6 +1801,7 @@ begin
     Log.Free;
     Process.Free;
     DeleteTemp;
+    ShowStatusPanel(False);
     Exit;
   end;
 
@@ -1817,6 +1816,8 @@ begin
 
   Process.Free;
   DeleteTemp;
+
+  ShowStatusPanel(False);
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2362,9 +2363,9 @@ procedure ShowStatusPanel(const Show: Boolean);
 begin
   if (not Show) then
   begin
-    if Form_Main.Panel_Working.Visible then
+    if Form_Main.Panel_Working_Outer.Visible then
     begin
-      Form_Main.Panel_Working.Hide;
+      Form_Main.Panel_Working_Outer.Hide;
       if not Form_Main.Enabled then
       begin
         Form_Main.Enabled := True;
@@ -2379,16 +2380,24 @@ begin
   SetTaskbarProgressState(tbpsIndeterminate);
   SetTaskbarOverlayIcon(Form_Main.ImageList1, 27, 'Busy');
 
-  with Form_Main.Panel_Working do
+  with Form_Main.Panel_Working_Outer do
   begin
     DoubleBuffered := True;
-    Width := Round(Form_Main.ClientWidth * 0.8);
+    Form_Main.Panel_Working_Inner.DoubleBuffered := True;
+    Form_Main.Panel_Working_Status.DoubleBuffered := True;
+    Width := Round(Form_Main.ClientWidth * 0.88);
     Height := 64;
     Left := (Form_Main.ClientWidth - Width) div 2;
     Top := Round((Form_Main.ClientHeight - Height) * 0.4);
+    if Form_Main.Icon_Working.Tag <> 0 then
+    begin
+      Form_Main.ImageList2.GetIcon(0, Form_Main.Icon_Working.Picture.Icon);
+      Form_Main.Icon_Working.Width := Form_Main.Icon_Working.Picture.Icon.Width;
+      Form_Main.Icon_Working.Tag := 0;
+    end;
+    Form_Main.Panel_Working_Status.Caption := LangStr('Message_Loading', 'Core');
     Show;
     BringToFront;
-    Caption := LangStr('Message_Loading', 'Core');
   end;
 
   if IsWindowEnabled(Form_Main.Handle) then
@@ -2398,12 +2407,21 @@ begin
   end;
 end;
 
-procedure UpdateStatusPanel(const Text: String);
+procedure UpdateStatusPanel(const Index: Integer; const Text: String);
 begin
-  with Form_Main.Panel_Working do
+  with Form_Main.Panel_Working_Outer do
   begin
     if not Visible then Exit;
-    Caption := Text;
+    Form_Main.Panel_Working_Status.Caption := Text;
+    if (Index >= 0) and (Index < Form_Main.ImageList2.Count) then
+    begin
+      if Form_Main.Icon_Working.Tag <> Index then
+      begin
+        Form_Main.ImageList2.GetIcon(Index, Form_Main.Icon_Working.Picture.Icon);
+        Form_Main.Icon_Working.Width := Form_Main.Icon_Working.Picture.Icon.Width;
+        Form_Main.Icon_Working.Tag := Index;
+      end;
+    end;
     Application.ProcessMessages;
   end;
 end;
