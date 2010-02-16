@@ -2383,8 +2383,8 @@ begin
   with Form_Main.Panel_Working_Outer do
   begin
     DoubleBuffered := True;
+    Form_Main.Panel_Working_Middle.DoubleBuffered := True;
     Form_Main.Panel_Working_Inner.DoubleBuffered := True;
-    Form_Main.Panel_Working_Status.DoubleBuffered := True;
     Width := Round(Form_Main.ClientWidth * 0.88);
     Height := 64;
     Left := (Form_Main.ClientWidth - Width) div 2;
@@ -2395,7 +2395,7 @@ begin
       Form_Main.Icon_Working.Width := Form_Main.Icon_Working.Picture.Icon.Width;
       Form_Main.Icon_Working.Tag := 0;
     end;
-    Form_Main.Panel_Working_Status.Caption := LangStr('Message_Loading', 'Core');
+    Form_Main.Panel_Working_Inner.Caption := LangStr('Message_Loading', 'Core');
     Show;
     BringToFront;
   end;
@@ -2408,11 +2408,36 @@ begin
 end;
 
 procedure UpdateStatusPanel(const Index: Integer; const Text: String);
+var
+  NewText, PreText, PostText: String;
+  Size: TSize;
+const
+  MinDist = 16;
 begin
-  with Form_Main.Panel_Working_Outer do
+  if not Form_Main.Panel_Working_Outer.Visible then Exit;
+  
+  with Form_Main.Panel_Working_Inner do
   begin
-    if not Visible then Exit;
-    Form_Main.Panel_Working_Status.Caption := Text;
+    NewText := Text;
+    Size := Canvas.TextExtent(NewText);
+    if Size.cx > ClientWidth - MinDist then
+    begin
+      if Pos('...', Text) <> 0 then
+      begin
+        PreText := Text;
+        PostText := '';
+      end else begin
+        PreText := Copy(Text, 1, Length(Text) - 3);
+        PostText := Copy(Text, Length(Text) - 2, 3);
+      end;
+      while (Length(PreText) > 8) and (Size.cx > ClientWidth - MinDist) do
+      begin
+        PreText := Copy(PreText, 1, Length(PreText) - 1);
+        NewText := Format('%s...%s', [PreText, PostText]);
+        Size := Canvas.TextExtent(NewText);
+      end;
+    end;
+    Caption := NewText;
     if (Index >= 0) and (Index < Form_Main.ImageList2.Count) then
     begin
       if Form_Main.Icon_Working.Tag <> Index then
@@ -2422,6 +2447,7 @@ begin
         Form_Main.Icon_Working.Tag := Index;
       end;
     end;
+    Refresh;
     Application.ProcessMessages;
   end;
 end;

@@ -33,7 +33,8 @@ uses
   JvComponentBase, JvComputerInfoEx, Menus, JvDebugHandler,
   JvSystemPopup, JvMenus, Unit_LockedFile, Unit_Encoder, Unit_Utils, Unit_Core,
   JvTimer, JvBaseDlg, JvBrowseFolder, Unit_MetaData, JvBalloonHint,
-  JvDataEmbedded, JvBackgrounds, Unit_DropBox, Unit_Win7Taskbar;
+  JvDataEmbedded, JvBackgrounds, Unit_DropBox, Unit_Win7Taskbar,
+  JvExExtCtrls, JvExtComponent, JvPanel;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -221,10 +222,10 @@ type
     TrackBar: TTrackBar;
     Trackbar_AlogorithmQuality: TTrackBar;
     XPManifest1: TXPManifest;
-    Panel_Working_Inner: TPanel;
+    Panel_Working_Middle: TPanel;
     Icon_Working: TImage;
-    Panel_Working_Status: TPanel;
     ImageList2: TImageList;
+    Panel_Working_Inner: TJvPanel;
     procedure ApplicationEvents1Exception(Sender: TObject; E: Exception);
     procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure Button5Click(Sender: TObject);
