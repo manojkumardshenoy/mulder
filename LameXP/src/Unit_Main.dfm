@@ -1569,7 +1569,7 @@ object Form_Main: TForm_Main
     ParentFont = False
     TabOrder = 4
     Visible = False
-    object Panel_Working_Inner: TPanel
+    object Panel_Working_Middle: TPanel
       Left = 1
       Top = 1
       Width = 23
@@ -1615,21 +1615,26 @@ object Form_Main: TForm_Main
           E00007FFE00007FFE00007FFE00007FFC00003FFC00003FFC00003FFFFFFFFFF
           FFFFFFFF}
       end
-      object Panel_Working_Status: TPanel
+      object Panel_Working_Inner: TJvPanel
         Left = 42
         Top = 10
-        Width = 79
+        Width = 147
         Height = 3
+        HotTrackFont.Charset = DEFAULT_CHARSET
+        HotTrackFont.Color = clWindowText
+        HotTrackFont.Height = -11
+        HotTrackFont.Name = 'MS Sans Serif'
+        HotTrackFont.Style = []
+        Transparent = True
         Align = alClient
         BevelOuter = bvNone
-        Caption = 'Panel_Working_Status'
+        Caption = 'Panel_Working_Inner'
         Color = clCream
         Font.Charset = DEFAULT_CHARSET
-        Font.Color = 13395456
+        Font.Color = 16747287
         Font.Height = -11
         Font.Name = 'Tahoma'
         Font.Style = [fsBold]
-        ParentBackground = False
         ParentFont = False
         TabOrder = 0
       end
@@ -2970,7 +2975,7 @@ object Form_Main: TForm_Main
     Popup = Popup_DevTools
     PositionInMenu = pmBottom
     Position = ppForm
-    Left = 332
+    Left = 324
     Top = 289
   end
   object Popup_DevTools: TJvPopupMenu
@@ -6975,7 +6980,7 @@ object Form_Main: TForm_Main
     Left = 328
     Top = 288
     Bitmap = {
-      494C010105000900040020002000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010105000900040020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       00000000000036000000280000008000000060000000010020000000000000C0
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -8563,6 +8568,7 @@ object Form_Main: TForm_Main
       C00003FF000E00FFE000000FF000000FE20003FFC01FFFFFF000001FF000000F
       FE0003FFFFFFFFFFF000003FF800001FFE0007FFFFFFFFFFF800007FFC00003F
       FE000FFFFFFFFFFFFC0001FFFE00007FFE001FFFFFFFFFFFFF0007FFFF0000FF
-      FFC03FFFFFFFFFFFFFE3FFFFFFC003FF}
+      FFC03FFFFFFFFFFFFFE3FFFFFFC003FF00000000000000000000000000000000
+      000000000000}
   end
 end
