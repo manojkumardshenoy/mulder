@@ -831,7 +831,7 @@ var
   m:TMetaData;
 begin
   Result := False;
-  UpdateStatusPanel(1, ExtractFilename(FileName));
+  UpdateStatusPanel(1, ExtractFileName(FileName));
 
   if not SafeFileExists(FileName) then
   begin
@@ -1104,7 +1104,7 @@ begin
 
   for i := 0 to Filenames.Count-1 do
   begin
-    UpdateStatusPanel(3, ExtractFilename(Filenames[i]));
+    UpdateStatusPanel(3, ExtractFileName(Filenames[i]));
     SetCursor(Screen.Cursors[crHourglass]);
     Process.AddToLog('');
     Process.AddToLog('--------------------------------------------------------------------------');
@@ -2385,19 +2385,23 @@ begin
     DoubleBuffered := True;
     Form_Main.Panel_Working_Middle.DoubleBuffered := True;
     Form_Main.Panel_Working_Inner.DoubleBuffered := True;
-    Width := Round(Form_Main.ClientWidth * 0.88);
+    Form_Main.Panel_Working_Inner.Caption := LangStr('Message_Loading', 'Core');
+    Width := Round(Form_Main.ClientWidth * 0.85);
     Height := 64;
     Left := (Form_Main.ClientWidth - Width) div 2;
     Top := Round((Form_Main.ClientHeight - Height) * 0.4);
+
     if Form_Main.Icon_Working.Tag <> 0 then
     begin
       Form_Main.ImageList2.GetIcon(0, Form_Main.Icon_Working.Picture.Icon);
       Form_Main.Icon_Working.Width := Form_Main.Icon_Working.Picture.Icon.Width;
       Form_Main.Icon_Working.Tag := 0;
     end;
-    Form_Main.Panel_Working_Inner.Caption := LangStr('Message_Loading', 'Core');
+
     Show;
     BringToFront;
+    Invalidate;
+    Update;
   end;
 
   if IsWindowEnabled(Form_Main.Handle) then
@@ -2409,35 +2413,30 @@ end;
 
 procedure UpdateStatusPanel(const Index: Integer; const Text: String);
 var
-  NewText, PreText, PostText: String;
   Size: TSize;
+  NewText: String;
 const
   MinDist = 16;
 begin
   if not Form_Main.Panel_Working_Outer.Visible then Exit;
-  
+
   with Form_Main.Panel_Working_Inner do
   begin
-    NewText := Text;
+    NewText := Trim(Text);
     Size := Canvas.TextExtent(NewText);
+
     if Size.cx > ClientWidth - MinDist then
     begin
-      if Pos('...', Text) <> 0 then
+      NewText := NewText + '...';
+      while (Length(NewText) > 3) and ((Size.cx > ClientWidth - MinDist) or (NewText[Length(NewText)-3] < #$30)) do
       begin
-        PreText := Text;
-        PostText := '';
-      end else begin
-        PreText := Copy(Text, 1, Length(Text) - 3);
-        PostText := Copy(Text, Length(Text) - 2, 3);
-      end;
-      while (Length(PreText) > 8) and (Size.cx > ClientWidth - MinDist) do
-      begin
-        PreText := Copy(PreText, 1, Length(PreText) - 1);
-        NewText := Format('%s...%s', [PreText, PostText]);
+        Delete(NewText, Length(NewText) - 3, 1);
         Size := Canvas.TextExtent(NewText);
       end;
     end;
+
     Caption := NewText;
+
     if (Index >= 0) and (Index < Form_Main.ImageList2.Count) then
     begin
       if Form_Main.Icon_Working.Tag <> Index then
@@ -2447,7 +2446,9 @@ begin
         Form_Main.Icon_Working.Tag := Index;
       end;
     end;
-    Refresh;
+
+    Invalidate;
+    Update;
     Application.ProcessMessages;
   end;
 end;
