@@ -386,7 +386,7 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-function TrimEx(const Input: String; const MinChar: Char; const  MaxChar:Char): String;
+function TrimEx(const Input: String; const MinChar: Char; const MaxChar:Char): String;
 var
   b: Boolean;
   i,x,y: Integer;

@@ -41,7 +41,7 @@ uses
 const
   VersionStr: String = 'v3.17 RC-2';
   BuildNo: Integer = 83;
-  BuildDate: String = '2010-02-17';
+  BuildDate: String = '2010-02-19';
 
 ///////////////////////////////////////////////////////////////////////////////
 //{$DEFINE BUILD_DEBUG}
