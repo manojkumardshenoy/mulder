@@ -6,9 +6,9 @@
 ;--------------------------------
 
 ;Version Info
-!define Version "3.17 RC-1"
+!define Version "3.17 RC-2"
 !define Build_Number "83"
-!define Build_Date "2010-02-15"
+!define Build_Date "2010-02-19"
 
 ;UUID
 !define RegPath "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{54dcbccb-c905-46dc-b6e6-48563d0e9e55}"
@@ -82,6 +82,7 @@ BrandingText "LameXP, Build #${Build_Number} (${Build_Date})"
 !define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\orange-nsis.bmp"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\orange-uninstall-nsis.bmp"
 !define MUI_STARTMENUPAGE_DEFAULTFOLDER "LameXP"
+!define MUI_LANGDLL_ALLLANGUAGES
 
 ;--------------------------------
 ;Pages
@@ -111,54 +112,53 @@ BrandingText "LameXP, Build #${Build_Number} (${Build_Date})"
 !insertmacro MUI_LANGUAGE "SimpChinese"
 !insertmacro MUI_LANGUAGE "TradChinese"
 !insertmacro MUI_LANGUAGE "Japanese"
-!insertmacro MUI_LANGUAGE "Korean"
 !insertmacro MUI_LANGUAGE "Italian"
 !insertmacro MUI_LANGUAGE "Dutch"
-!insertmacro MUI_LANGUAGE "Danish"
-!insertmacro MUI_LANGUAGE "Swedish"
-!insertmacro MUI_LANGUAGE "Norwegian"
-!insertmacro MUI_LANGUAGE "NorwegianNynorsk"
-!insertmacro MUI_LANGUAGE "Finnish"
 !insertmacro MUI_LANGUAGE "Greek"
 !insertmacro MUI_LANGUAGE "Russian"
-!insertmacro MUI_LANGUAGE "Portuguese"
-!insertmacro MUI_LANGUAGE "PortugueseBR"
 !insertmacro MUI_LANGUAGE "Polish"
 !insertmacro MUI_LANGUAGE "Ukrainian"
-!insertmacro MUI_LANGUAGE "Czech"
-!insertmacro MUI_LANGUAGE "Slovak"
-!insertmacro MUI_LANGUAGE "Croatian"
-!insertmacro MUI_LANGUAGE "Bulgarian"
 !insertmacro MUI_LANGUAGE "Hungarian"
-!insertmacro MUI_LANGUAGE "Thai"
 !insertmacro MUI_LANGUAGE "Romanian"
-!insertmacro MUI_LANGUAGE "Latvian"
-!insertmacro MUI_LANGUAGE "Macedonian"
-!insertmacro MUI_LANGUAGE "Estonian"
-!insertmacro MUI_LANGUAGE "Turkish"
-!insertmacro MUI_LANGUAGE "Lithuanian"
-!insertmacro MUI_LANGUAGE "Slovenian"
 !insertmacro MUI_LANGUAGE "Serbian"
 !insertmacro MUI_LANGUAGE "SerbianLatin"
+
+;Installer only languages
 !insertmacro MUI_LANGUAGE "Arabic"
-!insertmacro MUI_LANGUAGE "Farsi"
-!insertmacro MUI_LANGUAGE "Hebrew"
-!insertmacro MUI_LANGUAGE "Indonesian"
-!insertmacro MUI_LANGUAGE "Mongolian"
-!insertmacro MUI_LANGUAGE "Luxembourgish"
-!insertmacro MUI_LANGUAGE "Albanian"
-!insertmacro MUI_LANGUAGE "Breton"
-!insertmacro MUI_LANGUAGE "Belarusian"
-!insertmacro MUI_LANGUAGE "Icelandic"
-!insertmacro MUI_LANGUAGE "Malay"
-!insertmacro MUI_LANGUAGE "Bosnian"
-!insertmacro MUI_LANGUAGE "Kurdish"
-!insertmacro MUI_LANGUAGE "Irish"
-!insertmacro MUI_LANGUAGE "Uzbek"
-!insertmacro MUI_LANGUAGE "Galician"
+!insertmacro MUI_LANGUAGE "Portuguese"
 !insertmacro MUI_LANGUAGE "Afrikaans"
-!insertmacro MUI_LANGUAGE "Catalan"
-!insertmacro MUI_LANGUAGE "Esperanto"
+!insertmacro MUI_LANGUAGE "Malay"
+!insertmacro MUI_LANGUAGE "Indonesian"
+
+;--------------------------------
+;Language Mappings
+;--------------------------------
+
+LangString ui_lang ${LANG_ENGLISH} "[EN] English"
+LangString ui_lang ${LANG_GERMAN} "[DE] Deutsch"
+LangString ui_lang ${LANG_SIMPCHINESE} "[CN] Chinese (Simplified)"
+LangString ui_lang ${LANG_GREEK} "[EL] Greek"
+LangString ui_lang ${LANG_SPANISH} "[ES] Castilian Spanish (Castilian)"
+LangString ui_lang ${LANG_SPANISHINTERNATIONAL} "[ES] Castilian Spanish (Castilian)"
+LangString ui_lang ${LANG_FRENCH} "[FR] French"
+LangString ui_lang ${LANG_HUNGARIAN} "[HU] Hungarian"
+LangString ui_lang ${LANG_ITALIAN} "[IT] Italian"
+LangString ui_lang ${LANG_JAPANESE} "[JP] Japanese"
+LangString ui_lang ${LANG_DUTCH} "[NL] Dutch"
+LangString ui_lang ${LANG_POLISH} "[PL] Polish"
+LangString ui_lang ${LANG_ROMANIAN} "[RO] Romanian"
+LangString ui_lang ${LANG_RUSSIAN} "[RU] Russian"
+LangString ui_lang ${LANG_SERBIAN} "[SR] Serbian (Latin)"
+LangString ui_lang ${LANG_SERBIANLATIN} "[SR] Serbian (Latin)"
+LangString ui_lang ${LANG_TRADCHINESE} "[TW] Taiwanese/Chinese (Traditional)"
+LangString ui_lang ${LANG_UKRAINIAN} "[UK] Ukrainian"
+
+;Installer only languages
+LangString ui_lang ${LANG_ARABIC} "?"
+LangString ui_lang ${LANG_PORTUGUESE} "?"
+LangString ui_lang ${LANG_AFRIKAANS} "?"
+LangString ui_lang ${LANG_MALAY} "?"
+LangString ui_lang ${LANG_INDONESIAN} "?"
 
 ;--------------------------------
 ;Reserve Files
@@ -349,9 +349,11 @@ Section
   WriteRegDWORD HKLM "${RegPath}" "NoModify" 1
   WriteRegDWORD HKLM "${RegPath}" "NoRepair" 1
   
-  ;Reset license
+  ;Initialize config file
   IntFmt $0 "LameXP_%08X" ${Build_Number}
   DeleteINIStr "$APPDATA\MuldeR\LameXP\Settings.ini" "$0" "GNULicenseAgreed"
+  StrCmp "$(ui_lang)" "?" +2
+  WriteINIStr "$APPDATA\MuldeR\LameXP\Settings.ini" "$0" "Language" "$(ui_lang)"
   FlushINI "$APPDATA\MuldeR\LameXP\Settings.ini"
   
   ;Complete

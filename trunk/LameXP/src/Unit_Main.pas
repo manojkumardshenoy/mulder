@@ -39,9 +39,9 @@ uses
 ///////////////////////////////////////////////////////////////////////////////
 
 const
-  VersionStr: String = 'v3.17 RC-1';
+  VersionStr: String = 'v3.17 RC-2';
   BuildNo: Integer = 83;
-  BuildDate: String = '2010-02-15';
+  BuildDate: String = '2010-02-17';
 
 ///////////////////////////////////////////////////////////////////////////////
 //{$DEFINE BUILD_DEBUG}
@@ -633,7 +633,7 @@ begin
 
   with TForm_Languages.Create(self, Path.Tools, LanguageFiles, LanguageFlags) do
   begin
-    MakeLanguage('EN', 'English]');
+    MakeLanguage('EN', 'English');
     MakeLanguage('DE', 'Deutsch');
     MakeLanguage('EU');
     MakeLanguage('CN', 'Chinese (Simplified)');
