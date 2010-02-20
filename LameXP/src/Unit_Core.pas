@@ -116,41 +116,32 @@ begin
   Reg := TRegistry.Create;
   Reg.RootKey := HKEY_CURRENT_USER;
 
-  if Reg.OpenKey('SOFTWARE\MuldeR\LameXP', true) then
-  begin
-    Reg.WriteString('WindowHandle', Format('0x%.8x', [Form_Main.Handle]));
-    Reg.WriteString('CurrentVersion', VersionStr);
-    Reg.CloseKey;
-  end;
-
-  if Reg.OpenKey('Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced', false) then
-  begin
-    if Reg.GetDataType('EnableBalloonTips') = rdInteger then
+  try
+    if Reg.OpenKey('SOFTWARE\MuldeR\LameXP', true) then
     begin
-      if Reg.ReadInteger('EnableBalloonTips') <> 1 then
-      begin
-        Reg.WriteInteger('EnableBalloonTips', 1);
-        Reg.CloseKey;
-        PostMessage(HWND_BROADCAST, WM_SETTINGCHANGE, 0, WPARAM(PAnsiChar('EnableBalloonTips')));
-        PostMessage(HWND_BROADCAST, WM_SETTINGCHANGE, 0, 0);
-      end;
+      Reg.WriteString('WindowHandle', Format('0x%.8x', [Form_Main.Handle]));
+      Reg.WriteString('CurrentVersion', VersionStr);
+      Reg.CloseKey;
     end;
-    Reg.CloseKey;
-  end;
 
-  {if Reg.OpenKey('Control Panel\Desktop\WindowMetrics', false) then
-  begin
-    if Reg.GetDataType('AppliedDPI') = rdInteger then
+    if Reg.OpenKey('Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced', false) then
     begin
-      if Reg.ReadInteger('AppliedDPI') <> 96 then
+      if Reg.GetDataType('EnableBalloonTips') = rdInteger then
       begin
-        Form_Main.Flags.UnsupportedDPI := True;
+        if Reg.ReadInteger('EnableBalloonTips') <> 1 then
+        begin
+          Reg.WriteInteger('EnableBalloonTips', 1);
+          Reg.CloseKey;
+          PostMessage(HWND_BROADCAST, WM_SETTINGCHANGE, 0, WPARAM(PAnsiChar('EnableBalloonTips')));
+          PostMessage(HWND_BROADCAST, WM_SETTINGCHANGE, 0, 0);
+          Form_Main.Flags.DisableBalloons := True;
+        end;
       end;
+      Reg.CloseKey;
     end;
-    Reg.CloseKey;
-  end;}
-
-  Reg.Free;
+  finally
+    Reg.Free;
+  end;  
 end;
 
 procedure CleanRegistry;
@@ -164,25 +155,38 @@ begin
   Reg := TRegistry.Create;
   Reg.RootKey := HKEY_CURRENT_USER;
 
-  if Reg.OpenKey('SOFTWARE\MuldeR\LameXP', true) then
-  begin
-    Reg.WriteString('WindowHandle', 'NOT_RUNNING');
-    Reg.DeleteValue('Directory');
-    Reg.DeleteValue('Version');
-    Reg.GetKeyNames(Temp);
-    Reg.CloseKey;
-  end;
-
-  if Temp.Count > 0 then
-  begin
-    for i := 0 to Temp.Count-1 do
+  try
+    if Reg.OpenKey('SOFTWARE\MuldeR\LameXP', true) then
     begin
-      Reg.DeleteKey('SOFTWARE\MuldeR\LameXP\' + Temp[i]);
+      Reg.WriteString('WindowHandle', 'NOT_RUNNING');
+      Reg.DeleteValue('Directory');
+      Reg.DeleteValue('Version');
+      Reg.GetKeyNames(Temp);
+      Reg.CloseKey;
     end;
-  end;
 
-  Temp.Free;
-  Reg.Free;
+    if Temp.Count > 0 then
+    begin
+      for i := 0 to Temp.Count-1 do
+      begin
+        Reg.DeleteKey('SOFTWARE\MuldeR\LameXP\' + Temp[i]);
+      end;
+    end;
+
+    if Form_Main.Flags.DisableBalloons then
+    begin
+      if Reg.OpenKey('Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced', false) then
+      begin
+        Reg.WriteInteger('EnableBalloonTips', 0);
+        Reg.CloseKey;
+        PostMessage(HWND_BROADCAST, WM_SETTINGCHANGE, 0, WPARAM(PAnsiChar('EnableBalloonTips')));
+        PostMessage(HWND_BROADCAST, WM_SETTINGCHANGE, 0, 0);
+      end;
+    end;
+  finally
+    Temp.Free;
+    Reg.Free;
+  end;  
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
