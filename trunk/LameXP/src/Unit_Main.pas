@@ -381,6 +381,7 @@ type
       WMADecoder: Boolean;
       ShutdownOnTerminate: Boolean;
       ShowDropbox: Boolean;
+      DisableBalloons: Boolean;
     end;
     FilesToAdd: TStringList;
     DecoderList: TObjectList;
@@ -523,6 +524,7 @@ begin
   Flags.WMADecoder := False;
   Flags.UnsupportedDPI := False;
   Flags.ShutdownOnTerminate := False;
+  Flags.DisableBalloons := False;
 
   Options.NeroAccepted := False;
   Options.GPLAccepted := 0;
