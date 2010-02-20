@@ -6,9 +6,9 @@
 ;--------------------------------
 
 ;Version Info
-!define Version "3.17 RC-2"
+!define Version "3.17 RC-3"
 !define Build_Number "83"
-!define Build_Date "2010-02-19"
+!define Build_Date "2010-02-20"
 
 ;UUID
 !define RegPath "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{54dcbccb-c905-46dc-b6e6-48563d0e9e55}"
