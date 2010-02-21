@@ -2390,7 +2390,7 @@ begin
     Form_Main.Panel_Working_Middle.DoubleBuffered := True;
     Form_Main.Panel_Working_Inner.DoubleBuffered := True;
     Form_Main.Panel_Working_Inner.Caption := LangStr('Message_Loading', 'Core');
-    Width := Round(Form_Main.ClientWidth * 0.85);
+    Width := Round(Form_Main.ClientWidth * 0.88);
     Height := 64;
     Left := (Form_Main.ClientWidth - Width) div 2;
     Top := Round((Form_Main.ClientHeight - Height) * 0.4);
@@ -2417,7 +2417,6 @@ end;
 
 procedure UpdateStatusPanel(const Index: Integer; const Text: String);
 var
-  Size: TSize;
   NewText: String;
 const
   MinDist = 16;
@@ -2427,15 +2426,13 @@ begin
   with Form_Main.Panel_Working_Inner do
   begin
     NewText := Trim(Text);
-    Size := Canvas.TextExtent(NewText);
 
-    if Size.cx > ClientWidth - MinDist then
+    if Canvas.TextWidth(NewText) > ClientWidth - MinDist then
     begin
       NewText := NewText + '...';
-      while (Length(NewText) > 3) and ((Size.cx > ClientWidth - MinDist) or (NewText[Length(NewText)-3] < #$30)) do
+      while (Length(NewText) > 3) and ((Canvas.TextWidth(NewText) > ClientWidth - MinDist) or (NewText[Length(NewText)-3] < #$30)) do
       begin
         Delete(NewText, Length(NewText) - 3, 1);
-        Size := Canvas.TextExtent(NewText);
       end;
     end;
 
