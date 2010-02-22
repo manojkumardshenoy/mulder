@@ -10,7 +10,7 @@ These people have contributed LameXP translations:
 [HU] Hungarian ............ Ezoh <ezoptt [at] nadlanu [dot] com>
 [IT] Italiano ............. Gulliver_69 <gulliver_69 [at] libero [dot] it>
 [JP] Japanese ............. Hachimaru <YFD48944 [at] nifty [dot] com>
-[NL] Nederlands ........... Anton
+[NL] Nederlands ........... Anton Rooijakkers
 [PL] Polski ............... Sir Daniel K <sir.daniel.k [at] gmail [dot] com>
 [RO] Romanian ............. Lia Remus Adrian <jobytoss [at] gmail [dot] com>
 [RU] Russian .............. Ambient <andreyot [at] gmail [dot] com>
