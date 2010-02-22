@@ -1281,6 +1281,7 @@ begin
       if Process.Execute(Format('"%s" "/Location=%s" "/Filename=%s" "/TicketID=%s" "/ToFolder=%s" "/AppTitle=LameXP (Build #%d)"', [Form_Main.Tools.WUpdate.Location, DownloadAddress, DownloadFilename, DownloadFilecode, Form_Main.Path.AppRoot, UpdateVersion])) = procDone then
       begin
         Form_Main.Close;
+        Application.Terminate;
       end else begin
         HandleURL(UpdateWebsite);
         Application.Restore;
@@ -1288,6 +1289,7 @@ begin
     end else begin
       HandleURL(UpdateWebsite);
       Form_Main.Close;
+      Application.Terminate;
     end;
   end;
 
