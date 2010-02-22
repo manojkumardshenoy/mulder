@@ -915,10 +915,16 @@ begin
       Options.GPLAccepted := -1;
       MyLangBox(self, 'Message_LicenseNotAccepted', MB_TOPMOST or MB_ICONERROR or MB_TASKMODAL);
       try
-        ExecWait(Format('"%s" "%s"', [Tools.SelfDel.Location, Application.ExeName]), True, '', ewpHigh);
+        if SafeFileExists(Format('%s\Uninstall.exe', [Path.AppRoot])) then
+        begin
+          WinExec(PAnsiChar(Format('"%s\Uninstall.exe"', [Path.AppRoot])), SW_SHOW);
+        end else begin
+          ExecWait(Format('"%s" "%s"', [Tools.SelfDel.Location, Application.ExeName]), True, '', ewpHigh);
+        end;
       except
         MessageBeep(MB_ICONERROR);
       end;
+      Close;
       Application.Terminate;
       Exit;
     end;
@@ -936,7 +942,9 @@ begin
     if ID_OK = MyLangBox(self, 'Message_ForceUpdate', MB_OKCANCEL or MB_ICONERROR or MB_TOPMOST) then
     begin
       Menu_CheckforUpdates.OnClick(Sender);
+      if Application.Terminated then Exit;
     end else begin
+      Close;
       Application.Terminate;
       Exit;
     end;
@@ -950,6 +958,7 @@ begin
         if ID_YES = MyLangBox(self, 'Message_UpdateReminder', MB_YESNO or MB_ICONQUESTION or MB_TOPMOST) then
         begin
           Menu_CheckforUpdates.OnClick(Sender);
+          if Application.Terminated then Exit;
         end;
       end;
       if not CheckNeroVersion(Lookup(ToolVersionStr, 'NeroAAC', 'N/A')) then
