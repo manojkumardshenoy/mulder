@@ -161,6 +161,25 @@ LangString ui_lang ${LANG_MALAY} "?"
 LangString ui_lang ${LANG_INDONESIAN} "?"
 
 ;--------------------------------
+;Version Info
+;--------------------------------
+
+!searchreplace Version_Date "${Build_Date}" "-" "."
+VIProductVersion "${Version_Date}.${Build_Number}"
+
+VIAddVersionKey /LANG=${LANG_ENGLISH} "Author" "LoRd_MuldeR <mulder2@gmx.de>"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "Comments" "This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version."
+VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "Free Software Foundation"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "LameXP v${Version} (Build #${Build_Number})"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${Version_Date}.${Build_Number} (${Version})"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright 2004-2010 LoRd_MuldeR"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalTrademarks" "GNU"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "OriginalFilename" "LameXP.${Build_Date}.exe"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "LameXP - Audio Encoder Frontend"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductVersion" "${Version}, Build #${Build_Number} (${Build_Date})"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "Website" "http://mulder.at.gg/"
+
+;--------------------------------
 ;Reserve Files
 ;--------------------------------
 
