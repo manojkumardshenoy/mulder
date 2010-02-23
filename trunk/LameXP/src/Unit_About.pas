@@ -300,9 +300,24 @@ end;
 procedure TForm_About.FormShow(Sender: TObject);
 var
   Temp1,Temp2: String;
+const
+  MinDist = 8;
 begin
   Translate(self);
 
+  with Label_FreeSoftware do
+  begin
+    Canvas.Font.Assign(Font);
+    if Canvas.TextWidth(Caption) > Width - MinDist then
+    begin
+      Caption := Caption + '...';
+      while (Length(Caption) > 4) and (Canvas.TextWidth(Caption) > Width - MinDist) do
+      begin
+        Caption := Copy(Caption, 1, Length(Caption) - 4) + '...';
+      end;
+    end;
+  end;
+  
   Ready := False;
   FirstActivation := True;
 
