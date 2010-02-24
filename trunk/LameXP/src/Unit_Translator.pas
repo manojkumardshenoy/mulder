@@ -48,6 +48,7 @@ implementation
 
 var
   Store: TStringList;
+  Canvas: TCanvas;
 
 constructor TString.Create(const Value: String);
 begin
@@ -77,6 +78,11 @@ var
 begin
   Result := '<MISSING_LANGSTR>' + Parent + '/' + Name + '</MISSING_LANGSTR>';
 
+  if not Assigned(Store) then
+  begin
+    Exit;
+  end;
+
   i := Store.IndexOf(Parent);
   if i = -1 then Exit;
   if not Assigned(Store.Objects[i]) then Exit;
@@ -93,11 +99,47 @@ end;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+function GetCanvas(const Control: TButton): TCanvas;
+begin
+  if not Assigned(Canvas) then
+  begin
+    Canvas := TCanvas.Create;
+  end;
+
+  if not Canvas.HandleAllocated then
+  begin
+    Canvas.Handle := GetDC(Control.Handle);
+    Canvas.Font.Assign(Control.Font);
+  end;
+
+  Result := Canvas;
+end;
+
+procedure ReleaseCanvas(const Control: TButton);
+begin
+  if Canvas.HandleAllocated then
+  begin
+    ReleaseDC(Control.Handle, Canvas.Handle);
+    Canvas.Handle := 0;
+  end;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+
 procedure Translate(const Button: TButton; const Parent: String); overload;
 begin
   Button.Caption := SetVal(LangStr(Button.Name, Parent), Button.Caption);
   Button.Hint := SetVal(LangStr(Button.Name + '.Hint', Parent), Button.Hint);
   if Button.Hint <> '' then Button.ShowHint := True;
+
+  with GetCanvas(Button) do
+  begin
+    while (Length(Button.Caption) > 3) and (TextWidth(Button.Caption) > Button.Width - 6) do
+    begin
+      Button.Caption := Copy(Button.Caption, 1, Length(Button.Caption) - 1);
+    end;
+    ReleaseCanvas(Button);
+  end;
 end;
 
 procedure Translate(const Button: TBitBtn; const Parent: String); overload;
@@ -105,6 +147,15 @@ begin
   Button.Caption := SetVal(LangStr(Button.Name, Parent), Button.Caption);
   Button.Hint := SetVal(LangStr(Button.Name + '.Hint', Parent), Button.Hint);
   if Button.Hint <> '' then Button.ShowHint := True;
+
+  with GetCanvas(Button) do
+  begin
+    while (Length(Button.Caption) > 3) and (TextWidth(Button.Caption) > Button.Width - (Button.Glyph.Width div Button.NumGlyphs) - Button.Spacing - 6) do
+    begin
+      Button.Caption := Copy(Button.Caption, 1, Length(Button.Caption) - 1);
+    end;
+    ReleaseCanvas(Button);
+  end;
 end;
 
 procedure Translate(const Button: TSpeedButton; const Parent: String); overload;
@@ -209,10 +260,17 @@ begin
   end;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
+
 procedure UnloadLanguage;
 var
   i,j: Integer;
 begin
+  if not Assigned(Store) then
+  begin
+    Exit;
+  end;
+
   for i := 0 to Store.Count-1 do
   begin
     if Assigned(Store.Objects[i]) then
@@ -247,6 +305,11 @@ begin
   begin
     Result := False;
     Exit;
+  end;
+
+  if not Assigned(Store) then
+  begin
+    Store := TStringList.Create;
   end;
 
   try
@@ -288,9 +351,12 @@ begin
   Result := True;
 end;
 
+///////////////////////////////////////////////////////////////////////////////
+
 initialization
 begin
-  Store := TStringList.Create;
+  Store := nil;
+  Canvas := nil;
 end;
 
 finalization
@@ -298,7 +364,8 @@ begin
   try
     UnloadLanguage;
   finally
-    Store.Free;
+    if Assigned(Store) then Store.Free;
+    if Assigned(Canvas) then Canvas.Free;
   end;
 end;
 
