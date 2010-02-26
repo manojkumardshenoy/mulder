@@ -1464,21 +1464,21 @@ SectionEnd
 ; ---------------------------------------
 
 Section "-Protect Binaries"
-  SetFileAttributes "$INSTDIR\MPlayer.exe" FILE_ATTRIBUTE_READONLY
-  SetFileAttributes "$INSTDIR\mplayer\mplayer.exe" FILE_ATTRIBUTE_READONLY
-  SetFileAttributes "$INSTDIR\MPUI.exe" FILE_ATTRIBUTE_READONLY
-  SetFileAttributes "$INSTDIR\ResetSMPlayer.exe" FILE_ATTRIBUTE_READONLY
-  SetFileAttributes "$INSTDIR\SetFileAssoc.exe" FILE_ATTRIBUTE_READONLY
+  SetFileAttributes "$INSTDIR\MPlayer.exe" FILE_ATTRIBUTE_READONLY|FILE_ATTRIBUTE_ARCHIVE
+  SetFileAttributes "$INSTDIR\mplayer\mplayer.exe" FILE_ATTRIBUTE_READONLY|FILE_ATTRIBUTE_ARCHIVE
+  SetFileAttributes "$INSTDIR\MPUI.exe" FILE_ATTRIBUTE_READONLY|FILE_ATTRIBUTE_ARCHIVE
+  SetFileAttributes "$INSTDIR\ResetSMPlayer.exe" FILE_ATTRIBUTE_READONLY|FILE_ATTRIBUTE_ARCHIVE
+  SetFileAttributes "$INSTDIR\SetFileAssoc.exe" FILE_ATTRIBUTE_READONLY|FILE_ATTRIBUTE_ARCHIVE
   
   !ifdef FullPackage
-    SetFileAttributes "$INSTDIR\smplayer_portable.exe" FILE_ATTRIBUTE_READONLY
-    SetFileAttributes "$INSTDIR\mingwm10.dll" FILE_ATTRIBUTE_READONLY
-    SetFileAttributes "$INSTDIR\QtCore4.dll" FILE_ATTRIBUTE_READONLY
-    SetFileAttributes "$INSTDIR\QtGui4.dll" FILE_ATTRIBUTE_READONLY
-    SetFileAttributes "$INSTDIR\QtNetwork4.dll" FILE_ATTRIBUTE_READONLY
-    SetFileAttributes "$INSTDIR\QtXml4.dll" FILE_ATTRIBUTE_READONLY
-    SetFileAttributes "$INSTDIR\QxtCore.dll" FILE_ATTRIBUTE_READONLY
-    SetFileAttributes "$INSTDIR\libgcc_s_dw2-1.dll" FILE_ATTRIBUTE_READONLY
+    SetFileAttributes "$INSTDIR\smplayer_portable.exe" FILE_ATTRIBUTE_READONLY|FILE_ATTRIBUTE_ARCHIVE
+    SetFileAttributes "$INSTDIR\mingwm10.dll" FILE_ATTRIBUTE_READONLY|FILE_ATTRIBUTE_ARCHIVE
+    SetFileAttributes "$INSTDIR\QtCore4.dll" FILE_ATTRIBUTE_READONLY|FILE_ATTRIBUTE_ARCHIVE
+    SetFileAttributes "$INSTDIR\QtGui4.dll" FILE_ATTRIBUTE_READONLY|FILE_ATTRIBUTE_ARCHIVE
+    SetFileAttributes "$INSTDIR\QtNetwork4.dll" FILE_ATTRIBUTE_READONLY|FILE_ATTRIBUTE_ARCHIVE
+    SetFileAttributes "$INSTDIR\QtXml4.dll" FILE_ATTRIBUTE_READONLY|FILE_ATTRIBUTE_ARCHIVE
+    SetFileAttributes "$INSTDIR\QxtCore.dll" FILE_ATTRIBUTE_READONLY|FILE_ATTRIBUTE_ARCHIVE
+    SetFileAttributes "$INSTDIR\libgcc_s_dw2-1.dll" FILE_ATTRIBUTE_READONLY|FILE_ATTRIBUTE_ARCHIVE
   !endif
 SectionEnd
 

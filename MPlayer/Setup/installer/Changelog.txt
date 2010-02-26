@@ -1,3 +1,13 @@
+[2010-02-26]
+* MPlayer binaries updated to SVN-r30725
+* Reverted the "Generic" (RTM) build to SVN-r30521
+
+[2010-02-24]
+* MPlayer binaries updated to SVN-r30687
+* SMPlayer updated to Version 0.6.8 (SVN-r3439)
+* Using FFmpeg-MT buils from now on ("Pentium 4" and "Athlon XP" only!)
+* QT Runtime Libs updated to Version 4.6.2
+
 [2010-02-06]
 * MPlayer binaries updated to SVN-r30521
 * SMPlayer updated to Version 0.6.8 (SVN-r3423)
