@@ -24,11 +24,11 @@ unit Unit_Core;
 interface
 
 uses
-  Windows, SysUtils, Controls, Forms, Classes, StdCtrls, CommDlg, Menus, MuldeR_Toolz,
-  Registry,  ShlObj, Contnrs, JclSysInfo, JvComputerInfoEx, JvSpin, Math,
-  IniFiles, Unit_Encoder, Unit_RunProcess, Unit_Decoder, Unit_MetaData,
-  JVCLVer, Unit_MetaDisplay, Unit_LockedFile, Unit_Translator, JvSimpleXML,
-  Messages, ShellAPI, Unit_Win7Taskbar, Unit_LogView;
+  Windows, SysUtils, Controls, Forms, Classes, StdCtrls, CommDlg, Menus,
+  MuldeR_Toolz, Registry,  ShlObj, Contnrs, JclSysInfo, JvComputerInfoEx,
+  JvSpin, Math, IniFiles, Unit_Encoder, Unit_RunProcess, Unit_Decoder,
+  Unit_MetaData, JVCLVer, Unit_MetaDisplay, Unit_LockedFile, Unit_Translator,
+  JvSimpleXML, Messages, ShellAPI, Unit_Win7Taskbar, Unit_LogView;
 
 ///////////////////////////////////////////////////////////////////////////////
 //{$DEFINE BUILD_DEBUG}
@@ -3034,7 +3034,7 @@ begin
     SetString(Filename, Buffer, DragQueryFile(Msg.wParam, i, Buffer, MaxSize));
     Filename := GetFullPath(ExpandEnvStr(Trim(Filename)));
 
-    if Filename <> '' then
+    if (Filename <> '') and (Pos('?', FileName) = 0) then
     begin
       if SafeDirectoryExists(Filename) then
       begin
@@ -3172,19 +3172,24 @@ procedure OpenFilesEx;
 var
   b: boolean;
   i,j: Integer;
-  LongFileNameW,ShortFileNameW: PWideChar;
-  FileNameA: String;
-  OpenFilenameW: TOpenFilenameW;
+  FileNameBufferW: PWideChar;
   FileFilter, InitFolder: WideString;
+  OpenFilenameW: TOpenFilenameW;
+  FileNames: TStringList;
 const
-  BufferLength = 2048;
+  MultiFileBufferLength = High(Word) - 16;
 begin
-  ZeroMemory(@OpenFilenameW, SizeOf(TOpenFilenameW));
-  LongFileNameW := AllocMem(BufferLength * SizeOf(WideChar));
-  ShortFileNameW := AllocMem(BufferLength * SizeOf(WideChar));
-  InitFolder := Form_Main.Dialog_AddFiles.InitialDir;
+  try
+    FileNameBufferW := AllocMem(MultiFileBufferLength * SizeOf(WideChar));
+    ZeroMemory(@OpenFilenameW, SizeOf(TOpenFilenameW));
+  except
+    MessageBeep(MB_ICONERROR);
+    Exit;
+  end;
 
+  InitFolder := Form_Main.Dialog_AddFiles.InitialDir;
   FileFilter := LangStr('Message_SupportedFileTypes', Form_Main.Name) + #0;
+
   b := False;
 
   for i := 0 to Length(FileTypes_Exts)-1 do
@@ -3204,41 +3209,66 @@ begin
     end;
   end;
 
+  for i := 0 to Length(FileTypes_Exts)-1 do
+  begin
+    FileFilter := FileFilter + #0 + FileTypes_Names[i] + #0;
+    b := False;
+    for j := 0 to Length(FileTypes_Exts[i])-1 do
+      if FileTypes_Exts[i,j] <> '' then
+      begin
+        if b then
+        begin
+          FileFilter := FileFilter + ';';
+        end else begin
+          b := True;
+        end;
+        FileFilter := FileFilter + '*.' + FileTypes_Exts[i,j];
+      end;
+  end;
+
   FileFilter := FileFilter + #0#0;
 
   with OpenFilenameW do
   begin
     lStructSize := SizeOf(TOpenFilenameW);
     hWndOwner := Form_Main.Handle;
-    lpstrFile := LongFileNameW;
-    nMaxFile := BufferLength - 1;
+    lpstrFile := FileNameBufferW;
+    nMaxFile := MultiFileBufferLength - 1;
     lpstrFilter := PWChar(FileFilter);
     lpstrInitialDir := PWChar(InitFolder);
-    Flags := OFN_PATHMUSTEXIST;
+    Flags := OFN_PATHMUSTEXIST or OFN_FILEMUSTEXIST or OFN_ALLOWMULTISELECT or OFN_EXPLORER or OFN_HIDEREADONLY;
   end;
 
   if not GetOpenFileNameW(OpenFilenameW) then
   begin
-    FreeMem(LongFileNameW);
-    FreeMem(ShortFileNameW);
+    FreeMem(FileNameBufferW);
     Exit;
   end;
-
-  if GetShortPathNameW(LongFileNameW, ShortFileNameW, 2047) = 0 then
-  begin
-    FreeMem(LongFileNameW);
-    FreeMem(ShortFileNameW);
-    Exit;
-  end;
-
-  FileNameA := WideCharToString(ShortFileNameW);
-  Form_Main.Dialog_AddFiles.InitialDir := ExtractDirectory(FileNameA);
-
-  FreeMem(LongFileNameW);
-  FreeMem(ShortFileNameW);
 
   ShowStatusPanel(True);
-  b := AddInputFile(FileNameA, False, True);
+
+  FileNames := TStringList.Create;
+  ReadFileNamesFromBufferW(FileNames, FileNameBufferW, MultiFileBufferLength);
+  FreeMem(FileNameBufferW);
+
+  if FileNames.Count > 0 then
+  begin
+    Form_Main.Dialog_AddFiles.InitialDir := ExtractDirectory(FileNames[0]);
+  end else begin
+    ShowStatusPanel(False);
+    FileNames.Free;
+    Exit;
+  end;
+
+  b := True;
+
+  for i := 0 to FileNames.Count-1 do
+  begin
+    if not AddInputFile(FileNames[i], False, True) then
+    begin
+      b := False;
+    end;
+  end;
 
   ShowStatusPanel(False);
   UpdateIndex;
@@ -3248,6 +3278,8 @@ begin
   begin
     MyLangBox(Form_Main, 'Message_UnsupportedFileWarning', MB_ICONWARNING or MB_TOPMOST);
   end;
+
+  FileNames.Free;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
