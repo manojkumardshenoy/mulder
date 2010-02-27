@@ -25,7 +25,7 @@ interface
 
 uses
   Windows, SysUtils, Controls, Forms, Classes, MMSystem, Math, Registry,
-  Unit_Translator, MuldeR_Toolz;
+  WSDLIntf, Unit_Translator, MuldeR_Toolz;
 
 type
   TMapEntry = array [0..1] of String;
@@ -58,6 +58,7 @@ procedure MyPlaySound(const Name: String; const Async: Boolean);
 function PlayResoureSound(const LibFile: String; const SoundId: Cardinal; const Async: Boolean): Boolean;
 function PlaySystemSound(const Name: String; const Async: Boolean): Boolean; overload;
 function PlaySystemSound(const Name: array of String; const Async: Boolean): Boolean; overload;
+procedure ReadFileNamesFromBufferW(const FileNamesA: TStrings; const BufferW: PWChar; MaxLen: Cardinal);
 procedure SaveTimerEvents(const Filename: String);
 function ShortenURL(const URL: String; const MaxLen: Integer): String;
 function ShutdownComputer: Boolean;
@@ -820,6 +821,105 @@ procedure ForceApplicationUpdate(const Cursor: TCursor);
 begin
   Application.ProcessMessages;
   SetCursor(Screen.Cursors[Cursor]);
+end;
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+procedure ReadFileNamesFromBufferW(const FileNamesA: TStrings; const BufferW: PWChar; MaxLen: Cardinal);
+const
+  BufferLength = 2048;
+var
+  i,c: Integer;
+  FileNamesW: TWideStrings;
+  TempW: array [0..BufferLength-1] of WideChar;
+  TempA: array [0..BufferLength-1] of AnsiChar;
+  ShortName, LongName: AnsiString;
+begin
+  FileNamesA.Clear;
+  FileNamesW := TWideStrings.Create;
+
+  ZeroMemory(@TempW, SizeOf(WideChar) * BufferLength);
+  c := 0;
+
+  for i := 0 to MaxLen-1 do
+  begin
+    TempW[c] := BufferW[i];
+    if TempW[c] = #0 then
+    begin
+      if c < 1 then
+      begin
+        Break;
+      end;
+      FileNamesW.Add(Trim(WideString(TempW)));
+      ZeroMemory(@TempW, SizeOf(WideChar) * BufferLength);
+      c := 0;
+      Continue;
+    end;
+    c := c + 1;
+    if c >= BufferLength then
+    begin
+      ZeroMemory(@TempW, SizeOf(WideChar) * BufferLength);
+      c := 0;
+    end;
+  end;
+
+  if FileNamesW.Count < 1 then
+  begin
+    FileNamesW.Free;
+    Exit;
+  end;
+
+  if FileNamesW.Count > 1 then
+  begin
+    for i := 1 to FileNamesW.Count-1 do
+    begin
+      FileNamesW[i] := FileNamesW[0] + '\' + FileNamesW[i];
+    end;
+    FileNamesW[0] := '';
+  end;
+
+  for i := 0 to FileNamesW.Count-1 do
+  begin
+    if Length(FileNamesW[i]) < 1 then
+    begin
+      Continue;
+    end;
+
+    ZeroMemory(@TempW, SizeOf(WideChar) * BufferLength);
+
+    if GetShortPathNameW(PWideChar(FileNamesW[i]), TempW, BufferLength-1) = 0 then
+    begin
+      Continue;
+    end;
+
+    LongName := FileNamesW[i];
+    ShortName := WideCharToString(TempW);
+
+    if Pos('?', LongName) <> 0 then
+    begin
+      FileNamesA.Add(ShortName);
+      Continue;
+    end;
+
+    ZeroMemory(@TempA, SizeOf(AnsiChar) * BufferLength);
+
+    if GetShortPathNameA(PAnsiChar(LongName), TempA, BufferLength-1) = 0 then
+    begin
+      FileNamesA.Add(ShortName);
+      Continue;
+    end;
+
+    if SameText(ShortName, TempA) then
+    begin
+      FileNamesA.Add(LongName);
+      Continue;
+    end;
+
+    FileNamesA.Add(ShortName);
+  end;
+
+  FileNamesW.Free;
 end;
 
 ///////////////////////////////////////////////////////////////////////////////
