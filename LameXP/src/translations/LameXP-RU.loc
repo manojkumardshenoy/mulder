@@ -128,6 +128,7 @@ ListView.Column_1=Название
 ListView.Column_2=Источник
 ListView.Hint=This list shows all input files that will be encoded. You can add/remove files!
 Menu_AddFiles=Добавить файл(ы)
+Menu_AddFiles_Unicode=Add Unicode file
 Menu_AddFolderRecursive=Добавить директорию-дерево
 Menu_AddSingleFolder=Добавить одну директорию
 Menu_AdvancedOptions=Расширенные опции

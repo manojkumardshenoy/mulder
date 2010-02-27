@@ -128,6 +128,7 @@ ListView.Column_1=标题
 ListView.Column_2=来源
 ListView.Hint=等待编码文件刘表. 你可以添加/移除文件!
 Menu_AddFiles=添加文件
+Menu_AddFiles_Unicode=Add Unicode file
 Menu_AddFolderRecursive=添加文件夹树形结构
 Menu_AddSingleFolder=添加单个文件夹
 Menu_AdvancedOptions=高级选项

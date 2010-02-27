@@ -128,6 +128,7 @@ ListView.Column_1=Título
 ListView.Column_2=Origen
 ListView.Hint=En esta lista se muestran todos los archivos que serán codificados. ¡Puede añadir o quitar archivos!
 Menu_AddFiles=Añadir archivo(s)
+Menu_AddFiles_Unicode=Add Unicode file
 Menu_AddFolderRecursive=Añadir árbol de directorios
 Menu_AddSingleFolder=Añadir un solo directorio
 Menu_AdvancedOptions=Opciones avanzadas
@@ -143,7 +144,7 @@ Menu_DontHideConsole=No ocultar la consola de Windows
 Menu_EnableNormalizationFilter=Habilitar filtro de normalización
 Menu_InstallWMADecoder=Instalar el Decodificador de archivos WMA
 Menu_LanguageSelect=Selección de idioma
-Menu_NeroOverride=Reemplazar perfil de Nero AAC 
+Menu_NeroOverride=Reemplazar perfil de Nero AAC
 Menu_NeroOverride_Auto=Auto (Recomendado)
 Menu_NeroOverride_HEv1=Forzar HE-AAC v1
 Menu_NeroOverride_HEv2=Forzar HE-AAC v2
@@ -245,7 +246,7 @@ Sheet_Config=Configuración
 Sheet_MetaData=Metadatos
 Sheet_Output=Carpeta de salida
 Sheet_Sources=Origen
- [Form_Progress]
+[Form_Progress]
 Button_Abort=Cancelar
 Button_Close=Cerrar
 Button_Minimize=Minimizar

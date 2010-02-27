@@ -128,6 +128,7 @@ ListView.Column_1=Titel
 ListView.Column_2=Bron
 ListView.Hint=Deze lijst toont alle invoerbestanden welke ge-encodeerd zullen worden. U kunt bestanden toevoegen/verwijderen!
 Menu_AddFiles=Voeg bestand(en) toe
+Menu_AddFiles_Unicode=Add Unicode file
 Menu_AddFolderRecursive=Mappenstructuur toevoegen
 Menu_AddSingleFolder=Enkele folder toevoegen
 Menu_AdvancedOptions=Geavanceerde opties
