@@ -39,9 +39,9 @@ uses
 ///////////////////////////////////////////////////////////////////////////////
 
 const
-  VersionStr: String = 'v3.17 Final';
-  BuildNo: Integer = 84;
-  BuildDate: String = '2010-02-24';
+  VersionStr: String = 'v3.17 Test-1';
+  BuildNo: Integer = 85;
+  BuildDate: String = '2010-02-27';
 
 ///////////////////////////////////////////////////////////////////////////////
 //{$DEFINE BUILD_DEBUG}
@@ -226,6 +226,7 @@ type
     Icon_Working: TImage;
     ImageList2: TImageList;
     Panel_Working_Inner: TJvPanel;
+    Menu_AddFiles_Unicode: TMenuItem;
     procedure ApplicationEvents1Exception(Sender: TObject; E: Exception);
     procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure Button5Click(Sender: TObject);
@@ -307,6 +308,7 @@ type
     procedure Timer_AddFilesTimer(Sender: TObject);
     procedure TrackBarChange(Sender: TObject);
     procedure Trackbar_AlogorithmQualityChange(Sender: TObject);
+    procedure Menu_AddFiles_UnicodeClick(Sender: TObject);
   private
     {$IF NOT Defined(BUILD_DEBUG)}
     AppOnIdleProc: TIdleEvent;
@@ -2048,6 +2050,11 @@ end;
 procedure TForm_Main.Menu_AddFilesClick(Sender: TObject);
 begin
   OpenFiles;
+end;
+
+procedure TForm_Main.Menu_AddFiles_UnicodeClick(Sender: TObject);
+begin
+  OpenFilesEx;
 end;
 
 procedure TForm_Main.Menu_AddFolderRecursiveClick(Sender: TObject);

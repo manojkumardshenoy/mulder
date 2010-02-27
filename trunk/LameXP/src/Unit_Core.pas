@@ -24,7 +24,7 @@ unit Unit_Core;
 interface
 
 uses
-  Windows, SysUtils, Controls, Forms, Classes, StdCtrls, Menus, MuldeR_Toolz,
+  Windows, SysUtils, Controls, Forms, Classes, StdCtrls, CommDlg, Menus, MuldeR_Toolz,
   Registry,  ShlObj, Contnrs, JclSysInfo, JvComputerInfoEx, JvSpin, Math,
   IniFiles, Unit_Encoder, Unit_RunProcess, Unit_Decoder, Unit_MetaData,
   JVCLVer, Unit_MetaDisplay, Unit_LockedFile, Unit_Translator, JvSimpleXML,
@@ -70,6 +70,7 @@ procedure InstallWMADecoder;
 procedure LoadConfig;
 procedure MakeNewFolder;
 procedure OpenFiles;
+procedure OpenFilesEx;
 procedure RemoveFileAssocs;
 procedure SaveConfig;
 procedure SetDefaultLanguage;
@@ -3138,6 +3139,10 @@ begin
 
   for i := 0 to s.Count-1 do
   begin
+    if (Pos('?', s[i]) <> 0) or (Pos('*', s[i]) <> 0) then
+    begin
+      Continue;
+    end;
     if GetAsyncKeyState(VK_ESCAPE) <> 0 then
     begin
       MessageBeep(MB_ICONERROR);
@@ -3150,6 +3155,90 @@ begin
   end;
 
   s.Free;
+
+  ShowStatusPanel(False);
+  UpdateIndex;
+  Form_Main.FormResize(Form_Main);
+
+  if (not b) then
+  begin
+    MyLangBox(Form_Main, 'Message_UnsupportedFileWarning', MB_ICONWARNING or MB_TOPMOST);
+  end;
+end;
+
+///////////////////////////////////////////////////////////////////////////////
+
+procedure OpenFilesEx;
+var
+  b: boolean;
+  i,j: Integer;
+  LongFileNameW,ShortFileNameW: PWideChar;
+  FileNameA: String;
+  OpenFilenameW: TOpenFilenameW;
+  FileFilter, InitFolder: WideString;
+const
+  BufferLength = 2048;
+begin
+  ZeroMemory(@OpenFilenameW, SizeOf(TOpenFilenameW));
+  LongFileNameW := AllocMem(BufferLength * SizeOf(WideChar));
+  ShortFileNameW := AllocMem(BufferLength * SizeOf(WideChar));
+  InitFolder := Form_Main.Dialog_AddFiles.InitialDir;
+
+  FileFilter := LangStr('Message_SupportedFileTypes', Form_Main.Name) + #0;
+  b := False;
+
+  for i := 0 to Length(FileTypes_Exts)-1 do
+  begin
+    for j := 0 to Length(FileTypes_Exts[i])-1 do
+    begin
+      if FileTypes_Exts[i,j] <> '' then
+      begin
+        if b then
+        begin
+          FileFilter := FileFilter + ';';
+        end else begin
+          b := True;
+        end;
+        FileFilter := FileFilter + '*.' + FileTypes_Exts[i,j];
+      end;
+    end;
+  end;
+
+  FileFilter := FileFilter + #0#0;
+
+  with OpenFilenameW do
+  begin
+    lStructSize := SizeOf(TOpenFilenameW);
+    hWndOwner := Form_Main.Handle;
+    lpstrFile := LongFileNameW;
+    nMaxFile := BufferLength - 1;
+    lpstrFilter := PWChar(FileFilter);
+    lpstrInitialDir := PWChar(InitFolder);
+    Flags := OFN_PATHMUSTEXIST;
+  end;
+
+  if not GetOpenFileNameW(OpenFilenameW) then
+  begin
+    FreeMem(LongFileNameW);
+    FreeMem(ShortFileNameW);
+    Exit;
+  end;
+
+  if GetShortPathNameW(LongFileNameW, ShortFileNameW, 2047) = 0 then
+  begin
+    FreeMem(LongFileNameW);
+    FreeMem(ShortFileNameW);
+    Exit;
+  end;
+
+  FileNameA := WideCharToString(ShortFileNameW);
+  Form_Main.Dialog_AddFiles.InitialDir := ExtractDirectory(FileNameA);
+
+  FreeMem(LongFileNameW);
+  FreeMem(ShortFileNameW);
+
+  ShowStatusPanel(True);
+  b := AddInputFile(FileNameA, False, True);
 
   ShowStatusPanel(False);
   UpdateIndex;
