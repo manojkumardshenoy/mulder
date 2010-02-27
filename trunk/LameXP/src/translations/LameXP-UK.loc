@@ -128,6 +128,7 @@ ListView.Column_1=Заголовок
 ListView.Column_2=Джерело
 ListView.Hint=Цей список показує всі вхідні файли, які будуть кодуватися. Ви можете додавати/видаляти файли з нього!
 Menu_AddFiles=Додати файл(и)
+Menu_AddFiles_Unicode=Add Unicode file
 Menu_AddFolderRecursive=Додати дерево директорій
 Menu_AddSingleFolder=Додати директорію
 Menu_AdvancedOptions=Розширені налаштування
