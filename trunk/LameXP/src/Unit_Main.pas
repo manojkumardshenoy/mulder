@@ -39,7 +39,7 @@ uses
 ///////////////////////////////////////////////////////////////////////////////
 
 const
-  VersionStr: String = 'v3.17 Test-2';
+  VersionStr: String = 'v3.18 RC-1';
   BuildNo: Integer = 85;
   BuildDate: String = '2010-02-28';
 
@@ -54,7 +54,7 @@ const
 const
   ToolVersionStr: array [0..17] of TMapEntry =
   (
-    ('Lame', 'v3.98.2, Final (2009-09-26)'), 
+    ('Lame', 'v3.98.3, Final (2010-02-28)'), 
     ('OggVorbis', 'v2.85, libVorbis v1.2.1 RC2, aoTuV b5.7 (2009-03-04)'), 
     ('NeroAAC', '1.5.3.0'), // <-- Used for update-check!
     ('MPG123', 'v1.10.1 (2010-02-27)'), 
@@ -1647,6 +1647,11 @@ begin
   for i := 0 to FilesToAdd.Count-1 do
   begin
     if GetAsyncKeyState(VK_ESCAPE) <> 0 then Break;
+
+    if Pos('?', FilesToAdd[i]) <> 0 then
+    begin
+      Continue;
+    end;
 
     if SafeFileExists(FilesToAdd[i]) then
     begin
