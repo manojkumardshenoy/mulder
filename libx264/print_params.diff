@@ -1,21 +1,8 @@
-diff --git a/common/common.c b/common/common.c
-index 1172c6e..705e4bf 100644
---- a/common/common.c
-+++ b/common/common.c
-@@ -886,7 +886,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
-     s += sprintf( s, " subme=%d", p->analyse.i_subpel_refine );
-     s += sprintf( s, " psy=%d", p->analyse.b_psy );
-     if( p->analyse.b_psy )
--        s += sprintf( s, " psy_rd=%.1f:%.1f", p->analyse.f_psy_rd, p->analyse.f_psy_trellis );
-+        s += sprintf( s, " psy_rd=%.2f:%.2f", p->analyse.f_psy_rd, p->analyse.f_psy_trellis );
-     s += sprintf( s, " mixed_ref=%d", p->analyse.b_mixed_references );
-     s += sprintf( s, " me_range=%d", p->analyse.i_me_range );
-     s += sprintf( s, " chroma_me=%d", p->analyse.b_chroma_me );
 diff --git a/configure b/configure
-index b254383..f8ec620 100755
+index 8ed83ab..8ac33e2 100755
 --- a/configure
 +++ b/configure
-@@ -684,6 +684,8 @@ Libs: $pclibs
+@@ -708,6 +708,8 @@ Libs: $pclibs
  Cflags: -I$includedir
  EOF
  
@@ -25,7 +12,7 @@ index b254383..f8ec620 100755
  Platform:   $ARCH
  System:     $SYS
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index e6a8044..b58d404 100644
+index f99add2..c18aaf3 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
 @@ -32,6 +32,7 @@
@@ -36,7 +23,7 @@ index e6a8044..b58d404 100644
  
  #ifdef HAVE_VISUALIZE
  #include "common/visualize.h"
-@@ -1059,6 +1060,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -1091,6 +1092,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
          h->sps->i_profile_idc == PROFILE_MAIN ? "Main" :
          h->sps->i_profile_idc == PROFILE_HIGH ? "High" :
          "High 4:4:4 Predictive", h->sps->i_level_idc/10, h->sps->i_level_idc%10 );
