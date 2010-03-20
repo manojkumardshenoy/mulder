@@ -1,12 +1,17 @@
+diff --git a/encoder/encoder.c b/encoder/encoder.c
+index f5527cf..6c71a5c 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -783,6 +783,10 @@
-         h->param.rc.i_lookahead += 10;
+@@ -899,6 +899,13 @@ x264_t *x264_encoder_open( x264_param_t *param )
+         h->param.i_scenecut_threshold = 0;
      }
  
 +    /* Force AutoVAQ */
-+    if( h->param.rc.i_aq_mode == X264_AQ_VARIANCE )
++    if( h->param.rc.i_aq_mode )
++    {
++        x264_log( h, X264_LOG_WARNING, "AutoVAQ has been triggered!\n" );
 +        h->param.rc.i_aq_mode = X264_AQ_AUTOVARIANCE;
++    }
 +
      if( param->param_free )
          param->param_free( param );

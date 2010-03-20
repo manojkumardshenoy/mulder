@@ -3,7 +3,7 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
-COMPILERS="443 450"
+COMPILERS="450" #443"
 CPUS="i686 core2 amdfam10 pentium3 noasm"
 
 ######################################################
@@ -110,7 +110,7 @@ make_x264() {
     NAME=$3-$NAME
   fi
 
-  PATCHES="core84to83 print_params psy_trellis fast_firstpass"
+  PATCHES="print_params psy_trellis fast_firstpass"
   
   if [ $2 != "noasm" ]; then
     ECFLAGS="-march=$2"
@@ -252,6 +252,7 @@ do
   for l in $CPUS
   do
     make_x264 "$k" "$l" "" ""
+    make_x264 "$k" "$l" "AutoVAQ" "auto_vaq"
     #make_x264 "$k" "$l" "PIR" "periodic_intra_refresh"
   done
 done
