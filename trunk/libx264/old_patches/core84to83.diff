@@ -63,7 +63,7 @@ index 2550864..809d9fd 100644
  
  #include <stdarg.h>
  
--#define X264_BUILD 84
+-#define X264_BUILD 85
 +#define X264_BUILD 83
  
  /* x264_t:
