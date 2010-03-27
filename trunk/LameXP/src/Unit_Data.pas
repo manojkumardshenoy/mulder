@@ -71,11 +71,11 @@ implementation
 const
   HashValues: array [0..22] of TMapEntry =
   (
-    ('LameEnc', 'F1F6C860EAED2F5CCB62C3CB72A634CA608126C5'),
+    ('LameEnc', '8BF1D67E420E7F23B5BFF711E8EF198F224042D0'),
     ('OggEnc_i386', 'C188D0ADBECCC3F9263231E02A1180261FDF3A98'),
     ('OggEnc_SSE2', 'DF1DF84146B5F5F23D9AF0557298C3EDDB2F58F0'),
     ('FLAC', '0708F25D9AE35061DC48B5FBFA84FD78240BAD0F'),
-    ('MPG123Dec', '61768503254D315E9DE9972A5D7BD33FFC887532'),
+    ('MPG123Dec', '1073838DAA1B735DD7EF6C3F6F38D2603CF95B1D'),
     ('OggDec', 'B5BA2FD4334D7DC7F5F2AF049CCF452AB7636B5F'),
     ('FAAD', 'B9E944078DD966E6B8AC1A48E195C47C9369D8C0'),
     ('SpeexDec', 'F26DA8C5FC18C03C56B7790077C3C24A4703E85E'),
@@ -87,7 +87,7 @@ const
     ('TTADec', 'CF1603EA02EA8B530A7A91409A080D891C3DD85E'),
     ('ALAC', '57A46782731B6454283E3E1D5A7F55BAF9224928'),
     ('TAKDec', 'B1AF0C2ABC0F8B8E2364FD522CFA62B2C46CAE73'),
-    ('MediaInfo', '23778A922CEF61534FB20B29B5E34CB3EF820960'),
+    ('MediaInfo', '4FDA36DD57E43793D5CBF56E03E9255A2DE6D4CF'),
     ('Volumax', 'A3BCD0BF45BB20BBE603462C34E20550FFF5F936'),
     ('WGet', 'C0F2E57ABACF1D1CC7DDBBD3C59A993C1CACDC3E'),
     ('WUpdate', '3EC102096C29E4871078F2F334C5B49E574897DD'),
@@ -153,7 +153,7 @@ begin
       begin
         Store := TLockedFile.Create(TJvDataEmbedded(Data), HashValue, Format('%s\%s', [ToolsDir, AnsiLowerCase(ExeName)]));
       end else begin
-        FatalAppExit(0, 'Data verification failed. File checksum is missing!');
+        FatalAppExit(0, PAnsiChar(Format('Data verification failed: Checksum for "%s" is missing. LameXP was either built incorrectly or it was hacked (amateurishly) afterwards. Take care!', [ToolID])));
         TerminateProcess(GetCurrentProcess, DWORD(-1));
       end;
       ForceApplicationUpdate(crHourGlass);
