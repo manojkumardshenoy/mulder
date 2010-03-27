@@ -39,9 +39,9 @@ uses
 ///////////////////////////////////////////////////////////////////////////////
 
 const
-  VersionStr: String = 'v3.18 RC-2';
-  BuildNo: Integer = 85;
-  BuildDate: String = '2010-03-09';
+  VersionStr: String = 'v3.18 Final';
+  BuildNo: Integer = 86;
+  BuildDate: String = '2010-03-27';
 
 ///////////////////////////////////////////////////////////////////////////////
 //{$DEFINE BUILD_DEBUG}
@@ -54,10 +54,10 @@ const
 const
   ToolVersionStr: array [0..17] of TMapEntry =
   (
-    ('Lame', 'v3.98.3, Final (2010-02-28)'), 
+    ('Lame', 'v3.98.4, Final (2010-03-23)'), 
     ('OggVorbis', 'v2.85, libVorbis v1.2.1 RC2, aoTuV b5.7 (2009-03-04)'), 
     ('NeroAAC', '1.5.3.0'), // <-- Used for update-check!
-    ('MPG123', 'v1.10.1 (2010-02-27)'), 
+    ('MPG123', 'v1.11.0 (2010-03-20)'),
     ('FAAD', 'v2.7 (2009-05-13)'), 
     ('FLAC', 'v1.2.1b (2009-10-01)'), 
     ('Speex', 'v1.2rc1 (2009-07-04)'), 
@@ -68,7 +68,7 @@ const
     ('Shorten', 'v3.6.1 (2007-05-26)'), 
     ('TTA', 'v3.4.1 (2007-07-27)'), 
     ('TAK', 'v2.0.0 (2010-01-07)'), 
-    ('MediaInfo', 'v0.7.29 (2010-03-08)'), 
+    ('MediaInfo', 'v0.7.30 (2010-03-26)'), 
     ('Volumax', 'v0.41 (2009-06-16)'), 
     ('GnuPG', 'v1.4.10b (2009-09-03)'), 
     ('WGet', 'v1.11.4 (2008-06-29)')
