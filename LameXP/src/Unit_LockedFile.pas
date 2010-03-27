@@ -158,7 +158,7 @@ begin
   try
     CheckHashValue;
   except
-    FatalAppExit(0, PAnsiChar(Format('Data verification failed. File ''%s'' seems to be corrupted!', [ExtractFileName(Filename)])));
+    FatalAppExit(0, PAnsiChar(Format('Data verification failed: File ''%s'' seems to be corrupted. LameXP was either built incorrectly or it was hacked (amateurishly) afterwards. Take care!', [ExtractFileName(Filename)])));
     TerminateProcess(GetCurrentProcess, DWORD(-1));
   end;
 

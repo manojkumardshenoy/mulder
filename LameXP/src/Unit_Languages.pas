@@ -201,7 +201,7 @@ begin
         begin
           Languages.AddObject(Format('[%s] %s', [LangID, LangName]), TLockedFile.Create(TJvDataEmbedded(Data), HashValue, FileID('LOC')));
         end else begin
-          FatalAppExit(0, 'Data verification failed. File checksum is missing!');
+          FatalAppExit(0, PAnsiChar(Format('Data verification failed: Checksum for "%s" is missing. LameXP was either built incorrectly or it was hacked (amateurishly) afterwards. Take care!', [HashID])));
           TerminateProcess(GetCurrentProcess, DWORD(-1));
         end;
       end else begin
@@ -225,7 +225,7 @@ begin
       begin
         Flags.Add(TLockedFile.Create(TJvDataEmbedded(Data), HashValue, FileID('BMP')));
       end else begin
-        FatalAppExit(0, 'Data verification failed. File checksum is missing!');
+        FatalAppExit(0, PAnsiChar(Format('Data verification failed: Checksum for "%s" is missing. LameXP was either built incorrectly or it was hacked (amateurishly) afterwards. Take care!', [HashID])));
         TerminateProcess(GetCurrentProcess, DWORD(-1));
       end;
     end;

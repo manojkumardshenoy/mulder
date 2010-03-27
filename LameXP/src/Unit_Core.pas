@@ -3396,7 +3396,7 @@ begin
 
   if (not b) then
   begin
-    FatalAppExit(0, 'Invalid version information. LameXP was built incorrectly or hacked afterwards!');
+    FatalAppExit(0, 'Invalid version information. LameXP was either built incorrectly or it was hacked (amateurishly) afterwards. Take care!');
     TerminateProcess(GetCurrentProcess, DWORD(-1));
   end;
 end;
