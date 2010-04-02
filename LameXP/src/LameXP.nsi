@@ -6,9 +6,9 @@
 ;--------------------------------
 
 ;Version Info
-!define Version "3.18 Final"
-!define Build_Number "86"
-!define Build_Date "2010-03-27"
+!define Version "3.18 Hotfix-1"
+!define Build_Number "87"
+!define Build_Date "2010-04-02"
 
 ;UUID
 !define RegPath "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{54dcbccb-c905-46dc-b6e6-48563d0e9e55}"

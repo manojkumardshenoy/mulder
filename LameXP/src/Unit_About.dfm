@@ -1,6 +1,6 @@
 object Form_About: TForm_About
-  Left = 426
-  Top = 363
+  Left = 544
+  Top = 380
   BorderStyle = bsToolWindow
   Caption = 'Form_About'
   ClientHeight = 385
@@ -954,7 +954,7 @@ object Form_About: TForm_About
       Width = 457
       Height = 369
       HorzScrollBar.Visible = False
-      VertScrollBar.Range = 2096
+      VertScrollBar.Range = 2180
       VertScrollBar.Smooth = True
       VertScrollBar.Tracking = True
       Align = alClient
@@ -6948,9 +6948,9 @@ object Form_About: TForm_About
       object Label6: TLabel
         Left = 72
         Top = 192
-        Width = 246
+        Width = 160
         Height = 13
-        Caption = 'OggEnc && OggDec - Vorbis Encoder/Decoder'
+        Caption = 'OggEnc - Ogg Vorbis Encoder'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -11
@@ -6958,12 +6958,12 @@ object Form_About: TForm_About
         Font.Style = [fsBold]
         ParentFont = False
       end
-      object Label_OggVorbis: TLabel
+      object Label_OggVorbisEnc: TLabel
         Left = 72
         Top = 208
-        Width = 80
+        Width = 97
         Height = 13
-        Caption = 'Label_OggVorbis'
+        Caption = 'Label_OggVorbisEnc'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -11
@@ -7033,7 +7033,7 @@ object Form_About: TForm_About
       end
       object Image5: TImage
         Left = 24
-        Top = 1754
+        Top = 1842
         Width = 32
         Height = 32
         AutoSize = True
@@ -14166,7 +14166,7 @@ object Form_About: TForm_About
       end
       object Label1: TLabel
         Left = 72
-        Top = 1752
+        Top = 1840
         Width = 85
         Height = 13
         Caption = 'RareWares.org'
@@ -14179,7 +14179,7 @@ object Form_About: TForm_About
       end
       object Label9: TLabel
         Left = 72
-        Top = 1772
+        Top = 1860
         Width = 255
         Height = 13
         Caption = 'Providing hard-to-find pieces of software since 2001.'
@@ -14191,9 +14191,9 @@ object Form_About: TForm_About
         ParentFont = False
       end
       object JvImage4: TJvImage
-        Tag = 20
+        Tag = 21
         Left = 72
-        Top = 1793
+        Top = 1881
         Width = 15
         Height = 12
         Cursor = crHandPoint
@@ -14220,9 +14220,9 @@ object Form_About: TForm_About
         OnMouseLeave = JvImage1MouseLeave
       end
       object Label_Link11: TLabel
-        Tag = 20
+        Tag = 21
         Left = 87
-        Top = 1792
+        Top = 1880
         Width = 133
         Height = 13
         Cursor = crHandPoint
@@ -14240,7 +14240,7 @@ object Form_About: TForm_About
       end
       object Image6: TImage
         Left = 24
-        Top = 578
+        Top = 666
         Width = 32
         Height = 32
         AutoSize = True
@@ -14273,7 +14273,7 @@ object Form_About: TForm_About
       end
       object Label4: TLabel
         Left = 72
-        Top = 576
+        Top = 664
         Width = 185
         Height = 13
         Caption = 'FLAC - Free Lossless Audio Codec'
@@ -14286,7 +14286,7 @@ object Form_About: TForm_About
       end
       object Label7: TLabel
         Left = 72
-        Top = 612
+        Top = 700
         Width = 345
         Height = 13
         Caption = 
@@ -14300,9 +14300,9 @@ object Form_About: TForm_About
         ParentFont = False
       end
       object JvImage5: TJvImage
-        Tag = 7
+        Tag = 8
         Left = 72
-        Top = 633
+        Top = 721
         Width = 15
         Height = 12
         Cursor = crHandPoint
@@ -14329,9 +14329,9 @@ object Form_About: TForm_About
         OnMouseLeave = JvImage1MouseLeave
       end
       object Label_Link6: TLabel
-        Tag = 7
+        Tag = 8
         Left = 87
-        Top = 632
+        Top = 720
         Width = 135
         Height = 13
         Cursor = crHandPoint
@@ -14349,7 +14349,7 @@ object Form_About: TForm_About
       end
       object Label_FLAC: TLabel
         Left = 72
-        Top = 592
+        Top = 680
         Width = 56
         Height = 13
         Caption = 'Label_FLAC'
@@ -14544,7 +14544,7 @@ object Form_About: TForm_About
       end
       object Image8: TImage
         Left = 24
-        Top = 666
+        Top = 754
         Width = 32
         Height = 32
         AutoSize = True
@@ -14651,7 +14651,7 @@ object Form_About: TForm_About
       end
       object Label13: TLabel
         Left = 72
-        Top = 664
+        Top = 752
         Width = 201
         Height = 13
         Caption = 'Speex - Free Codec For Free Speech'
@@ -14664,14 +14664,14 @@ object Form_About: TForm_About
       end
       object Label_Speex: TLabel
         Left = 72
-        Top = 680
+        Top = 768
         Width = 61
         Height = 13
         Caption = 'Label_Speex'
       end
       object Label18: TLabel
         Left = 72
-        Top = 700
+        Top = 788
         Width = 289
         Height = 13
         Caption = 'Open Source patent-free audio format designed for speech.'
@@ -14683,9 +14683,9 @@ object Form_About: TForm_About
         ParentFont = False
       end
       object JvImage7: TJvImage
-        Tag = 8
+        Tag = 9
         Left = 72
-        Top = 721
+        Top = 809
         Width = 15
         Height = 12
         Cursor = crHandPoint
@@ -14712,9 +14712,9 @@ object Form_About: TForm_About
         OnMouseLeave = JvImage1MouseLeave
       end
       object Label_Link7: TLabel
-        Tag = 8
+        Tag = 9
         Left = 87
-        Top = 720
+        Top = 808
         Width = 113
         Height = 13
         Cursor = crHandPoint
@@ -14912,7 +14912,7 @@ object Form_About: TForm_About
       end
       object Image10: TImage
         Left = 24
-        Top = 754
+        Top = 842
         Width = 32
         Height = 36
         AutoSize = True
@@ -15031,7 +15031,7 @@ object Form_About: TForm_About
       end
       object Label17: TLabel
         Left = 72
-        Top = 752
+        Top = 840
         Width = 261
         Height = 13
         Caption = 'WavPack - Hybrid Lossless Audio Compression'
@@ -15044,14 +15044,14 @@ object Form_About: TForm_About
       end
       object Label_WavPack: TLabel
         Left = 72
-        Top = 768
+        Top = 856
         Width = 75
         Height = 13
         Caption = 'Label_WavPack'
       end
       object Label24: TLabel
         Left = 72
-        Top = 788
+        Top = 876
         Width = 210
         Height = 13
         Caption = 'Completely open audio compression format.'
@@ -15063,9 +15063,9 @@ object Form_About: TForm_About
         ParentFont = False
       end
       object JvImage9: TJvImage
-        Tag = 9
+        Tag = 10
         Left = 72
-        Top = 809
+        Top = 897
         Width = 15
         Height = 12
         Cursor = crHandPoint
@@ -15092,9 +15092,9 @@ object Form_About: TForm_About
         OnMouseLeave = JvImage1MouseLeave
       end
       object Label_Link8: TLabel
-        Tag = 9
+        Tag = 10
         Left = 87
-        Top = 808
+        Top = 896
         Width = 129
         Height = 13
         Cursor = crHandPoint
@@ -15112,7 +15112,7 @@ object Form_About: TForm_About
       end
       object Image12: TImage
         Left = 24
-        Top = 842
+        Top = 930
         Width = 32
         Height = 32
         AutoSize = True
@@ -15219,7 +15219,7 @@ object Form_About: TForm_About
       end
       object Label29: TLabel
         Left = 72
-        Top = 840
+        Top = 928
         Width = 212
         Height = 13
         Caption = 'Musepack - Living Audio Compression'
@@ -15232,14 +15232,14 @@ object Form_About: TForm_About
       end
       object Label_Musepack: TLabel
         Left = 72
-        Top = 856
+        Top = 944
         Width = 78
         Height = 13
         Caption = 'Label_Musepack'
       end
       object Label31: TLabel
         Left = 72
-        Top = 876
+        Top = 964
         Width = 314
         Height = 13
         Caption = 'Audio compression format with a strong emphasis on high quality.'
@@ -15251,9 +15251,9 @@ object Form_About: TForm_About
         ParentFont = False
       end
       object JvImage11: TJvImage
-        Tag = 10
+        Tag = 11
         Left = 72
-        Top = 897
+        Top = 985
         Width = 15
         Height = 12
         Cursor = crHandPoint
@@ -15280,9 +15280,9 @@ object Form_About: TForm_About
         OnMouseLeave = JvImage1MouseLeave
       end
       object Label_Link9: TLabel
-        Tag = 10
+        Tag = 11
         Left = 87
-        Top = 896
+        Top = 984
         Width = 131
         Height = 13
         Cursor = crHandPoint
@@ -15300,7 +15300,7 @@ object Form_About: TForm_About
       end
       object Image13: TImage
         Left = 24
-        Top = 930
+        Top = 1018
         Width = 32
         Height = 32
         AutoSize = True
@@ -15379,7 +15379,7 @@ object Form_About: TForm_About
       end
       object Label30: TLabel
         Left = 72
-        Top = 928
+        Top = 1016
         Width = 256
         Height = 13
         Caption = 'Monkey'#39's Audio - Lossless Audio Compressor.'
@@ -15392,14 +15392,14 @@ object Form_About: TForm_About
       end
       object Label_Monkey: TLabel
         Left = 72
-        Top = 944
+        Top = 1032
         Width = 68
         Height = 13
         Caption = 'Label_Monkey'
       end
       object Label34: TLabel
         Left = 72
-        Top = 964
+        Top = 1052
         Width = 335
         Height = 13
         Caption = 
@@ -15413,9 +15413,9 @@ object Form_About: TForm_About
         ParentFont = False
       end
       object JvImage12: TJvImage
-        Tag = 11
+        Tag = 12
         Left = 72
-        Top = 985
+        Top = 1073
         Width = 15
         Height = 12
         Cursor = crHandPoint
@@ -15442,9 +15442,9 @@ object Form_About: TForm_About
         OnMouseLeave = JvImage1MouseLeave
       end
       object Label_Link10: TLabel
-        Tag = 11
+        Tag = 12
         Left = 87
-        Top = 984
+        Top = 1072
         Width = 155
         Height = 13
         Cursor = crHandPoint
@@ -15469,14 +15469,14 @@ object Form_About: TForm_About
       end
       object Bevel4: TBevel
         Left = 16
-        Top = 1718
+        Top = 1806
         Width = 409
         Height = 10
         Shape = bsBottomLine
       end
       object Image14: TImage
         Left = 24
-        Top = 1898
+        Top = 1986
         Width = 32
         Height = 32
         AutoSize = True
@@ -16221,7 +16221,7 @@ object Form_About: TForm_About
       end
       object Label8: TLabel
         Left = 72
-        Top = 1896
+        Top = 1984
         Width = 88
         Height = 13
         Caption = 'Doom9'#39's Forum'
@@ -16234,7 +16234,7 @@ object Form_About: TForm_About
       end
       object Label15: TLabel
         Left = 72
-        Top = 1916
+        Top = 2004
         Width = 297
         Height = 13
         Caption = 'The in-place to be for everyone interested in DVD conversion.'
@@ -16246,9 +16246,9 @@ object Form_About: TForm_About
         ParentFont = False
       end
       object JvImage13: TJvImage
-        Tag = 22
+        Tag = 23
         Left = 72
-        Top = 1937
+        Top = 2025
         Width = 15
         Height = 12
         Cursor = crHandPoint
@@ -16275,9 +16275,9 @@ object Form_About: TForm_About
         OnMouseLeave = JvImage1MouseLeave
       end
       object Label_Link12: TLabel
-        Tag = 22
+        Tag = 23
         Left = 87
-        Top = 1936
+        Top = 2024
         Width = 120
         Height = 13
         Cursor = crHandPoint
@@ -16295,7 +16295,7 @@ object Form_About: TForm_About
       end
       object Image15: TImage
         Left = 24
-        Top = 1826
+        Top = 1914
         Width = 32
         Height = 32
         AutoSize = True
@@ -16438,7 +16438,7 @@ object Form_About: TForm_About
       end
       object Label19: TLabel
         Left = 72
-        Top = 1824
+        Top = 1912
         Width = 125
         Height = 13
         Caption = 'Hydrogenaudio Forum'
@@ -16451,7 +16451,7 @@ object Form_About: TForm_About
       end
       object Label23: TLabel
         Left = 72
-        Top = 1844
+        Top = 1932
         Width = 212
         Height = 13
         Caption = 'The audio technology ebthusiast'#39's resource.'
@@ -16463,9 +16463,9 @@ object Form_About: TForm_About
         ParentFont = False
       end
       object JvImage14: TJvImage
-        Tag = 21
+        Tag = 22
         Left = 72
-        Top = 1865
+        Top = 1953
         Width = 15
         Height = 12
         Cursor = crHandPoint
@@ -16492,9 +16492,9 @@ object Form_About: TForm_About
         OnMouseLeave = JvImage1MouseLeave
       end
       object Label_Link13: TLabel
-        Tag = 21
+        Tag = 22
         Left = 87
-        Top = 1864
+        Top = 1952
         Width = 156
         Height = 13
         Cursor = crHandPoint
@@ -16512,14 +16512,14 @@ object Form_About: TForm_About
       end
       object Bevel5: TBevel
         Left = 16
-        Top = 1966
+        Top = 2054
         Width = 409
         Height = 10
         Shape = bsBottomLine
       end
       object Image17: TImage
         Left = 24
-        Top = 1018
+        Top = 1106
         Width = 32
         Height = 32
         AutoSize = True
@@ -16621,7 +16621,7 @@ object Form_About: TForm_About
       end
       object Label25: TLabel
         Left = 72
-        Top = 1016
+        Top = 1104
         Width = 173
         Height = 13
         Caption = 'Valib Decoder / AC3Filter Tools'
@@ -16634,14 +16634,14 @@ object Form_About: TForm_About
       end
       object Label_AC3Filter: TLabel
         Left = 72
-        Top = 1032
+        Top = 1120
         Width = 75
         Height = 13
         Caption = 'Label_AC3Filter'
       end
       object Label33: TLabel
         Left = 72
-        Top = 1052
+        Top = 1140
         Width = 266
         Height = 13
         Caption = 'Distributed under GNU General Public License version 2.'
@@ -16653,9 +16653,9 @@ object Form_About: TForm_About
         ParentFont = False
       end
       object JvImage15: TJvImage
-        Tag = 12
+        Tag = 13
         Left = 72
-        Top = 1073
+        Top = 1161
         Width = 15
         Height = 12
         Cursor = crHandPoint
@@ -16682,9 +16682,9 @@ object Form_About: TForm_About
         OnMouseLeave = JvImage1MouseLeave
       end
       object Label_Link14: TLabel
-        Tag = 12
+        Tag = 13
         Left = 87
-        Top = 1072
+        Top = 1160
         Width = 123
         Height = 13
         Cursor = crHandPoint
@@ -16702,19 +16702,19 @@ object Form_About: TForm_About
       end
       object JvPoweredByJVCL1: TJvPoweredByJVCL
         Left = 24
-        Top = 2002
+        Top = 2090
         URL = 'http://jvcl.delphi-jedi.org/'
         OnClick = JvPoweredByJVCL1Click
       end
       object JvPoweredByJCL1: TJvPoweredByJCL
         Left = 24
-        Top = 2037
+        Top = 2125
         Width = 209
         URL = 'http://jcl.delphi-jedi.org/'
       end
       object Image16: TImage
         Left = 24
-        Top = 1369
+        Top = 1457
         Width = 32
         Height = 32
         AutoSize = True
@@ -16857,7 +16857,7 @@ object Form_About: TForm_About
       end
       object Label32: TLabel
         Left = 72
-        Top = 1368
+        Top = 1456
         Width = 222
         Height = 13
         Caption = 'MediaInfo - Analyze Tool for Media files'
@@ -16870,14 +16870,14 @@ object Form_About: TForm_About
       end
       object Label_MediaInfo: TLabel
         Left = 72
-        Top = 1384
+        Top = 1472
         Width = 79
         Height = 13
         Caption = 'Label_MediaInfo'
       end
       object Label36: TLabel
         Left = 72
-        Top = 1404
+        Top = 1492
         Width = 325
         Height = 13
         Caption = 'Copyright (c) 2002-2008, Jerome Martinez. Licensed under LGPLv3.'
@@ -16889,9 +16889,9 @@ object Form_About: TForm_About
         ParentFont = False
       end
       object JvImage16: TJvImage
-        Tag = 16
+        Tag = 17
         Left = 72
-        Top = 1425
+        Top = 1513
         Width = 15
         Height = 12
         Cursor = crHandPoint
@@ -16918,9 +16918,9 @@ object Form_About: TForm_About
         OnMouseLeave = JvImage1MouseLeave
       end
       object Label_Link15: TLabel
-        Tag = 16
+        Tag = 17
         Left = 87
-        Top = 1424
+        Top = 1512
         Width = 164
         Height = 13
         Cursor = crHandPoint
@@ -16938,7 +16938,7 @@ object Form_About: TForm_About
       end
       object Image18: TImage
         Left = 24
-        Top = 1106
+        Top = 1194
         Width = 32
         Height = 32
         AutoSize = True
@@ -18025,7 +18025,7 @@ object Form_About: TForm_About
       end
       object Image19: TImage
         Left = 24
-        Top = 1194
+        Top = 1282
         Width = 32
         Height = 32
         AutoSize = True
@@ -18168,7 +18168,7 @@ object Form_About: TForm_About
       end
       object Label21: TLabel
         Left = 72
-        Top = 1104
+        Top = 1192
         Width = 209
         Height = 13
         Caption = 'Shorten - Lossless Audio Compressor'
@@ -18181,14 +18181,14 @@ object Form_About: TForm_About
       end
       object Label_Shorten: TLabel
         Left = 72
-        Top = 1120
+        Top = 1208
         Width = 69
         Height = 13
         Caption = 'Label_Shorten'
       end
       object Label27: TLabel
         Left = 72
-        Top = 1140
+        Top = 1228
         Width = 266
         Height = 13
         Caption = 'Distributed under GNU General Public License version 2.'
@@ -18200,9 +18200,9 @@ object Form_About: TForm_About
         ParentFont = False
       end
       object Label_Link16: TLabel
-        Tag = 13
+        Tag = 14
         Left = 87
-        Top = 1160
+        Top = 1248
         Width = 163
         Height = 13
         Cursor = crHandPoint
@@ -18219,70 +18219,6 @@ object Form_About: TForm_About
         OnMouseLeave = Label1MouseLeave
       end
       object JvImage17: TJvImage
-        Tag = 13
-        Left = 72
-        Top = 1161
-        Width = 15
-        Height = 12
-        Cursor = crHandPoint
-        Picture.Data = {
-          07544269746D6170E6010000424DE60100000000000036000000280000000C00
-          00000C0000000100180000000000B0010000C40E0000C40E0000000000000000
-          0000FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FF
-          FF00FFFF00FFFF00FFCC6600CC6600CC6600CC6600CC6600CC6600CC6600FF00
-          FFFF00FFFF00FFFF00FFFF00FFCC6600FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFCC
-          6600FF00FFFF00FFFF00FFFF00FFFF00FFCC6600FFFFFFFFFFFFFFCC99CC6600
-          FFFFFFCC6600FF00FFFF00FFFF00FFFF00FFFF00FFCC6600FFFFFFFFCC99CC99
-          66FFCC99CC6600CC6600FF00FFFF00FFFF00FFFF00FFFF00FFCC6600FFFFFFCC
-          6600FFCC99FFFFFFFFCC99CC6600CC6600CC9966CC6600FF00FFFF00FFCC6600
-          FFFFFFFFFFFFCC6600FFCC99FFFFFFFFCC99CC9933FFFFFFCC6600FF00FFFF00
-          FFCC6600CC6600CC6600CC6600CC6600FFCC99FFFFFFFFFFFFFFFFFFCC6600FF
-          00FFFF00FFFF00FFFF00FFFF00FFFF00FFCC6600CC9933FFFFFFFFFFFFFFFFFF
-          CC6600FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFCC9966FFFFFFFFFFFFFFFF
-          FFFFFFFFCC6600FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFCC6600CC6600CC
-          6600CC6600CC6600CC6600FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FF
-          FF00FFFF00FFFF00FFFF00FFFF00FFFF00FF}
-        Transparent = True
-        OnClick = JvImage1Click
-        OnMouseEnter = JvImage1MouseEnter
-        OnMouseLeave = JvImage1MouseLeave
-      end
-      object Label35: TLabel
-        Left = 72
-        Top = 1192
-        Width = 215
-        Height = 13
-        Caption = 'The True Audio - Lossless Audio Codec'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object Label_TTA: TLabel
-        Left = 72
-        Top = 1208
-        Width = 50
-        Height = 13
-        Caption = 'Label_TTA'
-      end
-      object Label38: TLabel
-        Left = 72
-        Top = 1228
-        Width = 326
-        Height = 13
-        Caption = 
-          'Released under the terms of the GNU Lesser General Public Licens' +
-          'e.'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = [fsItalic]
-        ParentFont = False
-      end
-      object JvImage18: TJvImage
         Tag = 14
         Left = 72
         Top = 1249
@@ -18311,10 +18247,74 @@ object Form_About: TForm_About
         OnMouseEnter = JvImage1MouseEnter
         OnMouseLeave = JvImage1MouseLeave
       end
+      object Label35: TLabel
+        Left = 72
+        Top = 1280
+        Width = 215
+        Height = 13
+        Caption = 'The True Audio - Lossless Audio Codec'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object Label_TTA: TLabel
+        Left = 72
+        Top = 1296
+        Width = 50
+        Height = 13
+        Caption = 'Label_TTA'
+      end
+      object Label38: TLabel
+        Left = 72
+        Top = 1316
+        Width = 326
+        Height = 13
+        Caption = 
+          'Released under the terms of the GNU Lesser General Public Licens' +
+          'e.'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsItalic]
+        ParentFont = False
+      end
+      object JvImage18: TJvImage
+        Tag = 15
+        Left = 72
+        Top = 1337
+        Width = 15
+        Height = 12
+        Cursor = crHandPoint
+        Picture.Data = {
+          07544269746D6170E6010000424DE60100000000000036000000280000000C00
+          00000C0000000100180000000000B0010000C40E0000C40E0000000000000000
+          0000FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FF
+          FF00FFFF00FFFF00FFCC6600CC6600CC6600CC6600CC6600CC6600CC6600FF00
+          FFFF00FFFF00FFFF00FFFF00FFCC6600FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFCC
+          6600FF00FFFF00FFFF00FFFF00FFFF00FFCC6600FFFFFFFFFFFFFFCC99CC6600
+          FFFFFFCC6600FF00FFFF00FFFF00FFFF00FFFF00FFCC6600FFFFFFFFCC99CC99
+          66FFCC99CC6600CC6600FF00FFFF00FFFF00FFFF00FFFF00FFCC6600FFFFFFCC
+          6600FFCC99FFFFFFFFCC99CC6600CC6600CC9966CC6600FF00FFFF00FFCC6600
+          FFFFFFFFFFFFCC6600FFCC99FFFFFFFFCC99CC9933FFFFFFCC6600FF00FFFF00
+          FFCC6600CC6600CC6600CC6600CC6600FFCC99FFFFFFFFFFFFFFFFFFCC6600FF
+          00FFFF00FFFF00FFFF00FFFF00FFFF00FFCC6600CC9933FFFFFFFFFFFFFFFFFF
+          CC6600FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFCC9966FFFFFFFFFFFFFFFF
+          FFFFFFFFCC6600FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFCC6600CC6600CC
+          6600CC6600CC6600CC6600FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FF
+          FF00FFFF00FFFF00FFFF00FFFF00FFFF00FF}
+        Transparent = True
+        OnClick = JvImage1Click
+        OnMouseEnter = JvImage1MouseEnter
+        OnMouseLeave = JvImage1MouseLeave
+      end
       object Label_Link17: TLabel
-        Tag = 14
+        Tag = 15
         Left = 87
-        Top = 1248
+        Top = 1336
         Width = 109
         Height = 13
         Cursor = crHandPoint
@@ -28573,9 +28573,9 @@ object Form_About: TForm_About
       object Label26: TLabel
         Left = 72
         Top = 488
-        Width = 235
+        Width = 287
         Height = 13
-        Caption = 'mpg123 - Fast console MPEG Audio Player'
+        Caption = 'mpg123 - Fast console MPEG audio Player/Decoder'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -28655,7 +28655,7 @@ object Form_About: TForm_About
       end
       object Image21: TImage
         Left = 24
-        Top = 1281
+        Top = 1369
         Width = 32
         Height = 32
         AutoSize = True
@@ -28798,7 +28798,7 @@ object Form_About: TForm_About
       end
       object Label28: TLabel
         Left = 72
-        Top = 1280
+        Top = 1368
         Width = 220
         Height = 13
         Caption = 'TAK - Tom'#39's lossless Audio Kompressor'
@@ -28811,14 +28811,14 @@ object Form_About: TForm_About
       end
       object Label_TAK: TLabel
         Left = 72
-        Top = 1296
+        Top = 1384
         Width = 50
         Height = 13
         Caption = 'Label_TAK'
       end
       object Label41: TLabel
         Left = 72
-        Top = 1316
+        Top = 1404
         Width = 270
         Height = 13
         Caption = 'Copyright 2006 by Thomas Becker, D-49080 Osnabr'#252'ck.'
@@ -28830,9 +28830,9 @@ object Form_About: TForm_About
         ParentFont = False
       end
       object Label_Link18: TLabel
-        Tag = 15
+        Tag = 16
         Left = 87
-        Top = 1336
+        Top = 1424
         Width = 174
         Height = 13
         Cursor = crHandPoint
@@ -28849,9 +28849,9 @@ object Form_About: TForm_About
         OnMouseLeave = Label1MouseLeave
       end
       object JvImage20: TJvImage
-        Tag = 15
+        Tag = 16
         Left = 72
-        Top = 1337
+        Top = 1425
         Width = 15
         Height = 12
         Cursor = crHandPoint
@@ -28879,7 +28879,7 @@ object Form_About: TForm_About
       end
       object Image22: TImage
         Left = 24
-        Top = 1457
+        Top = 1545
         Width = 32
         Height = 32
         AutoSize = True
@@ -29624,7 +29624,7 @@ object Form_About: TForm_About
       end
       object Label40: TLabel
         Left = 72
-        Top = 1456
+        Top = 1544
         Width = 200
         Height = 13
         Caption = 'Volumax - Wave Normalization Tool'
@@ -29637,14 +29637,14 @@ object Form_About: TForm_About
       end
       object Label_Volumax: TLabel
         Left = 72
-        Top = 1472
+        Top = 1560
         Width = 71
         Height = 13
         Caption = 'Label_Volumax'
       end
       object Label43: TLabel
         Left = 72
-        Top = 1492
+        Top = 1580
         Width = 324
         Height = 13
         Caption = 'Copyright (c) 2002-2008 John33 <john.edwards33@ntlworld.com>'
@@ -29656,9 +29656,9 @@ object Form_About: TForm_About
         ParentFont = False
       end
       object JvImage21: TJvImage
-        Tag = 17
+        Tag = 18
         Left = 72
-        Top = 1513
+        Top = 1601
         Width = 15
         Height = 12
         Cursor = crHandPoint
@@ -29685,9 +29685,9 @@ object Form_About: TForm_About
         OnMouseLeave = JvImage1MouseLeave
       end
       object Label_Link19: TLabel
-        Tag = 17
+        Tag = 18
         Left = 87
-        Top = 1512
+        Top = 1600
         Width = 206
         Height = 13
         Cursor = crHandPoint
@@ -29705,7 +29705,7 @@ object Form_About: TForm_About
       end
       object Image23: TImage
         Left = 24
-        Top = 1545
+        Top = 1633
         Width = 32
         Height = 32
         AutoSize = True
@@ -29848,7 +29848,7 @@ object Form_About: TForm_About
       end
       object Label42: TLabel
         Left = 72
-        Top = 1544
+        Top = 1632
         Width = 177
         Height = 13
         Caption = 'GnuPG - The GNU Privacy Guard'
@@ -29861,14 +29861,14 @@ object Form_About: TForm_About
       end
       object Label_GnuPG: TLabel
         Left = 72
-        Top = 1560
+        Top = 1648
         Width = 63
         Height = 13
         Caption = 'Label_GnuPG'
       end
       object Label45: TLabel
         Left = 72
-        Top = 1580
+        Top = 1668
         Width = 292
         Height = 13
         Caption = 'Released under the terms of the GNU General Public License.'
@@ -29880,9 +29880,9 @@ object Form_About: TForm_About
         ParentFont = False
       end
       object JvImage22: TJvImage
-        Tag = 18
+        Tag = 19
         Left = 72
-        Top = 1601
+        Top = 1689
         Width = 15
         Height = 12
         Cursor = crHandPoint
@@ -29909,9 +29909,9 @@ object Form_About: TForm_About
         OnMouseLeave = JvImage1MouseLeave
       end
       object Label_Link20: TLabel
-        Tag = 18
+        Tag = 19
         Left = 87
-        Top = 1600
+        Top = 1688
         Width = 114
         Height = 13
         Cursor = crHandPoint
@@ -29929,7 +29929,7 @@ object Form_About: TForm_About
       end
       object Image24: TImage
         Left = 24
-        Top = 1633
+        Top = 1721
         Width = 32
         Height = 32
         AutoSize = True
@@ -30072,7 +30072,7 @@ object Form_About: TForm_About
       end
       object Label44: TLabel
         Left = 72
-        Top = 1632
+        Top = 1720
         Width = 286
         Height = 13
         Caption = 'GNU Wget - software for retrieving files using HTTP'
@@ -30085,14 +30085,14 @@ object Form_About: TForm_About
       end
       object Label_WGet: TLabel
         Left = 72
-        Top = 1648
+        Top = 1736
         Width = 58
         Height = 13
         Caption = 'Label_WGet'
       end
       object Label47: TLabel
         Left = 72
-        Top = 1668
+        Top = 1756
         Width = 292
         Height = 13
         Caption = 'Released under the terms of the GNU General Public License.'
@@ -30104,9 +30104,9 @@ object Form_About: TForm_About
         ParentFont = False
       end
       object JvImage23: TJvImage
-        Tag = 19
+        Tag = 20
         Left = 72
-        Top = 1689
+        Top = 1777
         Width = 15
         Height = 12
         Cursor = crHandPoint
@@ -30133,13 +30133,127 @@ object Form_About: TForm_About
         OnMouseLeave = JvImage1MouseLeave
       end
       object Label_Link21: TLabel
-        Tag = 19
+        Tag = 20
         Left = 87
-        Top = 1688
+        Top = 1776
         Width = 177
         Height = 13
         Cursor = crHandPoint
         Caption = 'http://www.gnu.org/software/wget/'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlue
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsUnderline]
+        ParentFont = False
+        Transparent = True
+        OnClick = Label_HomepageClick
+        OnMouseEnter = Label1MouseEnter
+        OnMouseLeave = Label1MouseLeave
+      end
+      object Image25: TImage
+        Left = 24
+        Top = 578
+        Width = 32
+        Height = 32
+        AutoSize = True
+        Picture.Data = {
+          055449636F6E0000010001002020100001000400E80200001600000028000000
+          2000000040000000010004000000000080020000000000000000000000000000
+          000000000201000001A19F00A1990000091F0700D8ED020000FCF90056260C00
+          AB997E0009090200FFFFFF00F9F80000004E50009B521700E5CEA800CFCB0000
+          FFFFFF000000000000000006000000000000000000000000000000C660000000
+          000000000000000000000CC66600000000000000000000000000CCC666600000
+          0000000000000000000CCCC666660000000000000000000000CCCCC666666000
+          00000000000000000CCCCCC6666666000000000000000000CCCCCCC666666660
+          000000000000000CCCCCCCC66666666600000000000000CCC000000AAA666666
+          6000000000000CC001111000AA666000000000000000000111111111000000AA
+          AAAA00000000AA0110000111111111AAAAAA000000CC0CC555AA0111111011AA
+          AAAA00000C00C40555AAA011011111AAAAA00000C0AAA00555500005111111AA
+          AAA800000AAA005555555555555010AAAAAAA0C000AA055500555555155100AA
+          AAAAA0C000000550990555155550000AAAAAA000000DD00999901551058CCCC0
+          0AAA00000000DD090090550558AAAACCC000000000000D09999055000AAAAAAA
+          0CC00000000000D09900000AAAAAAAA0CC0000000000000D00D08AAAAAAAAA0C
+          C000000000000000DDDDD0AAAAAA006C00000000000000000DDDDD000000CCC0
+          000000000000000000DDDDDDCCCCCC000000000000000000000DDDDDCCCCC000
+          00000000000000000000DDDDCCCC0000000000000000000000000DDDCCC00000
+          0000000000000000000000DDCC00000000000000000000000000000DC0000000
+          00000000FFFEFFFFFFFC7FFFFFF83FFFFFF01FFFFFE00FFFFFC007FFFF8003FF
+          FF0001FFFE0000FFFC00007FF8000007C0000007C0000007C000000780000003
+          000000010000000100000001C0000003E0000003F0000007F800001FFC00003F
+          FE00007FFF0000FFFF8001FFFFC003FFFFE007FFFFF00FFFFFF81FFFFFFC3FFF
+          FFFE7FFF}
+      end
+      object Label39: TLabel
+        Left = 72
+        Top = 576
+        Width = 225
+        Height = 13
+        Caption = 'OggDec - Ogg Vorbis Decoder by John33'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object Label_OggVorbisDec: TLabel
+        Left = 72
+        Top = 592
+        Width = 98
+        Height = 13
+        Caption = 'Label_OggVorbisDec'
+      end
+      object Label48: TLabel
+        Left = 72
+        Top = 612
+        Width = 324
+        Height = 13
+        Caption = 'Copyright (c) 2002-2010 John33 <john.edwards33@ntlworld.com>'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsItalic]
+        ParentFont = False
+      end
+      object JvImage24: TJvImage
+        Tag = 7
+        Left = 72
+        Top = 633
+        Width = 15
+        Height = 12
+        Cursor = crHandPoint
+        Picture.Data = {
+          07544269746D6170E6010000424DE60100000000000036000000280000000C00
+          00000C0000000100180000000000B0010000C40E0000C40E0000000000000000
+          0000FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FF
+          FF00FFFF00FFFF00FFCC6600CC6600CC6600CC6600CC6600CC6600CC6600FF00
+          FFFF00FFFF00FFFF00FFFF00FFCC6600FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFCC
+          6600FF00FFFF00FFFF00FFFF00FFFF00FFCC6600FFFFFFFFFFFFFFCC99CC6600
+          FFFFFFCC6600FF00FFFF00FFFF00FFFF00FFFF00FFCC6600FFFFFFFFCC99CC99
+          66FFCC99CC6600CC6600FF00FFFF00FFFF00FFFF00FFFF00FFCC6600FFFFFFCC
+          6600FFCC99FFFFFFFFCC99CC6600CC6600CC9966CC6600FF00FFFF00FFCC6600
+          FFFFFFFFFFFFCC6600FFCC99FFFFFFFFCC99CC9933FFFFFFCC6600FF00FFFF00
+          FFCC6600CC6600CC6600CC6600CC6600FFCC99FFFFFFFFFFFFFFFFFFCC6600FF
+          00FFFF00FFFF00FFFF00FFFF00FFFF00FFCC6600CC9933FFFFFFFFFFFFFFFFFF
+          CC6600FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFCC9966FFFFFFFFFFFFFFFF
+          FFFFFFFFCC6600FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFCC6600CC6600CC
+          6600CC6600CC6600CC6600FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FF
+          FF00FFFF00FFFF00FFFF00FFFF00FFFF00FF}
+        Transparent = True
+        OnClick = JvImage1Click
+        OnMouseEnter = JvImage1MouseEnter
+        OnMouseLeave = JvImage1MouseLeave
+      end
+      object Label49: TLabel
+        Tag = 7
+        Left = 87
+        Top = 632
+        Width = 212
+        Height = 13
+        Cursor = crHandPoint
+        Caption = 'http://www.rarewares.org/ogg-oggdec.php'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlue
         Font.Height = -11
