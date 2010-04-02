@@ -44,7 +44,7 @@ type
     Label_Link2: TLabel;
     Label5: TLabel;
     Label6: TLabel;
-    Label_OggVorbis: TLabel;
+    Label_OggVorbisEnc: TLabel;
     Label_Link3: TLabel;
     Label11: TLabel;
     Label12: TLabel;
@@ -190,6 +190,12 @@ type
     Label47: TLabel;
     JvImage23: TJvImage;
     Label_Link21: TLabel;
+    Image25: TImage;
+    Label39: TLabel;
+    Label_OggVorbisDec: TLabel;
+    Label48: TLabel;
+    JvImage24: TJvImage;
+    Label49: TLabel;
     procedure Label1MouseEnter(Sender: TObject);
     procedure Label1MouseLeave(Sender: TObject);
     procedure Label_HomepageClick(Sender: TObject);
@@ -269,7 +275,8 @@ begin
   Label_Homepage.Caption := Unit_Main.URL_Homepage;
 
   SetVersionLabel(Label_Lame);
-  SetVersionLabel(Label_OggVorbis);
+  SetVersionLabel(Label_OggVorbisEnc);
+  SetVersionLabel(Label_OggVorbisDec);
   SetVersionLabel(Label_FAAD);
   SetVersionLabel(Label_MPG123);
   SetVersionLabel(Label_FLAC);

@@ -39,9 +39,9 @@ uses
 ///////////////////////////////////////////////////////////////////////////////
 
 const
-  VersionStr: String = 'v3.18 Final';
-  BuildNo: Integer = 86;
-  BuildDate: String = '2010-03-27';
+  VersionStr: String = 'v3.18 Hotfix-1';
+  BuildNo: Integer = 87;
+  BuildDate: String = '2010-04-02';
 
 ///////////////////////////////////////////////////////////////////////////////
 //{$DEFINE BUILD_DEBUG}
@@ -52,12 +52,13 @@ const
   URL_Homepage: String = 'http://mulder.dummwiedeutsch.de/';
 
 const
-  ToolVersionStr: array [0..17] of TMapEntry =
+  ToolVersionStr: array [0..18] of TMapEntry =
   (
     ('Lame', 'v3.98.4, Final (2010-03-23)'), 
-    ('OggVorbis', 'v2.85, libVorbis v1.2.1 RC2, aoTuV b5.7 (2009-03-04)'), 
+    ('OggVorbisEnc', 'v2.85, libVorbis v1.2.1 RC2, aoTuV b5.7 (2009-03-04)'),
+    ('OggVorbisDec', 'v1.9.7 (2010-03-29)'), 
     ('NeroAAC', '1.5.3.0'), // <-- Used for update-check!
-    ('MPG123', 'v1.11.0 (2010-03-20)'),
+    ('MPG123', 'v1.12.1 (2010-03-31)'),
     ('FAAD', 'v2.7 (2009-05-13)'), 
     ('FLAC', 'v1.2.1b (2009-10-01)'), 
     ('Speex', 'v1.2rc1 (2009-07-04)'), 
