@@ -1,8 +1,8 @@
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index f5527cf..6c71a5c 100644
+index 6178c64..164250e 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -899,6 +899,13 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -887,6 +887,13 @@ x264_t *x264_encoder_open( x264_param_t *param )
          h->param.i_scenecut_threshold = 0;
      }
  
@@ -13,6 +13,6 @@ index f5527cf..6c71a5c 100644
 +        h->param.rc.i_aq_mode = X264_AQ_AUTOVARIANCE;
 +    }
 +
-     if( param->param_free )
-         param->param_free( param );
+     /* Apply "fast first-pass" settings */
+     x264_param_apply_fastfirstpass( &h->param );
  

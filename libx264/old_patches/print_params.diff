@@ -1,8 +1,8 @@
 diff --git a/configure b/configure
-index 25f5458..6005394 100755
+index 8ed83ab..8ac33e2 100755
 --- a/configure
 +++ b/configure
-@@ -699,6 +699,8 @@ Libs: $pclibs
+@@ -708,6 +708,8 @@ Libs: $pclibs
  Cflags: -I$includedir
  EOF
  
@@ -12,7 +12,7 @@ index 25f5458..6005394 100755
  Platform:   $ARCH
  System:     $SYS
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 85f3c08..374bd69 100644
+index f99add2..c18aaf3 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
 @@ -32,6 +32,7 @@

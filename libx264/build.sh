@@ -3,8 +3,19 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
-COMPILERS="450" #443"
+COMPILERS="450" #"443"
 CPUS="i686 core2 amdfam10 pentium3 noasm"
+
+######################################################
+# Do NOT modify any lines below this one!
+######################################################
+
+git --help > /dev/null
+
+if [ $? -ne 0 ]; then
+  echo "Git not working! Is Git installed?"
+  exit
+fi
 
 ######################################################
 
@@ -23,6 +34,9 @@ if [ ! -f "./x264-src/x264.c" ]; then
 fi
 
 if [ "$1" != "" ]; then
+  echo ""
+  echo "Checkout: $1"
+  echo ""
   cd x264-src
   git checkout $1
   cd ..
@@ -39,8 +53,7 @@ apply_patch() {
   for j in 1 2 3 4 5
   do
     if [ "$SUCCESS" != "yes" ]; then
-      cp "../$1.diff" "./$1.diff"
-      patch -p1 < ./$1.diff
+      patch -p1 < ../$1.diff
       if [ $? -eq 0 ]; then
         SUCCESS=yes
       else
@@ -61,11 +74,9 @@ apply_patch() {
 ######################################################
 
 make_pthread() {
-  echo ""
-  echo "=============================================================================="
+  echo -e "\n=============================================================================="
   echo "GCC Version: $1"
-  echo "=============================================================================="
-  echo ""
+  echo -e "==============================================================================\n"
   
   umount /mingw
   mount d:/mingw.$1 /mingw
@@ -126,8 +137,7 @@ make_x264() {
     PATCHES="$PATCHES $4"
   fi
 
-  echo ""
-  echo "=============================================================================="
+  echo -e "\n=============================================================================="
   echo "GCC Version: $1"
   echo "CPU Type: $2"
   if [ "$3" != "" ]; then
@@ -140,8 +150,7 @@ make_x264() {
   else
     echo "Additional Patches: None"
   fi
-  echo "=============================================================================="
-  echo ""
+  echo -e "==============================================================================\n"
 
   umount /mingw
   mount d:/mingw.$1 /mingw
@@ -160,9 +169,7 @@ make_x264() {
     return
   fi
   
-  echo ""
-  echo "------------------------------------------------------------------------------"
-  echo ""
+  echo -e "\n------------------------------------------------------------------------------\n"
 
   for i in $PATCHES
   do
@@ -173,10 +180,10 @@ make_x264() {
     fi
   done
   
-  echo ""
-  echo "------------------------------------------------------------------------------"
-  echo ""
-
+  echo -e "\n------------------------------------------------------------------------------\n"
+ 
+  echo -e "Configure:\n"
+  
   if [ $2 != "noasm" ]; then
     ./configure --enable-shared --extra-cflags="$ECFLAGS"
   else
@@ -188,24 +195,28 @@ make_x264() {
     return
   fi
 
-  echo ""
-  echo "------------------------------------------------------------------------------"
-  echo ""
+  VER=$(grep X264_VERSION < config.h | cut -f 4 -d ' ')
+  API=$(grep '#define X264_BUILD' < x264.h | cut -f 3 -d ' ')
+  
+  echo -e "\n--> x264 version: $VER (API: #$API)"
+  
+  echo -e "\n------------------------------------------------------------------------------\n"
 
   make clean
   cp ../readme.1st ./readme.txt
   
-  git log > history.txt
+  git log > ./history.txt
   git2rev history.txt
 
-  7z a "patches.tar" *.diff
+  if [ $3 != "" ]; then
+    git diff > ./x264-patches-$3-$VER.diff
+    7z a "patches.tar" "x264-patches-$3-$VER.diff"
+  else
+    git diff > ./x264-patches-$VER.diff
+    7z a "patches.tar" "x264-patches-$VER.diff"
+  fi
   
-  echo ""
-  echo "------------------------------------------------------------------------------"
-  echo ""
-
-  VER=$(grep X264_VERSION < config.h | cut -f 4 -d ' ')
-  API=$(grep '#define X264_BUILD' < x264.h | cut -f 3 -d ' ')
+  echo -e "\n------------------------------------------------------------------------------\n"
   
   if [ $2 != "noasm" ]; then
     make fprofiled VIDS="../sample.avs"
@@ -218,9 +229,7 @@ make_x264() {
     return
   fi
 
-  echo ""
-  echo "------------------------------------------------------------------------------"
-  echo ""
+  echo -e "\n------------------------------------------------------------------------------\n"
 
   if [ $2 != "noasm" ]; then
     make checkasm
@@ -236,6 +245,8 @@ make_x264() {
   else
     echo "NOASM" > ./checkasm.log
   fi
+  
+  echo -e "\n------------------------------------------------------------------------------\n"
 
   if [ -f "./libx264-$API.dll" -a -f "./history.txt" -a -f "./readme.txt" -a -f "./patches.tar" -a -f "./checkasm.log" ]; then
     7z a "libx264-$API-$VER-$NAME-fprofiled.7z" "libx264-$API.dll" "readme.txt" "history.txt" "patches.tar" "checkasm.log"
@@ -253,7 +264,8 @@ do
   do
     make_x264 "$k" "$l" "" ""
     make_x264 "$k" "$l" "AutoVAQ" "auto_vaq"
-    #make_x264 "$k" "$l" "PIR" "periodic_intra_refresh"
+    make_x264 "$k" "$l" "NAL_HRD" "nal_hrd_vbr"
+    make_x264 "$k" "$l" "PIR" "periodic_intra_refresh"
   done
 done
 
@@ -261,10 +273,8 @@ make_x264 "345" "i686" "" ""
 
 ######################################################
 
-echo ""
-echo "=============================================================================="
+echo -e "\n=============================================================================="
 echo "DONE"
-echo "=============================================================================="
-echo ""
+echo -e "==============================================================================\n"
 
 ######################################################

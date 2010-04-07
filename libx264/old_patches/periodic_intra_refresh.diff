@@ -1,0 +1,14 @@
+diff --git a/common/common.c b/common/common.c
+index 5cca69d..d7f3b7c 100644
+--- a/common/common.c
++++ b/common/common.c
+@@ -158,6 +158,9 @@ void x264_param_default( x264_param_t *param )
+     param->b_aud = 0;
+     param->b_vfr_input = 1;
+     param->b_dts_compress = 0;
++
++    /* Periodic Intra Refresh */
++    param->b_intra_refresh = 1;
+ }
+ 
+ static int x264_param_apply_preset( x264_param_t *param, const char *preset )

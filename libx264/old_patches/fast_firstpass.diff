@@ -2,36 +2,27 @@ diff --git a/encoder/encoder.c b/encoder/encoder.c
 index 374bd69..d9131fa 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -872,6 +872,33 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -872,6 +872,24 @@ x264_t *x264_encoder_open( x264_param_t *param )
      /* Create a copy of param */
      memcpy( &h->param, param, sizeof(x264_param_t) );
- 
-+    //Fast First Pass: --trellis 0 --no-8x8dct --partitions none --me dia --ref 1 --subme MIN(2, previous subme)
-+    if( h->param.rc.b_stat_write && !h->param.rc.b_stat_read )
-+    {
-+        x264_log( h, X264_LOG_WARNING, "Fast Firstpass has been triggered!\n" );
-+        h->param.i_frame_reference = 1;
-+        h->param.analyse.b_transform_8x8 = 0;
-+        h->param.analyse.inter = 0;
-+        h->param.analyse.i_me_method = X264_ME_DIA;
-+        h->param.analyse.i_subpel_refine = X264_MIN( 2, param->analyse.i_subpel_refine );
-+        h->param.analyse.i_trellis = 0;
-+    }
-+
-+    //Enable SubeME=10
-+    if( h->param.analyse.i_subpel_refine == 9 && h->param.analyse.i_me_method >= X264_ME_UMH && h->param.analyse.i_trellis == 2 )
+
++    /* Enable SubeME=10 */
++    if( h->param.analyse.i_subpel_refine == 9 && h->param.analyse.i_me_method >= X264_ME_UMH && h->param.analyse.i_trellis >= 2 )
 +    {
 +        x264_log( h, X264_LOG_WARNING, "QPRD (SubME=10) has been triggered!\n" );
 +        h->param.analyse.i_subpel_refine++;
 +    }
 +
-+    //Disable Scenecuts
++    /* Disable Scenecuts */
 +    if( h->param.i_keyint_max > 999 )
 +    {
 +        x264_log( h, X264_LOG_WARNING, "Scenecuts have been disabled!\n" );
 +        h->param.i_keyint_max = 99999;
 +        h->param.i_scenecut_threshold = 0;
 +    }
++
++    /* Apply "fast first-pass" settings */
++    x264_param_apply_fastfirstpass( &h->param );
 +
      if( param->param_free )
          param->param_free( param );
