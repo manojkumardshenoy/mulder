@@ -121,7 +121,7 @@ make_x264() {
     NAME=$3-$NAME
   fi
 
-  PATCHES="print_params psy_trellis fast_firstpass"
+  PATCHES="core93to92 amdfam10_fix print_params psy_trellis fast_firstpass"
   
   if [ $2 != "noasm" ]; then
     ECFLAGS="-march=$2"
@@ -265,7 +265,7 @@ do
     make_x264 "$k" "$l" "" ""
     make_x264 "$k" "$l" "AutoVAQ" "auto_vaq"
     make_x264 "$k" "$l" "NAL_HRD" "nal_hrd_vbr"
-    make_x264 "$k" "$l" "PIR" "periodic_intra_refresh"
+    #make_x264 "$k" "$l" "PIR" "periodic_intra_refresh"
   done
 done
 

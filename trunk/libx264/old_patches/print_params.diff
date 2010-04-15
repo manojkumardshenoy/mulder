@@ -2,7 +2,7 @@ diff --git a/configure b/configure
 index 8ed83ab..8ac33e2 100755
 --- a/configure
 +++ b/configure
-@@ -708,6 +708,8 @@ Libs: $pclibs
+@@ -714,6 +714,8 @@ Libs: $pclibs
  Cflags: -I$includedir
  EOF
  
@@ -23,7 +23,7 @@ index f99add2..c18aaf3 100644
  
  #ifdef HAVE_VISUALIZE
  #include "common/visualize.h"
-@@ -1091,6 +1092,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -1092,6 +1092,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
          h->sps->i_profile_idc == PROFILE_MAIN ? "Main" :
          h->sps->i_profile_idc == PROFILE_HIGH ? "High" :
          "High 4:4:4 Predictive", h->sps->i_level_idc/10, h->sps->i_level_idc%10 );
@@ -38,7 +38,7 @@ index f99add2..c18aaf3 100644
 +#ifdef X264_CFLAGS
 +    x264_log( h, X264_LOG_INFO, "cflags: %s\n", X264_CFLAGS );
 +#endif
-+    char *print_opts = x264_param2string( &h->param, 0 );
++    char *print_opts = x264_param2string( &h->param, 1 );
 +    x264_log( h, X264_LOG_INFO, "options: %s\n", print_opts );
 +    x264_free( print_opts );
  
