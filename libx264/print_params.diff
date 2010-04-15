@@ -23,11 +23,11 @@ index f99add2..c18aaf3 100644
  
  #ifdef HAVE_VISUALIZE
  #include "common/visualize.h"
-@@ -1092,6 +1092,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -1113,6 +1113,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
          h->sps->i_profile_idc == PROFILE_MAIN ? "Main" :
          h->sps->i_profile_idc == PROFILE_HIGH ? "High" :
          "High 4:4:4 Predictive", h->sps->i_level_idc/10, h->sps->i_level_idc%10 );
-+		
++
 +    x264_log( h, X264_LOG_INFO, "version: %s\n", X264_POINTVER );
 +    x264_log( h, X264_LOG_INFO, "built date: %s  (%s)\n", __DATE__, __TIME__ );
 +#ifdef __GNUC__
