@@ -3,7 +3,7 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
-COMPILERS="450" #"443"
+COMPILERS="460" #"451 450 443"
 CPUS="i686 core2 amdfam10 pentium3 noasm"
 
 ######################################################
@@ -121,9 +121,9 @@ make_x264() {
     NAME=$3-$NAME
   fi
 
-  PATCHES="core93to92 amdfam10_fix print_params psy_trellis fast_firstpass"
+  PATCHES="core94to93 amdfam10_fix print_params psy_trellis fast_firstpass"
   
-  if [ $2 != "noasm" ]; then
+  if [ "$2" != "noasm" ]; then
     ECFLAGS="-march=$2"
   else
     ECFLAGS="-march=i686"
@@ -184,7 +184,7 @@ make_x264() {
  
   echo -e "Configure:\n"
   
-  if [ $2 != "noasm" ]; then
+  if [ "$2" != "noasm" ]; then
     ./configure --enable-shared --extra-cflags="$ECFLAGS"
   else
     ./configure --enable-shared --disable-asm --extra-cflags="$ECFLAGS"
@@ -208,7 +208,7 @@ make_x264() {
   git log > ./history.txt
   git2rev history.txt
 
-  if [ $3 != "" ]; then
+  if [ "$3" != "" ]; then
     git diff > ./x264-patches-$3-$VER.diff
     7z a "patches.tar" "x264-patches-$3-$VER.diff"
   else
@@ -218,7 +218,7 @@ make_x264() {
   
   echo -e "\n------------------------------------------------------------------------------\n"
   
-  if [ $2 != "noasm" ]; then
+  if [ "$2" != "noasm" ]; then
     make fprofiled VIDS="../sample.avs"
   else
     make
@@ -259,16 +259,17 @@ make_x264() {
 
 for k in $COMPILERS
 do
-  make_pthread "$k"
+  #make_pthread "$k"
   for l in $CPUS
   do
     make_x264 "$k" "$l" "" ""
     make_x264 "$k" "$l" "AutoVAQ" "auto_vaq"
-    make_x264 "$k" "$l" "NAL_HRD" "nal_hrd_vbr"
+    #make_x264 "$k" "$l" "NAL_HRD" "nal_hrd_vbr"
     #make_x264 "$k" "$l" "PIR" "periodic_intra_refresh"
   done
 done
 
+make_x264 "443" "i686" "" ""
 make_x264 "345" "i686" "" ""
 
 ######################################################
