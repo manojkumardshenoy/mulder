@@ -20,39 +20,51 @@ Please note that these experimental(!) builds are NOT officially supported by th
 However these builds usually are newer than the ones that ship with Avidemux and enable the latest x264 features.
 
 
+Install instructions:
+---------------------
+
+Simply replace the existing "libx264-XX.dll" file in your Avidemux install folder with the one from the 7z archive.
+You should backup (rename, copy, whatever) your old existing DLL before you replace it, so you can easily restore it later.
+Note that the "XX" suffix in the filename is a placeholder for the x2644 API version (e.g. "libx264-93.dll").
+
+BIG FAT WARNING:
+Never rename "libx264-XX.dll" to make Avidemux recognize the DLL file. The "XX" suffix in the filename must NOT be changed!
+If Avidemux doesn't load the "libx264-XX.dll" with its original(!) filename, then you MUST update/downgrade Avidemux.
+Or in other words: An existing build of Avidemux does NOT support any x264 API version, except the one it was compiled for.
+
+Take care: Several "libx264-XX.dll" files (with different "XX" part) may reside in the Avidemux directory at the same time.
+Still Avidemux will only load the one that is suitable for your current version of Avidemux. The other ones are ignored!
+Therefore I recommend to remove all "libx264-XX.dll" files from your Avidemux directory, except for the one that is in use.
+If in doubt, please use the Dependency Walker (www.dependencywalker.com) to check which DLL is actually used by Avidemux.
+
+
+Usage instructions:
+-------------------
+
+For information on how to use/configure x264 in Avidemux please refer to "x264 Tutorial" the Avidemux Wiki:
+http://www.avidemux.org/admWiki/doku.php?id=tutorial:h.264
+
+If there are any questions left, feel free to ask at the official Avidemux Forum (see weblink below).
+
+
 Important web links:
 --------------------
 
-For further information and the latest libx264 updates, please see this thread:
+For the latest libx264 DLL updates, please see this thread at Doom9's forum:
 * http://forum.doom9.org/showthread.php?t=108784&goto=newpost
 
 Win32 builds of Avidemux are kindly provided by Gruntster and mirrored on my site:
 * http://avidemux.razorbyte.com.au/#avidemux2.5
 * http://mulder.dummwiedeutsch.de/home/?page=projects#avidemux
 
-The original x264 source codes are available at this location:
+The original x264 source codes are available from the official GIT repository:
 * http://git.videolan.org/gitweb.cgi?p=x264.git
 
-The unofficial(!) patches used for my builds can be found here:
-* https://opensvn.csie.org/traccgi/mulder1984/browser/libx264
+The unofficial(!) patches used for my builds can always be found here:
+* http://code.google.com/p/mulder/source/browse/trunk/libx264
 
 Any Avidemux discussion NOT directly related to my libx264 builds should go here:
 * http://avidemux.org/admForum/viewforum.php?id=6
-
-
-Install instructions:
----------------------
-
-Simply replace the existing "libx264-XX.dll" file in your Avidemux install folder with the one from the 7z archive.
-You should backup (rename, copy, whatever) your old DLL before you replace it, so you can restore it later.
-
-BIG FAT WARNING:
-Never rename "libx264-XX.dll" to make Avidemux recognize the DLL file. The "XX" suffix in the filename must NOT be changed!
-If Avidemux doesn't load the "libx264-XX.dll" library with the original(!) filename, then you MUST update Avidemux.
-
-Note that several "libx264-XX.dll" files (with different "XX" part) may reside in the Avidemux directory contemporaneously.
-Still Avidemux will only load the one that is suitable for your current version of Avidemux and ignore the other ones.
-Therefore I recommend that you remove all "libx264-XX.dll" files from your Avidemux directory, except for the one in use.
 
 
 License information:

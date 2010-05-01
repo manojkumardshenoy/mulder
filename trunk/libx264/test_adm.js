@@ -4,43 +4,15 @@
 var app = new Avidemux();
 
 //** Video **
-// 16 videos source 
-app.load("E:/Samples/Lossless/akiyo_cif.352x288.avi");
+app.load("E:/Samples/Lossless/foreman_cif.352x288.avi");
 app.append("E:/Samples/Lossless/bus_cif.352x288.avi");
-app.append("E:/Samples/Lossless/coastguard_cif.352x288.avi");
-app.append("E:/Samples/Lossless/container_cif.352x288.avi");
-app.append("E:/Samples/Lossless/firebelly.352x288.avi");
-app.append("E:/Samples/Lossless/flower_cif.352x288.avi");
 app.append("E:/Samples/Lossless/football_cif.352x288.avi");
-app.append("E:/Samples/Lossless/foreman_cif.352x288.avi");
-app.append("E:/Samples/Lossless/forest.352x288.avi");
-app.append("E:/Samples/Lossless/mobile_cif.352x288.avi");
-app.append("E:/Samples/Lossless/news_cif.352x288.avi");
-app.append("E:/Samples/Lossless/paris_cif.352x288.avi");
 app.append("E:/Samples/Lossless/silent_cif.352x288.avi");
+
+/*
 app.append("E:/Samples/Lossless/stefan_cif.352x288.avi");
-app.append("E:/Samples/Lossless/tempete_cif.352x288.avi");
-app.append("E:/Samples/Lossless/waterfall_cif.352x288.avi");
-//16 segments
-app.clearSegments();
-app.addSegment(0,0,299);
-app.addSegment(1,0,149);
-app.addSegment(2,0,299);
-app.addSegment(3,0,300);
-app.addSegment(4,0,2000);
-app.addSegment(5,0,249);
-app.addSegment(6,0,259);
-app.addSegment(7,0,299);
-app.addSegment(8,0,588);
-app.addSegment(9,0,299);
-app.addSegment(10,0,299);
-app.addSegment(11,0,1065);
-app.addSegment(12,0,299);
-app.addSegment(13,0,89);
-app.addSegment(14,0,259);
-app.addSegment(15,0,259);
-app.markerA=0;
-app.markerB=7010;
+app.append("E:/Samples/Lossless/firebelly.352x288.avi");
+*/
 
 //** Postproc **
 app.video.setPostProc(0,0,0);
