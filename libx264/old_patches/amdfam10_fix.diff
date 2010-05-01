@@ -15,7 +15,7 @@ diff --git a/encoder/encoder.c b/encoder/encoder.c
 index e9f297f..51d4fad 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -1020,7 +1020,12 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -1018,7 +1018,12 @@ x264_t *x264_encoder_open( x264_param_t *param )
          x264_log( h, X264_LOG_ERROR, "Are you attempting to run an SSE4a-targeted build on a CPU that\n" );
          x264_log( h, X264_LOG_ERROR, "doesn't support it?\n" );
  #endif
