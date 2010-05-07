@@ -39,7 +39,7 @@ index 6471c07..924323a 100644
  
      s += sprintf( s, "cabac=%d", p->b_cabac );
 diff --git a/common/common.h b/common/common.h
-index 7bc6a1f..fc9f14d 100644
+index 2f35244..004c7e1 100644
 --- a/common/common.h
 +++ b/common/common.h
 @@ -134,7 +134,7 @@ int x264_nal_encode( uint8_t *dst, x264_nal_t *nal, int b_annexb, int b_long_sta
@@ -67,10 +67,10 @@ index ee27d74..9783118 100644
  
          int b_nal_hrd_parameters_present;
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 3370eb4..0ae153f 100644
+index e046cb0..477cad9 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -815,10 +815,10 @@ static void x264_set_aspect_ratio( x264_t *h, x264_param_t *param, int initial )
+@@ -821,10 +821,10 @@ static void x264_set_aspect_ratio( x264_t *h, x264_param_t *param, int initial )
      /* VUI */
      if( param->vui.i_sar_width > 0 && param->vui.i_sar_height > 0 )
      {
@@ -85,7 +85,7 @@ index 3370eb4..0ae153f 100644
  
          x264_reduce_fraction( &i_w, &i_h );
  
-@@ -884,29 +884,21 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -890,29 +890,21 @@ x264_t *x264_encoder_open( x264_param_t *param )
      h->i_frame = -1;
      h->i_frame_num = 0;
      h->i_idr_pic_id = 0;

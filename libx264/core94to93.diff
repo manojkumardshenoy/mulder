@@ -1,8 +1,8 @@
 diff --git a/common/common.c b/common/common.c
-index 6471c07..924323a 100644
+index 848c6de..8c0b4a0 100644
 --- a/common/common.c
 +++ b/common/common.c
-@@ -614,7 +614,7 @@ int x264_param_parse( x264_param_t *p, const char *name, const char *value )
+@@ -613,7 +613,7 @@ int x264_param_parse( x264_param_t *p, const char *name, const char *value )
      }
      OPT("fps")
      {
@@ -11,7 +11,7 @@ index 6471c07..924323a 100644
              ;
          else
          {
-@@ -1119,11 +1119,11 @@ void x264_free( void *p )
+@@ -1118,11 +1118,11 @@ void x264_free( void *p )
  /****************************************************************************
   * x264_reduce_fraction:
   ****************************************************************************/
@@ -27,7 +27,7 @@ index 6471c07..924323a 100644
      if( !a || !b )
          return;
      c = a % b;
-@@ -1185,8 +1185,8 @@ char *x264_param2string( x264_param_t *p, int b_res )
+@@ -1184,8 +1184,8 @@ char *x264_param2string( x264_param_t *p, int b_res )
      if( b_res )
      {
          s += sprintf( s, "%dx%d ", p->i_width, p->i_height );
@@ -39,10 +39,10 @@ index 6471c07..924323a 100644
  
      s += sprintf( s, "cabac=%d", p->b_cabac );
 diff --git a/common/common.h b/common/common.h
-index 2f35244..004c7e1 100644
+index 91d5030..dba441d 100644
 --- a/common/common.h
 +++ b/common/common.h
-@@ -134,7 +134,7 @@ int x264_nal_encode( uint8_t *dst, x264_nal_t *nal, int b_annexb, int b_long_sta
+@@ -135,7 +135,7 @@ int x264_nal_encode( uint8_t *dst, x264_nal_t *nal, int b_annexb, int b_long_sta
  /* log */
  void x264_log( x264_t *h, int i_level, const char *psz_fmt, ... );
  
@@ -67,10 +67,10 @@ index ee27d74..9783118 100644
  
          int b_nal_hrd_parameters_present;
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index e046cb0..477cad9 100644
+index 7ad4295..9e63a7d 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -821,10 +821,10 @@ static void x264_set_aspect_ratio( x264_t *h, x264_param_t *param, int initial )
+@@ -820,10 +820,10 @@ static void x264_set_aspect_ratio( x264_t *h, x264_param_t *param, int initial )
      /* VUI */
      if( param->vui.i_sar_width > 0 && param->vui.i_sar_height > 0 )
      {
@@ -85,7 +85,7 @@ index e046cb0..477cad9 100644
  
          x264_reduce_fraction( &i_w, &i_h );
  
-@@ -890,29 +890,21 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -889,29 +889,21 @@ x264_t *x264_encoder_open( x264_param_t *param )
      h->i_frame = -1;
      h->i_frame_num = 0;
      h->i_idr_pic_id = 0;
@@ -119,10 +119,10 @@ index e046cb0..477cad9 100644
      x264_sps_init( h->sps, h->param.i_sps_id, &h->param );
  
 diff --git a/encoder/ratecontrol.c b/encoder/ratecontrol.c
-index c29e8c5..8c60d1d 100644
+index 7f18c7f..4ed2299 100644
 --- a/encoder/ratecontrol.c
 +++ b/encoder/ratecontrol.c
-@@ -638,7 +638,6 @@ int x264_ratecontrol_new( x264_t *h )
+@@ -620,7 +620,6 @@ int x264_ratecontrol_new( x264_t *h )
          if( !strncmp( stats_buf, "#options:", 9 ) )
          {
              int i, j;
@@ -130,7 +130,7 @@ index c29e8c5..8c60d1d 100644
              char *opts = stats_buf;
              stats_in = strchr( stats_buf, '\n' );
              if( !stats_in )
-@@ -657,15 +656,15 @@ int x264_ratecontrol_new( x264_t *h )
+@@ -639,15 +638,15 @@ int x264_ratecontrol_new( x264_t *h )
                  return -1;
              }
  
@@ -296,7 +296,7 @@ index a307327..5fabe61 100644
      h->auto_timebase_den = ret < 2;
      if( h->auto_timebase_num )
 diff --git a/input/y4m.c b/input/y4m.c
-index 842b986..c34f264 100644
+index fd42140..b41cc79 100644
 --- a/input/y4m.c
 +++ b/input/y4m.c
 @@ -40,8 +40,7 @@ typedef struct
