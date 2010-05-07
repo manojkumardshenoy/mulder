@@ -1,5 +1,5 @@
 diff --git a/configure b/configure
-index 8ed83ab..8ac33e2 100755
+index 0a2eaa7..91e9192 100755
 --- a/configure
 +++ b/configure
 @@ -714,6 +714,8 @@ Libs: $pclibs
@@ -12,7 +12,7 @@ index 8ed83ab..8ac33e2 100755
  Platform:   $ARCH
  System:     $SYS
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index f99add2..c18aaf3 100644
+index b7b683d..1f6857b 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
 @@ -32,6 +32,7 @@
@@ -23,11 +23,10 @@ index f99add2..c18aaf3 100644
  
  #ifdef HAVE_VISUALIZE
  #include "common/visualize.h"
-@@ -1101,6 +1101,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
-         h->sps->i_profile_idc == PROFILE_MAIN ? "Main" :
+@@ -1108,6 +1109,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
          h->sps->i_profile_idc == PROFILE_HIGH ? "High" :
          "High 4:4:4 Predictive", h->sps->i_level_idc/10, h->sps->i_level_idc%10 );
-+
+ 
 +    x264_log( h, X264_LOG_INFO, "version: %s\n", X264_POINTVER );
 +    x264_log( h, X264_LOG_INFO, "built date: %s  (%s)\n", __DATE__, __TIME__ );
 +#ifdef __GNUC__
@@ -41,6 +40,7 @@ index f99add2..c18aaf3 100644
 +    char *print_opts = x264_param2string( &h->param, 1 );
 +    x264_log( h, X264_LOG_INFO, "options: %s\n", print_opts );
 +    x264_free( print_opts );
- 
++
      return h;
  fail:
+     x264_free( h );

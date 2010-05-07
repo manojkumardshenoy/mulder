@@ -3,7 +3,7 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
-COMPILERS="460 451 444" #450 443"
+COMPILERS="460 451" #450 444 443"
 CPUS="i686 core2 amdfam10 pentium3 noasm"
 
 ######################################################
@@ -259,7 +259,7 @@ make_x264() {
 
 for k in $COMPILERS
 do
-  #make_pthread "$k"
+  make_pthread "$k"
   for l in $CPUS
   do
     make_x264 "$k" "$l" "" ""
@@ -269,7 +269,7 @@ do
   done
 done
 
-make_x264 "443" "i686" "" ""
+make_x264 "444" "i686" "" ""
 make_x264 "345" "i686" "" ""
 
 ######################################################
