@@ -8,9 +8,9 @@ app.load("E:/Samples/Lossless/foreman_cif.352x288.avi");
 app.append("E:/Samples/Lossless/bus_cif.352x288.avi");
 app.append("E:/Samples/Lossless/football_cif.352x288.avi");
 app.append("E:/Samples/Lossless/silent_cif.352x288.avi");
+app.append("E:/Samples/Lossless/stefan_cif.352x288.avi");
 
 /*
-app.append("E:/Samples/Lossless/stefan_cif.352x288.avi");
 app.append("E:/Samples/Lossless/firebelly.352x288.avi");
 */
 
