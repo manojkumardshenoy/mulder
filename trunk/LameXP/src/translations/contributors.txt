@@ -1,6 +1,8 @@
 These people have contributed LameXP translations:
 
 [CN] Simplified Chinese ... LordFox <hh.feedback [at] gmail [dot] com>
+[DE] Deutsch .............. Bodo Thevissen <bodo [at] thevissen [dot] de>
+                            LoRd_MuldeR <mulder2 [at] gmx [dot] de>
 [EL] Greek/Hellenic ....... Parsifal <algida79 [at] gmail [dot] com>
 [EN] English .............. Brian Pugh <bdp47 [at] talktalk [dot] net>
 [ES] Español .............. Rub3n CT <rub3nct [at] gmail [dot] com>
