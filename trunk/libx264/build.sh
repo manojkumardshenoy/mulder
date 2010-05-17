@@ -3,8 +3,9 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
-COMPILERS="460 451" #450 444 443"
-CPUS="i686 core2 amdfam10 pentium3 noasm"
+COMPILERS_CURRENT="460 451" #450
+COMPILERS_LEGACY="444 345" #443
+CPU_TYPES="i686 core2 amdfam10 pentium3 noasm"
 
 ######################################################
 # Do NOT modify any lines below this one!
@@ -80,36 +81,35 @@ make_pthread() {
   
   umount /mingw
   mount d:/mingw.$1 /mingw
-
-  rm -f "./pthreadGC2.dll"
-
-  if [ -f "./pthreadGC2.dll" ]; then
-    echo "Error: Could not delete the old pthreadGC2.dll"
-    exit 1
-  fi
+  gcc --version
+  
+  echo -e "\n------------------------------------------------------------------------------\n"
 
   cd pthreads
 
-  if [ ! -f "pthread.h" ]; then
+  if [ -f "pthread.h" -a -f "GNUmakefile" ]; then
+    make clean
+    make realclean
+  else
     echo "Error: Is this pthreads dir ???"
     exit 1
   fi
-
-  rm -f *.a
-  rm -f *.dll
-
-  make clean
-  make GC-inlined
-  
-  strip pthreadGC2.dll
-  cp pthreadGC2.dll ../pthreadGC2.dll
-
-  cd ..
-
-  if [ ! -f "./pthreadGC2.dll" ]; then
-    echo "Error: Could not find pthreadGC2.dll"
+ 
+  if [ -f "libpthreadGC2.a" ]; then
+    echo "Error: Could not delete existing libpthreadGC2.a !!!"
+    cd ..
     exit 1
   fi
+
+  make GC-static
+  
+  if [ ! -f "libpthreadGC2.a" ]; then
+    echo "Error: Could not find the new libpthreadGC2.a !!!"
+    cd ..
+    exit 1
+  fi
+
+  cd ..
 }
 
 ######################################################
@@ -121,7 +121,7 @@ make_x264() {
     NAME=$3-$NAME
   fi
 
-  PATCHES="core94to93 amdfam10_fix print_params psy_trellis fast_firstpass"
+  PATCHES="core95to94 amdfam10_fix print_params psy_trellis fast_firstpass"
   
   if [ "$2" != "noasm" ]; then
     ECFLAGS="-march=$2"
@@ -154,6 +154,9 @@ make_x264() {
 
   umount /mingw
   mount d:/mingw.$1 /mingw
+  gcc --version
+  
+  echo -e "\n------------------------------------------------------------------------------\n"
 
   rm --recursive --force ./x264-$NAME
 
@@ -185,9 +188,9 @@ make_x264() {
   echo -e "Configure:\n"
   
   if [ "$2" != "noasm" ]; then
-    ./configure --enable-shared --extra-cflags="$ECFLAGS"
+    ./configure --enable-shared --extra-cflags="$ECFLAGS" --extra-ldflags="-L../pthreads"
   else
-    ./configure --enable-shared --disable-asm --extra-cflags="$ECFLAGS"
+    ./configure --enable-shared --disable-asm --extra-cflags="$ECFLAGS" --extra-ldflags="-L../pthreads"
   fi
 
   if [ $? -ne 0 ]; then
@@ -257,10 +260,10 @@ make_x264() {
 
 ######################################################
 
-for k in $COMPILERS
+for k in $COMPILERS_CURRENT
 do
   make_pthread "$k"
-  for l in $CPUS
+  for l in $CPU_TYPES
   do
     make_x264 "$k" "$l" "" ""
     make_x264 "$k" "$l" "AutoVAQ" "auto_vaq"
@@ -269,8 +272,11 @@ do
   done
 done
 
-make_x264 "444" "i686" "" ""
-make_x264 "345" "i686" "" ""
+for k in $COMPILERS_LEGACY
+do
+  make_pthread "$k"
+  make_x264 "$k" "i686" "" ""
+done
 
 ######################################################
 

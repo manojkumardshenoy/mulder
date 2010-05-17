@@ -8,6 +8,7 @@ set "OutputFoldr=%CD%\test"
 
 REM ----------------------------------------------------------------
 if not [%1]==[] goto DO_SOMETHING
+if not [%1]==[] goto DO_SOMETHING
 REM ----------------------------------------------------------------
 
 for /D %%f in (*.*) do (
@@ -36,6 +37,8 @@ REM ----------------------------------------------------------------
 
 set "CurrentName=%~n1%~x1"
 set "CurrentFile=%CD%\%CurrentName%\libx264-%CoreVersion%.dll"
+
+if not "%CurrentName%"=="%CurrentName:noasm=%" goto END_OF_FILE
 
 echo.
 echo ----------------------------------------------------------------------------

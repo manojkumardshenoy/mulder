@@ -1,8 +1,8 @@
 diff --git a/common/common.c b/common/common.c
-index 924323a..4050165 100644
+index 8c0b4a0..9e5da7b 100644
 --- a/common/common.c
 +++ b/common/common.c
-@@ -126,7 +126,7 @@ void x264_param_default( x264_param_t *param )
+@@ -125,7 +125,7 @@ void x264_param_default( x264_param_t *param )
      param->analyse.i_me_method = X264_ME_HEX;
      param->analyse.f_psy_rd = 1.0;
      param->analyse.b_psy = 1;

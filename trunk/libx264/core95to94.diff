@@ -1,0 +1,13 @@
+diff --git a/x264.h b/x264.h
+index f568dc5..811e376 100644
+--- a/x264.h
++++ b/x264.h
+@@ -35,7 +35,7 @@
+ 
+ #include <stdarg.h>
+ 
+-#define X264_BUILD 95
++#define X264_BUILD 94
+ 
+ /* x264_t:
+  *      opaque handler for encoder */

@@ -25,7 +25,7 @@ Install instructions:
 
 Simply replace the existing "libx264-XX.dll" file in your Avidemux install folder with the one from the 7z archive.
 You should backup (rename, copy, whatever) your old existing DLL before you replace it, so you can easily restore it later.
-Note that the "XX" suffix in the filename is a placeholder for the x2644 API version (e.g. "libx264-93.dll").
+Note that the "XX" suffix in the filename is a placeholder for the x264 API version (e.g. "libx264-93.dll").
 
 BIG FAT WARNING:
 Never rename "libx264-XX.dll" to make Avidemux recognize the DLL file. The "XX" suffix in the filename must NOT be changed!
