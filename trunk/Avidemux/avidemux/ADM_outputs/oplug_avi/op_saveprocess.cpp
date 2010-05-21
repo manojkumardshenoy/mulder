@@ -19,7 +19,6 @@
  *                                                                         *
  ***************************************************************************/
 #define __STDC_LIMIT_MACROS
-#include "config.h"
 #include "ADM_default.h"
 #include "ADM_threads.h"
 
@@ -69,7 +68,7 @@ GenericAviSaveProcess::setupVideo (char *name)
 
 		}
 
-  _encode = getVideoEncoder (_incoming->getInfo()->width,_incoming->getInfo()->height);
+  _encode = getVideoEncoder();
   if (!_encode)
     return 0;
 

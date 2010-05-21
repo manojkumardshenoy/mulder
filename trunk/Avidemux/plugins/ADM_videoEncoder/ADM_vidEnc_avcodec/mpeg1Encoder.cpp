@@ -34,11 +34,11 @@ Mpeg1Encoder::Mpeg1Encoder(void)
 	init(CODEC_ID_MPEG1VIDEO, ADM_CSP_YV12);
 
 	_encodeOptions.structSize = sizeof(vidEncOptions);
-	_encodeOptions.encodeMode = DEFAULT_ENCODE_MODE;
-	_encodeOptions.encodeModeParameter = DEFAULT_ENCODE_MODE_PARAMETER;
+	_encodeOptions.encodeMode = MPEG1_DEFAULT_ENCODE_MODE;
+	_encodeOptions.encodeModeParameter = MPEG1_DEFAULT_ENCODE_MODE_PARAMETER;
 
 	_bitrateParam.capabilities = ADM_ENC_CAP_CQ | ADM_ENC_CAP_2PASS | ADM_ENC_CAP_2PASS_BR;
-	_bitrateParam.qz = DEFAULT_ENCODE_MODE_PARAMETER;
+	_bitrateParam.qz = MPEG1_DEFAULT_ENCODE_MODE_PARAMETER;
 	_bitrateParam.avg_bitrate = 1000;
 	_bitrateParam.finalsize = 700;
 
@@ -66,18 +66,18 @@ int Mpeg1Encoder::initContext(const char* logFileName)
 
 	switch (_options.getMatrix())
 	{
-		case MATRIX_TMPGENC:
+		case MPEG1_MATRIX_TMPGENC:
 			printf("using custom matrix: Tmpg\n");
 			_context->intra_matrix = tmpgenc_intra;
 			_context->inter_matrix = tmpgenc_inter;
 			break;
-		case MATRIX_ANIME:
+		case MPEG1_MATRIX_ANIME:
 			printf("using custom matrix: anim\n");
 			_context->intra_matrix = anime_intra;
 			_context->inter_matrix = anime_inter;
 
 			break;
-		case MATRIX_KVCD:
+		case MPEG1_MATRIX_KVCD:
 			printf("using custom matrix: kvcd\n");
 			_context->intra_matrix = kvcd_intra;
 			_context->inter_matrix = kvcd_inter;
@@ -86,9 +86,9 @@ int Mpeg1Encoder::initContext(const char* logFileName)
 
 	switch (_options.getInterlaced())
 	{
-		case INTERLACED_TFF:
+		case MPEG1_INTERLACED_TFF:
 			_frame.top_field_first = true;
-		case INTERLACED_BFF:
+		case MPEG1_INTERLACED_BFF:
 			_frame.interlaced_frame = true;
 			break;
 	}
@@ -252,7 +252,7 @@ int Mpeg1Encoder::configure(vidEncConfigParameters *configParameters, vidEncVide
 		changedConfig, serializeConfig, elmGeneral, 9);
 	diaElem *elmHeader[1] = {&ctlConfigMenu};
 
-	diaElemTabs tabGeneral("User Interface", 9, elmGeneral);
+	diaElemTabs tabGeneral("Settings", 9, elmGeneral);
 	diaElemTabs *tabs[] = {&tabGeneral};
 
 	if (diaFactoryRunTabs("avcodec MPEG-1 Configuration", 1, elmHeader, 1, tabs))
@@ -321,8 +321,8 @@ void Mpeg1Encoder::saveSettings(vidEncOptions *encodeOptions, Mpeg1EncoderOption
 	options->setXvidRateControl(_useXvidRateControl);
 	options->setBufferSize(_bufferSize);
 	options->setWidescreen(_widescreen);
-	options->setInterlaced((InterlacedMode)_interlaced);
-	options->setMatrix((MatrixMode)_userMatrix);
+	options->setInterlaced((Mpeg1InterlacedMode)_interlaced);
+	options->setMatrix((Mpeg1MatrixMode)_userMatrix);
 	options->setGopSize(_gopSize);
 }
 
@@ -366,7 +366,7 @@ bool changedConfig(const char* configName, ConfigMenuType configType)
 		}
 	}
 
-	return configType == CONFIG_MENU_CUSTOM | !failure;
+	return (configType == CONFIG_MENU_CUSTOM) | !failure;
 }
 
 char *serializeConfig(void)
@@ -398,7 +398,7 @@ int Mpeg1Encoder::getOptions(vidEncOptions *encodeOptions, char *pluginOptions, 
 	return xmlLength;
 }
 
-int Mpeg1Encoder::setOptions(vidEncOptions *encodeOptions, char *pluginOptions)
+int Mpeg1Encoder::setOptions(vidEncOptions *encodeOptions, const char *pluginOptions)
 {
 	if (_opened)
 		return ADM_VIDENC_ERR_ALREADY_OPEN;
@@ -431,7 +431,7 @@ int Mpeg1Encoder::beginPass(vidEncPassParameters *passParameters)
 
 	if (_encodeOptions.encodeMode == ADM_VIDENC_MODE_CQP)
 		qz = _encodeOptions.encodeModeParameter;
-	else if (_encodeOptions.encodeMode == ADM_VIDENC_MODE_2PASS_SIZE || _encodeOptions.encodeMode == ADM_VIDENC_MODE_2PASS_ABR)
+	else if ((_encodeOptions.encodeMode == ADM_VIDENC_MODE_2PASS_SIZE || _encodeOptions.encodeMode == ADM_VIDENC_MODE_2PASS_ABR) && ret == ADM_VIDENC_ERR_SUCCESS)
 	{
 		if (_currentPass == 1)
 		{
@@ -516,7 +516,7 @@ int Mpeg1Encoder::encodeFrame(vidEncEncodeParameters *encodeParams)
 
 	int ret = AvcodecEncoder::encodeFrame(encodeParams);
 
-	if (_context->stats_out)
+	if (_context->stats_out && _statFile)
 		fprintf (_statFile, "%s", _context->stats_out);
 
 	if (_options.getXvidRateControl() && encodeParams->encodedDataSize && (_encodeOptions.encodeMode == ADM_VIDENC_MODE_2PASS_SIZE || _encodeOptions.encodeMode == ADM_VIDENC_MODE_2PASS_ABR))

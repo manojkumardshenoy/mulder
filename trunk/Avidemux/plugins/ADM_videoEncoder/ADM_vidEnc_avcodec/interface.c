@@ -71,8 +71,8 @@ int vidEncGetEncoderApiVersion(int encoderId)
 void vidEncGetEncoderVersion(int encoderId, int* major, int* minor, int* patch)
 {
 	*major = 1;
-	*minor = 0;
-	*patch = 1;
+	*minor = 5;
+	*patch = 0;
 }
 
 const char* vidEncGetEncoderGuid(int encoderId)
@@ -95,7 +95,7 @@ int vidEncGetOptions(int encoderId, vidEncOptions *encodeOptions, char *pluginOp
 	return avcodecEncoder_getOptions(encoderId, encodeOptions, pluginOptions, bufferSize);
 }
 
-int vidEncSetOptions(int encoderId, vidEncOptions *encodeOptions, char *pluginOptions)
+int vidEncSetOptions(int encoderId, vidEncOptions *encodeOptions, const char *pluginOptions)
 {
 	return avcodecEncoder_setOptions(encoderId, encodeOptions, pluginOptions);
 }

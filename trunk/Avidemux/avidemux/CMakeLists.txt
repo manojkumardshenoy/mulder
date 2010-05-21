@@ -101,7 +101,7 @@ IF (APPLE)
 	SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "${ADM_OSX_VERSION}")
 	SET(MACOSX_BUNDLE_VERSION "${ADM_OSX_VERSION}")
 	SET(MACOSX_BUNDLE_BUNDLE_NAME "Avidemux" )
-	SET(MACOSX_BUNDLE_COPYRIGHT "Copyright 2001-2009 Mean" )
+	SET(MACOSX_BUNDLE_COPYRIGHT "Copyright 2001-2010 Mean" )
 	SET(MACOSX_BUNDLE_SIGNATURE "Avdx" )
 	SET(MACOSX_BUNDLE_GUI_IDENTIFIER www.avidemux.org)
 
@@ -150,7 +150,7 @@ ENDIF (WIN32)
 ########################################
 # Our exectuables
 ########################################
-SET(ADM_EXE_SRCS ${ADM_EXE_SRCS} ADM_preview.cpp  gtk_gui.cpp  gui_autodrive.cpp  GUI_jobs.cpp  gui_navigate.cpp  guiplay.cpp  gui_savenew.cpp  main.cpp  gui_action.cpp)
+SET(ADM_EXE_SRCS ${ADM_EXE_SRCS} ADM_preview.cpp  gtk_gui.cpp  GUI_jobs.cpp  gui_navigate.cpp  guiplay.cpp  gui_savenew.cpp  main.cpp  gui_action.cpp)
 
 ADD_EXECUTABLE(avidemux2_cli MACOSX_BUNDLE ${ADM_EXE_SRCS} ${MO_FILES} ${WIN_RES_GTK})
 ADD_TARGET_CFLAGS(avidemux2_cli "-I${CMAKE_BINARY_DIR}/config/cli")
@@ -164,6 +164,11 @@ ENDIF (ADM_UI_GTK)
 
 IF (ADM_UI_QT4)
 	ADD_EXECUTABLE(avidemux2_qt4 MACOSX_BUNDLE ${ADM_EXE_SRCS} ${QM_FILES} ${WIN_RES_QT})
+	
+	IF (WIN32 OR APPLE)
+		set_property(TARGET avidemux2_qt4 PROPERTY OUTPUT_NAME avidemux2)
+	ENDIF (WIN32 OR APPLE)
+	
 	ADD_TARGET_CFLAGS(avidemux2_qt4 "-I${CMAKE_BINARY_DIR}/config/qt4")
 	ADD_DEPENDENCIES(avidemux2_qt4 qmfiles  ffmpeg)
 ENDIF (ADM_UI_QT4)
@@ -259,10 +264,8 @@ ADD_SUBDIRECTORY(ADM_libraries)
 
 ADD_ADMLIB_ALL_TARGETS(
 	ADM_mplex
-	ADM_libmpeg2enc
 	ADM_lvemux
 	ADM_utilities
-	ADM_xvidratectl
 )
 
 ADD_LIB_ALL_TARGETS(
@@ -398,36 +401,6 @@ IF (USE_SDL)
 		TARGET_LINK_LIBRARIES(avidemux2_qt4 ${SDL_LIBRARY})
 	ENDIF (ADM_UI_QT4)
 ENDIF (USE_SDL)
-# LAME
-IF (HAVE_LIBMP3LAME)
-	ADD_LIB_ALL_TARGETS("${LAME_LIBRARY_DIR}")
-ENDIF (HAVE_LIBMP3LAME)
-
-# Vorbis
-IF (USE_VORBIS)
-	ADD_LIB_ALL_TARGETS("${VORBIS_LIBRARY_DIR}")
-	ADD_LIB_ALL_TARGETS("${VORBISENC_LIBRARY_DIR}")
-ENDIF (USE_VORBIS)
-
-# FAAC
-IF (USE_FAAC)
-	ADD_LIB_ALL_TARGETS("${FAAC_LIBRARY_DIR}")
-ENDIF (USE_FAAC)
-
-# Aften
-IF (USE_AFTEN)
-	ADD_LIB_ALL_TARGETS("${AFTEN_LIBRARY_DIR}")
-ENDIF (USE_AFTEN)
-
-# Secret Rabbit Code
-IF (USE_SRC)
-	ADD_LIB_ALL_TARGETS("${SRC_LIBRARY_DIR}")
-ENDIF (USE_SRC)
-
-# Xvid
-IF (USE_XVID_4)
-	ADD_LIB_ALL_TARGETS("${XVID_LIBRARY_DIR}")
-ENDIF (USE_XVID_4)
 
 ###########################################
 # UI Specific
@@ -505,13 +478,17 @@ ELSE (APPLE)
 	INSTALL(TARGETS ${ADM_EXES} RUNTIME DESTINATION ${BIN_DIR} LIBRARY DESTINATION lib${LIB_SUFFIX})
 ENDIF (APPLE)
 
-IF (UNIX AND NOT APPLE)
-   ADD_CUSTOM_COMMAND(TARGET ffmpeg
+MACRO (ADM_SYMLINK_LIBS)
+       FOREACH (t ${ARGV})
+             ADD_CUSTOM_COMMAND(TARGET ${t}
                       POST_BUILD
                       COMMAND mkdir -p ${CMAKE_BINARY_DIR}/lib${LIB_SUFFIX}
                       COMMAND find ${CMAKE_BINARY_DIR}/avidemux -name '*.so*' | xargs ln -sft ${CMAKE_BINARY_DIR}/lib${LIB_SUFFIX}
                       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
                       COMMENT "Creating temporary lib directory for proper plugins linking")
-ENDIF (UNIX AND NOT APPLE)
-
-
+       ENDFOREACH (t )
+ENDMACRO (ADM_SYMLINK_LIBS)
+IF (UNIX AND NOT APPLE)
+   # Some plugins link to ADM_coreImage (e.g., ADM_vf_addborders) and thus need the symlink in ${CMAKE_BINARY_DIR}/lib${LIB_SUFFIX}
+   ADM_SYMLINK_LIBS(ffmpeg ADM_coreImage)
+ENDIF(UNIX AND NOT APPLE)

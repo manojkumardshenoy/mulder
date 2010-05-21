@@ -59,7 +59,6 @@ create_mainWindow (void)
   GtkWidget *separator18;
   GtkWidget *video_informations1;
   GtkWidget *image8529;
-  GtkWidget *avi_muxer_options1;
   GtkWidget *separator4;
   GtkWidget *quit1;
   GtkWidget *image8530;
@@ -129,14 +128,6 @@ create_mainWindow (void)
   GtkWidget *separator17;
   GtkWidget *see_hex1;
   GtkWidget *help1;
-  GtkWidget *help1_menu;
-  GtkWidget *vcd1;
-  GtkWidget *svcd1;
-  GtkWidget *dvd1;
-  GtkWidget *psp1;
-  GtkWidget *psp__h264_1;
-  GtkWidget *flv1;
-  GtkWidget *Ipod;
   GtkWidget *go1;
   GtkWidget *go1_menu;
   GtkWidget *play_video1;
@@ -216,7 +207,9 @@ create_mainWindow (void)
   GtkWidget *vbox13;
   GtkWidget *label20;
   GtkWidget *alignment14;
+  GtkWidget *vbox15;
   GtkWidget *comboboxFormat;
+  GtkWidget *buttonConfM;
   GtkWidget *guiDrawing;
   GtkWidget *table2;
   GtkWidget *hbox16;
@@ -419,10 +412,6 @@ create_mainWindow (void)
   image8529 = gtk_image_new_from_stock ("gtk-properties", GTK_ICON_SIZE_MENU);
   gtk_widget_show (image8529);
   gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (video_informations1), image8529);
-
-  avi_muxer_options1 = gtk_menu_item_new_with_mnemonic (QT_TR_NOOP("AVI _Muxer Options"));
-  gtk_widget_show (avi_muxer_options1);
-  gtk_container_add (GTK_CONTAINER (menuitem1_menu), avi_muxer_options1);
 
   separator4 = gtk_separator_menu_item_new ();
   gtk_widget_show (separator4);
@@ -768,37 +757,6 @@ create_mainWindow (void)
   help1 = gtk_menu_item_new_with_mnemonic (QT_TR_NOOP("A_uto"));
   gtk_widget_show (help1);
   gtk_container_add (GTK_CONTAINER (menuBar), help1);
-
-  help1_menu = gtk_menu_new ();
-  gtk_menu_item_set_submenu (GTK_MENU_ITEM (help1), help1_menu);
-
-  vcd1 = gtk_menu_item_new_with_mnemonic (QT_TR_NOOP("_VCD"));
-  gtk_widget_show (vcd1);
-  gtk_container_add (GTK_CONTAINER (help1_menu), vcd1);
-
-  svcd1 = gtk_menu_item_new_with_mnemonic (QT_TR_NOOP("_SVCD"));
-  gtk_widget_show (svcd1);
-  gtk_container_add (GTK_CONTAINER (help1_menu), svcd1);
-
-  dvd1 = gtk_menu_item_new_with_mnemonic (QT_TR_NOOP("_DVD"));
-  gtk_widget_show (dvd1);
-  gtk_container_add (GTK_CONTAINER (help1_menu), dvd1);
-
-  psp1 = gtk_menu_item_new_with_mnemonic (QT_TR_NOOP("_PSP"));
-  gtk_widget_show (psp1);
-  gtk_container_add (GTK_CONTAINER (help1_menu), psp1);
-
-  psp__h264_1 = gtk_menu_item_new_with_mnemonic (QT_TR_NOOP("PSP (_H.264)"));
-  gtk_widget_show (psp__h264_1);
-  gtk_container_add (GTK_CONTAINER (help1_menu), psp__h264_1);
-
-  flv1 = gtk_menu_item_new_with_mnemonic (QT_TR_NOOP("F_LV"));
-  gtk_widget_show (flv1);
-  gtk_container_add (GTK_CONTAINER (help1_menu), flv1);
-
-  Ipod = gtk_menu_item_new_with_mnemonic (QT_TR_NOOP("IPOD (mpeg4)"));
-  gtk_widget_show (Ipod);
-  gtk_container_add (GTK_CONTAINER (help1_menu), Ipod);
 
   go1 = gtk_menu_item_new_with_mnemonic (QT_TR_NOOP("_Go"));
   gtk_widget_show (go1);
@@ -1171,7 +1129,7 @@ create_mainWindow (void)
   gtk_widget_show (label23);
   gtk_box_pack_start (GTK_BOX (hbox19), label23, FALSE, FALSE, 0);
 
-  vbox13 = gtk_vbox_new (FALSE, 0);
+  vbox13 = gtk_vbox_new (FALSE, 4);
   gtk_widget_show (vbox13);
   gtk_box_pack_start (GTK_BOX (vbox9), vbox13, FALSE, FALSE, 0);
 
@@ -1186,9 +1144,17 @@ create_mainWindow (void)
   gtk_box_pack_start (GTK_BOX (vbox13), alignment14, TRUE, TRUE, 0);
   gtk_alignment_set_padding (GTK_ALIGNMENT (alignment14), 3, 0, 12, 0);
 
+  vbox15 = gtk_vbox_new (FALSE, 4);
+  gtk_widget_show (vbox15);
+  gtk_container_add (GTK_CONTAINER (alignment14), vbox15);
+
   comboboxFormat = gtk_combo_box_new_text ();
   gtk_widget_show (comboboxFormat);
-  gtk_container_add (GTK_CONTAINER (alignment14), comboboxFormat);
+  gtk_box_pack_start (GTK_BOX (vbox15), comboboxFormat, TRUE, TRUE, 0);
+
+  buttonConfM = gtk_button_new_with_mnemonic (QT_TR_NOOP("Configure"));
+  gtk_widget_show (buttonConfM);
+  gtk_box_pack_start (GTK_BOX (vbox15), buttonConfM, FALSE, FALSE, 0);
 
   guiDrawing = gtk_drawing_area_new ();
   gtk_widget_show (guiDrawing);
@@ -1474,7 +1440,8 @@ create_mainWindow (void)
   GTK_WIDGET_SET_FLAGS (labelMarkA, GTK_CAN_FOCUS);
   gtk_label_set_selectable (GTK_LABEL (labelMarkA), TRUE);
 
-  jogg = jog_shuttle_new ();gtk_widget_set_size_request (jogg, -1, 16); 
+  jogg = jog_shuttle_new ();
+  gtk_widget_set_size_request (jogg, -1, 16); 
   gtk_widget_show (jogg);
   gtk_table_attach (GTK_TABLE (table2), jogg, 1, 2, 0, 1,
                     (GtkAttachOptions) (GTK_FILL),
@@ -1516,7 +1483,6 @@ create_mainWindow (void)
   GLADE_HOOKUP_OBJECT (mainWindow, separator18, "separator18");
   GLADE_HOOKUP_OBJECT (mainWindow, video_informations1, "video_informations1");
   GLADE_HOOKUP_OBJECT (mainWindow, image8529, "image8529");
-  GLADE_HOOKUP_OBJECT (mainWindow, avi_muxer_options1, "avi_muxer_options1");
   GLADE_HOOKUP_OBJECT (mainWindow, separator4, "separator4");
   GLADE_HOOKUP_OBJECT (mainWindow, quit1, "quit1");
   GLADE_HOOKUP_OBJECT (mainWindow, image8530, "image8530");
@@ -1586,14 +1552,6 @@ create_mainWindow (void)
   GLADE_HOOKUP_OBJECT (mainWindow, separator17, "separator17");
   GLADE_HOOKUP_OBJECT (mainWindow, see_hex1, "see_hex1");
   GLADE_HOOKUP_OBJECT (mainWindow, help1, "help1");
-  GLADE_HOOKUP_OBJECT (mainWindow, help1_menu, "help1_menu");
-  GLADE_HOOKUP_OBJECT (mainWindow, vcd1, "vcd1");
-  GLADE_HOOKUP_OBJECT (mainWindow, svcd1, "svcd1");
-  GLADE_HOOKUP_OBJECT (mainWindow, dvd1, "dvd1");
-  GLADE_HOOKUP_OBJECT (mainWindow, psp1, "psp1");
-  GLADE_HOOKUP_OBJECT (mainWindow, psp__h264_1, "psp__h264_1");
-  GLADE_HOOKUP_OBJECT (mainWindow, flv1, "flv1");
-  GLADE_HOOKUP_OBJECT (mainWindow, Ipod, "Ipod");
   GLADE_HOOKUP_OBJECT (mainWindow, go1, "go1");
   GLADE_HOOKUP_OBJECT (mainWindow, go1_menu, "go1_menu");
   GLADE_HOOKUP_OBJECT (mainWindow, play_video1, "play_video1");
@@ -1670,7 +1628,9 @@ create_mainWindow (void)
   GLADE_HOOKUP_OBJECT (mainWindow, vbox13, "vbox13");
   GLADE_HOOKUP_OBJECT (mainWindow, label20, "label20");
   GLADE_HOOKUP_OBJECT (mainWindow, alignment14, "alignment14");
+  GLADE_HOOKUP_OBJECT (mainWindow, vbox15, "vbox15");
   GLADE_HOOKUP_OBJECT (mainWindow, comboboxFormat, "comboboxFormat");
+  GLADE_HOOKUP_OBJECT (mainWindow, buttonConfM, "buttonConfM");
   GLADE_HOOKUP_OBJECT (mainWindow, guiDrawing, "guiDrawing");
   GLADE_HOOKUP_OBJECT (mainWindow, table2, "table2");
   GLADE_HOOKUP_OBJECT (mainWindow, hbox16, "hbox16");

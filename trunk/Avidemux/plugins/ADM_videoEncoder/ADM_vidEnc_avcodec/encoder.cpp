@@ -17,22 +17,32 @@
 
 #include "encoder.h"
 #include "dvEncoder.h"
+#include "flv1Encoder.h"
 #include "ffv1Encoder.h"
 #include "ffvhuffEncoder.h"
+#include "h263Encoder.h"
 #include "huffyuvEncoder.h"
+#include "mjpegEncoder.h"
 #include "mpeg1Encoder.h"
+#include "mpeg2Encoder.h"
+#include "mpeg4aspEncoder.h"
 #include "ADM_inttype.h"
 
 int uiType;
 
 static DVEncoder dv;
+static FLV1Encoder flv1;
 static FFV1Encoder ffv1;
 static FFVHuffEncoder ffvhuff;
+static H263Encoder h263;
 static HuffyuvEncoder huffyuv;
-static Mpeg1Encoder mpeg1Encoder;
+static MjpegEncoder mjpeg;
+static Mpeg1Encoder mpeg1;
+static Mpeg2Encoder mpeg2;
+static Mpeg4aspEncoder mpeg4asp;
 
-static int encoderIds[] = { 0, 1, 2, 3, 4 };
-static AvcodecEncoder* encoders[] = { &dv, &ffv1, &ffvhuff, &huffyuv, &mpeg1Encoder};
+static int encoderIds[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+static AvcodecEncoder* encoders[] = { &dv, &flv1, &ffv1, &ffvhuff, &h263, &huffyuv, &mjpeg, &mpeg1, &mpeg2, &mpeg4asp};
 
 extern "C"
 {
@@ -98,7 +108,7 @@ extern "C"
 		return encoder->getOptions(encodeOptions, pluginOptions, bufferSize);
 	}
 
-	int avcodecEncoder_setOptions(int encoderId, vidEncOptions *encodeOptions, char *pluginOptions)
+	int avcodecEncoder_setOptions(int encoderId, vidEncOptions *encodeOptions, const char *pluginOptions)
 	{
 		AvcodecEncoder *encoder = encoders[encoderId];
 		return encoder->setOptions(encodeOptions, pluginOptions);
@@ -149,6 +159,9 @@ extern "C"
 
 void AvcodecEncoder::init(enum CodecID id, int targetColourSpace)
 {
+	avcodec_init();
+    avcodec_register_all();
+
 	_codecId = id;
 	_opened = false;
 
@@ -172,7 +185,12 @@ int AvcodecEncoder::initContext(const char* logFileName)
 
 AVCodec *AvcodecEncoder::getAvCodec(void)
 {
-	return avcodec_find_encoder(_codecId);
+	AVCodec *codec = avcodec_find_encoder(_codecId);
+
+	if (codec == NULL)
+		printf("Unable to initialise encoder: %d\n", _codecId);
+
+	return codec;
 }
 
 enum PixelFormat AvcodecEncoder::getAvCodecColourSpace(int colourSpace)
@@ -340,31 +358,28 @@ int AvcodecEncoder::encodeFrame(vidEncEncodeParameters *encodeParams)
 	_frame.key_frame = 0;
 	_frame.pict_type = 0;
 
-	if (encodeParams->frameData[0])
+	if (_supportedCsps[0] == ADM_CSP_YV12)
 	{
-		if (_supportedCsps[0] == ADM_CSP_YV12)
-		{
-			// Swap planes so YV12 looks like YUV420P
-			uint8_t *tmpPlane = encodeParams->frameData[1];
+		// Swap planes so YV12 looks like YUV420P
+		uint8_t *tmpPlane = encodeParams->frameData[1];
 
-			encodeParams->frameData[1] = encodeParams->frameData[2];
-			encodeParams->frameData[2] = tmpPlane;
-		}
-
-		_frame.data[0] = encodeParams->frameData[0];
-		_frame.data[1] = encodeParams->frameData[1];
-		_frame.data[2] = encodeParams->frameData[2];
-		_frame.linesize[0] = encodeParams->frameLineSize[0];
-		_frame.linesize[1] = encodeParams->frameLineSize[1];
-		_frame.linesize[2] = encodeParams->frameLineSize[2];
-
-		int size = avcodec_encode_video(_context, _buffer, _bufferSize, &_frame);
-
-		if (size < 0)
-			return ADM_VIDENC_ERR_FAILED;
-
-		updateEncodeParameters(encodeParams, _buffer, size);
+		encodeParams->frameData[1] = encodeParams->frameData[2];
+		encodeParams->frameData[2] = tmpPlane;
 	}
+
+	_frame.data[0] = encodeParams->frameData[0];
+	_frame.data[1] = encodeParams->frameData[1];
+	_frame.data[2] = encodeParams->frameData[2];
+	_frame.linesize[0] = encodeParams->frameLineSize[0];
+	_frame.linesize[1] = encodeParams->frameLineSize[1];
+	_frame.linesize[2] = encodeParams->frameLineSize[2];
+
+	int size = avcodec_encode_video(_context, _buffer, _bufferSize, _frame.data[0] == NULL ? NULL : &_frame);
+
+	if (size < 0)
+		return ADM_VIDENC_ERR_FAILED;
+
+	updateEncodeParameters(encodeParams, _buffer, size);
 
 	return ADM_VIDENC_ERR_SUCCESS;
 }
@@ -476,7 +491,7 @@ void AvcodecEncoder::printContext(void)
 	printf("dark_masking: %f\n", _context->dark_masking);
 	printf("idct_algo: %d\n", _context->idct_algo);
 	printf("slice_count: %d\n", _context->slice_count);
-	printf("*slice_offset: %d\n", _context->slice_offset);
+	printf("slice_offset: %p\n", _context->slice_offset);
 	printf("error_concealment: %d\n", _context->error_concealment);
 	printf("dsp_mask: %d\n", _context->dsp_mask);
 	printf("bits_per_coded_sample: %d\n", _context->bits_per_coded_sample);

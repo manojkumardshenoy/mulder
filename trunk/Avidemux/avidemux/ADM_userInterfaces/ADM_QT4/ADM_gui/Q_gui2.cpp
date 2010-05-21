@@ -140,6 +140,16 @@ void MainWindow::comboChanged(int z)
 		else
 		{
 			ui.comboBoxVideo->setEnabled(true);
+
+			for (int i = 0; i < ADM_FORMAT_MAX; i++)
+			{
+				if (ADM_allOutputFormat[i].format == fmt)
+				{
+					ui.pushButtonMuxerConf->setEnabled((ADM_allOutputFormat[i].muxerConfigure != NULL));
+
+					break;
+				}
+			}
 		}
 	}
 }
@@ -228,7 +238,7 @@ MainWindow::MainWindow() : QMainWindow()
 
 #if defined(__APPLE__) && defined(USE_SDL)
 	ui.actionAbout_avidemux->setMenuRole(QAction::NoRole);
-	ui.actionPreferences->setMenuRole(QAction::NoRole);
+	ui.action_Preferences->setMenuRole(QAction::NoRole);
 	ui.actionQuit->setMenuRole(QAction::NoRole);
 #endif
 

@@ -72,8 +72,10 @@ void loadTranslator(void)
 
 #ifdef __APPLE__
 	QString appdir = QCoreApplication::applicationDirPath() + "/../Resources/locale/";
-#else
+#elif defined(__WIN32)
 	QString appdir = QCoreApplication::applicationDirPath() + "/i18n/";
+#else
+	QString appdir = ADM_getInstallRelativePath("share","avidemux","i18n");
 #endif
 
 	loadTranslation(&qtTranslator, appdir + "qt_" + QLocale::system().name());

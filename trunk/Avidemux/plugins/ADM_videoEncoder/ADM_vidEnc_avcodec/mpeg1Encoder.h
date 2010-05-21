@@ -26,7 +26,7 @@ extern "C"
 #include "encoder.h"
 #include "mpeg1EncoderOptions.h"
 #include "DIA_factory.h"
-#include "xvidRateCtl/xvidRateCtlVbv.h"
+#include "xvidRateCtlVbv.h"
 
 class Mpeg1Encoder : public AvcodecEncoder
 {
@@ -58,7 +58,7 @@ class Mpeg1Encoder : public AvcodecEncoder
 		void loadSettings(vidEncOptions *encodeOptions, Mpeg1EncoderOptions *options);
 		void saveSettings(vidEncOptions *encodeOptions, Mpeg1EncoderOptions *options);
 		int getOptions(vidEncOptions *encodeOptions, char *pluginOptions, int bufferSize);
-		int setOptions(vidEncOptions *encodeOptions, char *pluginOptions);
+		int setOptions(vidEncOptions *encodeOptions, const char *pluginOptions);
 		int beginPass(vidEncPassParameters *passParameters);
 		int encodeFrame(vidEncEncodeParameters *encodeParams);
 		int finishPass(void);

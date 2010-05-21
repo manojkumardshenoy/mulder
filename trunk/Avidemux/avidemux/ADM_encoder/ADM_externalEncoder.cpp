@@ -150,8 +150,6 @@ uint8_t externalEncoder::configure(AVDMGenericVideoStream *instream, int useExis
 uint8_t externalEncoder::encode(uint32_t frame, ADMBitstream *out)
 {
 	uint32_t l, f;
-	int outLength, videoFrameType;
-	int64_t ptsFrame;
 	vidEncEncodeParameters params;
 
 	if (frame != UINT32_MAX && !_in->getFrameNumberNoAlloc(frame, &l, _vbuffer, &f))
@@ -186,7 +184,7 @@ uint8_t externalEncoder::encode(uint32_t frame, ADMBitstream *out)
 			sourcePicture.data[2] = tmpPlane;
 
 			sws_scale(
-				_swsContext, sourcePicture.data, sourcePicture.linesize, 0,
+				_swsContext, (const uint8_t**)sourcePicture.data, sourcePicture.linesize, 0,
 				_h, resamplePicture.data, resamplePicture.linesize);
 
 			inputPicture = &resamplePicture;

@@ -64,10 +64,11 @@ public:
 	bool getDeterministic(void);
 	void setDeterministic(bool deterministic);
 
-#if X264_BUILD >= 75
+	bool getSliceThreading(void);
+	void setSliceThreading(bool sliceThreading);
+
 	int getThreadedLookahead(void);
 	void setThreadedLookahead(int frames);
-#endif
 
 	int getIdcLevel(void);
 	void setIdcLevel(int idcLevel);
@@ -141,10 +142,8 @@ public:
 	bool getInterlaced(void);
 	void setInterlaced(bool interlaced);
 
-#if X264_BUILD >= 77
 	bool getConstrainedIntraPrediction(void);
 	void setConstrainedIntraPrediction(bool constrainedIntra);
-#endif
 
 	unsigned int getCqmPreset(void);
 	void setCqmPreset(unsigned int cqmPreset);
@@ -185,10 +184,8 @@ public:
 	bool getDct8x8(void);
 	void setDct8x8(bool dct8x8);
 
-#if X264_BUILD >= 79
 	unsigned int getWeightedPredictionPFrames(void);
 	void setWeightedPredictionPFrames(unsigned int weightedPrediction);
-#endif
 
 	bool getWeightedPrediction(void);
 	void setWeightedPrediction(bool weightedPrediction);
@@ -280,13 +277,11 @@ public:
 	float getAdaptiveQuantiserStrength(void);
 	void setAdaptiveQuantiserStrength(float adaptiveQuantiserStrength);
 
-#if X264_BUILD >= 69
 	bool getMbTree(void);
 	void setMbTree(bool mbTree);
 
 	unsigned int getFrametypeLookahead(void);
 	void setFrametypeLookahead(unsigned int frames);
-#endif
 
 	float getQuantiserCurveCompression(void);
 	void setQuantiserCurveCompression(float quantiserCurveCompression);
@@ -308,7 +303,6 @@ public:
 	unsigned int getSpsIdentifier(void);
 	void setSpsIdentifier(unsigned int spsIdentifier);
 
-#if X264_BUILD >= 73
 	unsigned int getSliceMaxSize(void);
 	void setSliceMaxSize(unsigned int maxSize);
 
@@ -317,7 +311,6 @@ public:
 
 	unsigned int getSliceCount(void);
 	void setSliceCount(unsigned int sliceCount);
-#endif
 
 	int fromXml(const char *xml, PluginXmlType xmlType);
 };

@@ -20,7 +20,6 @@
 */
  
 
-#include "config.h"
 #include "ADM_default.h"
 #include "ADM_threads.h"
 
@@ -51,7 +50,7 @@ extern int muxParam;
 #include "ADM_coreUI/include/DIA_factory.h"
 const char *getStrFromAudioCodec( uint32_t codec);
 //_________________________
-uint8_t ADM_aviUISetMuxer(  void )
+bool ADM_aviUISetMuxer(  void )
 {
   
 //	return DIA_setUserMuxParam ((int *) &muxMode, (int *) &muxParam, (int *) &muxSize);
