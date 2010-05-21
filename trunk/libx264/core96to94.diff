@@ -1,0 +1,92 @@
+diff --git a/common/common.c b/common/common.c
+index 62bef99..f896531 100644
+--- a/common/common.c
++++ b/common/common.c
+@@ -160,7 +160,7 @@ void x264_param_default( x264_param_t *param )
+     param->i_nal_hrd = X264_NAL_HRD_NONE;
+     param->b_tff = 1;
+     param->b_pic_struct = 0;
+-    param->b_fake_interlaced = 0;
++    /* param->b_fake_interlaced = 0; */
+ }
+ 
+ static int x264_param_apply_preset( x264_param_t *param, const char *preset )
+@@ -426,8 +426,8 @@ int x264_param_apply_profile( x264_param_t *param, const char *profile )
+             x264_log( NULL, X264_LOG_ERROR, "baseline profile doesn't support interlacing\n" );
+             return -1;
+         }
+-        if( param->b_fake_interlaced )
+-            x264_log( NULL, X264_LOG_WARNING, "baseline profile doesn't support fake interlacing\n" );
++        /* if( param->b_fake_interlaced )
++            x264_log( NULL, X264_LOG_WARNING, "baseline profile doesn't support fake interlacing\n" ); */
+     }
+     else if( !strcasecmp( profile, "main" ) )
+     {
+@@ -933,8 +933,8 @@ int x264_param_parse( x264_param_t *p, const char *name, const char *value )
+         b_error |= parse_enum( value, x264_nal_hrd_names, &p->i_nal_hrd );
+     OPT("pic-struct")
+         p->b_pic_struct = atobool(value);
+-    OPT("fake-interlaced")
+-        p->b_fake_interlaced = atobool(value);
++    /* OPT("fake-interlaced")
++        p->b_fake_interlaced = atobool(value); */
+     else
+         return X264_PARAM_BAD_NAME;
+ #undef OPT
+diff --git a/encoder/encoder.c b/encoder/encoder.c
+index de06251..1eb4355 100644
+--- a/encoder/encoder.c
++++ b/encoder/encoder.c
+@@ -785,7 +785,7 @@ static int x264_validate_parameters( x264_t *h )
+     BOOLIFY( b_annexb );
+     BOOLIFY( b_vfr_input );
+     BOOLIFY( b_pic_struct );
+-    BOOLIFY( b_fake_interlaced );
++    /* BOOLIFY( b_fake_interlaced ); */
+     BOOLIFY( analyse.b_transform_8x8 );
+     BOOLIFY( analyse.b_weighted_bipred );
+     BOOLIFY( analyse.b_chroma_me );
+diff --git a/encoder/set.c b/encoder/set.c
+index 28de4b5..e8f979a 100644
+--- a/encoder/set.c
++++ b/encoder/set.c
+@@ -149,7 +149,7 @@ void x264_sps_init( x264_sps_t *sps, int i_id, x264_param_t *param )
+     sps->b_gaps_in_frame_num_value_allowed = 0;
+     sps->i_mb_width = ( param->i_width + 15 ) / 16;
+     sps->i_mb_height= ( param->i_height + 15 ) / 16;
+-    sps->b_frame_mbs_only = param->b_interlaced ? 0 : !param->b_fake_interlaced;
++    sps->b_frame_mbs_only = param->b_interlaced ? 0 : 1; /* !param->b_fake_interlaced; */
+     if( !sps->b_frame_mbs_only )
+         sps->i_mb_height = ( sps->i_mb_height + 1 ) & ~1;
+     sps->b_mb_adaptive_frame_field = param->b_interlaced;
+@@ -685,7 +685,7 @@ int x264_validate_levels( x264_t *h, int verbose )
+     CHECK( "VBV buffer", (l->cpb * cbp_factor) / 4, h->param.rc.i_vbv_buffer_size );
+     CHECK( "MV range", l->mv_range, h->param.analyse.i_mv_range );
+     CHECK( "interlaced", !l->frame_only, h->param.b_interlaced );
+-    CHECK( "fake interlaced", !l->frame_only, h->param.b_fake_interlaced );
++    /* CHECK( "fake interlaced", !l->frame_only, h->param.b_fake_interlaced ); */
+ 
+     if( h->param.i_fps_den > 0 )
+         CHECK( "MB rate", l->mbps, (int64_t)mbs * h->param.i_fps_num / h->param.i_fps_den );
+diff --git a/x264.h b/x264.h
+index b11acf8..ce85508 100644
+--- a/x264.h
++++ b/x264.h
+@@ -35,7 +35,7 @@
+ 
+ #include <stdarg.h>
+ 
+-#define X264_BUILD 96
++#define X264_BUILD 94
+ 
+ /* x264_t:
+  *      opaque handler for encoder */
+@@ -355,7 +355,7 @@ typedef struct x264_param_t
+      * encode all frames progessively. It is useful for encoding 25p and 30p Blu-Ray streams.
+      */
+ 
+-    int b_fake_interlaced;
++    /* int b_fake_interlaced; */
+ 
+     /* Slicing parameters */
+     int i_slice_max_size;    /* Max size per slice in bytes; includes estimated NAL overhead. */

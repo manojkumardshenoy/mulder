@@ -2,7 +2,7 @@
 
 REM ----------------------------------------------------------------
 
-set "CoreVersion=93"
+set "CoreVersion=94"
 set "AvidemuxFolder=D:\Avidemux 2.5"
 set "OutputFoldr=%CD%\test"
 

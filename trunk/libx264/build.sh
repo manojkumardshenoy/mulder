@@ -121,7 +121,7 @@ make_x264() {
     NAME=$3-$NAME
   fi
 
-  PATCHES="core95to94 amdfam10_fix print_params psy_trellis fast_firstpass"
+  PATCHES="core96to94 amdfam10_fix print_params psy_trellis fast_firstpass"
   
   if [ "$2" != "noasm" ]; then
     ECFLAGS="-march=$2"
