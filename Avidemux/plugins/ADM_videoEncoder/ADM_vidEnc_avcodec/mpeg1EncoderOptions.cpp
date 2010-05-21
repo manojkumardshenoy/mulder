@@ -31,7 +31,7 @@
 
 #include "mpeg1EncoderOptions.h"
 
-Mpeg1EncoderOptions::Mpeg1EncoderOptions(void) : PluginOptions(PLUGIN_CONFIG_DIR, "Mpeg1", "Mpeg1Param.xsd", DEFAULT_ENCODE_MODE, DEFAULT_ENCODE_MODE_PARAMETER)
+Mpeg1EncoderOptions::Mpeg1EncoderOptions(void) : PluginOptions(MPEG1_PLUGIN_CONFIG_DIR, "Mpeg1", "avcodec/Mpeg1Param.xsd", MPEG1_DEFAULT_ENCODE_MODE, MPEG1_DEFAULT_ENCODE_MODE_PARAMETER)
 {
 	reset();
 }
@@ -45,8 +45,8 @@ void Mpeg1EncoderOptions::reset(void)
 	setXvidRateControl(false);
 	setBufferSize(40);
 	setWidescreen(false);
-	setInterlaced(INTERLACED_NONE);
-	setMatrix(MATRIX_DEFAULT);
+	setInterlaced(MPEG1_INTERLACED_NONE);
+	setMatrix(MPEG1_MATRIX_DEFAULT);
 	setGopSize(12);
 }
 
@@ -103,25 +103,25 @@ void Mpeg1EncoderOptions::setWidescreen(bool widescreen)
 	_widescreen = widescreen;
 }
 
-InterlacedMode Mpeg1EncoderOptions::getInterlaced(void)
+Mpeg1InterlacedMode Mpeg1EncoderOptions::getInterlaced(void)
 {
 	return _interlaced;
 }
 
-void Mpeg1EncoderOptions::setInterlaced(InterlacedMode interlaced)
+void Mpeg1EncoderOptions::setInterlaced(Mpeg1InterlacedMode interlaced)
 {
-	if (interlaced == INTERLACED_NONE || interlaced == INTERLACED_BFF || interlaced == INTERLACED_TFF)
+	if (interlaced == MPEG1_INTERLACED_NONE || interlaced == MPEG1_INTERLACED_BFF || interlaced == MPEG1_INTERLACED_TFF)
 		_interlaced = interlaced;
 }
 
-MatrixMode Mpeg1EncoderOptions::getMatrix(void)
+Mpeg1MatrixMode Mpeg1EncoderOptions::getMatrix(void)
 {
 	return _matrix;
 }
 
-void Mpeg1EncoderOptions::setMatrix(MatrixMode matrix)
+void Mpeg1EncoderOptions::setMatrix(Mpeg1MatrixMode matrix)
 {
-	if (matrix == MATRIX_DEFAULT || matrix == MATRIX_TMPGENC || matrix == MATRIX_ANIME || matrix == MATRIX_KVCD)
+	if (matrix == MPEG1_MATRIX_DEFAULT || matrix == MPEG1_MATRIX_TMPGENC || matrix == MPEG1_MATRIX_ANIME || matrix == MPEG1_MATRIX_KVCD)
 		_matrix = matrix;
 }
 
@@ -140,7 +140,6 @@ void Mpeg1EncoderOptions::addOptionsToXml(xmlNodePtr xmlNodeRoot)
 {
 	const int bufferSize = 100;
 	xmlChar xmlBuffer[bufferSize + 1];
-	xmlNodePtr xmlNodeChild, xmlNodeChild2;
 
 	xmlNodeRoot = xmlNewChild(xmlNodeRoot, NULL, (xmlChar*)getOptionsTagRoot(), NULL);
 	xmlNewChild(xmlNodeRoot, NULL, (xmlChar*)"minBitrate", number2String(xmlBuffer, bufferSize, getMinBitrate()));
@@ -151,10 +150,10 @@ void Mpeg1EncoderOptions::addOptionsToXml(xmlNodePtr xmlNodeRoot)
 
 	switch (getInterlaced())
 	{
-		case INTERLACED_BFF:
+		case MPEG1_INTERLACED_BFF:
 			strcpy((char*)xmlBuffer, "bff");
 			break;
-		case INTERLACED_TFF:
+		case MPEG1_INTERLACED_TFF:
 			strcpy((char*)xmlBuffer, "tff");
 			break;
 		default:
@@ -166,13 +165,13 @@ void Mpeg1EncoderOptions::addOptionsToXml(xmlNodePtr xmlNodeRoot)
 
 	switch (getMatrix())
 	{
-		case MATRIX_TMPGENC:
+		case MPEG1_MATRIX_TMPGENC:
 			strcpy((char*)xmlBuffer, "tmpgenc");
 			break;
-		case MATRIX_ANIME:
+		case MPEG1_MATRIX_ANIME:
 			strcpy((char*)xmlBuffer, "anime");
 			break;
-		case MATRIX_KVCD:
+		case MPEG1_MATRIX_KVCD:
 			strcpy((char*)xmlBuffer, "kvcd");
 			break;
 		default:
@@ -203,25 +202,25 @@ void Mpeg1EncoderOptions::parseOptions(xmlNode *node)
 				setWidescreen(string2Boolean(content));
 			else if (strcmp((char*)xmlChild->name, "interlaced") == 0)
 			{
-				InterlacedMode mode = INTERLACED_NONE;
+				Mpeg1InterlacedMode mode = MPEG1_INTERLACED_NONE;
 
 				if (strcmp(content, "bff") == 0)
-					mode = INTERLACED_BFF;
+					mode = MPEG1_INTERLACED_BFF;
 				else if (strcmp(content, "tff") == 0)
-					mode = INTERLACED_TFF;
+					mode = MPEG1_INTERLACED_TFF;
 
 				setInterlaced(mode);
 			}
 			else if (strcmp((char*)xmlChild->name, "matrix") == 0)
 			{
-				MatrixMode mode = MATRIX_DEFAULT;
+				Mpeg1MatrixMode mode = MPEG1_MATRIX_DEFAULT;
 
 				if (strcmp(content, "tmpgenc") == 0)
-					mode = MATRIX_TMPGENC;
+					mode = MPEG1_MATRIX_TMPGENC;
 				else if (strcmp(content, "anime") == 0)
-					mode = MATRIX_ANIME;
+					mode = MPEG1_MATRIX_ANIME;
 				else if (strcmp(content, "kvcd") == 0)
-					mode = MATRIX_KVCD;
+					mode = MPEG1_MATRIX_KVCD;
 
 				setMatrix(mode);
 			}

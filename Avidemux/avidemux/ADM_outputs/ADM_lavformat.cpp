@@ -115,28 +115,28 @@ uint8_t lavMuxer::open(const char *filename,uint32_t inbitrate, ADM_MUXER_TYPE t
 	switch(_type)
 	{
 	case MUXER_TS:
-		fmt=guess_format("mpegts", NULL, NULL);
+		fmt = av_guess_format("mpegts", NULL, NULL);
 		break;
 	case MUXER_DVD:
-		fmt = guess_format("dvd", NULL, NULL);
+		fmt = av_guess_format("dvd", NULL, NULL);
 		break;
 	case MUXER_VCD:
-		fmt = guess_format("vcd", NULL, NULL);
+		fmt = av_guess_format("vcd", NULL, NULL);
 		break;
 	case MUXER_SVCD:
-		fmt = guess_format("svcd", NULL, NULL);
+		fmt = av_guess_format("svcd", NULL, NULL);
 		break;
 	case MUXER_MP4:
-		fmt = guess_format("mp4", NULL, NULL);
+		fmt = av_guess_format("mp4", NULL, NULL);
 		break;
 	case MUXER_PSP:
-		fmt = guess_format("psp", NULL, NULL);
+		fmt = av_guess_format("psp", NULL, NULL);
 		break;
 	case MUXER_FLV:
-		fmt = guess_format("flv", NULL, NULL);
+		fmt = av_guess_format("flv", NULL, NULL);
 		break;
 	case MUXER_MATROSKA:
-		fmt = guess_format("matroska", NULL, NULL);
+		fmt = av_guess_format("matroska", NULL, NULL);
 		break;
 
 	default:
@@ -699,21 +699,35 @@ uint8_t lavMuxer::audioEmpty( void)
 {
 	return 0;
 }
-extern "C"
-{
-     extern  int        mpegps_init(void );
-     extern  int        movenc_init(void );
-     extern  int        flvenc_init(void );
-     extern  int        matroskaenc_init(void );
-};
-extern URLProtocol file_protocol ;
+
 uint8_t lavformat_init(void)
 {
-                movenc_init();
-                flvenc_init();
-                matroskaenc_init();
-                av_register_protocol(&file_protocol);
+	av_register_all();
+
+	// Make sure avformat is correctly configured
+	const char* formats[] = {"mpegts", "dvd", "vcd", "svcd", "mp4", "psp", "flv", "matroska"};
+	AVOutputFormat *avfmt;
+
+	for (int i = 0; i < 8; i++)
+	{
+		avfmt = av_guess_format(formats[i], NULL, NULL);
+
+		if (avfmt == NULL)
+		{
+			printf("Error: %s muxer isn't registered\n", formats[i]);
+			ADM_assert(0);
+		}
+	}
+
+	URLProtocol *up = av_protocol_next(NULL);
+
+	if (strcmp(up->name, "file") != 0)
+	{
+		printf("Error: file protocol isn't registered\n");
+		ADM_assert(0);
+	}
 }
+
 extern "C"
 {
 /**

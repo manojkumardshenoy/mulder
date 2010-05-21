@@ -35,6 +35,7 @@ extern int A_delete(uint32_t start, uint32_t end);
 extern uint8_t A_ListAllBlackFrames( char *file );
 extern uint8_t A_jumpToTime(uint32_t hh,uint32_t mm,uint32_t ss,uint32_t ms);
 extern uint8_t addFile(char *name);
+extern uint8_t mk_hex(uint8_t a, uint8_t b);
 
 uint8_t A_setContainer(const char *cont);
 const char *getCurrentContainerAsString(void);
@@ -60,8 +61,6 @@ JSFunctionSpec ADM_JSAvidemux::avidemux_methods[] =
 	{ "load", Load, 1, 0, 0 },	// Load movie
 	{ "loadFilters", LoadFilters, 1, 0, 0 },	// Load filters from file
 	{ "save", Save, 1, 0, 0 },	// Save movie
-/*	{ "saveDVD", SaveDVD, 1, 0, 0 },	// Save movie as DVD
-	{ "saveOGM", SaveOGM, 1, 0, 0 },	// Save movie as OGM*/
         { "clearSegments", ClearSegments ,0,0,0}, // Clear all segments
         { "addSegment", AddSegment ,3,0,0}, // Clear all segments
 	{ "goToTime", GoToTime, 3, 0, 0 },	// more current frame to time index
@@ -537,14 +536,54 @@ JSBool ADM_JSAvidemux::setContainer(JSContext *cx, JSObject *obj, uintN argc, js
 ADM_JSAvidemux *p = (ADM_JSAvidemux *)JS_GetPrivate(cx, obj);
         // default return value
         *rval = BOOLEAN_TO_JSVAL(false);
-        if(argc != 1)
+        if(argc < 1 || argc > 2)
                 return JS_FALSE;
         if(JSVAL_IS_STRING(argv[0]) == false)
                 return JS_FALSE;
+		if(argc == 2 && !JSVAL_IS_STRING(argv[1]))
+			return JS_FALSE;
+
         char *str = JS_GetStringBytes(JSVAL_TO_STRING(argv[0]));
         enterLock();
-        if(A_setContainer(str))
-                *rval = BOOLEAN_TO_JSVAL( true);
+		if(A_setContainer(str))
+		{
+			if (argc == 2)
+			{
+				const char *config = JS_GetStringBytes(JSVAL_TO_STRING(argv[1]));
+				ADM_OUT_FORMAT format = UI_GetCurrentFormat();
+
+				for (int i = 0; i < ADM_FORMAT_MAX; i++)
+				{
+					if (ADM_allOutputFormat[i].format == format)
+					{
+						if (ADM_allOutputFormat[i].configSize > 0)
+						{
+							memcpy(ADM_allOutputFormat[i].currentConfig, ADM_allOutputFormat[i].defaultConfig, ADM_allOutputFormat[i].configSize);
+
+							int configLength = strlen(config);
+
+							if (configLength > 0)
+							{
+								uint8_t* currentConfig = (uint8_t*)ADM_allOutputFormat[i].currentConfig;
+								const char* configHexPtr = config;
+								int configByteCount = 0;
+
+								while ((configHexPtr - config) < configLength && configByteCount < ADM_allOutputFormat[i].configSize)
+								{
+									currentConfig[configByteCount] = mk_hex(*configHexPtr, *(configHexPtr + 1));
+									configHexPtr += 3;
+									configByteCount += 1;
+								}
+							}
+						}
+
+						break;
+					}
+				}
+			}
+
+			*rval = BOOLEAN_TO_JSVAL(true);
+		}
         leaveLock();
         return JS_TRUE;
 }

@@ -18,7 +18,7 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-
+#define __STDC_LIMIT_MACROS
 #include "config.h"
 
 #ifdef USE_FFMPEG
@@ -54,6 +54,8 @@ extern SelectCodecType videoCodecGetType(void);
 static char *twoPass = NULL;
 static char *twoFake = NULL;
 
+ps_muxer psMuxerConfig = {PS_MUXER_DVD, 0};
+
 uint8_t oplug_mpegff(const char *name, ADM_OUT_FORMAT type)
 {
 AVDMGenericVideoStream *_incoming;
@@ -76,6 +78,8 @@ ADMBitstream bitstream(0);
 uint32_t audioSum=0;
 DIA_encoding  *encoding = NULL;
 int reuse = 0;
+int r = 0;
+int frameDelay = 0;
 
         twoPass=new char[strlen(name)+6];
         twoFake=new char[strlen(name)+6];
@@ -134,42 +138,49 @@ int reuse = 0;
                 WAVHeader *hdr=audio->getInfo();	
                 audio_encoding=hdr->encoding;
 
-                if (videoCodecGetType() == CodecXVCD || videoCodecGetType() == CodecVCD ||
-					(videoCodecGetType() == CodecExternal && strcmp(videoCodecPluginGetGuid(), "85FC9CAC-CE6C-4aa6-9D5F-352D6349BA3E") == 0))	// MPEG-1 plugin
-                {
-                        if(hdr->frequency!=44100 ||  hdr->encoding != WAV_MP2)
-                        {
-                            GUI_Error_HIG(("Incompatible audio"),QT_TR_NOOP( "For VCD, audio must be 44.1 kHz MP2."));
+				switch (psMuxerConfig.muxingType)
+				{
+					case PS_MUXER_VCD:
+					{
+						if (!psMuxerConfig.acceptNonCompliant && (hdr->frequency != 44100 || hdr->encoding != WAV_MP2))
+						{
+							GUI_Error_HIG(("Incompatible audio"),QT_TR_NOOP( "For VCD, audio must be 44.1 kHz MP2."));
 							goto finishvcdff;
-                        }
-                        mux=MUXER_VCD;
-                        printf("X*CD: Using VCD PS\n");
-                }else
-                {    
-                        aviInfo info;
-                        video_body->getVideoInfo(&info);
-                        if(hdr->frequency==44100 && _w==480&&hdr->encoding == WAV_MP2 ) // SVCD ?
-                        {
-                            mux=MUXER_SVCD;
-                            printf("X*VCD: Using SVCD PS\n");
-                        }
-                        else
-                        {
-                            // mpeg2, we do only DVD right now
-                            if(hdr->frequency!=48000 || 
-                                (hdr->encoding != WAV_MP2 && hdr->encoding!=WAV_AC3 && hdr->encoding!=WAV_LPCM))
-                            {
-                                GUI_Error_HIG(QT_TR_NOOP("Incompatible audio"), QT_TR_NOOP("For DVD, audio must be 48 kHz MP2, AC3 or LPCM."));
-								goto finishvcdff;
-                            }
-                            mux=MUXER_DVD;
-                            printf("X*VCD: Using DVD PS\n");
-                        }
-                }
+						}
+
+						mux = MUXER_VCD;
+						printf("X*CD: Using VCD PS\n");
+						break;
+					}
+					case PS_MUXER_SVCD:
+					{
+						if (!psMuxerConfig.acceptNonCompliant && (hdr->frequency != 44100 && hdr->encoding == WAV_MP2))
+						{
+							GUI_Error_HIG(("Incompatible audio"),QT_TR_NOOP( "For SVCD, audio must be 44.1 kHz MP2."));
+							goto finishvcdff;
+						}
+
+						mux = MUXER_SVCD;
+						printf("X*VCD: Using SVCD PS\n");
+						break;
+					}
+					case PS_MUXER_DVD:
+					{
+						if (!psMuxerConfig.acceptNonCompliant && (hdr->frequency != 48000 || (hdr->encoding != WAV_MP2 && hdr->encoding != WAV_AC3 && hdr->encoding != WAV_LPCM)))
+						{
+							GUI_Error_HIG(("Incompatible audio"), QT_TR_NOOP("For DVD, audio must be 48 kHz MP2, AC3 or LPCM."));
+							goto finishvcdff;								
+						}
+
+						mux = MUXER_DVD;
+						printf("X*VCD: Using DVD PS\n");
+						break;
+					}
+				}
             }
-         }        
+         }
         // Create muxer
-       encoder = getVideoEncoder(_w, _h, 0);
+       encoder = getVideoEncoder(0);
 
 	   if (encoder == NULL)
 		   return 0;
@@ -196,24 +207,6 @@ int reuse = 0;
       encoding =new DIA_encoding(_fps1000);
       switch (videoCodecGetType())
       {
-          case CodecVCD:
-            encoding->setCodec(QT_TR_NOOP("libmpeg2enc VCD"));
-            break;
-          case CodecSVCD:
-            encoding->setCodec(QT_TR_NOOP("libmpeg2enc SVCD"));
-            break;
-          case CodecDVD:
-            encoding->setCodec(QT_TR_NOOP("libmpeg2enc DVD"));
-            break;
-          case CodecXVCD:
-            encoding->setCodec(QT_TR_NOOP("FFmpeg MPEG-1 VBR"));
-            break;
-          case CodecXSVCD:
-            encoding->setCodec(QT_TR_NOOP("FFmpeg MPEG-2 SVCD VBR"));
-            break;
-          case CodecXDVD:
-            encoding->setCodec(QT_TR_NOOP("FFmpeg MPEG-2 DVD VBR"));
-            break;
           case CodecRequant:
             encoding->setCodec(QT_TR_NOOP("MPEG Requantizer"));
             break;
@@ -234,32 +227,66 @@ int reuse = 0;
                 ADM_assert(0);
           }
 
+		// pass 1
+		if(encoder->isDualPass()) //Cannot be requant
+		{
+			if (!reuse)
+			{
+				encoding->setPhasis(QT_TR_NOOP("Pass 1/2"));
+				encoder->startPass1();
 
+				bitstream.data = _buffer;
+				bitstream.bufferSize = _page;
 
-        // pass 1
-        if(encoder->isDualPass()) //Cannot be requant
-        {
-                        if(!reuse)
-                        {
-                                encoding->setPhasis (QT_TR_NOOP("Pass 1/2"));
-                                encoder->startPass1();
-                                bitstream.data=_buffer;
-                                bitstream.bufferSize=_page;
-                                for(uint32_t i=0;i<total;i++)
-                                {
-                                        bitstream.cleanup(i);
-                                        if(!encoder->encode( i, &bitstream))//&len,(uint8_t *) _buffer,&flags))
-                                        {
-                                          GUI_Error_HIG(QT_TR_NOOP("Error in pass 1"), NULL);
-                                        }
-                                        encoding->setFrame(i,bitstream.len,bitstream.out_quantizer,total);
-                                        if(!encoding->isAlive())
-                                              goto finishvcdff;
-                                }
-                        }
-                        encoder->startPass2();
-                        encoding->reset();
-                }
+				for(uint32_t frame = 0; frame < total; frame++)
+				{
+					if (!encoding->isAlive())
+					{
+						r = 0;
+						break;
+					}
+
+					for (;;)
+					{
+						bitstream.cleanup(frame);
+
+						if (frame + frameDelay >= total)
+						{
+							if (encoder->getRequirements() & ADM_ENC_REQ_NULL_FLUSH)
+								r = encoder->encode(UINT32_MAX, &bitstream);
+							else
+								r = 0;
+						}
+						else
+							r = encoder->encode(frame + frameDelay, &bitstream);
+
+						if (!r)
+						{
+							printf("Encoding of frame %lu failed!\n", frame);
+							GUI_Error_HIG(QT_TR_NOOP("Error while encoding"), NULL);
+
+							break;
+						}
+
+						if (bitstream.len == 0 && (encoder->getRequirements() & ADM_ENC_REQ_NULL_FLUSH))
+						{
+							printf("skipping frame: %u size: %i\n", frame + frameDelay, bitstream.len);
+							frameDelay++;
+						}
+						else
+							break;
+					}
+
+					if (!r)
+						goto finishvcdff;
+
+					encoding->setFrame(frame, bitstream.len, bitstream. out_quantizer, total);
+				}
+			}
+
+			encoder->startPass2();
+			encoding->reset();
+		}
                 
               switch(type)
               {
@@ -387,54 +414,82 @@ int reuse = 0;
 
       bitstream.data=_outbuffer;
       bitstream.bufferSize=_page;
-      for(uint32_t i=0;i<total;i++)
-      {
-       	// get frame
-                bitstream.cleanup(i);
-                if(!encoder->encode( i,&bitstream))// &len,(uint8_t *) _outbuffer,&flags))
-                {
-                  GUI_Error_HIG(QT_TR_NOOP("Error in pass 2"), NULL);
-                        goto finishvcdff;
-                }
-                if(!bitstream.len) continue;
-                
-                if(file)
-                {
-                    fwrite(_outbuffer,bitstream.len,1,file);
-                }
-                else
-                {
-                        uint32_t samples; 
-                        
-                        //printf("%lu %lu\n",i,dts);
-                        
-                        muxer->writeVideoPacket(&bitstream);
-                        real_framenum++;
-                        // _muxer->writeVideoPacket(len,_buffer_out,
-                        //i-MPEG_PREFILL,_codec->getCodedPictureNumber());
-                        if(total_sample<sample_target)
-                        {
-                            while(muxer->needAudio() && total_sample<sample_target) 
-                            {				
-                                if(!audio->getPacket(audioBuffer, &audioLen, &samples))	
-                                { 
-                                        break; 
-                                }
-                                if(audioLen) 
-                                {
-                                        muxer->writeAudioPacket(audioLen,audioBuffer); 
-                                        total_sample+=samples;
-                                        audioSum+=audioLen;
-                                }
-                            }
-                        }
-                
-                }
-                encoding->setFrame(i,bitstream.len,bitstream.out_quantizer,total);
-                encoding->setAudioSize(audioSum);
-                if(!encoding->isAlive ())
-                                  goto finishvcdff;
-        }
+	  r = frameDelay = 0;
+
+	  for(uint32_t frame = 0; frame < total; frame++)
+	  {
+		  if (!encoding->isAlive())
+		  {
+			  r = 0;
+			  break;
+		  }
+
+		  for (;;)
+		  {
+			  bitstream.cleanup(frame);
+
+			  if (frame + frameDelay >= total)
+			  {
+				  if (encoder->getRequirements() & ADM_ENC_REQ_NULL_FLUSH)
+					  r = encoder->encode(UINT32_MAX, &bitstream);
+				  else
+					  r = 0;
+			  }
+			  else
+				  r = encoder->encode(frame + frameDelay, &bitstream);
+
+			  if (!r)
+			  {
+				  printf("Encoding of frame %lu failed!\n", frame);
+				  GUI_Error_HIG(QT_TR_NOOP("Error while encoding"), NULL);
+				  break;
+			  }
+
+			  if (bitstream.len == 0 && (encoder->getRequirements() & ADM_ENC_REQ_NULL_FLUSH))
+			  {
+				  printf("skipping frame: %u size: %i\n", frame + frameDelay, bitstream.len);
+				  frameDelay++;
+			  }
+			  else
+				  break;
+		  }
+
+		  if (!r)
+			  goto finishvcdff;
+
+		  if(file)
+		  {
+			  fwrite(_outbuffer,bitstream.len,1,file);
+		  }
+		  else
+		  {
+			  muxer->writeVideoPacket(&bitstream);
+			  real_framenum++;
+
+			  if(total_sample < sample_target)
+			  {
+				  uint32_t samples;
+
+				  while(muxer->needAudio() && total_sample < sample_target) 
+				  {				
+					  if (!audio->getPacket(audioBuffer, &audioLen, &samples))	
+						  break; 
+
+					  if(audioLen) 
+					  {
+						  muxer->writeAudioPacket(audioLen, audioBuffer); 
+						  total_sample += samples;
+						  audioSum += audioLen;
+					  }
+				  }
+			  }
+
+		  }
+
+		  encoding->setFrame(frame, bitstream.len, bitstream.out_quantizer, total);
+		  encoding->setAudioSize(audioSum);
+	  }
+
         ret=1;
 finishvcdff:
         printf("[MPEGFF] Finishing..\n");

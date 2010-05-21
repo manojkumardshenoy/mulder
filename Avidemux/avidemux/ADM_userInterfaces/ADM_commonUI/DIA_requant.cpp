@@ -12,11 +12,9 @@
 
 #include "ADM_codecs/ADM_codec.h"
 #include "ADM_encoder/ADM_vidEncode.hxx"
-#include "ADM_codecs/ADM_ffmpegConfig.h"
 
   
 #include "DIA_factory.h"
-#include "../../ADM_encoder/adm_encmjpeg_param.h"
 
 /**
       \fn DIA_mjpegCodecSetting

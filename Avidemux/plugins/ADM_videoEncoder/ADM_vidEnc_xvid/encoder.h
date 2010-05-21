@@ -70,7 +70,7 @@
 		int isConfigurable(void);
 		int configure(vidEncConfigParameters *configParameters, vidEncVideoProperties *properties);
 		int getOptions(vidEncOptions *encodeOptions, char *pluginOptions, int bufferSize);
-		int setOptions(vidEncOptions *encodeOptions, char *pluginOptions);
+		int setOptions(vidEncOptions *encodeOptions, const char *pluginOptions);
 		int getCurrentPass(void);
 		int getPassCount(void);
 		int open(vidEncVideoProperties *properties);
@@ -85,11 +85,13 @@
 	int XvidEncoder_isConfigurable(void);
 	int XvidEncoder_configure(vidEncConfigParameters *configParameters, vidEncVideoProperties *properties);
 	int XvidEncoder_getOptions(vidEncOptions *encodeOptions, char *pluginOptions, int bufferSize);
-	int XvidEncoder_setOptions(vidEncOptions *encodeOptions, char *pluginOptions);
+	int XvidEncoder_setOptions(vidEncOptions *encodeOptions, const char *pluginOptions);
 	int XvidEncoder_getPassCount(void);
 	int XvidEncoder_getCurrentPass(void);
 	int XvidEncoder_open(vidEncVideoProperties *properties);
-	void XvidEncoder_close(void);
+	int XvidEncoder_beginPass(vidEncPassParameters *passParameters);
 	int XvidEncoder_encodeFrame(vidEncEncodeParameters *encodeParams);
+	int XvidEncoder_finishPass(void);
+	void XvidEncoder_close(void);
 #endif	// __cplusplus
 #endif	// encoder_h

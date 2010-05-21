@@ -1,22 +1,21 @@
 include(admFFmpegUtil)
 
-set(FFMPEG_VERSION 20900)	# http://git.ffmpeg.org/?p=ffmpeg;a=snapshot;h=c2a40c2de2f3b764180c6e74e8c2a88d2f56dfac;sf=tgz
-set(SWSCALE_VERSION 30075)	# http://git.ffmpeg.org/?p=libswscale;a=snapshot;h=8158fe4ce45496fb7ded193cd9d64e9e75268be4;sf=tgz
+set(FFMPEG_VERSION 22831)	# http://git.ffmpeg.org/?p=ffmpeg;a=snapshot;h=887b9ab184ed849001bbf9c5bad60d52d92e688c;sf=tgz
+set(SWSCALE_VERSION 31028)	# http://git.ffmpeg.org/?p=libswscale;a=snapshot;h=a9639b0b6c96c6b0c30ec1ef6f737f1204a2697a;sf=tgz
 
 set(LIBRARY_SOURCE_DIR "${CMAKE_SOURCE_DIR}/avidemux/ADM_libraries")
 set(FFMPEG_SOURCE_DIR "${LIBRARY_SOURCE_DIR}/ffmpeg")
 set(FFMPEG_BINARY_DIR "${CMAKE_BINARY_DIR}/avidemux/ADM_libraries/ffmpeg")
 
-set(FFMPEG_DECODERS  adpcm_ima_amv  amv  bmp  cinepak  dca  dnxhd  dvbsub  dvvideo  ffv1  ffvhuff  flv  fourxm  fraps  h263  h264  huffyuv  indeo2  indeo3
-					 interplay_video  mjpeg  mjpegb  mpeg1video  mpeg2video  mpeg4  mpegaudio_hp  mpegvideo  msmpeg4v1  msmpeg4v2  msmpeg4v3  msvideo1
-					 nellymoser  png  qdm2  rawvideo rv10  rv20  snow  svq1  svq3  tscc  vc1  vcr1  vp3  vp5  vp6  vp6a  vp6f  wmav2  wmv1  wmv2  wmv3)
-set(FFMPEG_ENCODERS  ac3  dvbsub  dvvideo  ffv1  ffvhuff  flv  flv1  h263  h263p  huffyuv  mjpeg  mpeg1video  mpeg2video  mp2  mpeg4  msmpeg4v3  snow)
-set(FFMPEG_MUXERS  flv  ipod  matroska  mov  mp4  psp  tg2  tgp)
-set(FFMPEG_PARSERS  h263  h264  mpeg4video ac3)
+set(FFMPEG_DECODERS  adpcm_ima_amv  amv  bmp  cinepak  cyuv  dca  dvbsub  dvvideo  ffv1  ffvhuff  flv  fraps  h263  h264  huffyuv  mjpeg
+					 mjpegb  mpeg2video  mpeg4  msmpeg4v2  msmpeg4v3  msvideo1  nellymoser  png  qdm2  rawvideo  snow  svq3  theora  tscc
+					 vc1  vp3  vp6  vp6a  vp6f  wmav2  wmv1  wmv2  wmv3)
+set(FFMPEG_ENCODERS  ac3  dvvideo  ffv1  ffvhuff  flv  h263  huffyuv  mjpeg  mp2  mpeg1video  mpeg2video  mpeg4  snow)
+set(FFMPEG_MUXERS  flv  matroska  mpeg1vcd  mpeg2dvd  mpeg2svcd  mpegts  mov  mp4  psp)
+set(FFMPEG_PARSERS  ac3  h263  h264  mpeg4video)
 set(FFMPEG_PROTOCOLS  file)
-set(FFMPEG_FLAGS  --enable-shared --disable-static --disable-filters --disable-protocols --disable-indevs --disable-outdevs --disable-bsfs
-				  --disable-parsers --disable-decoders --disable-encoders --disable-demuxers --disable-muxers --enable-postproc --enable-gpl 
-				  --enable-runtime-cpudetect --disable-ffplay --prefix=${CMAKE_INSTALL_PREFIX})
+set(FFMPEG_FLAGS  --enable-shared --disable-static --disable-everything --enable-hwaccels --enable-postproc --enable-gpl 
+				  --enable-runtime-cpudetect --disable-network --disable-ffplay --disable-ffprobe --prefix=${CMAKE_INSTALL_PREFIX})
 
 include(admFFmpegPatch)
 include(admFFmpegPrepareTar)
@@ -39,9 +38,9 @@ if (FFMPEG_PERFORM_PATCH)
 		patch_file("${FFMPEG_SOURCE_DIR}" "${patchFile}")
 	endforeach(patchFile)
 
-	if (UNIX AND NOT APPLE)
+	if (UNIX)
 		patch_file("${FFMPEG_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}/cmake/patches/common.mak.diff")
-	endif (UNIX AND NOT APPLE)
+	endif (UNIX)
 
 	message("")
 endif (FFMPEG_PERFORM_PATCH)
@@ -89,10 +88,24 @@ if (CMAKE_SHARED_LINKER_FLAGS)
 	set(FFMPEG_FLAGS ${FFMPEG_FLAGS} --extra-ldflags=${CMAKE_SHARED_LINKER_FLAGS})
 endif (CMAKE_SHARED_LINKER_FLAGS)
 
-if (XPLATFORM)
-	set(XPLATFORM "${XPLATFORM}" CACHE STRING "")
-	set(FFMPEG_FLAGS ${FFMPEG_FLAGS} --enable-cross-compile --arch=${XPLATFORM})
-endif (XPLATFORM)
+if (CROSS_ARCH OR CROSS_OS)
+	set(FFMPEG_FLAGS ${FFMPEG_FLAGS} --enable-cross-compile)
+endif (CROSS_ARCH OR CROSS_OS)
+
+if (CROSS_ARCH)
+	set(CROSS_ARCH "${CROSS_ARCH}" CACHE STRING "")
+	set(FFMPEG_FLAGS ${FFMPEG_FLAGS} --arch=${CROSS_ARCH})
+endif (CROSS_ARCH)
+
+if (CROSS_OS)
+	set(CROSS_OS "${CROSS_OS}" CACHE STRING "")
+	set(FFMPEG_FLAGS ${FFMPEG_FLAGS} --target-os=${CROSS_OS})
+endif (CROSS_OS)
+
+if (FF_FLAGS)
+	set(FF_FLAGS "${FF_FLAGS}" CACHE STRING "")
+	set(FFMPEG_FLAGS ${FFMPEG_FLAGS} ${FF_FLAGS})
+endif (FF_FLAGS)
 
 if (NOT "${LAST_FFMPEG_FLAGS}" STREQUAL "${FFMPEG_FLAGS}")
 	set(FFMPEG_PERFORM_BUILD 1)
@@ -114,10 +127,36 @@ if (FFMPEG_PERFORM_BUILD)
 					WORKING_DIRECTORY "${FFMPEG_BINARY_DIR}"
 					${ffmpegBuildOutput})
 
-	if (UNIX AND NOT APPLE)
+	if (ADM_CPU_X86)
+		file(READ ${FFMPEG_BINARY_DIR}/config.h FF_CONFIG_H)
+		string(REGEX MATCH "#define[ ]+HAVE_YASM[ ]+1" FF_YASM "${FF_CONFIG_H}")
+
+		if (NOT FF_YASM)
+			message(FATAL_ERROR "Yasm was not found.")
+		endif (NOT FF_YASM)
+
+		if (WIN32)
+			string(REGEX MATCH "#define[ ]+CONFIG_DXVA2[ ]+1" FF_DXVA2 "${FF_CONFIG_H}")
+			
+			if (NOT FF_DXVA2)
+				message(FATAL_ERROR "DXVA2 not detected.  Ensure the dxva2api.h system header exists (available from Microsoft or http://downloads.videolan.org/pub/videolan/testing/contrib/dxva2api.h).")
+			endif (NOT FF_DXVA2)
+		endif (WIN32)
+	endif (ADM_CPU_X86)
+
+	execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "libavutil"
+					WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/config")
+
+	execute_process(COMMAND ${CMAKE_COMMAND} -E copy "./libavutil/avconfig.h" "${CMAKE_BINARY_DIR}/config/libavutil"
+					WORKING_DIRECTORY "${FFMPEG_BINARY_DIR}")
+
+	if (APPLE)
+		find_patch()
+		patch_file("${FFMPEG_BINARY_DIR}" "${CMAKE_SOURCE_DIR}/cmake/patches/config_macosx.mak.diff")
+	elseif (UNIX)
 		find_patch()
 		patch_file("${FFMPEG_BINARY_DIR}" "${CMAKE_SOURCE_DIR}/cmake/patches/config.mak.diff")
-	endif (UNIX AND NOT APPLE)
+	endif (APPLE)
 
 	message("")
 endif (FFMPEG_PERFORM_BUILD)

@@ -59,7 +59,6 @@ int DVEncoder::open(vidEncVideoProperties *properties)
 			if (properties->height == dvProfiles[i].height && properties->width == dvProfiles[i].width && 
 				((int)(properties->fpsNum * 1000.0 / properties->fpsDen) == (int)(dvProfiles[i].timeBase.num * 1000.0 / dvProfiles[i].timeBase.den)))
 			{
-				_context->pix_fmt = getAvCodecColourSpace(dvProfiles[i].pixFmt);
 				_supportedCsps[0] = dvProfiles[i].pixFmt;
 				validProfile = true;
 				break;
@@ -100,7 +99,7 @@ int DVEncoder::getOptions(vidEncOptions *encodeOptions, char *pluginOptions, int
 	return 0;
 }
 
-int DVEncoder::setOptions(vidEncOptions *encodeOptions, char *pluginOptions)
+int DVEncoder::setOptions(vidEncOptions *encodeOptions, const char *pluginOptions)
 {
 	return 0;
 }

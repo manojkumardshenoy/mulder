@@ -26,9 +26,6 @@
 // GTK+ uses X11 framework
 #cmakedefine HAVE_GTK_X11
 
-/* Define to 1 if you have the `mp3lame' library (-lmp3lame). */
-#cmakedefine HAVE_LIBMP3LAME
-
 /* OSS detected */
 #cmakedefine OSS_SUPPORT
 
@@ -36,6 +33,7 @@
 #cmakedefine USE_AFTEN
 #cmakedefine USE_AFTEN_07	// 0.07
 #cmakedefine USE_AFTEN_08	// 0.0.8
+#cmakedefine USE_AFTEN_08_SVN	// 0.0.8_svn
 
 #if ${CONFIG_HEADER_TYPE} == ADM_BUILD_GTK || ${CONFIG_HEADER_TYPE} == ADM_BUILD_QT4
 /* aRts detected */
@@ -50,30 +48,16 @@
 /* Jack detected */
 #cmakedefine USE_JACK
 
-/* Use faac audio enccoder */
-#cmakedefine USE_FAAC
-
 /* FFmpeg */
 #define USE_FFMPEG
 
-/* FreeType2 detected */
-#cmakedefine USE_FREETYPE
-
 /* Libxml2 is available */
 #cmakedefine USE_LIBXML2
-
-#define USE_MJPEG
-
-/* use libsamplerate */
-#cmakedefine USE_SRC
 
 #if ${CONFIG_HEADER_TYPE} == ADM_BUILD_GTK || ${CONFIG_HEADER_TYPE} == ADM_BUILD_QT4
 /* SDL detected */
 #cmakedefine USE_SDL
 #endif
-
-/* Vorbis detected */
-#cmakedefine USE_VORBIS
 
 #if ${CONFIG_HEADER_TYPE} == ADM_BUILD_GTK || ${CONFIG_HEADER_TYPE} == ADM_BUILD_QT4
 /* XVideo detected */

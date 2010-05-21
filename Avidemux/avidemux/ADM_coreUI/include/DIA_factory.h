@@ -140,7 +140,7 @@ class diaElemSliderBase : public diaElem
 public:
 	                diaElemSliderBase() : diaElem(ELEM_SLIDER) {}
   virtual           ~diaElemSliderBase() {};
-  virtual uint8_t   setDigits(uint32_t digits) { this->digits = digits; }
+  virtual void   setDigits(uint32_t digits) { this->digits = digits; }
 };
 
 typedef diaElem *CREATE_USLIDER_T(uint32_t *value,const char *toggleTitle, uint32_t min,uint32_t max,uint32_t incr , const char *tip);
@@ -155,7 +155,7 @@ public:
   void      setMe(void *dialog, void *opaque,uint32_t line);
   void      getMe(void);
   void      enable(uint32_t onoff) ;
-  uint8_t   setDigits(uint32_t digits) ;
+  void   setDigits(uint32_t digits) ;
   int getRequiredLayout(void);
   void updateMe(void);
 };
@@ -171,7 +171,7 @@ public:
   void      setMe(void *dialog, void *opaque,uint32_t line);
   void      getMe(void);
   void      enable(uint32_t onoff) ;
-  uint8_t   setDigits(uint32_t digits) ;
+  void   setDigits(uint32_t digits) ;
   int getRequiredLayout(void);
   void updateMe(void);
 };
@@ -416,7 +416,7 @@ public:
 
 /*************************************************/
 #ifndef ADM_MINIMAL_UI_INTERFACE
-#include "../../ADM_encoder/ADM_vidEncode.hxx"
+#include "ADM_encoder/ADM_vidEncode.hxx"
 typedef diaElem  *(CREATE_BITRATE_T)(COMPRES_PARAMS *p,const char *toggleTitle,const char *tip);
 class diaElemBitrateBase : public diaElem
 {
@@ -573,7 +573,7 @@ class diaElemTabs
   }
 };
 /**********************************************/
-#define DIA_MAX_FRAME 10
+#define DIA_MAX_FRAME 40
 class diaElemFrameBase :public diaElem
 {
 protected:

@@ -47,15 +47,8 @@ static void encoderPrint(void);
 
 #include "adm_encConfig.h"
 #include "adm_encoder.h"
-
-#include "ADM_codecs/ADM_ffmpeg.h"
-#include "adm_encffmpeg.h"
-
-#include "ADM_codecs/ADM_mjpegEncode.h"
-#include "adm_encmjpeg.h"
 #include "adm_encCopy.h"
 #include "adm_encyv12.h"
-#include "adm_encmpeg2enc.h"
 #include "adm_encRequant.h"
 #include "ADM_pluginLoad.h"
 #include "ADM_externalEncoder.h"
@@ -87,11 +80,18 @@ static COMPRES_PARAMS* getCodecParamFromTag(    SelectCodecType tag)
 }
 CodecFamilty videoCodecGetFamily(void)
 {
-	if (currentCodecType == CodecXVCD || currentCodecType == CodecXSVCD || currentCodecType == CodecXDVD ||
-		(currentCodecType == CodecExternal && strcmp(videoCodecPluginGetGuid(), "85FC9CAC-CE6C-4aa6-9D5F-352D6349BA3E") == 0))
+	if (currentCodecType == CodecExternal && (
+		strcmp(videoCodecPluginGetGuid(), "85FC9CAC-CE6C-4aa6-9D5F-352D6349BA3E") == 0 || // avcodec MPEG-1 plugin
+		strcmp(videoCodecPluginGetGuid(), "DBAECD8B-CF29-4846-AF57-B596427FE7D3") == 0))  // avcodec MPEG-2 plugin
+	{
 		return CodecFamilyXVCD;
-	if (currentCodecType == CodecVCD || currentCodecType == CodecSVCD || currentCodecType == CodecDVD || currentCodecType == CodecRequant)
+	}
+	else if (currentCodecType == CodecExternal && (
+		strcmp(videoCodecPluginGetGuid(), "056FE919-C1D3-4450-A812-A767EAB07786") == 0 || // mpeg2enc MPEG-1 plugin
+		strcmp(videoCodecPluginGetGuid(), "C16E9CCE-D9B3-4fbe-B0C5-8B1BEBF2178E") == 0))  // mpeg2enc MPEG-2 plugin
+	{
 		return CodecFamilyMpeg;
+	}
 
 	return CodecFamilyAVI;
 }
@@ -191,56 +191,6 @@ int videoCodecConfigureAVI(char *cmdString, uint32_t optSize, uint8_t * opt)
 		{
 			compmode = COMPRESS_SAME;
 			aprintf ("Follow mode\n");
-		}
-
-		// search for other options
-		if (!strcasecmp (cs, "mbr"))
-		{
-			compmode = NO_COMPRESSION_MODE;
-			iparam = (iparam * 1000) >> 3;
-
-			switch (currentCodecType)
-			{
-			case CodecSVCD:
-				SVCDExtra.maxBitrate = (int) iparam;
-				break;
-			case CodecDVD:
-				DVDExtra.maxBitrate = (int) iparam;
-				break;
-			default:
-				break;
-			}
-		}
-
-		if (!strcasecmp (cs, "matrix"))
-		{
-			compmode = NO_COMPRESSION_MODE;
-
-			switch (currentCodecType)
-			{
-			case CodecSVCD:
-				SVCDExtra.user_matrix = (int) iparam;
-				break;
-			case CodecDVD:
-				DVDExtra.user_matrix = (int) iparam;
-				break;
-			default:
-				break;
-			}
-		}
-
-		if (!strcmp (cs, "ws"))
-		{
-			switch (currentCodecType)
-			{
-			case CodecDVD:
-				DVDExtra.widescreen = 1;
-			case CodecSVCD:
-				SVCDExtra.widescreen = 1;
-				break;
-			default:
-				break;
-			}
 		}
 
 		if (compmode == UNSET_COMPRESSION_MODE)
@@ -365,6 +315,16 @@ int videoCodecSelectByName(const char *name)
 
 int videoCodecPluginSelectByGuid(const char *guid)
 {
+	int index = videoCodecPluginGetIndexByGuid(guid);
+
+	if (index != -1)
+		videoCodecSetCodec(index);
+
+	return (index != -1);
+}
+
+int videoCodecPluginGetIndexByGuid(const char *guid)
+{
 	int encoderCount = encoderGetEncoderCount();
 
 	for (int i = 0; i < encoderCount; i++)
@@ -377,14 +337,13 @@ int videoCodecPluginSelectByGuid(const char *guid)
 			if (strcmp(encoderGuid, guid) == 0)
 			{
 				printf ("Codec plugin %s (%s) found\n", plugin->getEncoderName(plugin->encoderId), encoderGuid);
-				videoCodecSetCodec(i);
-
-				return 1;
+				
+				return i;
 			}
 		}
 	}
 
-	return 0;
+	return -1;
 }
 
 const char* videoCodecPluginGetGuid(void)
@@ -582,7 +541,7 @@ void setVideoEncoderSettings(COMPRESSION_MODE mode, uint32_t param, uint32_t ext
 	}
 }
 
-Encoder *getVideoEncoder(uint32_t w, uint32_t h, uint32_t globalHeaderFlag)
+Encoder *getVideoEncoder(uint32_t globalHeaderFlag)
 {
 	Encoder *e = NULL;
 	COMPRES_PARAMS *desc=getCodecParamFromTag(currentCodecType);
@@ -595,40 +554,6 @@ Encoder *getVideoEncoder(uint32_t w, uint32_t h, uint32_t globalHeaderFlag)
 	case CodecYV12:
 		e = new EncoderYV12 ();
 		break;
-	case CodecFF:
-		e = new EncoderFFMPEG (FF_MPEG4, desc);
-		break;
-	case CodecMjpeg:
-		e = new EncoderMjpeg (desc);
-		break;
-	case CodecFLV1:
-		e = new EncoderFFMPEGFLV1 (desc);
-		break;
-	case CodecH263:
-		if (!((w == 128) && (h == 96)) && !((w == 176) && (h == 144)))
-		{
-			GUI_Error_HIG (QT_TR_NOOP("Only QCIF and subQCIF are allowed for H.263"), NULL);
-			return 0;
-		}
-
-		e = new EncoderFFMPEG (FF_H263, desc);
-		break;
-	case CodecXVCD:
-		e=new EncoderFFMPEGMpeg1(FF_MPEG1, desc);
-		printf("\n Using ffmpeg mpeg1 encoder\n");
-		break;
-	case CodecXSVCD:
-		e=new EncoderFFMPEGMpeg1(FF_MPEG2, desc);
-		printf("\n Using ffmpeg mpeg2 encoder\n");
-		break;
-	case CodecXDVD:
-		e=new EncoderFFMPEGMpeg1(FF_MPEG2, desc);
-		printf("\n Using ffmpeg mpeg2 encoder (DVD)\n");
-		break;
-	case CodecDVD:
-		e=new EncoderMpeg2enc(MPEG2ENC_DVD, desc);
-		printf("\n Using mpeg2enc encoder (DVD)\n");
-		break;
 	case CodecRequant:
 		if(!isMpeg12Compatible(avifileinfo->fcc))
 		{
@@ -639,14 +564,6 @@ Encoder *getVideoEncoder(uint32_t w, uint32_t h, uint32_t globalHeaderFlag)
 		e=new EncoderRequant(desc);
 
 		printf("\n Using mpeg2 requant\n");
-		break;
-	case CodecSVCD:
-		e=new EncoderMpeg2enc(MPEG2ENC_SVCD, desc);
-		printf("\n Using mpeg2enc encoder (SVCD)\n");
-		break;
-	case CodecVCD:
-		e=new EncoderMpeg2enc(MPEG2ENC_VCD, desc);
-		printf("\n Using mpeg2enc encoder (VCD)\n");
 		break;
 	case CodecExternal:
 		e = new externalEncoder(&AllVideoCodec[currentCodecIndex], globalHeaderFlag);

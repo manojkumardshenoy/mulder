@@ -30,7 +30,7 @@
 
 #include "xvidOptions.h"
 
-XvidOptions::XvidOptions(void) : PluginOptions(PLUGIN_CONFIG_DIR, "Xvid", "XvidParam.xsd", DEFAULT_ENCODE_MODE, DEFAULT_ENCODE_MODE_PARAMETER)
+XvidOptions::XvidOptions(void) : PluginOptions(PLUGIN_CONFIG_DIR, "Xvid", "xvid/XvidParam.xsd", DEFAULT_ENCODE_MODE, DEFAULT_ENCODE_MODE_PARAMETER)
 {
 	reset();
 }
@@ -730,7 +730,7 @@ void XvidOptions::addOptionsToXml(xmlNodePtr xmlNodeRoot)
 {
 	const int bufferSize = 100;
 	xmlChar xmlBuffer[bufferSize + 1];
-	xmlNodePtr xmlNodeChild, xmlNodeChild2;
+	xmlNodePtr xmlNodeChild;
 
 	xmlNodeRoot = xmlNewChild(xmlNodeRoot, NULL, (xmlChar*)getOptionsTagRoot(), NULL);
 	xmlNewChild(xmlNodeRoot, NULL, (xmlChar*)"threads", number2String(xmlBuffer, bufferSize, getThreads()));

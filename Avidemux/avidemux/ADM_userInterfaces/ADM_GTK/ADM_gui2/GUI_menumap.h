@@ -18,7 +18,6 @@ CALLBACK( open_video1         			,ACT_OpenAvi);
 CALLBACK( append_video1     			,ACT_AppendAvi);
 CALLBACK( save_audio1         			,ACT_SaveWave);
 CALLBACK( save_as_avi1       			,ACT_SaveAvi);
-CALLBACK(avi_muxer_options1 			,ACT_SetMuxParam);
 
 //CALLBACK(load_project         			,ACT_OpenAvi); 
 CALLBACK(save_project_as1              		,ACT_SaveWork);
@@ -89,14 +88,6 @@ CALLBACK(sidebar1                              ,ACT_ViewSide);
 //CALLBACK(preview1                              ,ACT_PreviewToggle);
 //CALLBACK(display_output1                       ,ACT_OutputToggle);
 CALLBACK(second_audio_track1                   ,ACT_SecondAudioTrack);
-
-CALLBACK(vcd1                                   ,ACT_AUTO_VCD);
-CALLBACK(svcd1                                  ,ACT_AUTO_SVCD);
-CALLBACK(dvd1                                   ,ACT_AUTO_DVD);
-CALLBACK(psp1                                   ,ACT_AUTO_PSP);
-CALLBACK(psp__h264_1,                           ACT_AUTO_PSP_H264);
-CALLBACK(flv1,                                  ACT_AUTO_FLV);
-CALLBACK(Ipod,                                  ACT_AUTO_IPOD);
 
 CALLBACK(add_to_joblist1                       ,ACT_ADD_JOB);
 CALLBACK(joblist1                              ,ACT_HANDLE_JOB);

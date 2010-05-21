@@ -52,10 +52,8 @@
 		int _currentPass, _passCount;
 		bool _opened, _openPass;
 
-#if X264_BUILD < 76
 		uint8_t *_seiUserData;
 		uint32_t _seiUserDataLen;
-#endif
 
 		uint8_t *_extraData;
 		int _extraDataSize;
@@ -64,6 +62,7 @@
 		void printCqm(const uint8_t cqm[], int size);
 		void updateEncodeParameters(vidEncVideoProperties *properties);
 		unsigned int calculateBitrate(unsigned int fpsNum, unsigned int fpsDen, unsigned int frameCount, unsigned int sizeInMb);
+		int encodeNals(uint8_t *buf, int size, x264_nal_t *nals, int nnal, bool skipSei);
 		bool createHeader(void);
 
 	public:
@@ -73,7 +72,7 @@
 		int isConfigurable(void);
 		int configure(vidEncConfigParameters *configParameters, vidEncVideoProperties *properties);
 		int getOptions(vidEncOptions *encodeOptions, char *pluginOptions, int bufferSize);
-		int setOptions(vidEncOptions *encodeOptions, char *pluginOptions);
+		int setOptions(vidEncOptions *encodeOptions, const char *pluginOptions);
 		int getCurrentPass(void);
 		int getPassCount(void);
 		int open(vidEncVideoProperties *properties);
@@ -87,11 +86,13 @@
 	int x264Encoder_isConfigurable(void);
 	int x264Encoder_configure(vidEncConfigParameters *configParameters, vidEncVideoProperties *properties);
 	int x264Encoder_getOptions(vidEncOptions *encodeOptions, char *pluginOptions, int bufferSize);
-	int x264Encoder_setOptions(vidEncOptions *encodeOptions, char *pluginOptions);
+	int x264Encoder_setOptions(vidEncOptions *encodeOptions, const char *pluginOptions);
 	int x264Encoder_getPassCount(void);
 	int x264Encoder_getCurrentPass(void);
 	int x264Encoder_open(vidEncVideoProperties *properties);
-	void x264Encoder_close(void);
+	int x264Encoder_beginPass(vidEncPassParameters *passParameters);
 	int x264Encoder_encodeFrame(vidEncEncodeParameters *encodeParams);
+	int x264Encoder_finishPass(void);
+	void x264Encoder_close(void);
 #endif	// __cplusplus
 #endif	// encoder_h

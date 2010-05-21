@@ -20,19 +20,8 @@
 typedef enum 
 {
   CodecCopy,
-  CodecFF,
-  CodecMjpeg,
-  CodecH263,
-  CodecH263P,
-  CodecVCD,
-  CodecSVCD,
-  CodecDVD,
-  CodecXVCD,
-  CodecXSVCD,
-  CodecXDVD,
   CodecYV12,
   CodecRequant,
-  CodecFLV1,
   CodecExternal,
   CodecDummy
 }SelectCodecType;

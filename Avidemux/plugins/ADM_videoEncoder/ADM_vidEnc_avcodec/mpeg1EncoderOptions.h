@@ -18,38 +18,38 @@
 #define mpeg1EncoderOptions_h
 
 #include <vector>
-#include "../common/PluginOptions.h"
+#include "PluginOptions.h"
 
 extern "C"
 {
 #include "ADM_vidEnc_plugin.h"
 }
 
-#define DEFAULT_ENCODE_MODE ADM_VIDENC_MODE_CQP
-#define DEFAULT_ENCODE_MODE_PARAMETER 4
+#define MPEG1_DEFAULT_ENCODE_MODE ADM_VIDENC_MODE_CQP
+#define MPEG1_DEFAULT_ENCODE_MODE_PARAMETER 4
 
 typedef enum
 {
-	INTERLACED_NONE,
-	INTERLACED_BFF,
-	INTERLACED_TFF
-} InterlacedMode;
+	MPEG1_INTERLACED_NONE,
+	MPEG1_INTERLACED_BFF,
+	MPEG1_INTERLACED_TFF
+} Mpeg1InterlacedMode;
 
 typedef enum
 {
-	MATRIX_DEFAULT,
-	MATRIX_TMPGENC,
-	MATRIX_ANIME,
-	MATRIX_KVCD
-} MatrixMode;
+	MPEG1_MATRIX_DEFAULT,
+	MPEG1_MATRIX_TMPGENC,
+	MPEG1_MATRIX_ANIME,
+	MPEG1_MATRIX_KVCD
+} Mpeg1MatrixMode;
 
 class Mpeg1EncoderOptions : public PluginOptions
 {
 protected:
 	unsigned int _minBitrate, _maxBitrate, _bufferSize, _gopSize;
 	bool _xvidRateControl, _widescreen;
-	InterlacedMode _interlaced;
-	MatrixMode _matrix;
+	Mpeg1InterlacedMode _interlaced;
+	Mpeg1MatrixMode _matrix;
 
 	void addOptionsToXml(xmlNodePtr xmlNodeRoot);
 	void parseOptions(xmlNode *node);
@@ -73,11 +73,11 @@ public:
 	bool getWidescreen(void);
 	void setWidescreen(bool widescreen);
 
-	InterlacedMode getInterlaced(void);
-	void setInterlaced(InterlacedMode interlaced);
+	Mpeg1InterlacedMode getInterlaced(void);
+	void setInterlaced(Mpeg1InterlacedMode interlaced);
 
-	MatrixMode getMatrix(void);
-	void setMatrix(MatrixMode matrix);
+	Mpeg1MatrixMode getMatrix(void);
+	void setMatrix(Mpeg1MatrixMode matrix);
 
 	unsigned int getGopSize(void);
 	void setGopSize(unsigned int gopSize);

@@ -33,7 +33,7 @@ extern "C"
 	int XvidEncoder_isConfigurable(void) { return encoder.isConfigurable(); }
 	int XvidEncoder_configure(vidEncConfigParameters *configParameters, vidEncVideoProperties *properties) { return encoder.configure(configParameters, properties); }
 	int XvidEncoder_getOptions(vidEncOptions *encodeOptions, char *pluginOptions, int bufferSize) { return encoder.getOptions(encodeOptions, pluginOptions, bufferSize); };
-	int XvidEncoder_setOptions(vidEncOptions *encodeOptions, char *pluginOptions) { return encoder.setOptions(encodeOptions, pluginOptions); };
+	int XvidEncoder_setOptions(vidEncOptions *encodeOptions, const char *pluginOptions) { return encoder.setOptions(encodeOptions, pluginOptions); };
 	int XvidEncoder_getPassCount(void) { return encoder.getPassCount(); }
 	int XvidEncoder_getCurrentPass(void) { return encoder.getCurrentPass(); }
 	int XvidEncoder_open(vidEncVideoProperties *properties) { return encoder.open(properties); }
@@ -150,14 +150,16 @@ int XvidEncoder::configure(vidEncConfigParameters *configParameters, vidEncVideo
 	}
 
 	if (_loader->isAvailable())
+	{
 		if (_loader->showXvidConfigDialog(configParameters, properties, &_encodeOptions, &_options))
 		{
 			updateEncodeParameters(NULL);
 
 			return 1;
 		}
-	else
-		return 0;
+	}
+
+	return 0;
 }
 
 int XvidEncoder::getOptions(vidEncOptions *encodeOptions, char *pluginOptions, int bufferSize)
@@ -178,7 +180,7 @@ int XvidEncoder::getOptions(vidEncOptions *encodeOptions, char *pluginOptions, i
 	return xmlLength;
 }
 
-int XvidEncoder::setOptions(vidEncOptions *encodeOptions, char *pluginOptions)
+int XvidEncoder::setOptions(vidEncOptions *encodeOptions, const char *pluginOptions)
 {
 	if (_opened)
 		return ADM_VIDENC_ERR_ALREADY_OPEN;
@@ -221,7 +223,7 @@ int XvidEncoder::open(vidEncVideoProperties *properties)
 
 	_opened = true;
 	_currentPass = 0;
-	_bufferSize = (properties->width * properties->height) + 2 * ((properties->width + 1 >> 1) * (properties->height + 1 >> 1));
+	_bufferSize = (properties->width * properties->height) + 2 * (((properties->width + 1) >> 1) * ((properties->height + 1) >> 1));
 	_buffer = new uint8_t[_bufferSize];
 
 	memcpy(&_properties, properties, sizeof(vidEncVideoProperties));
@@ -393,6 +395,8 @@ int XvidEncoder::finishPass(void)
 		xvid_encore(_xvid_enc_create.handle, XVID_ENC_DESTROY, NULL, NULL);
 		_xvid_enc_create.handle = NULL;
 	}
+
+	return ADM_VIDENC_ERR_SUCCESS;
 }
 
 void XvidEncoder::close(void)
