@@ -18,7 +18,7 @@ quiet=yes
 
 ## You can use the DirectX or OpenGL video output, default is directx.
 #vo=directx
-#vo=gl2
+vo=gl
 
 ## video filtering and postprocessing
 ## eq is useful if your video card does not support video overlay.
@@ -26,8 +26,8 @@ quiet=yes
 #vf=eq,pp=lb/hb/vb
 
 ## Fontconfig
-#fontconfig=yes
-#font=Arial
+fontconfig=yes
+font=Arial
 
 ## Multithreads
 lavdopts=threads=2

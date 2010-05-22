@@ -174,17 +174,18 @@ Section
   Delete "$APPDATA\mplayer\config"
   Delete "$APPDATA\mplayer\*.conf"
   Delete "$APPDATA\fontconfig\cache\*.*"
+  Delete "$APPDATA\MPlayer\*.*"
 
   Delete "$LOCALAPPDATA\mplayer\config"
   Delete "$LOCALAPPDATA\mplayer\*.conf"
   Delete "$LOCALAPPDATA\fontconfig\cache\*.*"
+  Delete "$LOCALAPPDATA\MPlayer\*.*"
   
   Delete "$PROFILE\.smplayer\smplayer.ini"
   Delete "$PROFILE\.smplayer\styles.ass"
   Delete "$PROFILE\.smplayer\tv.m3u8"
   Delete "$PROFILE\.smplayer\radio.m3u8"
-  Delete "$PROFILE\mplayer\config"
-  Delete "$PROFILE\mplayer\*.conf"
+  Delete "$PROFILE\mplayer\*.*"
   Delete "$PROFILE\fontconfig\cache\*.*"
 
   ; -------------------------------------------------------------------
@@ -235,12 +236,15 @@ Section
   !insertmacro SetPreference "use_scaletempo" "0"
   !insertmacro SetPreference "osd" "1"
   !insertmacro SetPreference "use_soft_vol" "false"
+  !insertmacro SetPreference "autosync" "true"
+  !insertmacro SetPreference "autosync_factor" "100"
 
   ; -------------------------------------------------------------------
 
   StrCpy $0 "${Version_MPlayer}" 5 5
   !insertmacro SetMPlayer "mplayer_detected_version" "$0"
   !insertmacro SetMPlayer "mplayer_user_supplied_version" "$0"
+  !insertmacro SetMPlayer "mplayer_detected_version" "0"
   
   ; -------------------------------------------------------------------
 
