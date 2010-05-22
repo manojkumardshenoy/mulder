@@ -76,7 +76,10 @@ LangString BuildLatest ${LANG_ENGLISH} "The latest build available is:"
 LangString BuildLatest ${LANG_GERMAN} "Das neuste verfügbare Build ist:"
 
 LangString UpdateReminder ${LANG_ENGLISH} "Your version of 'MPlayer for Windows' might be outdated!$\nDo you want to check for new updates online now? (Recommended)"
-LangString UpdateReminder ${LANG_GERMAN} "Ihre Version von 'MPlayer für Windows' könnte veraltet sein!$\nMöchten Sie jetzt online nach neuen  Updates suchen? (Empfohlen)"
+LangString UpdateReminder ${LANG_GERMAN} "Ihre Version von 'MPlayer für Windows' könnte veraltet sein!$\nMöchten Sie jetzt online nach neuen Updates suchen? (Empfohlen)"
+
+LangString UpdateReminderAgain ${LANG_ENGLISH} "Update check was skipped!$\nDo you want to be reminded of the update on the next system startup?"
+LangString UpdateReminderAgain ${LANG_GERMAN} "Updateprüfung übersprungen!$\nWollen Sie beim nächten Systemstart an das Update erinnert werden?"
 
 LangString SigInvalid ${LANG_ENGLISH} "Signature seems to be invalid. Download may be malicious. Aborting!"
 LangString SigInvalid ${LANG_GERMAN} "Die Signatur ist ungültig. Der Download könnte bösartig sein. Abbruch!"
@@ -229,7 +232,7 @@ Function .onInit
   
   CheckUpdateRequired:
   MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_YESNO "$(UpdateReminder)" IDYES NoAutoTask
-  IntOp $0 $0 - 13
+  MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_YESNO "$(UpdateReminderAgain)" IDYES +2
   WriteRegDWORD HKCU "${MPlayer_RegPath}" "LastUpdateCheck" $0
   Quit
   

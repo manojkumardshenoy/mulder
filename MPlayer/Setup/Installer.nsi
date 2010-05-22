@@ -1351,6 +1351,7 @@ SectionEnd
     StrCpy $R0 "${Version_MPlayer}" 5 5
     WriteINIStr "$INSTDIR\smplayer.ini" "mplayer_info" "mplayer_detected_version" "$R0"
     WriteINIStr "$INSTDIR\smplayer.ini" "mplayer_info" "mplayer_user_supplied_version" "$R0"
+    WriteINIStr "$INSTDIR\smplayer.ini" "mplayer_info" "mplayer_detected_version" "0"
   SectionEnd
 
   ; ---------------------------------------

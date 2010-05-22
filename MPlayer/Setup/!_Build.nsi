@@ -4,10 +4,10 @@
 ; // Developed and tested with NSIS v2.46
 ; ////////////////////////////////////////////////////////////////
 
-!define BUILD_NO "72"
-!define COMPILE_DATE "2010-02-26"
-!define VER_MPLAYER "SVN-r30725 (2010-02-25)"
-!define VER_SMPLAYER "v0.6.8 (SVN-r3439)"
+!define BUILD_NO "79"
+!define COMPILE_DATE "2010-05-22"
+!define VER_MPLAYER "SVN-r31170 (2010-05-13)"
+!define VER_SMPLAYER "v0.6.9 (SVN-r3532)"
 !define VER_MPUI "v1.2-pre3 (Build 38)"
 !define VER_NSIS "v2.46"
 !define VER_CODECS "(2007-10-07)"
@@ -29,6 +29,13 @@ OutFile "${Path_Out}\Dummy.exe"
 Section
   ExecShell explore "$EXEDIR"
 SectionEnd
+
+; ----------------------------------------------------------------------------------------------
+
+!system '"${PATH_BUILDS}\rtm\mplayer.exe" -vo gl "installer\sample.avi"' = 0
+!system '"${PATH_BUILDS}\athlon\mplayer.exe" -vo gl "installer\sample.avi"' = 0
+!system '"${PATH_BUILDS}\p3\mplayer.exe" -vo gl "installer\sample.avi"' = 0
+!system '"${PATH_BUILDS}\p4\mplayer.exe" -vo gl "installer\sample.avi"' = 0
 
 ; ----------------------------------------------------------------------------------------------
 

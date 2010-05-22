@@ -1,3 +1,23 @@
+[2010-05-22]
+* MPlayer binaries updated to SVN-r31170
+* SMPlayer updated to Version 0.6.9 (SVN-r3532)
+
+[2010-04-16]
+* MPlayer binaries updated to SVN-r31027
+* SMPlayer updated to Version 0.6.9 (SVN-r3488)
+
+[2010-03-23]
+* MPlayer binaries updated to SVN-r30945
+* SMPlayer updated to Version 0.6.8 (SVN-r3478)
+
+[2010-03-17]
+* MPlayer binaries updated to SVN-r30886
+
+[2010-03-02]
+* MPlayer binaries updated to SVN-r30815
+* SMPlayer updated to Version 0.6.8 (SVN-r3468)
+* "Generic" (RTM) build is up-to-date again
+
 [2010-02-26]
 * MPlayer binaries updated to SVN-r30725
 * Reverted the "Generic" (RTM) build to SVN-r30521
