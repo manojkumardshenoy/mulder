@@ -43,7 +43,7 @@ function TWavpackDecoder.DecodeFile(const Input: String; const Output: String; c
 var
   cmd: String;
 begin
-  cmd := '"' + ExeFile.Location + '" -y';
+  cmd := '"' + ExeFile.Location + '" -y -w';
   cmd := cmd + ' "' + Input + '"';
   cmd := cmd + ' "' + Output + '"';
 
