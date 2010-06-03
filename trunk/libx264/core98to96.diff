@@ -1,0 +1,73 @@
+diff --git a/encoder/encoder.c b/encoder/encoder.c
+index 9b2914e..1097b20 100644
+--- a/encoder/encoder.c
++++ b/encoder/encoder.c
+@@ -2250,14 +2250,14 @@ int     x264_encoder_encode( x264_t *h,
+ 
+         if( h->param.rc.b_mb_tree && h->param.rc.b_stat_read )
+         {
+-            if( x264_macroblock_tree_read( h, fenc, pic_in->prop.quant_offsets ) )
++            if( x264_macroblock_tree_read( h, fenc, /*pic_in->prop.quant_offsets*/ NULL ) )
+                 return -1;
+         }
+         else
+-            x264_adaptive_quant_frame( h, fenc, pic_in->prop.quant_offsets );
++            x264_adaptive_quant_frame( h, fenc, /*pic_in->prop.quant_offsets*/ NULL );
+ 
+-        if( pic_in->prop.quant_offsets_free )
+-            pic_in->prop.quant_offsets_free( pic_in->prop.quant_offsets );
++        /* if( pic_in->prop.quant_offsets_free )
++            pic_in->prop.quant_offsets_free( pic_in->prop.quant_offsets ); */
+ 
+         if( h->frames.b_have_lowres )
+             x264_frame_init_lowres( h, fenc );
+diff --git a/x264.h b/x264.h
+index 9cd4600..db0e8fe 100644
+--- a/x264.h
++++ b/x264.h
+@@ -35,7 +35,7 @@
+ 
+ #include <stdarg.h>
+ 
+-#define X264_BUILD 98
++#define X264_BUILD 96
+ 
+ /* x264_t:
+  *      opaque handler for encoder */
+@@ -506,21 +506,21 @@ typedef struct
+     uint8_t *plane[4];   /* Pointers to each plane */
+ } x264_image_t;
+ 
+-typedef struct
++/* typedef struct
+ {
+-    /* In: an array of quantizer offsets to be applied to this image during encoding.
++     * In: an array of quantizer offsets to be applied to this image during encoding.
+      *     These are added on top of the decisions made by x264.
+      *     Offsets can be fractional; they are added before QPs are rounded to integer.
+      *     Adaptive quantization must be enabled to use this feature.  Behavior if quant
+      *     offsets differ between encoding passes is undefined.
+      *
+      *     Array contains one offset per macroblock, in raster scan order.  In interlaced
+-     *     mode, top-field MBs and bottom-field MBs are interleaved at the row level. */
++     *     mode, top-field MBs and bottom-field MBs are interleaved at the row level.
+     float *quant_offsets;
+-    /* In: optional callback to free quant_offsets when used.
+-     *     Useful if one wants to use a different quant_offset array for each frame. */
++     * In: optional callback to free quant_offsets when used.
++     *     Useful if one wants to use a different quant_offset array for each frame.
+     void (*quant_offsets_free)( void* );
+-} x264_image_properties_t;
++} x264_image_properties_t; */
+ 
+ typedef struct
+ {
+@@ -554,7 +554,7 @@ typedef struct
+     /* In: raw data */
+     x264_image_t img;
+     /* In: optional information to modify encoder decisions for this frame */
+-    x264_image_properties_t prop;
++    /* x264_image_properties_t prop; */
+     /* Out: HRD timing information. Output only when i_nal_hrd is set. */
+     x264_hrd_t hrd_timing;
+     /* private user data. libx264 doesn't touch this,
