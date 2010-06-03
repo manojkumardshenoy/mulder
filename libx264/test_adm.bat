@@ -2,13 +2,13 @@
 
 REM ----------------------------------------------------------------
 
-set "CoreVersion=94"
+set "CoreVersion=96"
 set "AvidemuxFolder=D:\Avidemux 2.5"
 set "OutputFoldr=%CD%\test"
 
 REM ----------------------------------------------------------------
 if not [%1]==[] goto DO_SOMETHING
-if not [%1]==[] goto DO_SOMETHING
+if not [%2]==[] goto DO_SOMETHING
 REM ----------------------------------------------------------------
 
 for /D %%f in (*.*) do (

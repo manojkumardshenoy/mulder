@@ -1,8 +1,8 @@
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index f73c4d0..1fdab42 100644
+index f946dee..a7bda55 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -883,6 +883,13 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -884,6 +884,13 @@ x264_t *x264_encoder_open( x264_param_t *param )
          h->param.i_scenecut_threshold = 0;
      }
  
@@ -14,5 +14,5 @@ index f73c4d0..1fdab42 100644
 +    }
 +
      /* Apply "fast first-pass" settings */
-     x264_param_apply_fastfirstpass( &h->param );
+     /* x264_param_apply_fastfirstpass( &h->param ); */
  

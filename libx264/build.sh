@@ -3,6 +3,7 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
+DEFAULT_PATCHES="core98to96 amdfam10_fix print_params psy_trellis fast_firstpass"
 COMPILERS_CURRENT="460 451" #450
 COMPILERS_LEGACY="444 345" #443
 CPU_TYPES="i686 core2 amdfam10 pentium3 noasm"
@@ -121,7 +122,7 @@ make_x264() {
     NAME=$3-$NAME
   fi
 
-  PATCHES="core96to94 amdfam10_fix print_params psy_trellis fast_firstpass"
+  PATCHES="$DEFAULT_PATCHES"
   
   if [ "$2" != "noasm" ]; then
     ECFLAGS="-march=$2"
