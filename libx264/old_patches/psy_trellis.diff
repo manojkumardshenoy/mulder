@@ -1,5 +1,5 @@
 diff --git a/common/common.c b/common/common.c
-index 62bef99..2fa61ef 100644
+index 1ba420c..fd4a2b9 100644
 --- a/common/common.c
 +++ b/common/common.c
 @@ -125,7 +125,7 @@ void x264_param_default( x264_param_t *param )
