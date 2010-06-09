@@ -3,9 +3,9 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
-DEFAULT_PATCHES="core98to96 amdfam10_fix print_params psy_trellis fast_firstpass"
-COMPILERS_CURRENT="460 451" #450
-COMPILERS_LEGACY="444 345" #443
+DEFAULT_PATCHES="core98to96 amdfam10_fix print_params dll_version psy_trellis fast_firstpass"
+COMPILERS_CURRENT="460" #450
+COMPILERS_LEGACY="451 444 345" #443
 CPU_TYPES="i686 core2 amdfam10 pentium3 noasm"
 
 ######################################################
@@ -161,7 +161,7 @@ make_x264() {
 
   rm --recursive --force ./x264-$NAME
 
-  if [ -d "./$NAME" ]; then
+  if [ -d "./x264-$NAME" ]; then
     return
   fi
 

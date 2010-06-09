@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 519e181..c75c66d 100644
+index 8074ce5..1684017 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -173,7 +173,7 @@ else
@@ -12,10 +12,10 @@ index 519e181..c75c66d 100644
  	$(foreach V, $(VIDS), $(foreach I, 0 1 2 3 4 5 6 7, ./x264$(EXE) $(OPT$I) --threads 1 $(V) -o $(DEVNULL) ;))
  	rm -f $(SRC2:%.c=%.o)
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 1097b20..92c1eed 100644
+index ae0bae3..f2e7a6b 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -1034,7 +1034,12 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -1041,7 +1041,12 @@ x264_t *x264_encoder_open( x264_param_t *param )
          x264_log( h, X264_LOG_ERROR, "Are you attempting to run an SSE4a-targeted build on a CPU that\n" );
          x264_log( h, X264_LOG_ERROR, "doesn't support it?\n" );
  #endif

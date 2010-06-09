@@ -1,0 +1,49 @@
+diff --git a/x264dll.c b/x264dll.c
+index 2b6524d..6826187 100644
+--- a/x264dll.c
++++ b/x264dll.c
+@@ -21,8 +21,24 @@
+  *****************************************************************************/
+ 
+ #include "common/common.h"
++#include "config.h"
+ #include <windows.h>
+ 
++ALWAYS_INLINE void x264_process_attach_print_version()
++{
++    x264_log( NULL, X264_LOG_INFO, "H.264/MPEG-4 AVC codec - Copyleft 2003-2010 - http://www.videolan.org/x264.html\n" );
++    x264_log( NULL, X264_LOG_INFO, "version: %s\n", X264_POINTVER );
++    x264_log( NULL, X264_LOG_INFO, "built date: %s  (%s)\n", __DATE__, __TIME__ );
++#ifdef __GNUC__
++    x264_log( NULL, X264_LOG_INFO, "compiler: gcc %s\n", __VERSION__ );
++#else
++    x264_log( NULL, X264_LOG_INFO, "compiler: none-gcc\n" );
++#endif
++#ifdef X264_CFLAGS
++    x264_log( NULL, X264_LOG_INFO, "cflags: %s\n", X264_CFLAGS );
++#endif
++}
++
+ /* Callback for our DLL so we can initialize pthread */
+ BOOL WINAPI DllMain( HANDLE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
+ {
+@@ -30,6 +43,7 @@ BOOL WINAPI DllMain( HANDLE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
+     switch( fdwReason )
+     {
+         case DLL_PROCESS_ATTACH:
++            x264_process_attach_print_version();
+             pthread_win32_process_attach_np();
+ 
+         case DLL_THREAD_ATTACH:
+@@ -45,6 +59,11 @@ BOOL WINAPI DllMain( HANDLE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
+             pthread_win32_process_detach_np();
+             break;
+     }
++#else
++    if( fdwReason == DLL_PROCESS_ATTACH )
++    {
++        x264_process_attach_print_version();
++    }
+ #endif
+ 
+     return TRUE;
