@@ -164,7 +164,18 @@ bool parseECMAScript(const char *name)
 	uintN lineno = 0;
 	g_bJSSuccess = 0;
 	printf("Spidermonkey compiling \"%s\"...",name);
-	JSScript *pJSScript = JS_CompileFile(g_pCx, g_pObject, name);
+
+	FILE *file = fopen(name, "r");
+	JSScript *pJSScript = JS_CompileFileHandle(g_pCx, g_pObject, name, file);;
+#warning potential leak here
+/*
+In normal operation the file is closed by 
+JS_CompileFileHandle (jsapi.c:3772)
+JS_CompileFileHandleForPrincipals (jsapi.c:3795)
+CompileTokenStream (jsapi.c:3609)
+js_CloseTokenStream (jsscan.c:322)
+*/
+	/* DOUBLE CLOSE fclose(file); */
 	printf("Done.\n");
 
 	if(pJSScript != NULL)

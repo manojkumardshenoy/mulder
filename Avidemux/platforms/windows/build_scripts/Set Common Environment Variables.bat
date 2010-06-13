@@ -1,5 +1,3 @@
-@echo off
-
 set ProgramFiles32=%ProgramFiles%
 if "%PROCESSOR_ARCHITECTURE%" == "AMD64" for /D %%d in ("%ProgramFiles(x86)%") do set ProgramFiles32=%%~fsd
 set nsisDir=%ProgramFiles32%\NSIS
@@ -79,11 +77,11 @@ if not exist "%nsisDir%" (
 	goto error
 )
 
-set PATH=%PATH%;%cmakeDir%;%mingwDir%\bin;%usrLocalDir%\bin;%msysDir%\bin;%msysDir%\local32\bin;%qtDir%\bin
+set PATH=%cmakeDir%;%mingwDir%\bin;%usrLocalDir%\bin;%msysDir%\bin;%msysDir%\local32\bin;%qtDir%\bin;%PATH%
 
 goto end
 
 :error
-set ERRORLEVEL=1
+exit /b 1
 
 :end

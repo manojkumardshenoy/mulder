@@ -423,9 +423,16 @@
            </layout>
           </item>
           <item>
+           <widget class="QCheckBox" name="fastFirstPassCheckBox" >
+            <property name="text" >
+             <string>Fast First Pass</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QCheckBox" name="mbTreeCheckBox" >
             <property name="text" >
-             <string>Macroblock-Tree Rate Control</string>
+             <string>Macroblock-tree Rate Control</string>
             </property>
            </widget>
           </item>
@@ -524,7 +531,7 @@
               <item>
                <widget class="QRadioButton" name="threadCustomRadioButton" >
                 <property name="text" >
-                 <string>Custom:</string>
+                 <string comment="multithreading" >Custom:</string>
                 </property>
                </widget>
               </item>
@@ -1912,9 +1919,9 @@
              </spacer>
             </item>
             <item>
-             <widget class="QCheckBox" name="scenecutDetectionCheckBox" >
+             <widget class="QCheckBox" name="intraRefreshCheckBox" >
               <property name="text" >
-               <string>Pre-scenecut Detection</string>
+               <string>Periodic Intra Refresh</string>
               </property>
              </widget>
             </item>
@@ -3581,7 +3588,7 @@
             <item row="0" column="0" >
              <widget class="QRadioButton" name="sarCustomRadioButton" >
               <property name="text" >
-               <string>Custom:</string>
+               <string comment="PAR" >Custom:</string>
               </property>
               <property name="checked" >
                <bool>true</bool>
@@ -4237,6 +4244,7 @@
   <tabstop>targetRateControlSpinBox</tabstop>
   <tabstop>quantiserSlider</tabstop>
   <tabstop>quantiserSpinBox</tabstop>
+  <tabstop>fastFirstPassCheckBox</tabstop>
   <tabstop>mbTreeCheckBox</tabstop>
   <tabstop>lookaheadSpinBox</tabstop>
   <tabstop>threadDisableRadioButton</tabstop>
@@ -4278,7 +4286,7 @@
   <tabstop>minGopSizeSpinBox</tabstop>
   <tabstop>maxGopSizeSpinBox</tabstop>
   <tabstop>IFrameThresholdSpinBox</tabstop>
-  <tabstop>scenecutDetectionCheckBox</tabstop>
+  <tabstop>intraRefreshCheckBox</tabstop>
   <tabstop>mixedRefsCheckBox</tabstop>
   <tabstop>chromaMotionEstCheckBox</tabstop>
   <tabstop>trellisCheckBox</tabstop>

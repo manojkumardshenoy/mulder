@@ -12,6 +12,7 @@
  *                                                                         *
  ***************************************************************************/
 #include "config.h"
+#undef QT_TR_NOOP
 
 #include <QtCore/QUrl>
 #include <QtCore/QDir>
@@ -382,9 +383,10 @@ void MainWindow::timeChanged(int)
 void MainWindow::buttonPressed(void)
 {
 	// Receveid a key press Event, look into table..
-	const char *source=qPrintable(sender()->objectName());
-
-	Action action=searchTranslationTable(source);
+    QObject *obj=sender();
+    if(!obj) return;
+    QString me(obj->objectName());
+    Action action=searchTranslationTable(qPrintable(me));
 
 	if(action!=ACT_DUMMY)
 		HandleAction (action);
@@ -627,7 +629,7 @@ void MainWindow::addDirEntryToMenu(QMenu *parentMenu, QString path)
 
 				if (fileList[x].isDir())
 				{
-					menu = parentMenu->addMenu(QDir(fileList[x].filePath()).dirName());
+					menu = parentMenu->addMenu(tr(QDir(fileList[x].filePath()).dirName().toUtf8().constData()));
 
 					addDirEntryToMenu(menu, fileList[x].filePath() + QDir::separator());
 				}
@@ -638,7 +640,7 @@ void MainWindow::addDirEntryToMenu(QMenu *parentMenu, QString path)
 	}
 	else
 	{
-		QAction *action = new QAction(info.completeBaseName(), parentMenu);
+		QAction *action = new QAction(tr(info.completeBaseName().toUtf8().constData()), parentMenu);
 
 		parentMenu->addAction(action);
 		connect(action, SIGNAL(triggered()), this, SLOT(autoMenuHandler()));
@@ -1012,9 +1014,8 @@ void UI_setFrameType( uint32_t frametype,uint32_t qp)
 	default:c='?';break;
 
 	}
-	sprintf(string,QT_TR_NOOP("%c (%02d)"),c,qp);
-	WIDGET(label_8)->setText(QString::fromUtf8(string));
 
+	WIDGET(label_8)->setText(MainWindow::tr("%1 (%2)").arg(c).arg(qp, 2, 10, QLatin1Char('0')));
 }
 
 /**

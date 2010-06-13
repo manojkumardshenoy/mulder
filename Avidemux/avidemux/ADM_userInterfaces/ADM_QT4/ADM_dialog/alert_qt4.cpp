@@ -29,7 +29,7 @@ namespace ADM_Qt4CoreUIToolkit
 void            GUI_Alert(const char *alertstring)
 {
     QMessageBox::StandardButton reply;
-              reply = QMessageBox::critical(qtLastRegisteredDialog(), QString::fromUtf8(QT_TR_NOOP("Alert")),
+              reply = QMessageBox::critical(qtLastRegisteredDialog(), QObject::tr("Alert"),
                                         QString::fromUtf8(alertstring),
                                         QMessageBox::Ok );
 }
@@ -37,7 +37,7 @@ void            GUI_Alert(const char *alertstring)
 void            GUI_Info(const char *alertstring)
 {
     QMessageBox::StandardButton reply;
-              reply = QMessageBox::information(qtLastRegisteredDialog(), QString::fromUtf8(QT_TR_NOOP("Info")),
+              reply = QMessageBox::information(qtLastRegisteredDialog(), QObject::tr("Info"),
                                         QString::fromUtf8(alertstring),
                                         QMessageBox::Ok );
 }
@@ -66,7 +66,7 @@ void GUI_Info_HIG(const ADM_LOG_LEVEL level,const char *primary, const char *sec
 
 	QMessageBox::StandardButton reply;
 
-	reply = QMessageBox::information(qtLastRegisteredDialog(), QString::fromUtf8(QT_TR_NOOP("Info")),
+	reply = QMessageBox::information(qtLastRegisteredDialog(), QObject::tr("Info"),
 		alertString, QMessageBox::Ok);
 }
 //****************************************************************************************************
@@ -93,7 +93,7 @@ void GUI_Error_HIG(const char *primary, const char *secondary_format)
 
 	QMessageBox::StandardButton reply;
 
-	reply = QMessageBox::critical(qtLastRegisteredDialog(), QString::fromUtf8(QT_TR_NOOP("Info")),
+	reply = QMessageBox::critical(qtLastRegisteredDialog(), QObject::tr("Info"),
 		alertString, QMessageBox::Ok);
 }
 //****************************************************************************************************
@@ -117,7 +117,7 @@ int GUI_Confirmation_HIG(const char *button_confirm, const char *primary, const 
 
 	QMessageBox::StandardButton reply;
 
-	reply = QMessageBox::question(qtLastRegisteredDialog(), QString::fromUtf8(QT_TR_NOOP("Confirmation")),
+	reply = QMessageBox::question(qtLastRegisteredDialog(), QObject::tr("Confirmation"),
 		alertString, QMessageBox::Yes | QMessageBox::No);
 
 	if (reply == QMessageBox::Yes)
@@ -147,7 +147,7 @@ int GUI_YesNo(const char *primary, const char *secondary_format)
 
 	QMessageBox::StandardButton reply;
 
-	reply = QMessageBox::question(qtLastRegisteredDialog(), QString::fromUtf8(QT_TR_NOOP("Confirmation")),
+	reply = QMessageBox::question(qtLastRegisteredDialog(), QObject::tr("Confirmation"),
 		alertString, QMessageBox::Yes | QMessageBox::No);
 
 	if (reply == QMessageBox::Yes)
@@ -164,7 +164,7 @@ int             GUI_Question(const char *alertstring)
                       printf("Question: %s\n", alertstring);
                       return 0;
               }
-          reply = QMessageBox::question(qtLastRegisteredDialog(), QString::fromUtf8(QT_TR_NOOP("Question")),
+          reply = QMessageBox::question(qtLastRegisteredDialog(), QObject::tr("Question"),
                                     QString::fromUtf8(alertstring),
                                     QMessageBox::Yes | QMessageBox::No );
           if(reply==QMessageBox::Yes) return 1;
@@ -185,14 +185,14 @@ int      GUI_Alternate(char *title,char *choice1,char *choice2)
 
 	QMessageBox box(qtLastRegisteredDialog());
 
-	box.setWindowTitle(QString::fromUtf8(QT_TR_NOOP("Question ?")));
+	box.setWindowTitle(QObject::tr("Question?"));
 	box.addButton(QString::fromUtf8(choice1),QMessageBox::YesRole);
 	box.addButton(QString::fromUtf8(choice2),QMessageBox::NoRole);
 
 	if (title)
 		box.setText(QString::fromUtf8(title));
 	else
-		box.setText(QString::fromUtf8(QT_TR_NOOP("Question")));
+		box.setText(QObject::tr("Question"));
 
 	box.setIcon(QMessageBox::Question);
 

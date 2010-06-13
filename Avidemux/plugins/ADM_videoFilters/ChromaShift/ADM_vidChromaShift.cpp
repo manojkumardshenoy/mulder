@@ -16,12 +16,12 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+
 #include "DIA_flyDialog.h"
 #include "ADM_videoFilterDynamic.h"
-
 #include "ADM_vidChromaShift.h"
-
-
+#undef QT_TR_NOOP
+#include "ADM_plugin_translate.h"
 
 static FILTER_PARAM cshiftParam={2,{"u","v"}};
 /*
