@@ -25,8 +25,10 @@
 
 #include "DIA_flyDialog.h"
 #include "ADM_videoFilterDynamic.h"
-
 #include "ADM_vidASharp_param.h"
+#undef QT_TR_NOOP
+#include "ADM_plugin_translate.h"
+
 class ASharp : public AVDMGenericVideoStream
 {
 private:

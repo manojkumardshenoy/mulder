@@ -23,8 +23,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "config.h"
 #include <vector>
+#include <QtCore/QObject>
 
 #include "Q_mainfilter.h"
 #include "ADM_default.h"
@@ -494,7 +494,7 @@ void filtermainWindow::partial( bool b)
         conf = videofilters[itag].conf;
         if (videofilters[itag].tag == VF_PARTIAL_FILTER)	// cannot recurse
         {
-            GUI_Error_HIG (QT_TR_NOOP("The filter is already partial"), NULL);
+            GUI_Error_HIG (filtermainWindow::tr("The filter is already partial").toUtf8().constData(), NULL);
             return;
         }
 
@@ -531,11 +531,7 @@ void filtermainWindow::loadScript(bool)
 
 	closePreview();
 
-#ifdef USE_LIBXML2
-	GUI_FileSelRead (QT_TR_NOOP("Load set of filters"), filterLoadXml);
-#else
-	GUI_FileSelRead (QT_TR_NOOP("Load set of filters"), filterLoad);
-#endif
+	GUI_FileSelRead (filtermainWindow::tr("Load set of filters").toUtf8().constData(), filterLoadXml);
 
 	getFirstVideoFilter ();
 	buildActiveFilterList ();
@@ -549,14 +545,10 @@ void filtermainWindow::saveScript(bool)
 {
 	if (nb_active_filter < 2)
 	{
-		GUI_Error_HIG (QT_TR_NOOP("Nothing to save"), NULL);
+		GUI_Error_HIG (filtermainWindow::tr("Nothing to save").toUtf8().constData(), NULL);
 	}
 	else
-#ifdef USE_LIBXML2
-		GUI_FileSelWrite(QT_TR_NOOP("Save set of filters"), filterSaveXml);
-#else
-		GUI_FileSelWrite(QT_TR_NOOP("Save set of filters"), filterSave);
-#endif
+		GUI_FileSelWrite(filtermainWindow::tr("Save set of filters").toUtf8().constData(), filterSaveXml);
 }
 
 /**
@@ -640,9 +632,29 @@ filtermainWindow::filtermainWindow(QWidget* parent) : QDialog(parent)
 	activeList->setItemDelegate(new FilterItemDelegate(activeList));
 	availableList->setItemDelegate(new FilterItemDelegate(availableList));
 
+    //____________________
+    //  Context Menu
+    //____________________
+    QAction *add = new  QAction(QString("Add"),this);
+    availableList->setContextMenuPolicy(Qt::ActionsContextMenu);
+    availableList->addAction(add );
+    connect(add,SIGNAL(activated()),this,SLOT(add()));
+
+	//previewFrameIndex = curframe;
+    QAction *remove = new  QAction(QString("Remove"),this);
+    QAction *configure = new  QAction(QString("Configure"),this);
+    activeList->setContextMenuPolicy(Qt::ActionsContextMenu);
+    activeList->addAction(remove);
+    activeList->addAction(configure);
+    connect(remove,SIGNAL(activated()),this,SLOT(remove()));
+    connect(configure,SIGNAL(activated()),this,SLOT(configure()));
+
+
+
     displayFamily(0);
     buildActiveFilterList();
 	setSelected(nb_active_filter - 1);
+
  }
 
 filtermainWindow::~filtermainWindow()
@@ -698,11 +710,36 @@ uint8_t DIA_getPartial(PARTIAL_CONFIG *param,AVDMGenericVideoStream *son,AVDMGen
          uint32_t fmax=previous->getInfo()->nb_frames;
          if(fmax) fmax--;
          
-         diaElemUInteger  start(PX(_start),QT_TR_NOOP("Partial Start Frame:"),0,fmax);
-         diaElemUInteger  end(PX(_end),QT_TR_NOOP("Partial End Frame:"),0,fmax);
-         diaElemButton    button(QT_TR_NOOP("Configure child"), partialCb,params);
+         diaElemUInteger  start(PX(_start),filtermainWindow::tr("Partial Start Frame:").toUtf8().constData(),0,fmax);
+         diaElemUInteger  end(PX(_end),filtermainWindow::tr("Partial End Frame:").toUtf8().constData(),0,fmax);
+         diaElemButton    button(filtermainWindow::tr("Configure child").toUtf8().constData(), partialCb,params);
          
          diaElem *tabs[]={&start,&end,&button};
-        return diaFactoryRun(QT_TR_NOOP("Partial Video Filter"),3,tabs);
+        return diaFactoryRun(filtermainWindow::tr("Partial Video Filter").toUtf8().constData(),3,tabs);
+}
+
+/**
+    \fn    Add
+    \brief Right click on an available filer
+*/
+void filtermainWindow::add(void)
+{
+    add(true);
+}
+/**
+    \fn    Add
+    \brief Right click on an available filer
+*/
+void filtermainWindow::remove(void)
+{
+    remove(true);
+}
+/**
+    \fn    Add
+    \brief Right click on an available filer
+*/
+void filtermainWindow::configure(void)
+{
+    configure(true);
 }
 //EOF

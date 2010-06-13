@@ -18,7 +18,7 @@
  *                                                                         *
  ***************************************************************************/
 #include "config.h"
-
+#include "ADM_default.h"
 
 #ifdef USE_FFMPEG
 extern "C"
@@ -26,7 +26,7 @@ extern "C"
 #include "ADM_lavcodec.h"
 };
 #endif
-#include "ADM_default.h"
+
 #ifdef BIG_ENDIAN
 #undef BIG_ENDIAN
 #endif
@@ -40,6 +40,11 @@ extern "C"
 #ifdef USE_FFMPEG
 #include "ADM_codecs/ADM_ffmp43.h"
 #endif
+
+#ifdef USE_VPX
+#include "ADM_codecs/ADM_vpx.h"
+#endif
+
 
 #include "ADM_assert.h"
 #include "prefs.h"
@@ -224,6 +229,12 @@ getDecoder (uint32_t fcc, uint32_t w, uint32_t h, uint32_t extraLen,
       return (decoders *) (new decoderFFFLV1 (w, h,extraLen, extraData));
     }
 
+#ifdef USE_VPX
+  if (fourCC::check (fcc, (uint8_t *) "VP8 "))
+    {
+      return (decoders *) (new decoderVPX (w, h));
+    }
+#endif
 
 #ifdef USE_FFMPEG
   if (fourCC::check (fcc, (uint8_t *) "H263"))
@@ -389,7 +400,7 @@ if (fourCC::check (fcc, (uint8_t *) "MJPG")
   if (fcc == 0 || fourCC::check(fcc, (uint8_t *) "RGB ") || fourCC::check(fcc, (uint8_t *) "DIB "))
   {
 	  printf ("\n using Rawvideo codec, BPP: %d\n", bpp);
-	  return (decoders *) (new decoderFFRaw(w, h, bpp));
+	  return (decoders *) (new decoderFFRaw(w, h, bpp, extraLen, extraData));
   }
 
   if (isMpeg12Compatible (fcc))

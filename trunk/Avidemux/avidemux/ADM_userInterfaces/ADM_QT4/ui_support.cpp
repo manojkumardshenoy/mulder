@@ -13,7 +13,9 @@
 #include "ADM_inttype.h"
 #include "ADM_files.h"
 #include "ADM_encoder/ADM_pluginLoad.h"
+#include "ADM_translate.h"
 #include "DIA_uiTypes.h"
+
 extern QWidget *QuiMainWindows;
 
 #define MAX_UNLOADED_MSG_LENGTH 400
@@ -34,8 +36,6 @@ static void loadTranslation(QTranslator *qTranslator, QString translation)
 	else
 		printf("FAILED\n");
 }
-
-void initTranslator(void) {}
 
 const char* translate(const char *__domainname, const char *__msgid)
 {
@@ -64,6 +64,11 @@ const char* translate(const char *__domainname, const char *__msgid)
 	return map->value(msgid);
 }
 
+void initTranslator(void)
+{
+	ADM_translateInit(translate);
+}
+
 #define HIDE_STRING_FROM_QT(domainname, msgid)  QApplication::translate(domainname, msgid) // to hide string from lupdate so a true test can be conducted
 
 void loadTranslator(void)
@@ -78,8 +83,9 @@ void loadTranslator(void)
 	QString appdir = ADM_getInstallRelativePath("share","avidemux","i18n");
 #endif
 
-	loadTranslation(&qtTranslator, appdir + "qt_" + QLocale::system().name());
 	loadTranslation(&avidemuxTranslator, appdir + "avidemux_" + QLocale::system().name());
+	loadTranslation(&qtTranslator, appdir + "qt_" + QLocale::system().name());
+
 	translatorLoaded = true;
 
 	// Re-translate existing map (to take care of global strings already allocated)
@@ -148,21 +154,21 @@ const char* getNativeRendererDesc(void)
 	switch (paintEngineType)
 	{
 		case QPaintEngine::X11:
-			return QT_TR_NOOP("Qt (X11)");
+			return "Qt (X11)";
 		case QPaintEngine::Windows:
-			return QT_TR_NOOP("Qt (MS Windows GDI)");
+			return "Qt (MS Windows GDI)";
 		case QPaintEngine::CoreGraphics:
-			return QT_TR_NOOP("Qt (Mac OS X Quartz 2D)");
+			return "Qt (Mac OS X Quartz 2D)";
 		case QPaintEngine::QuickDraw:
-			return QT_TR_NOOP("Qt (Mac OS X QuickDraw)");
+			return "Qt (Mac OS X QuickDraw)";
 		case QPaintEngine::OpenGL:
-			return QT_TR_NOOP("Qt (OpenGL)");
+			return "Qt (OpenGL)";
 #if QT_VERSION >= 0x040400
 		case QPaintEngine::Direct3D:
-			return QT_TR_NOOP("Qt (MS Windows Direct3D)");
+			return "Qt (MS Windows Direct3D)";
 #endif
 		case QPaintEngine::Raster:
-			return QT_TR_NOOP("Qt (Default Raster)");
+			return "Qt";
 	}
 
 	return "Qt";

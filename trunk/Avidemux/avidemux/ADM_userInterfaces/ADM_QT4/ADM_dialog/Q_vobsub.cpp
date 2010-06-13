@@ -85,7 +85,7 @@ void Ui_vobsubWindow::idxSel()
 {
 	char fileIdx[1024];
 	
-	if(FileSel_SelectRead(QT_TR_NOOP("Select Idx File"),fileIdx,1023, NULL) && ADM_fileExist(fileIdx))
+	if(FileSel_SelectRead(tr("Select Idx File").toUtf8().constData(),fileIdx,1023, NULL) && ADM_fileExist(fileIdx))
 	{
 		// Set entry
 		ui.lineEditIdx->setText(fileIdx);

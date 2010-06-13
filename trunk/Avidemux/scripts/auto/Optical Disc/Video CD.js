@@ -6,10 +6,10 @@ include("video/filter.js");
 var app = new Avidemux();
 
 if (app.video == null)
-    displayError("A video file must be open to use this Auto Wizard.");
+    displayError(QT_TR_NOOP("A video file must be open to use this Auto Wizard."));
 else
 {
-    var result = videoAutoWizard("Video CD Auto Wizard");
+    var result = videoAutoWizard(QT_TR_NOOP("Video CD Auto Wizard"));
 
     if (result)
     {
@@ -19,9 +19,9 @@ else
         var targetY;
 
         if (getColourEncodingSystem(fps1000) == "NTSC")
-            targetY = 288;
-        else
             targetY = 240;
+        else
+            targetY = 288;
 
         var sourceRatio = result[1][0] + ":" + result[1][1];
         var destinationRatio = result[2][0] + ":" + result[2][1];
@@ -33,7 +33,7 @@ else
         if (app.audio.targetTrackInfo.length > 0)
         {
             if (app.audio.targetTrackInfo[0].codec == "MP2" && app.audio.targetTrackInfo[0].frequency == 44100 && app.audio.targetTrackInfo[0].channelCount == 2)
-                app.video.codec("Copy", "CQ=4", "0 ");
+                app.audio.codec("copy",0,0,"");
             else
             {
                 app.audio.codec("TwoLame", 224, 8, "e0 00 00 00 01 00 00 00 ");

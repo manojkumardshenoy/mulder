@@ -71,6 +71,10 @@ x264ConfigDialog::x264ConfigDialog(vidEncConfigParameters *configParameters, vid
 	connect(ui.targetRateControlSpinBox, SIGNAL(valueChanged(int)), this, SLOT(targetRateControlSpinBox_valueChanged(int)));
 	connect(ui.mbTreeCheckBox, SIGNAL(toggled(bool)), this, SLOT(mbTreeCheckBox_toggled(bool)));
 
+#if X264_BUILD < 86
+	ui.fastFirstPassCheckBox->setVisible(false);
+#endif
+
 	ui.sarAsInputLabel->setText(QString("%1:%2").arg(properties->parWidth).arg(properties->parHeight));
 
 	// Motion Estimation tab
@@ -78,8 +82,6 @@ x264ConfigDialog::x264ConfigDialog(vidEncConfigParameters *configParameters, vid
 	connect(ui.meSpinBox, SIGNAL(valueChanged(int)), this, SLOT(meSpinBox_valueChanged(int)));
 	connect(ui.dct8x8CheckBox, SIGNAL(toggled(bool)), this, SLOT(dct8x8CheckBox_toggled(bool)));
 	connect(ui.p8x8CheckBox, SIGNAL(toggled(bool)), this, SLOT(p8x8CheckBox_toggled(bool)));
-
-	ui.scenecutDetectionCheckBox->setVisible(false);
 
 	// Frame tab
 	connect(ui.loopFilterCheckBox, SIGNAL(toggled(bool)), this, SLOT(loopFilterCheckBox_toggled(bool)));
@@ -161,8 +163,8 @@ void x264ConfigDialog::fillConfigurationComboBox(void)
 		configs.insert(QFileInfo(list[item]).completeBaseName(), PLUGIN_CONFIG_SYSTEM);
 
 	ui.configurationComboBox->clear();
-	ui.configurationComboBox->addItem(QT_TR_NOOP("<default>"), PLUGIN_CONFIG_DEFAULT);
-	ui.configurationComboBox->addItem(QT_TR_NOOP("<custom>"), PLUGIN_CONFIG_CUSTOM);
+	ui.configurationComboBox->addItem(tr("<default>"), PLUGIN_CONFIG_DEFAULT);
+	ui.configurationComboBox->addItem(tr("<custom>"), PLUGIN_CONFIG_CUSTOM);
 
 	QMap<QString, int>::const_iterator mapIterator = configs.constBegin();
 
@@ -289,7 +291,7 @@ void x264ConfigDialog::saveAsButton_pressed(void)
 
 	ADM_mkdir(configDirectory);
 
-	QString configFileName = QFileDialog::getSaveFileName(this, QT_TR_NOOP("Save As"), configDirectory, QT_TR_NOOP("x264 Configuration File (*.xml)"));
+	QString configFileName = QFileDialog::getSaveFileName(this, tr("Save As"), configDirectory, tr("x264 Configuration File (*.xml)"));
 
 	if (!configFileName.isNull())
 	{
@@ -324,7 +326,7 @@ void x264ConfigDialog::deleteButton_pressed(void)
 
 	delete [] configDir;
 
-	if (GUI_Question(QT_TR_NOOP("Are you sure you wish to delete the selected configuration?")) && configFile.exists())
+	if (GUI_Question(tr("Are you sure you wish to delete the selected configuration?").toUtf8().constData()) && configFile.exists())
 	{
 		disableGenericSlots = true;
 		configFile.remove();
@@ -342,26 +344,26 @@ void x264ConfigDialog::encodingModeComboBox_currentIndexChanged(int index)
 	switch (index)
 	{
 		case 0:
-			ui.targetRateControlLabel1->setText(QT_TR_NOOP("Target Bitrate:"));
-			ui.targetRateControlLabel2->setText(QT_TR_NOOP("kbit/s"));
+			ui.targetRateControlLabel1->setText(tr("Target Bitrate:"));
+			ui.targetRateControlLabel2->setText(tr("kbit/s"));
 			ui.targetRateControlSpinBox->setValue(lastBitrate);
 			break;
 		case 1: // Constant Quality - 1 pass
-			ui.quantiserLabel2->setText(QT_TR_NOOP("Quantiser:"));
+			ui.quantiserLabel2->setText(tr("Quantiser:"));
 			enable = true;
 			break;
 		case 2: // Average Quantiser - 1 pass
-			ui.quantiserLabel2->setText(QT_TR_NOOP("Quality:"));
+			ui.quantiserLabel2->setText(tr("Quality:"));
 			enable = true;
 			break;
 		case 3: // Video Size - 2 pass
-			ui.targetRateControlLabel1->setText(QT_TR_NOOP("Target Video Size:"));
-			ui.targetRateControlLabel2->setText(QT_TR_NOOP("MB"));
+			ui.targetRateControlLabel1->setText(tr("Target Video Size:"));
+			ui.targetRateControlLabel2->setText(tr("MB"));
 			ui.targetRateControlSpinBox->setValue(lastVideoSize);
 			break;
 		case 4: // Average Bitrate - 2 pass
-			ui.targetRateControlLabel1->setText(QT_TR_NOOP("Average Bitrate:"));
-			ui.targetRateControlLabel2->setText(QT_TR_NOOP("kbit/s"));
+			ui.targetRateControlLabel1->setText(tr("Average Bitrate:"));
+			ui.targetRateControlLabel2->setText(tr("kbit/s"));
 			ui.targetRateControlSpinBox->setValue(lastBitrate);
 			break;
 	}
@@ -399,7 +401,7 @@ void x264ConfigDialog::mbTreeCheckBox_toggled(bool checked)
 {
 	if (!disableGenericSlots && checked && !ui.aqVarianceCheckBox->isChecked())
 	{
-		if (GUI_Question(QT_TR_NOOP("Macroblock-Tree optimisation requires Variance Adaptive Quantisation to be enabled.  Variance Adaptive Quantisation will automatically be enabled.\n\nDo you wish to continue?")))
+		if (GUI_Question(tr("Macroblock-Tree optimisation requires Variance Adaptive Quantisation to be enabled.  Variance Adaptive Quantisation will automatically be enabled.\n\nDo you wish to continue?").toUtf8().constData()))
 			ui.aqVarianceCheckBox->setChecked(true);
 		else
 			ui.mbTreeCheckBox->setChecked(false);
@@ -446,7 +448,7 @@ void x264ConfigDialog::cabacCheckBox_toggled(bool checked)
 {
 	if (!disableGenericSlots && !checked && ui.trellisCheckBox->isChecked())
 	{
-		if (GUI_Question(QT_TR_NOOP("Trellis optimisation isn't possible without CABAC coding enabled.  Trellis optimisation will automatically be disabled.\n\n Do you wish to continue?")))
+		if (GUI_Question(tr("Trellis optimisation isn't possible without CABAC coding enabled.  Trellis optimisation will automatically be disabled.\n\nDo you wish to continue?").toUtf8().constData()))
 			ui.trellisCheckBox->setChecked(false);
 		else
 			ui.cabacCheckBox->setChecked(true);
@@ -458,7 +460,7 @@ void x264ConfigDialog::trellisCheckBox_toggled(bool checked)
 {
 	if (!disableGenericSlots && checked && !ui.cabacCheckBox->isChecked())
 	{
-		if (GUI_Question(QT_TR_NOOP("Trellis optimisation requires CABAC coding to be enabled.  CABAC coding will automatically be enabled.\n\nDo you wish to continue?")))
+		if (GUI_Question(tr("Trellis optimisation requires CABAC coding to be enabled.  CABAC coding will automatically be enabled.\n\nDo you wish to continue?").toUtf8().constData()))
 			ui.cabacCheckBox->setChecked(true);
 		else
 			ui.trellisCheckBox->setChecked(false);
@@ -481,7 +483,7 @@ void x264ConfigDialog::aqVarianceCheckBox_toggled(bool checked)
 {
 	if (!disableGenericSlots && !checked && ui.mbTreeCheckBox->isChecked())
 	{
-		if (GUI_Question(QT_TR_NOOP("Macroblock-Tree optimisation requires Variance Adaptive Quantisation to be enabled.  Macroblock-Tree optimisation will automatically be disabled.\n\nDo you wish to continue?")))
+		if (GUI_Question(tr("Macroblock-Tree optimisation requires Variance Adaptive Quantisation to be enabled.  Macroblock-Tree optimisation will automatically be disabled.\n\nDo you wish to continue?").toUtf8().constData()))
 			ui.mbTreeCheckBox->setChecked(false);
 		else
 			ui.aqVarianceCheckBox->setChecked(true);
@@ -505,7 +507,7 @@ void x264ConfigDialog::zoneEditButton_pressed()
 
 void x264ConfigDialog::zoneDeleteButton_pressed()
 {
-	if (ui.zoneTableView->currentIndex().row() >= 0 && GUI_Question(QT_TR_NOOP("Are you sure you wish to delete the selected zone?")))
+	if (ui.zoneTableView->currentIndex().row() >= 0 && GUI_Question(tr("Are you sure you wish to delete the selected zone?").toUtf8().constData()))
 	{
 		zoneTableModel.removeRows(ui.zoneTableView->currentIndex().row(), 1, QModelIndex());
 		ui.configurationComboBox->setCurrentIndex(1);
@@ -598,6 +600,9 @@ void x264ConfigDialog::loadSettings(vidEncOptions *encodeOptions, x264Options *o
 	}
 
 	ui.mbTreeCheckBox->setChecked(options->getMbTree());
+#if X264_BUILD > 85
+	ui.fastFirstPassCheckBox->setChecked(options->getFastFirstPass());
+#endif
 	ui.lookaheadSpinBox->setValue(options->getFrametypeLookahead());
 
 	if (options->getSarAsInput())
@@ -699,6 +704,7 @@ void x264ConfigDialog::loadSettings(vidEncOptions *encodeOptions, x264Options *o
 	ui.maxGopSizeSpinBox->setValue(options->getGopMaximumSize());
 	ui.minGopSizeSpinBox->setValue(options->getGopMinimumSize());
 	ui.IFrameThresholdSpinBox->setValue(options->getScenecutThreshold());
+	ui.intraRefreshCheckBox->setChecked(options->getIntraRefresh());
 
 	// Analysis tab
 	ui.mixedRefsCheckBox->setChecked(options->getMixedReferences());
@@ -832,6 +838,9 @@ void x264ConfigDialog::saveSettings(vidEncOptions *encodeOptions, x264Options *o
 	options->setPresetConfiguration(ui.configurationComboBox->currentText().toUtf8().constData(), configurationType);
 
 	options->setMbTree(ui.mbTreeCheckBox->isChecked());
+#if X264_BUILD > 85
+	options->setFastFirstPass(ui.fastFirstPassCheckBox->isChecked());
+#endif
 	options->setFrametypeLookahead(ui.lookaheadSpinBox->value());
 	options->setSarAsInput(ui.sarAsInputRadioButton->isChecked());
 
@@ -909,6 +918,7 @@ void x264ConfigDialog::saveSettings(vidEncOptions *encodeOptions, x264Options *o
 	options->setGopMaximumSize(ui.maxGopSizeSpinBox->value());
 	options->setGopMinimumSize(ui.minGopSizeSpinBox->value());
 	options->setScenecutThreshold(ui.IFrameThresholdSpinBox->value());
+	options->setIntraRefresh(ui.intraRefreshCheckBox->isChecked());
 
 	// Analysis tab
 	options->setMixedReferences(ui.mixedRefsCheckBox->isChecked());

@@ -1,5 +1,3 @@
-rmdir /s/q "%sdkBuildDir%"
-mkdir "%sdkBuildDir%"
 mkdir "%sdkBuildDir%\lib"
 move "%buildDir%\lib\*.a" "%sdkBuildDir%\lib"
 del /s "%buildDir%\*.a"
@@ -75,3 +73,26 @@ copy "%sourceDir%\avidemux\ADM_coreUI\include\DIA_uiTypes.h"
 copy "%sourceDir%\avidemux\ADM_encoder\ADM_vidEncode.hxx" ADM_encoder
 copy "%sourceDir%\avidemux\ADM_libraries\ffmpeg\libavutil\pixfmt.h" libavutil
 copy "%sourceDir%\avidemux\ADM_plugin\ADM_vidEnc_plugin.h"
+copy "%sourceDir%\avidemux\ADM_plugin\ADM_plugin_translate.h"
+
+cd "%sourceDir%\po"
+svn revert -R .
+sh qt_update_pro.sh
+echo ./avidemux_blank.ts >> avidemux.pro
+lupdate avidemux.pro
+
+mkdir "%sdkBuildDir%\i18n"
+mkdir "%sdkBuildDir%\i18n\qt4"
+mkdir "%sdkBuildDir%\i18n\gtk"
+
+copy *.ts "%sdkBuildDir%\i18n\qt4"
+copy qt_filter_context.xslt "%sdkBuildDir%\i18n\qt4\qt_filter_context.xsl"
+copy "%curDir%\Tools\Build Qt Translations.bat" "%sdkBuildDir%\i18n\qt4\Build Translations.bat"
+
+del avidemux_blank.ts
+
+sh update_pot.bash
+copy avidemux.pot "%sdkBuildDir%\i18n\gtk"
+for %%A in (*.po) do msgmerge %%A avidemux.pot -o "%sdkBuildDir%\i18n\gtk\%%A"
+
+svn revert -R .
