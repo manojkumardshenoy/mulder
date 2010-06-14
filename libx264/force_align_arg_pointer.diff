@@ -1,0 +1,28 @@
+diff --git a/encoder/encoder.c b/encoder/encoder.c
+index f2e7a6b..08bafba 100644
+--- a/encoder/encoder.c
++++ b/encoder/encoder.c
+@@ -862,6 +862,7 @@ static void x264_set_aspect_ratio( x264_t *h, x264_param_t *param, int initial )
+ /****************************************************************************
+  * x264_encoder_open:
+  ****************************************************************************/
++__attribute__ ((force_align_arg_pointer))
+ x264_t *x264_encoder_open( x264_param_t *param )
+ {
+     x264_t *h;
+@@ -1300,6 +1301,7 @@ static int x264_encoder_encapsulate_nals( x264_t *h, int start )
+ /****************************************************************************
+  * x264_encoder_headers:
+  ****************************************************************************/
++__attribute__ ((force_align_arg_pointer))
+ int x264_encoder_headers( x264_t *h, x264_nal_t **pp_nal, int *pi_nal )
+ {
+     int frame_size = 0;
+@@ -2187,6 +2189,7 @@ void x264_encoder_intra_refresh( x264_t *h )
+  *       B      5   2*4
+  *       B      6   2*5
+  ****************************************************************************/
++__attribute__ ((force_align_arg_pointer))
+ int     x264_encoder_encode( x264_t *h,
+                              x264_nal_t **pp_nal, int *pi_nal,
+                              x264_picture_t *pic_in,

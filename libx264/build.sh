@@ -3,9 +3,9 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
-DEFAULT_PATCHES="core98to96 amdfam10_fix print_params dll_version psy_trellis fast_firstpass"
-COMPILERS_CURRENT="460" #450
-COMPILERS_LEGACY="451 444 345" #443
+DEFAULT_PATCHES="core98to97 amdfam10_fix force_align_arg_pointer print_params dll_version psy_trellis fast_firstpass"
+COMPILERS_CURRENT="460 451"
+COMPILERS_LEGACY="450 444 345"
 CPU_TYPES="i686 core2 amdfam10 pentium3 noasm"
 
 ######################################################
@@ -130,9 +130,9 @@ make_x264() {
     ECFLAGS="-march=i686"
   fi
 
-  if [ $1 -ge 440 ]; then
-    ECFLAGS="$ECFLAGS -fno-tree-vectorize" #"-floop-interchange -floop-strip-mine -floop-block"
-  fi
+  #if [ $1 -ge 440 ]; then
+  #  ECFLAGS="$ECFLAGS -fno-tree-vectorize" #"-floop-interchange -floop-strip-mine -floop-block"
+  #fi
     
   if [ "$4" != "" ]; then
     PATCHES="$PATCHES $4"
@@ -280,6 +280,8 @@ do
 done
 
 ######################################################
+
+shutdown -s -t 30
 
 echo -e "\n=============================================================================="
 echo "DONE"

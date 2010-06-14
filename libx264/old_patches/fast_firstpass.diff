@@ -1,8 +1,8 @@
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index e30b6ff..f946dee 100644
+index b6fc14f..4e600f6 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -869,6 +869,24 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -874,6 +874,24 @@ x264_t *x264_encoder_open( x264_param_t *param )
      /* Create a copy of param */
      memcpy( &h->param, param, sizeof(x264_param_t) );
  

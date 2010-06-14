@@ -1,0 +1,22 @@
+diff --git a/x264.h b/x264.h
+index 9cd4600..89cf78a 100644
+--- a/x264.h
++++ b/x264.h
+@@ -35,7 +35,7 @@
+ 
+ #include <stdarg.h>
+ 
+-#define X264_BUILD 98
++#define X264_BUILD 97
+ 
+ /* x264_t:
+  *      opaque handler for encoder */
+@@ -565,7 +565,7 @@ typedef struct
+ /* x264_picture_init:
+  *  initialize an x264_picture_t.  Needs to be done if the calling application
+  *  allocates its own x264_picture_t as opposed to using x264_picture_alloc. */
+-void x264_picture_init( x264_picture_t *pic );
++/* void x264_picture_init( x264_picture_t *pic ); */
+ 
+ /* x264_picture_alloc:
+  *  alloc data for a picture. You must call x264_picture_clean on it.
