@@ -12,7 +12,7 @@ index 3a38cb5..a5db0ed 100755
  Platform:   $ARCH
  System:     $SYS
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index f2e7a6b..b6fc14f 100644
+index 08bafba..7281161 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
 @@ -31,6 +31,7 @@
@@ -23,7 +23,7 @@ index f2e7a6b..b6fc14f 100644
  
  #if HAVE_VISUALIZE
  #include "common/visualize.h"
-@@ -1125,6 +1126,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -1126,6 +1127,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
          h->sps->i_profile_idc == PROFILE_HIGH ? "High" :
          "High 4:4:4 Predictive", h->sps->i_level_idc/10, h->sps->i_level_idc%10 );
  

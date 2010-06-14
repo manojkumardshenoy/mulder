@@ -1,8 +1,8 @@
 diff --git a/configure b/configure
-index b35d120..b0ef182 100755
+index 3a38cb5..a5db0ed 100755
 --- a/configure
 +++ b/configure
-@@ -702,6 +702,8 @@ Libs: $pclibs
+@@ -706,6 +706,8 @@ Libs: $pclibs
  Cflags: -I$includedir
  EOF
  
@@ -12,7 +12,7 @@ index b35d120..b0ef182 100755
  Platform:   $ARCH
  System:     $SYS
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 92c1eed..e30b6ff 100644
+index f2e7a6b..b6fc14f 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
 @@ -31,6 +31,7 @@
@@ -21,9 +21,9 @@ index 92c1eed..e30b6ff 100644
  #include "me.h"
 +#include "config.h"
  
- #ifdef HAVE_VISUALIZE
+ #if HAVE_VISUALIZE
  #include "common/visualize.h"
-@@ -1118,6 +1119,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -1125,6 +1126,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
          h->sps->i_profile_idc == PROFILE_HIGH ? "High" :
          "High 4:4:4 Predictive", h->sps->i_level_idc/10, h->sps->i_level_idc%10 );
  

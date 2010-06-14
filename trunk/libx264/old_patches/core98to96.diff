@@ -1,8 +1,8 @@
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 9b2914e..1097b20 100644
+index 08a28bd..ae0bae3 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -2250,14 +2250,14 @@ int     x264_encoder_encode( x264_t *h,
+@@ -2259,14 +2259,14 @@ int     x264_encoder_encode( x264_t *h,
  
          if( h->param.rc.b_mb_tree && h->param.rc.b_stat_read )
          {
