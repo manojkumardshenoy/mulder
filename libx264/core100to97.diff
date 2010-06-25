@@ -1,0 +1,244 @@
+diff --git a/common/common.c b/common/common.c
+index 8c7cf3c..7fb4196 100644
+--- a/common/common.c
++++ b/common/common.c
+@@ -634,8 +634,8 @@ int x264_param_parse( x264_param_t *p, const char *name, const char *value )
+     }
+     OPT2("ref", "frameref")
+         p->i_frame_reference = atoi(value);
+-    OPT("dpb-size")
+-        p->i_dpb_size = atoi(value);
++    /* OPT("dpb-size")
++        p->i_dpb_size = atoi(value);*/
+     OPT("keyint")
+     {
+         p->i_keyint_max = atoi(value);
+@@ -681,7 +681,7 @@ int x264_param_parse( x264_param_t *p, const char *name, const char *value )
+             p->i_bframe_pyramid = atoi(value);
+         }
+     }
+-    OPT("open-gop")
++    /*OPT("open-gop")
+     {
+         b_error |= parse_enum( value, x264_open_gop_names, &p->i_open_gop );
+         if( b_error )
+@@ -689,7 +689,7 @@ int x264_param_parse( x264_param_t *p, const char *name, const char *value )
+             b_error = 0;
+             p->i_open_gop = atoi(value);
+         }
+-    }
++    }*/
+     OPT("nf")
+         p->b_deblocking_filter = !atobool(value);
+     OPT2("filter", "deblock")
+@@ -1206,7 +1206,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
+     {
+         s += sprintf( s, " b_pyramid=%d b_adapt=%d b_bias=%d direct=%d weightb=%d open_gop=%d",
+                       p->i_bframe_pyramid, p->i_bframe_adaptive, p->i_bframe_bias,
+-                      p->analyse.i_direct_mv_pred, p->analyse.b_weighted_bipred, p->i_open_gop );
++                      p->analyse.i_direct_mv_pred, p->analyse.b_weighted_bipred, X264_PARAM_OPEN_GOP );
+     }
+     s += sprintf( s, " weightp=%d", p->analyse.i_weighted_pred > 0 ? p->analyse.i_weighted_pred : 0 );
+ 
+diff --git a/encoder/encoder.c b/encoder/encoder.c
+index f54fe85..3c8426f 100644
+--- a/encoder/encoder.c
++++ b/encoder/encoder.c
+@@ -564,7 +564,7 @@ static int x264_validate_parameters( x264_t *h )
+     }
+ 
+     h->param.i_frame_reference = x264_clip3( h->param.i_frame_reference, 1, 16 );
+-    h->param.i_dpb_size = x264_clip3( h->param.i_dpb_size, 1, 16 );
++    /* h->param.i_dpb_size = x264_clip3( h->param.i_dpb_size, 1, 16 ); */
+     if( h->param.i_keyint_max <= 0 )
+         h->param.i_keyint_max = 1;
+     if( h->param.i_scenecut_threshold < 0 )
+@@ -575,7 +575,7 @@ static int x264_validate_parameters( x264_t *h )
+         h->param.analyse.i_direct_mv_pred = X264_DIRECT_PRED_SPATIAL;
+     }
+     h->param.i_bframe = x264_clip3( h->param.i_bframe, 0, X264_MIN( X264_BFRAME_MAX, h->param.i_keyint_max-1 ) );
+-    h->param.i_open_gop = x264_clip3( h->param.i_open_gop, X264_OPEN_GOP_NONE, X264_OPEN_GOP_CODED_ORDER );
++    /* h->param.i_open_gop = x264_clip3( h->param.i_open_gop, X264_OPEN_GOP_NONE, X264_OPEN_GOP_CODED_ORDER ); */
+     if( h->param.i_keyint_max == 1 )
+         h->param.b_intra_refresh = 0;
+     h->param.i_bframe_bias = x264_clip3( h->param.i_bframe_bias, -90, 100 );
+@@ -587,23 +587,23 @@ static int x264_validate_parameters( x264_t *h )
+         h->param.i_bframe_adaptive = X264_B_ADAPT_NONE;
+         h->param.analyse.i_direct_mv_pred = 0;
+         h->param.analyse.b_weighted_bipred = 0;
+-        h->param.i_open_gop = X264_OPEN_GOP_NONE;
++        /* h->param.i_open_gop = X264_OPEN_GOP_NONE; */
+     }
+     if( h->param.b_intra_refresh && h->param.i_bframe_pyramid == X264_B_PYRAMID_NORMAL )
+     {
+         x264_log( h, X264_LOG_WARNING, "b-pyramid normal + intra-refresh is not supported\n" );
+         h->param.i_bframe_pyramid = X264_B_PYRAMID_STRICT;
+     }
+-    if( h->param.b_intra_refresh && (h->param.i_frame_reference > 1 || h->param.i_dpb_size > 1) )
++    if( h->param.b_intra_refresh && (h->param.i_frame_reference > 1 || X264_PARAM_DPB_SIZE > 1) )
+     {
+         x264_log( h, X264_LOG_WARNING, "ref > 1 + intra-refresh is not supported\n" );
+         h->param.i_frame_reference = 1;
+-        h->param.i_dpb_size = 1;
++        /* h->param.i_dpb_size = 1; */
+     }
+-    if( h->param.b_intra_refresh && h->param.i_open_gop )
++    if( h->param.b_intra_refresh && X264_PARAM_OPEN_GOP )
+     {
+         x264_log( h, X264_LOG_WARNING, "intra-refresh is not compatible with open-gop\n" );
+-        h->param.i_open_gop = X264_OPEN_GOP_NONE;
++        /* h->param.i_open_gop = X264_OPEN_GOP_NONE; */
+     }
+     if( h->param.i_keyint_min == X264_KEYINT_MIN_AUTO )
+         h->param.i_keyint_min = h->param.i_keyint_max / 10;
+@@ -2407,7 +2407,7 @@ int     x264_encoder_encode( x264_t *h,
+         i_nal_ref_idc = NAL_PRIORITY_HIGH; /* Not completely true but for now it is (as all I/P are kept as ref)*/
+         h->sh.i_type = SLICE_TYPE_I;
+         x264_reference_hierarchy_reset( h );
+-        if( h->param.i_open_gop )
++        if( X264_PARAM_OPEN_GOP )
+             h->frames.i_poc_last_open_gop = h->fenc->b_keyframe ? h->fenc->i_poc : -1;
+     }
+     else if( h->fenc->i_type == X264_TYPE_P )
+@@ -2571,7 +2571,7 @@ int     x264_encoder_encode( x264_t *h,
+ 
+         if( h->fenc->i_type != X264_TYPE_IDR )
+         {
+-            int time_to_recovery = h->param.i_open_gop ? 0 : X264_MIN( h->mb.i_mb_width - 1, h->param.i_keyint_max ) + h->param.i_bframe;
++            int time_to_recovery = X264_PARAM_OPEN_GOP ? 0 : X264_MIN( h->mb.i_mb_width - 1, h->param.i_keyint_max ) + h->param.i_bframe;
+             x264_nal_start( h, NAL_SEI, NAL_PRIORITY_DISPOSABLE );
+             x264_sei_recovery_point_write( h, &h->out.bs, time_to_recovery );
+             x264_nal_end( h );
+diff --git a/encoder/ratecontrol.c b/encoder/ratecontrol.c
+index 1030ef2..a5f8453 100644
+--- a/encoder/ratecontrol.c
++++ b/encoder/ratecontrol.c
+@@ -724,7 +724,7 @@ int x264_ratecontrol_new( x264_t *h )
+             CMP_OPT_FIRST_PASS( "b_pyramid", h->param.i_bframe_pyramid );
+             CMP_OPT_FIRST_PASS( "intra_refresh", h->param.b_intra_refresh );
+             CMP_OPT_FIRST_PASS( "keyint", h->param.i_keyint_max );
+-            CMP_OPT_FIRST_PASS( "open_gop", h->param.i_open_gop );
++            CMP_OPT_FIRST_PASS( "open_gop", X264_PARAM_OPEN_GOP );
+ 
+             if( strstr( opts, "qp=0" ) && h->param.rc.i_rc_method == X264_RC_ABR )
+                 x264_log( h, X264_LOG_WARNING, "1st pass was lossless, bitrate prediction will be inaccurate\n" );
+diff --git a/encoder/set.c b/encoder/set.c
+index 8d007aa..cde7cc7 100644
+--- a/encoder/set.c
++++ b/encoder/set.c
+@@ -224,7 +224,7 @@ void x264_sps_init( x264_sps_t *sps, int i_id, x264_param_t *param )
+      * order of forgetting old pictures */
+     sps->vui.i_max_dec_frame_buffering =
+     sps->i_num_ref_frames = X264_MIN(16, X264_MAX4(param->i_frame_reference, 1 + sps->vui.i_num_reorder_frames,
+-                            param->i_bframe_pyramid ? 4 : 1, param->i_dpb_size));
++                            param->i_bframe_pyramid ? 4 : 1, X264_PARAM_DPB_SIZE));
+     sps->i_num_ref_frames -= param->i_bframe_pyramid == X264_B_PYRAMID_STRICT;
+ 
+     sps->vui.b_bitstream_restriction = 1;
+diff --git a/encoder/slicetype.c b/encoder/slicetype.c
+index 2703f02..6259fc4 100644
+--- a/encoder/slicetype.c
++++ b/encoder/slicetype.c
+@@ -1234,7 +1234,7 @@ void x264_slicetype_analyse( x264_t *h, int keyframe )
+         for( int i = keyint_limit+1; i <= num_frames; i += h->param.i_keyint_max )
+         {
+             int j = i;
+-            if( h->param.i_open_gop == X264_OPEN_GOP_CODED_ORDER )
++            if( X264_PARAM_OPEN_GOP == X264_OPEN_GOP_CODED_ORDER )
+             {
+                 while( IS_X264_TYPE_B( frames[i]->i_type ) )
+                     i++;
+@@ -1329,17 +1329,17 @@ void x264_slicetype_decide( x264_t *h )
+         }
+ 
+         if( frm->i_type == X264_TYPE_KEYFRAME )
+-            frm->i_type = h->param.i_open_gop ? X264_TYPE_I : X264_TYPE_IDR;
++            frm->i_type = X264_PARAM_OPEN_GOP ? X264_TYPE_I : X264_TYPE_IDR;
+ 
+         /* Limit GOP size */
+         if( (!h->param.b_intra_refresh || frm->i_frame == 0) && frm->i_frame - h->lookahead->i_last_keyframe >= h->param.i_keyint_max )
+         {
+             if( frm->i_type == X264_TYPE_AUTO || frm->i_type == X264_TYPE_I )
+-                frm->i_type = h->param.i_open_gop && h->lookahead->i_last_keyframe >= 0 ? X264_TYPE_I : X264_TYPE_IDR;
++                frm->i_type = X264_PARAM_OPEN_GOP && h->lookahead->i_last_keyframe >= 0 ? X264_TYPE_I : X264_TYPE_IDR;
+             int warn = frm->i_type != X264_TYPE_IDR;
+-            if( warn && h->param.i_open_gop == X264_OPEN_GOP_DISPLAY_ORDER )
++            if( warn && X264_PARAM_OPEN_GOP == X264_OPEN_GOP_DISPLAY_ORDER )
+                 warn &= frm->i_type != X264_TYPE_I && frm->i_type != X264_TYPE_KEYFRAME;
+-            if( warn && h->param.i_open_gop == X264_OPEN_GOP_CODED_ORDER )
++            if( warn && X264_PARAM_OPEN_GOP == X264_OPEN_GOP_CODED_ORDER )
+             {
+                 /* if this minigop ends with i, it's not a violation */
+                 int j = bframes;
+@@ -1352,10 +1352,10 @@ void x264_slicetype_decide( x264_t *h )
+         }
+         if( frm->i_type == X264_TYPE_I && frm->i_frame - h->lookahead->i_last_keyframe >= h->param.i_keyint_min )
+         {
+-            if( h->param.i_open_gop )
++            if( X264_PARAM_OPEN_GOP )
+             {
+                 h->lookahead->i_last_keyframe = frm->i_frame; // Use display order
+-                if( h->param.i_open_gop == X264_OPEN_GOP_CODED_ORDER )
++                if( X264_PARAM_OPEN_GOP == X264_OPEN_GOP_CODED_ORDER )
+                     h->lookahead->i_last_keyframe -= bframes; // Use coded order
+                 frm->b_keyframe = 1;
+             }
+diff --git a/x264.h b/x264.h
+index 1138a8b..22d4dd0 100644
+--- a/x264.h
++++ b/x264.h
+@@ -35,7 +35,7 @@
+ 
+ #include <stdarg.h>
+ 
+-#define X264_BUILD 100
++#define X264_BUILD 97
+ 
+ /* x264_t:
+  *      opaque handler for encoder */
+@@ -162,6 +162,10 @@ static const char * const x264_open_gop_names[] = { "none", "display", "coded",
+ #define X264_NAL_HRD_VBR             1
+ #define X264_NAL_HRD_CBR             2
+ 
++/* Woraround */
++#define X264_PARAM_OPEN_GOP          0
++#define X264_PARAM_DPB_SIZE          1
++
+ /* Zones: override ratecontrol or other options for specific sections of the video.
+  * See x264_encoder_reconfig() for which options can be changed.
+  * If zones overlap, whichever comes later in the list takes precedence. */
+@@ -217,7 +221,7 @@ typedef struct x264_param_t
+ 
+     /* Bitstream parameters */
+     int         i_frame_reference;  /* Maximum number of reference frames */
+-    int         i_dpb_size;         /* Force a DPB size larger than that implied by B-frames and reference frames.
++    /* int         i_dpb_size;         Force a DPB size larger than that implied by B-frames and reference frames.
+                                      * Useful in combination with interactive error resilience. */
+     int         i_keyint_max;       /* Force an IDR keyframe at this interval */
+     int         i_keyint_min;       /* Scenecuts closer together than this are coded as I, not IDR. */
+@@ -228,7 +232,7 @@ typedef struct x264_param_t
+     int         i_bframe_adaptive;
+     int         i_bframe_bias;
+     int         i_bframe_pyramid;   /* Keep some B-frames as references: 0=off, 1=strict hierarchical, 2=normal */
+-    int         i_open_gop;         /* Open gop: 1=display order, 2=coded order to determine gop size */
++    /* int         i_open_gop;         Open gop: 1=display order, 2=coded order to determine gop size */
+ 
+     int         b_deblocking_filter;
+     int         i_deblocking_filter_alphac0;    /* [-6, 6] -6 light filter, 6 strong */
+@@ -573,7 +577,7 @@ typedef struct
+ /* x264_picture_init:
+  *  initialize an x264_picture_t.  Needs to be done if the calling application
+  *  allocates its own x264_picture_t as opposed to using x264_picture_alloc. */
+-void x264_picture_init( x264_picture_t *pic );
++/* void x264_picture_init( x264_picture_t *pic ); */
+ 
+ /* x264_picture_alloc:
+  *  alloc data for a picture. You must call x264_picture_clean on it.
+@@ -716,6 +720,6 @@ void    x264_encoder_intra_refresh( x264_t * );
+  *      Should not be called during an x264_encoder_encode.
+  *
+  *      Returns 0 on success, negative on failure. */
+-int x264_encoder_invalidate_reference( x264_t *, int64_t pts );
++/* int x264_encoder_invalidate_reference( x264_t *, int64_t pts ); */
+ 
+ #endif
