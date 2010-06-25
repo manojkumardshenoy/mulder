@@ -1,5 +1,5 @@
 diff --git a/x264dll.c b/x264dll.c
-index 075eaba..0f5e581 100644
+index 075eaba..7e46b6c 100644
 --- a/x264dll.c
 +++ b/x264dll.c
 @@ -21,8 +21,24 @@
@@ -9,7 +9,7 @@ index 075eaba..0f5e581 100644
 +#include "config.h"
  #include <windows.h>
  
-+ALWAYS_INLINE void x264_process_attach_print_version()
++static ALWAYS_INLINE void x264_process_attach_print_version()
 +{
 +    x264_log( NULL, X264_LOG_INFO, "H.264/MPEG-4 AVC codec - Copyleft 2003-2010 - http://www.videolan.org/x264.html\n" );
 +    x264_log( NULL, X264_LOG_INFO, "version: %s\n", X264_POINTVER );

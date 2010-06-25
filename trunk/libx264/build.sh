@@ -3,10 +3,10 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
-DEFAULT_PATCHES="core98to97 amdfam10_fix force_align_arg_pointer print_params dll_version psy_trellis fast_firstpass"
-COMPILERS_CURRENT="460 451"
-COMPILERS_LEGACY="450 444 345"
-CPU_TYPES="i686 core2 amdfam10 pentium3 noasm"
+DEFAULT_PATCHES="core100to97 amdfam10_fix print_params dll_version psy_trellis fast_firstpass"
+COMPILERS_CURRENT="460"
+COMPILERS_LEGACY="451 450 444 345"
+CPU_TYPES="core2 amdfam10 pentium3 noasm"
 
 ######################################################
 # Do NOT modify any lines below this one!
@@ -96,12 +96,14 @@ make_pthread() {
     exit 1
   fi
  
+  gcc -v > compiler.ver
+
   if [ -f "libpthreadGC2.a" ]; then
     echo "Error: Could not delete existing libpthreadGC2.a !!!"
     cd ..
     exit 1
   fi
-
+  
   make GC-static
   
   if [ ! -f "libpthreadGC2.a" ]; then
@@ -131,7 +133,7 @@ make_x264() {
   fi
 
   #if [ $1 -ge 440 ]; then
-  #  ECFLAGS="$ECFLAGS -fno-tree-vectorize" #"-floop-interchange -floop-strip-mine -floop-block"
+  #  ECFLAGS="$ECFLAGS" #"-fno-tree-vectorize -floop-interchange -floop-strip-mine -floop-block"
   #fi
     
   if [ "$4" != "" ]; then
@@ -173,6 +175,8 @@ make_x264() {
     return
   fi
   
+  gcc -v > compiler.ver
+
   echo -e "\n------------------------------------------------------------------------------\n"
 
   for i in $PATCHES
@@ -281,7 +285,7 @@ done
 
 ######################################################
 
-shutdown -s -t 30
+shutdown -s -t 300
 
 echo -e "\n=============================================================================="
 echo "DONE"
