@@ -1,8 +1,8 @@
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 30c742d..9584be4 100644
+index 36e5917..ea038d3 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -914,6 +914,13 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -918,6 +918,13 @@ x264_t *x264_encoder_open( x264_param_t *param )
          h->param.i_scenecut_threshold = 0;
      }
  
