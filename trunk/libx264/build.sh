@@ -3,10 +3,10 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
-DEFAULT_PATCHES="core100to97 amdfam10_fix print_params dll_version psy_trellis fast_firstpass"
+DEFAULT_PATCHES="amdfam10_fix print_params dll_version psy_trellis fast_firstpass"
 COMPILERS_CURRENT="460"
 COMPILERS_LEGACY="451 450 444 345"
-CPU_TYPES="core2 amdfam10 pentium3 noasm"
+CPU_TYPES="i686 core2 amdfam10 pentium3 noasm"
 
 ######################################################
 # Do NOT modify any lines below this one!
@@ -96,7 +96,7 @@ make_pthread() {
     exit 1
   fi
  
-  gcc -v > compiler.ver
+  gcc -v 2> compiler.ver
 
   if [ -f "libpthreadGC2.a" ]; then
     echo "Error: Could not delete existing libpthreadGC2.a !!!"
@@ -175,7 +175,7 @@ make_x264() {
     return
   fi
   
-  gcc -v > compiler.ver
+  gcc -v 2> compiler.ver
 
   echo -e "\n------------------------------------------------------------------------------\n"
 
@@ -270,10 +270,11 @@ do
   make_pthread "$k"
   for l in $CPU_TYPES
   do
-    make_x264 "$k" "$l" "" ""
+    if [ "$l" != "i686" ]; then
+      make_x264 "$k" "$l" "" ""
+    fi
     make_x264 "$k" "$l" "AutoVAQ" "auto_vaq"
-    #make_x264 "$k" "$l" "NAL_HRD" "nal_hrd_vbr"
-    #make_x264 "$k" "$l" "PIR" "periodic_intra_refresh"
+    make_x264 "$k" "$l" "OpenGOP" "open_gop"
   done
 done
 
