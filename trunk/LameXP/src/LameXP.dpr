@@ -75,7 +75,8 @@ uses
   Unit_WaveEncoder in 'Unit_WaveEncoder.pas',
   Unit_WavpackDecoder in 'Unit_WavpackDecoder.pas',
   Unit_Win7Taskbar in 'Unit_Win7Taskbar.pas',
-  Unit_WMADecoder in 'Unit_WMADecoder.pas';
+  Unit_WMADecoder in 'Unit_WMADecoder.pas',
+  Unit_LinkTime in 'Unit_LinkTime.pas';
 
 {$R *.RES}
 

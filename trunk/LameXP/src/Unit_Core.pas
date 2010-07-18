@@ -104,7 +104,7 @@ implementation
 uses
   Unit_Main, Unit_Progress, Unit_Utils, Unit_LameEncoder,
   Unit_OggEncoder, Unit_NeroEncoder, Unit_WaveEncoder, Unit_FLACEncoder,
-  Unit_NormalizationFilter, Unit_DropBox, Unit_QueryBox;
+  Unit_NormalizationFilter, Unit_DropBox, Unit_QueryBox, Unit_LinkTime;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1023,7 +1023,7 @@ begin
     Add('--------------------------------------------------------------------------');
     Add('');
     Add('Program Information:');
-    Add('· Version: ' + Format('%s, Build %d (%s)', [Unit_Main.VersionStr, Unit_Main.BuildNo, Unit_Main.BuildDate]));
+    Add('· Version: ' + Format('%s, Build %d (%s)', [Unit_Main.VersionStr, Unit_Main.BuildNo, GetImageLinkTimeStampAsString(True)]));
     Add('· Nero AAC Encoder found: ' + BoolToStr(Form_Main.Flags.NeroEncoder, True));
     Add('· WMA File Decoder found: ' + BoolToStr(Form_Main.Flags.WMADecoder, True));
     Add('· LameXP Sounds enabled: ' + BoolToStr(Form_Main.Options.SoundsEnabled, True));
@@ -3365,8 +3365,11 @@ var
   q: VS_FIXEDFILEINFO;
   v: array [0..11] of String;
   b: Boolean;
+  y, m, d: Integer;
 begin
   b := True;
+
+  GetImageLinkTimeStampAsIntegers(y, m, d);
 
   if GetAppVerStr(q) then
   begin
@@ -3384,10 +3387,10 @@ begin
     b := b and SameText(v[$1], Format('%s.%s.%s.%d', [VersionStr[2], VersionStr[4], VersionStr[5], BuildNo]));
     b := b and SameText(v[$2], VersionStr);
     b := b and SameText(v[$3], 'LameXP');
-    b := b and SameText(v[$4], Format('Copyright (c) 2004-%s LoRd_MuldeR', [Copy(BuildDate, 1, 4)]));
+    b := b and SameText(v[$4], Format('Copyright (c) 2004-%d LoRd_MuldeR', [y]));
     b := b and SameText(v[$5], 'LoRd_MuldeR <mulder2@gmx.de>');
     b := b and SameText(v[$6], 'LameXP.exe');
-    b := b and SameText(v[$7], BuildDate);
+    b := b and SameText(v[$7], GetImageLinkTimeStampAsString(False));
     b := b and SameText(v[$8], 'This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.');
     b := b and SameText(v[$9], 'GNU');
     b := b and SameText(v[$A], 'Free Software Foundation');

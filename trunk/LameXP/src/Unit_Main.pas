@@ -33,15 +33,14 @@ uses
   JvComponentBase, JvComputerInfoEx, Menus, JvDebugHandler,
   JvSystemPopup, JvMenus, Unit_LockedFile, Unit_Encoder, Unit_Utils, Unit_Core,
   JvTimer, JvBaseDlg, JvBrowseFolder, Unit_MetaData, JvBalloonHint,
-  JvDataEmbedded, JvBackgrounds, Unit_DropBox, Unit_Win7Taskbar,
+  JvDataEmbedded, JvBackgrounds, Unit_DropBox, Unit_Win7Taskbar, Unit_LinkTime,
   JvExExtCtrls, JvExtComponent, JvPanel;
 
 ///////////////////////////////////////////////////////////////////////////////
 
 const
-  VersionStr: String = 'v3.19 Alpha-2';
+  VersionStr: String = 'v3.19 Alpha-3';
   BuildNo: Integer = 89;
-  BuildDate: String = '2010-05-31';
 
 ///////////////////////////////////////////////////////////////////////////////
 //{$DEFINE BUILD_DEBUG}
@@ -58,7 +57,7 @@ const
     ('OggVorbisEnc', 'v2.85, libVorbis v1.2.1 RC2, aoTuV b5.7 (2009-03-04)'),
     ('OggVorbisDec', 'v1.9.7 (2010-03-29)'), 
     ('NeroAAC', '1.5.3.0'), // <-- Used for update-check!
-    ('MPG123', 'v1.12.1 (2010-03-31)'),
+    ('MPG123', 'v1.12.3 (2010-07-11)'),
     ('FAAD', 'v2.7 (2009-05-13)'), 
     ('FLAC', 'v1.2.1b (2009-10-01)'), 
     ('Speex', 'v1.2rc1 (2009-07-04)'), 
@@ -69,7 +68,7 @@ const
     ('Shorten', 'v3.6.1 (2007-05-26)'), 
     ('TTA', 'v3.4.1 (2007-07-27)'), 
     ('TAK', 'v2.0.0 (2010-01-07)'), 
-    ('MediaInfo', 'v0.7.32 (2010-05-02)'), 
+    ('MediaInfo', 'v0.7.34 (2010-07-09)'), 
     ('Volumax', 'v0.41 (2009-06-16)'), 
     ('GnuPG', 'v1.4.10b (2009-09-03)'), 
     ('WGet', 'v1.11.4 (2008-06-29)')
@@ -886,7 +885,7 @@ end;
 procedure TForm_Main.FormActivate(Sender: TObject);
 var
   i: Integer;
-  Today: Integer;
+  Today, LinkTime: Integer;
 begin
   if (not Flags.FirstView) or Application.Terminated then
   begin
@@ -939,8 +938,9 @@ begin
   {$IFEND}
 
   Today := Floor(Date);
+  LinkTime := Floor(GetImageLinkTimeStampAsDate);
 
-  if Today > (VerStrToDate(BuildDate) + 365) then
+  if (Today > (LinkTime + 365)) then
   begin
     if ID_OK = MyLangBox(self, 'Message_ForceUpdate', MB_OKCANCEL or MB_ICONERROR or MB_TOPMOST) then
     begin
