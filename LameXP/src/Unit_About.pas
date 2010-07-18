@@ -253,13 +253,13 @@ var
 implementation
 
 uses
-  Unit_Main, Unit_Utils, Unit_Core, Unit_EasterEgg;
+  Unit_Main, Unit_Utils, Unit_Core, Unit_LinkTime, Unit_EasterEgg;
 
 {$R *.dfm}
 
 procedure TForm_About.FormCreate(Sender: TObject);
 var
-  Year: Integer;
+  Year, Month, Day: Integer;
 begin
   EnableMenuItem(GetSystemMenu(Handle,False),SC_CLOSE,MF_BYCOMMAND or MF_GRAYED);
   FirstRun := False;
@@ -271,7 +271,7 @@ begin
   EasterEgg.Top := 0;
   EasterEgg.Left := 0;
 
-  Label_LameXP.Caption := Format('%s, Build %d (%s)', [Unit_Main.VersionStr, Unit_Main.BuildNo, Unit_Main.BuildDate]);
+  Label_LameXP.Caption := Format('%s, Build %d (%s)', [Unit_Main.VersionStr, Unit_Main.BuildNo, GetImageLinkTimeStampAsString(True)]);
   Label_Homepage.Caption := Unit_Main.URL_Homepage;
 
   SetVersionLabel(Label_Lame);
@@ -293,7 +293,8 @@ begin
   SetVersionLabel(Label_GnuPG);
   SetVersionLabel(Label_WGet);
 
-  Year := StrToInt(Copy(BuildDate, 1, 4));
+
+  GetImageLinkTimeStampAsIntegers(Year, Month, Day);
   Year := Max(YearOf(Date), Year);
   Memo_Header.Lines[1] := Format(Memo_Header.Lines[1], [Year]);
 
