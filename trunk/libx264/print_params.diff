@@ -1,3 +1,18 @@
+diff --git a/common/common.c b/common/common.c
+index ea6dc2e..2a012d7 100644
+--- a/common/common.c
++++ b/common/common.c
+@@ -1016,8 +1016,10 @@ static void x264_log_default( void *p_unused, int i_level, const char *psz_fmt,
+             psz_prefix = "unknown";
+             break;
+     }
++    fflush( stdout );
+     fprintf( stderr, "x264 [%s]: ", psz_prefix );
+     vfprintf( stderr, psz_fmt, arg );
++    fflush( stderr );
+ }
+ 
+ /****************************************************************************
 diff --git a/configure b/configure
 index 43fbe39..c8f979f 100755
 --- a/configure
@@ -12,7 +27,7 @@ index 43fbe39..c8f979f 100755
  Platform:   $ARCH
  System:     $SYS
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 35ca70e..4a1ecf2 100644
+index 02f337c..350b4e2 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
 @@ -31,6 +31,7 @@

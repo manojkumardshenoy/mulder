@@ -1,8 +1,8 @@
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 4a1ecf2..36e5917 100644
+index 350b4e2..4c7e326 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -903,6 +903,24 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -903,6 +903,23 @@ x264_t *x264_encoder_open( x264_param_t *param )
      /* Create a copy of param */
      memcpy( &h->param, param, sizeof(x264_param_t) );
  
@@ -16,9 +16,8 @@ index 4a1ecf2..36e5917 100644
 +    /* Disable Scenecuts */
 +    if( h->param.i_keyint_max > 999 )
 +    {
-+        x264_log( h, X264_LOG_WARNING, "Scenecuts have been disabled!\n" );
-+        h->param.i_keyint_max = 99999;
-+        h->param.i_scenecut_threshold = 0;
++        x264_log( h, X264_LOG_WARNING, "Non-scenecut keyframes have been disabled!\n" );
++        h->param.i_keyint_max = X264_KEYINT_MAX_INFINITE;
 +    }
 +
 +    /* Apply "fast first-pass" settings */
