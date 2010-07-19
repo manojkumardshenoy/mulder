@@ -3,7 +3,7 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
-DEFAULT_PATCHES="amdfam10_fix print_params dll_version psy_trellis fast_firstpass"
+DEFAULT_PATCHES="fix_pcm fix_pcm_part2 amdfam10_fix print_params dll_version psy_trellis fast_firstpass"
 COMPILERS_CURRENT="460"
 COMPILERS_LEGACY="451 450 444 345"
 CPU_TYPES="i686 core2 amdfam10 pentium3 noasm"
@@ -291,5 +291,8 @@ shutdown -s -t 300
 echo -e "\n=============================================================================="
 echo "DONE"
 echo -e "==============================================================================\n"
+
+cmd /c pause
+shutdown -a
 
 ######################################################
