@@ -56,7 +56,7 @@ const
     ('Lame', 'v3.98.4, Final (2010-03-23)'),
     ('OggVorbisEnc', 'v2.85, libVorbis v1.2.1 RC2, aoTuV b5.7 (2009-03-04)'),
     ('OggVorbisDec', 'v1.9.7 (2010-03-29)'), 
-    ('NeroAAC', '1.5.3.0'), // <-- Used for update-check!
+    ('NeroAAC', '1.5.4.0'), // <-- Used for update-check!
     ('MPG123', 'v1.12.3 (2010-07-11)'),
     ('FAAD', 'v2.7 (2009-05-13)'), 
     ('FLAC', 'v1.2.1b (2009-10-01)'), 

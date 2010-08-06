@@ -31,7 +31,7 @@ interface
 /////////////////////////////////////////////////////////////////
 
 uses
-  Windows, SysUtils, DateUtils;
+  Windows, SysUtils, DateUtils, Unit_WideStrUtils;
 
 function GetImageLinkTimeStampAsDate: TDateTime;
 function GetImageLinkTimeStampAsString(const Full: Boolean): String;
@@ -49,7 +49,7 @@ var
 // Internal functions
 /////////////////////////////////////////////////////////////////
 
-function GetImageLinkTimeStamp(const FileName: string): DWORD;
+function GetImageLinkTimeStamp(const FileName: WideString): DWORD;
 const
   INVALID_SET_FILE_POINTER = DWORD(-1);
   BorlandMagicTimeStamp = $2A425E19; // Delphi 4-6 (and above?)
@@ -82,7 +82,7 @@ var
 begin
   Result := 0;
   // Open file for read access
-  FileHandle := CreateFile(PChar(FileName), GENERIC_READ, FILE_SHARE_READ, nil, OPEN_EXISTING, 0, 0);
+  FileHandle := CreateFileW(PWideChar(FileName), GENERIC_READ, FILE_SHARE_READ, nil, OPEN_EXISTING, 0, 0);
   if (FileHandle <> INVALID_HANDLE_VALUE) then
   try
     // Read MS-DOS header to get the offset of the PE32 header (not required on WinNT based systems - but mostly available)
@@ -184,7 +184,7 @@ begin
       Result := True;
     end else
     begin
-      TempTimeStamp := GetImageLinkTimeStamp(ParamStr(0));
+      TempTimeStamp := GetImageLinkTimeStamp(ParamStrW(0));
       if TempTimeStamp > 0 then
       begin
         LinkTimeStamp := UnixToDateTime(TempTimeStamp);
