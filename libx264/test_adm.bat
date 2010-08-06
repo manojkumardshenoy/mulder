@@ -2,7 +2,7 @@
 
 REM ----------------------------------------------------------------
 
-set "CoreVersion=102"
+set "CoreVersion=104"
 set "AvidemuxFolder=D:\Avidemux 2.5"
 set "StdLoggerFolder=F:\DeLpHi\stdout_logger"
 set "OutputFoldr=%CD%\test"
@@ -61,7 +61,7 @@ REM ----------------------------------------------------------------
 echo Encoding, please wait...
 echo.
 
-"%StdLoggerFolder%\logger.exe" -log "%OutputFoldr%\%CurrentName%.log" -filter "Done:" : "%AvidemuxFolder%\avidemux2_cli.exe" --run "%CD%\test_adm.js" --save "%OutputFoldr%\%CurrentName%.avi"
+"%StdLoggerFolder%\logger.exe" -log "%OutputFoldr%\%CurrentName%.log" -filter "Done:" -format full : "%AvidemuxFolder%\avidemux2_cli.exe" --run "%CD%\test_adm.js" --save "%OutputFoldr%\%CurrentName%.avi"
 
 goto END_OF_FILE
 

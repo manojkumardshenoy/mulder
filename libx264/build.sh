@@ -3,9 +3,9 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
-DEFAULT_PATCHES="fix_pcm fix_pcm_part2 amdfam10_fix print_params dll_version psy_trellis fast_firstpass"
-COMPILERS_CURRENT="460"
-COMPILERS_LEGACY="451 450 444 345"
+DEFAULT_PATCHES="amdfam10_fix print_params dll_version psy_trellis fast_firstpass"
+COMPILERS_CURRENT="451" #460
+COMPILERS_LEGACY="450 445 345"
 CPU_TYPES="i686 core2 amdfam10 pentium3 noasm"
 
 ######################################################
@@ -270,9 +270,7 @@ do
   make_pthread "$k"
   for l in $CPU_TYPES
   do
-    if [ "$l" != "i686" ]; then
-      make_x264 "$k" "$l" "" ""
-    fi
+    make_x264 "$k" "$l" "" ""
     make_x264 "$k" "$l" "AutoVAQ" "auto_vaq"
     make_x264 "$k" "$l" "OpenGOP" "open_gop"
   done

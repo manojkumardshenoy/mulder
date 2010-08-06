@@ -1,9 +1,9 @@
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 36e5917..ea038d3 100644
+index 4c7e326..be1f324 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -918,6 +918,13 @@ x264_t *x264_encoder_open( x264_param_t *param )
-         h->param.i_scenecut_threshold = 0;
+@@ -917,6 +917,13 @@ x264_t *x264_encoder_open( x264_param_t *param )
+         h->param.i_keyint_max = X264_KEYINT_MAX_INFINITE;
      }
  
 +    /* Force AutoVAQ */
