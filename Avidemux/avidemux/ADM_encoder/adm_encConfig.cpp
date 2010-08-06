@@ -14,6 +14,8 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+#include <vector>
+
 #include "config.h"
 
 #include "ADM_assert.h"
@@ -34,8 +36,9 @@
 #define MODULE_NAME MODULE_ENCODER
 #include "ADM_osSupport/ADM_debug.h"
 
-extern struct COMPRES_PARAMS *AllVideoCodec;
-extern int AllVideoCodecCount;
+extern int defaultVideoEncoder;
+extern std::vector<COMPRES_PARAMS> AllVideoCodec;
+extern std::vector<CODEC_INFO> AllVideoCodecInfo;
 extern uint8_t DIA_videoCodec(int *codecIndex);
 extern void UI_setVideoCodec(int i);
 extern void getMainWindowHandles(intptr_t *handle, intptr_t *nativeHandle);
@@ -43,7 +46,6 @@ extern uint8_t isMpeg12Compatible (uint32_t fourcc);
 
 // Some static stuff
 void setVideoEncoderSettings(COMPRESSION_MODE mode, uint32_t param, uint32_t extraConf, uint8_t *extraData);
-static void encoderPrint(void);
 
 #include "adm_encConfig.h"
 #include "adm_encoder.h"
@@ -69,15 +71,20 @@ uint8_t mk_hex (uint8_t a, uint8_t b);
  */
 static COMPRES_PARAMS* getCodecParamFromTag(    SelectCodecType tag)
 {
-    if(tag==CodecExternal) return NULL;
-    for(int i=0;i<AllVideoCodecCount;i++)
-      {
-        COMPRES_PARAMS *r=&(AllVideoCodec[i]);
-        if(r->codec==tag) return r;
-      }
-    return NULL;
-  
+	if (tag == CodecExternal)
+		return NULL;
+
+	for (int i = 0; i < AllVideoCodec.size(); i++)
+	{
+		COMPRES_PARAMS *r = &(AllVideoCodec[i]);
+
+		if (r->codec == tag)
+			return r;
+	}
+
+	return NULL;
 }
+
 CodecFamilty videoCodecGetFamily(void)
 {
 	if (currentCodecType == CodecExternal && (
@@ -248,7 +255,12 @@ int videoCodecConfigure(char *cmdString, uint32_t optionSize, uint8_t * option)
 // Used to know the # of menu entries
 int encoderGetEncoderCount(void)
 {
-	return AllVideoCodecCount;
+	return AllVideoCodec.size();
+}
+
+int encoderGetDefaultIndex(void)
+{
+	return defaultVideoEncoder;
 }
 
 // Return the name of the encoder #i, as displayer by a menu/combo box
@@ -258,7 +270,7 @@ const char *encoderGetIndexedName(uint32_t i)
 
 	ADM_assert(i < nb);
 
-	return AllVideoCodec[i].menuName;
+	return AllVideoCodecInfo[i].menuName.c_str();
 }
 
 void videoCodecChanged(int newCodecIndex)
@@ -267,16 +279,6 @@ void videoCodecChanged(int newCodecIndex)
 
 	currentCodecType = AllVideoCodec[newCodecIndex].codec;
 	currentCodecIndex = newCodecIndex;
-}
-
-void encoderPrint(void)
-{
-	UI_setVideoCodec(currentCodecIndex);
-}
-
-void saveEncoderConfig(void)
-{
-	prefs->set (CODECS_PREFERREDCODEC, AllVideoCodec[currentCodecIndex].tagName);
 }
 
 SelectCodecType videoCodecGetType(void)
@@ -295,7 +297,7 @@ int videoCodecSelectByName(const char *name)
 
 	for (uint32_t i = 0; i < nb; i++)
 	{
-		if (!strcasecmp(name, AllVideoCodec[i].tagName))
+		if (!strcasecmp(name, AllVideoCodecInfo[i].tagName))
 		{
 			printf ("\n Codec %s found\n", name);
 			videoCodecSetCodec(i);
@@ -308,7 +310,7 @@ int videoCodecSelectByName(const char *name)
 	printf (" Available codec : %d\n", sizeof (AllVideoCodec) / sizeof (COMPRES_PARAMS));
 
 	for (uint32_t i = 0; i < nb; i++)
-		printf ("%s:%s\n", AllVideoCodec[i].tagName, AllVideoCodec[i].descriptor);
+		printf ("%s:%s\n", AllVideoCodecInfo[i].tagName, AllVideoCodecInfo[i].descriptor);
 
 	return 0;
 }
@@ -389,7 +391,7 @@ const char *videoCodecGetMode(void)
 
 const char *videoCodecGetName(void)
 {
-	return AllVideoCodec[currentCodecIndex].tagName;
+	return AllVideoCodecInfo[currentCodecIndex].tagName;
 }
 
 ///
@@ -398,7 +400,7 @@ const char *videoCodecGetName(void)
 void videoCodecSelect(void)
 {
   DIA_videoCodec(&currentCodecIndex);
-  encoderPrint ();
+  UI_setVideoCodec(currentCodecIndex);
   // HERE UI_PrintCurrentVCodec( (currentCodecType))
 
 }
@@ -407,7 +409,7 @@ void videoCodecSetCodec(int codecIndex)
 {
 	currentCodecIndex = codecIndex;
 	currentCodecType = AllVideoCodec[codecIndex].codec;
-	encoderPrint();
+	UI_setVideoCodec(currentCodecIndex);
 }
 
 void videoCodecConfigureUI(int codecIndex)
@@ -730,7 +732,7 @@ void videoCodecSetConf(uint32_t extraLen, uint8_t *extraData)
 	{
 		if (extraLen != param->extraSettingsLen)
 		{
-			printf("Codec:%s\n", param->descriptor);
+			printf("Codec:%s\n", AllVideoCodecInfo[currentCodecIndex].descriptor);
 			printf("Expected :%d got:%d\n", param->extraSettingsLen, extraLen);
 			ADM_assert(0);
 		}
