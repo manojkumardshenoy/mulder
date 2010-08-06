@@ -1,3 +1,24 @@
+///////////////////////////////////////////////////////////////////////////////
+// Simple x264 Launcher
+// Copyright (C) 2009-2010 LoRd_MuldeR <MuldeR2@GMX.de>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//
+// http://www.gnu.org/licenses/gpl-2.0.txt
+///////////////////////////////////////////////////////////////////////////////
+
 unit Unit_Progress;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -235,7 +256,7 @@ begin
         begin
           Success := True;
           UpdateProgress(100);
-          Caption := Caption + ' (Compleded)';
+          Caption := Caption + ' (Completed)';
           SetTaskbarOverlayIcon(ImageList, 2, 'Complete');
           if not AutoClose then
           begin
@@ -292,7 +313,7 @@ begin
     Caption := Format('%d%% - x264 x86 - %s', [Progress, Info]);
   end;
 
-  Application.Title := Format('%d%% - x264', [Progress]);
+  Application.Title := Caption;
 end;
 
 procedure TForm_Progress.Edit_StatusEnter(Sender: TObject);
@@ -357,6 +378,7 @@ begin
       Button_Resume.Enabled := True;
       Button_Pause.Enabled := False;
       Button_Resume.BringToFront;
+      SetTaskbarOverlayIcon(ImageList, 4, 'Suspended');
     end;
   end;
 end;
@@ -370,6 +392,7 @@ begin
       Button_Pause.Enabled := True;
       Button_Resume.Enabled := False;
       Button_Pause.BringToFront;
+      SetTaskbarOverlayIcon(ImageList, 0, 'Running');
     end;
   end;  
 end;
