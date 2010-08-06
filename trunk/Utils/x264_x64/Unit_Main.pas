@@ -1,3 +1,24 @@
+///////////////////////////////////////////////////////////////////////////////
+// Simple x264 Launcher
+// Copyright (C) 2009-2010 LoRd_MuldeR <MuldeR2@GMX.de>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//
+// http://www.gnu.org/licenses/gpl-2.0.txt
+///////////////////////////////////////////////////////////////////////////////
+
 unit Unit_Main;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7,15 +28,11 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, XPMan, JvDialogs, MuldeR_Toolz, Mask,
-  JvExMask, JvSpin, ShlObj, ShellAPI, AppEvnts, Math, INIFiles,
+  JvExMask, JvSpin, ShlObj, ShellAPI, AppEvnts, Math, INIFiles, Unit_LinkTime,
   JvExStdCtrls, JvCombobox, Unit_Encode, Unit_RunProcess, Unit_Win7Taskbar;
 
 const
-  Year =     2009;
-  Month =      11;
-  Day =        11;
-  Postfix =    '';
-  MinRev =   1332;
+  MinRev = 1688;
 
 type
   TForm_Main = class(TForm)
@@ -110,13 +127,7 @@ begin
   FirstActivate := True;
   WM_TaskbarButtonCreated := RegisterWindowMessage('TaskbarButtonCreated');
 
-  if Postfix <> '' then
-  begin
-    Label_Date.Caption := Format('by LoRd_MuldeR (Built: %.4d-%.2d-%.2d, %s)', [Year,Month,Day,Postfix]);
-  end else begin
-    Label_Date.Caption := Format('by LoRd_MuldeR (Built: %.4d-%.2d-%.2d)', [Year,Month,Day]);
-  end;
-
+  Label_Date.Caption := Format('by LoRd_MuldeR (Built: %s)', [GetImageLinkTimeStampAsString(True)]);
   OsIsWin64 := IsWow64Process;
 
   if OsIsWin64 then
@@ -195,7 +206,7 @@ begin
 
   if not b then
   begin
-    MsgBox(self.WindowHandle, 'Unable to load the Avisynth library (avisynth.dll).' + #10 + 'Please install Avisynth (32-Bit) ony your computer and then try again!', 'Avisynth Error', MB_ICONERROR or MB_TOPMOST or MB_TASKMODAL);
+    MsgBox(self.WindowHandle, 'Unable to load the Avisynth library (avisynth.dll).' + #10 + 'Please install Avisynth (32-Bit) on your computer and try again!', 'Avisynth Error', MB_ICONERROR or MB_TOPMOST or MB_TASKMODAL);
     Application.Terminate;
   end;
 
@@ -351,6 +362,12 @@ begin
     Exit;
   end;
 
+  if not SameText(ExtractExtension(Edit_Source.Text), 'avs') then
+  begin
+    MsgBox(self.WindowHandle, 'Sorry, benchmarking requires an Avisynth script as input!', 'Benchmark', MB_ICONERROR or MB_TOPMOST);
+    Exit;
+  end;
+
   case CBox_RCMode.ItemIndex of
     0:
     begin
@@ -441,17 +458,19 @@ const
     'weightb'
   );
 
-  Param_Forbidden: array [0..21] of String =
+  Param_Forbidden: array [0..25] of String =
   (
     'B',
     'bitrate',
     'crf',
+    'demuxer',
     'fps',
     'frames',
     'h',
     'help',
     'longhelp',
     'no-progress',
+    'muxer',
     'o',
     'output',
     'p',
@@ -461,6 +480,8 @@ const
     'q',
     'qp',
     'quiet',
+    'stdin',
+    'stdout',
     'tune',
     'v',
     'verbose',
@@ -682,6 +703,8 @@ end;
 procedure TForm_Main.Label_HelpClick(Sender: TObject);
 var
   Process: TRunProcess;
+  i: Integer;
+  b: boolean;
 begin
   if not FileExists(HomeDir + '\x264.exe') then
   begin
@@ -690,15 +713,25 @@ begin
   end;
 
   Process := TRunProcess.Create;
+  Process.Execute(Format('"%s\x264.exe" --version', [HomeDir]));
 
   if Process.Execute(Format('"%s\x264.exe" --fullhelp', [HomeDir])) = procDone then
   begin
-    Form_Results.Memo_Result.Lines.Clear;
+    Form_Results.Memo_Result.Clear;
     Process.GetLog(TStringList(Form_Results.Memo_Result.Lines));
-    if Form_Results.Memo_Result.Lines.Count > 2 then
+    b := True;
+    while b do
     begin
-      Form_Results.Memo_Result.Lines.Delete(Form_Results.Memo_Result.Lines.Count-1);
-      Form_Results.Memo_Result.Lines.Delete(Form_Results.Memo_Result.Lines.Count-1);
+      b := False;
+      for i := 0 to Form_Results.Memo_Result.Lines.Count - 1 do
+      begin
+        if (Pos('BYTES CAPTURED:', Form_Results.Memo_Result.Lines[i]) <> 0) or (Pos('EXIT CODE:', Form_Results.Memo_Result.Lines[i]) <> 0) then
+        begin
+          b := True;
+          Form_Results.Memo_Result.Lines.Delete(i);
+          Break;
+        end;
+      end;
     end;
     Form_Results.Caption := 'x264 Help';
     Form_Results.ShowModal;
@@ -714,7 +747,25 @@ end;
 ///////////////////////////////////////////////////////////////////////////////
 
 procedure TForm_Main.Button_SourceClick(Sender: TObject);
+const
+  FileTypes: array [0..18] of String = ('3gp','asf','avi','divx','flv','m2p','m2ts','m2v','m4v','mkv','mov','mp4','mpeg','mpg','nsv','ogm','ts','vob','wmv');
+var
+  i: Integer;
+  Temp, Filter: String;
 begin
+  Temp := Format('*.%s', [FileTypes[0]]);
+
+  for i := 1 to High(FileTypes) do
+  begin
+    Temp := Format('%s;*.%s', [Temp, FileTypes[i]]);
+  end;
+
+  Filter := Format('Supported files|*.avs;%s', [Temp]);
+  Filter := Format('%s|Only Avisynth script files|*.avs', [Filter, Temp]);
+  Filter := Format('%s|Only media files|%s', [Filter, Temp]);
+  Filter := Format('%s|All files (*.*)|*.*', [Filter]);
+
+  Dialog_Open.Filter := Filter;
   Dialog_Open.FileName := Edit_Source.Text;
 
   if Dialog_Open.Execute then

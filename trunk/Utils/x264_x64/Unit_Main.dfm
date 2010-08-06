@@ -812,9 +812,9 @@ object Form_Main: TForm_Main
     object Label1: TLabel
       Left = 16
       Top = 24
-      Width = 111
+      Width = 180
       Height = 13
-      Caption = 'Source Avisynth script:'
+      Caption = 'Source media file -or- Avisynth script:'
     end
     object Label2: TLabel
       Left = 16
@@ -1001,13 +1001,14 @@ object Form_Main: TForm_Main
         ' (and vice versa).'
       Style = csDropDownList
       ItemHeight = 13
-      ItemIndex = 4
+      ItemIndex = 5
       ParentShowHint = False
       ShowHint = True
       TabOrder = 0
       Text = 'Medium'
       Items.Strings = (
         'Ultrafast'
+        'Superfast'
         'Veryfast'
         'Faster'
         'Fast'
@@ -1037,8 +1038,11 @@ object Form_Main: TForm_Main
         'Film'
         'Animation'
         'Grain'
+        'Stillimage'
         'PSNR'
         'SSIM'
+        'Fastdecode'
+        'Zerolatency'
         'Touhou')
     end
     object CBox_Profile: TComboBox
@@ -1114,18 +1118,18 @@ object Form_Main: TForm_Main
     Top = 416
   end
   object Dialog_Open: TJvOpenDialog
-    Filter = 'Avisynth Script (.avs)|*.avs'
+    Filter = 'Files|*.*'
     Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
-    Height = 0
-    Width = 0
+    Height = 458
+    Width = 571
     Left = 168
     Top = 416
   end
   object Dialog_Save: TJvSaveDialog
     DefaultExt = '.mkv'
     Filter = 
-      'Matroska (.mkv)|*.mkv|ISO/MP4 (*.mp4)|*.mp4|Raw H.264 data (.264' +
-      ')|*.264'
+      'Matroska (.mkv)|*.mkv|ISO/MP4 (*.mp4)|*.mp4|Flash Video (*.flv)|' +
+      '*.flv|Raw H.264 data (.264)|*.264'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
     Height = 0
     Width = 0

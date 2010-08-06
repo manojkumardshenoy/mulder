@@ -8,7 +8,11 @@ uses
   Unit_Encode in 'Unit_Encode.pas',
   Unit_RunProcess in '..\LameXP_NEW\Unit_RunProcess.pas',
   Unit_Results in 'Unit_Results.pas' {Form_Results},
-  Unit_Commandline in 'Unit_Commandline.pas';
+  Unit_Commandline in 'Unit_Commandline.pas',
+  Unit_Win7Taskbar in '..\LameXP_NEW\Unit_Win7Taskbar.pas',
+  Unit_RIPEMD160 in '..\LameXP_NEW\Unit_RIPEMD160.pas',
+  Unit_LinkTime in '..\LameXP_NEW\Unit_LinkTime.pas',
+  Unit_WideStrUtils in '..\LameXP_NEW\Unit_WideStrUtils.pas';
 
 {$R *.res}
 
