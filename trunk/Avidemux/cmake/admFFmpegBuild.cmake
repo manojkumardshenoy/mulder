@@ -1,7 +1,7 @@
 include(admFFmpegUtil)
 
-set(FFMPEG_VERSION 23514)	# http://git.ffmpeg.org/?p=ffmpeg;a=snapshot;h=e98e85c1eb2e0b00e95714d98c61ffa55be349d4;sf=tgz
-set(SWSCALE_VERSION 31344)	# http://git.ffmpeg.org/?p=libswscale;a=snapshot;h=0eac904069b4398edd7d57784eb56883b26ee380;sf=tgz
+set(FFMPEG_VERSION 24666)	# http://git.ffmpeg.org/?p=ffmpeg;a=snapshot;h=64c439749fac9240ca3e267b84b1d83f588a9c06;sf=tgz
+set(SWSCALE_VERSION 31906)	# http://git.ffmpeg.org/?p=libswscale;a=snapshot;h=233bcae1499042c80d2111bc76086302793029a9;sf=tgz
 
 set(LIBRARY_SOURCE_DIR "${CMAKE_SOURCE_DIR}/avidemux/ADM_libraries")
 set(FFMPEG_SOURCE_DIR "${LIBRARY_SOURCE_DIR}/ffmpeg")
@@ -197,6 +197,10 @@ install(FILES "${FFMPEG_BINARY_DIR}/libavcodec/${LIBAVCODEC_LIB}" DESTINATION "$
 add_library(ADM_libavformat UNKNOWN IMPORTED)
 set_property(TARGET ADM_libavformat PROPERTY IMPORTED_LOCATION "${FFMPEG_BINARY_DIR}/libavformat/${LIBAVFORMAT_LIB}")
 install(FILES "${FFMPEG_BINARY_DIR}/libavformat/${LIBAVFORMAT_LIB}" DESTINATION "${FFMPEG_INSTALL_DIR}")
+
+add_library(ADM_libavcore UNKNOWN IMPORTED)
+set_property(TARGET ADM_libavcore PROPERTY IMPORTED_LOCATION "${FFMPEG_BINARY_DIR}/libavcore/${LIBAVCORE_LIB}")
+install(FILES "${FFMPEG_BINARY_DIR}/libavcore/${LIBAVCORE_LIB}" DESTINATION "${FFMPEG_INSTALL_DIR}")
 
 include_directories("${FFMPEG_SOURCE_DIR}")
 include_directories("${FFMPEG_SOURCE_DIR}/libavutil")

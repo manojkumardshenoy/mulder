@@ -256,6 +256,10 @@ char *start;
                         {
                               _payloadType=DMX_PAYLOAD_MPEG4;
                         }else
+                        if(!strncmp(payload,"VC1",3))
+                        {
+                              _payloadType=DMX_PAYLOAD_VC1;
+                        }else
                         {
                           ADM_assert(0); 
                         }
@@ -462,15 +466,22 @@ char *start;
                                 scancode<<=8;
                                 scancode+=tmp[count];
                                 count++;
-                                if(scancode==0x000001b8 || scancode==0x00000100)
+                                if(scancode==0x000001b8 || scancode==0x00000100 || scancode==0x10D)
                                 {
                                         found=1;
                                         break;
                                 }                                                       
                         }
-                        if(found && count>4)
+                        
+                        switch(_payloadType)
                         {
-                                
+
+                        case DMX_PAYLOAD_MPEG2:
+                            if(found && count<4)
+                            {
+                                    printf("Mmm cound not find a gop start.....\n");
+                                    break;
+                            }
                                 _extraDataLen=count-4;
                                 _extraData=new uint8_t[_extraDataLen];
                                 memcpy(_extraData,tmp,_extraDataLen);
@@ -481,11 +492,29 @@ char *start;
                                         _extraDataLen, _extraData[0],
                                                         _extraData[1],
                                                         _extraData[2],
-                                                        _extraData[3]);                                          
-                        }
-                        else
+                                                        _extraData[3]);    
+                                break;
+                        case DMX_PAYLOAD_VC1:
                         {
-                                printf("Mmm cound not find a gop start.....\n");
+                                if(!found)
+                                {
+                                        printf("No seq header + extraction point\n");
+                                        return false;
+                                }
+                                _extraDataLen=count-3;
+                                _extraData=new uint8_t[_extraDataLen];
+                                memcpy(_extraData,tmp,_extraDataLen);
+                                mixDump(tmp,50);
+                                printf("\n");
+                                printf("Image :%d, seqLen : %u seq %x %x %x %x\n",
+                                        firstPic,
+                                        _extraDataLen, _extraData[0],
+                                                        _extraData[1],
+                                                        _extraData[2],
+                                                        _extraData[3]);  
+                        }
+                        break;
+                        default: break;
                         }
                         delete [] tmp;                                                
                    
@@ -512,6 +541,7 @@ char *start;
                           case DMX_PAYLOAD_MPEG2:_videostream.fccHandler=_video_bih.biCompression=fourCC::get((uint8_t *)"MPEG");;break;
                           case DMX_PAYLOAD_MPEG4:_videostream.fccHandler=_video_bih.biCompression=fourCC::get((uint8_t *)"DX50");;break;
                           case DMX_PAYLOAD_H264:_videostream.fccHandler=_video_bih.biCompression=fourCC::get((uint8_t *)"H264");;break;
+                          case DMX_PAYLOAD_VC1:_videostream.fccHandler=_video_bih.biCompression=fourCC::get((uint8_t *)"WVC1");;break;
                           default: ADM_assert(0);
                         }
                         
