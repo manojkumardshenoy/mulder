@@ -1,5 +1,5 @@
 diff --git a/x264dll.c b/x264dll.c
-index 075eaba..f611d99 100644
+index 075eaba..a4de855 100644
 --- a/x264dll.c
 +++ b/x264dll.c
 @@ -21,8 +21,24 @@
@@ -27,23 +27,28 @@ index 075eaba..f611d99 100644
  /* Callback for our DLL so we can initialize pthread */
  BOOL WINAPI DllMain( HANDLE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
  {
-@@ -30,7 +46,7 @@ BOOL WINAPI DllMain( HANDLE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
+@@ -30,7 +46,10 @@ BOOL WINAPI DllMain( HANDLE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
      switch( fdwReason )
      {
          case DLL_PROCESS_ATTACH:
 -            pthread_win32_process_attach_np();
++            /* 
++             * pthread_win32_process_attach_np();
++             */
 +            x264_process_attach_print_version();
  
          case DLL_THREAD_ATTACH:
              pthread_win32_thread_attach_np();
-@@ -41,8 +57,8 @@ BOOL WINAPI DllMain( HANDLE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
+@@ -41,8 +60,10 @@ BOOL WINAPI DllMain( HANDLE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
              break;
  
          case DLL_PROCESS_DETACH:
 -            pthread_win32_thread_detach_np();
 -            pthread_win32_process_detach_np();
-+            /*pthread_win32_thread_detach_np();*/
-+            /*pthread_win32_process_detach_np();*/
++            /*
++             * pthread_win32_thread_detach_np();
++             * pthread_win32_process_detach_np();
++             */
              break;
      }
  #endif
