@@ -1,5 +1,5 @@
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 539f74f..b602409 100644
+index e9791ff..4b34477 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
 @@ -921,6 +921,13 @@ x264_t *x264_encoder_open( x264_param_t *param )
