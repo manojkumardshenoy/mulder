@@ -14,10 +14,10 @@ index 47fcaa2..f85580d 100644
  
  /****************************************************************************
 diff --git a/configure b/configure
-index 565eb98..2eb79f2 100755
+index 9740522..99f6ed4 100755
 --- a/configure
 +++ b/configure
-@@ -773,6 +773,8 @@ EOF
+@@ -777,6 +777,8 @@ EOF
  filters="crop select_every"
  [ $swscale = yes ] && filters="resize $filters"
  
@@ -27,7 +27,7 @@ index 565eb98..2eb79f2 100755
  Platform:   $ARCH
  System:     $SYS
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 99c023e..80017e2 100644
+index 8876c63..220dba2 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
 @@ -31,6 +31,7 @@
