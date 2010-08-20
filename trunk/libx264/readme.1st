@@ -23,18 +23,19 @@ However these builds usually are newer than the ones that ship with Avidemux and
 Install instructions:
 ---------------------
 
-Simply replace the existing "libx264-XX.dll" file in your Avidemux install folder with the one from the 7z archive.
+Simply replace the existing "libx264-XXX.dll" file in your Avidemux install folder with the one from the 7z archive.
 You should backup (rename, copy, whatever) your old existing DLL before you replace it, so you can easily restore it later.
-Note that the "XX" suffix in the filename is a placeholder for the x264 API version (e.g. "libx264-93.dll").
+Note that the "XXX" suffix in the filename is a placeholder for the x264 API version (e.g. "libx264-104.dll").
 
 BIG FAT WARNING:
-Never rename "libx264-XX.dll" to make Avidemux recognize the DLL file. The "XX" suffix in the filename must NOT be changed!
-If Avidemux doesn't load the "libx264-XX.dll" with its original(!) filename, then you MUST update/downgrade Avidemux.
+
+Never rename "libx264-XXX.dll" to make Avidemux recognize the DLL file. The "XXX" part in the filename must NOT be changed!
+If Avidemux doesn't load the "libx264-XXX.dll" with its original(!) filename, then you MUST update/downgrade Avidemux.
 Or in other words: An existing build of Avidemux does NOT support any x264 API version, except the one it was compiled for.
 
-Take care: Several "libx264-XX.dll" files (with different "XX" part) may reside in the Avidemux directory at the same time.
+Take care: Several "libx264-XXX.dll" files (with a different "XXX") may reside in the Avidemux directory at the same time.
 Still Avidemux will only load the one that is suitable for your current version of Avidemux. The other ones are ignored!
-Therefore I recommend to remove all "libx264-XX.dll" files from your Avidemux directory, except for the one that is in use.
+Therefore I recommend removing ALL "libx264-XXX.dll" files from your Avidemux directory, except for the one that is in use.
 If in doubt, please use the Dependency Walker (www.dependencywalker.com) to check which DLL is actually used by Avidemux.
 
 
