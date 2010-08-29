@@ -4,7 +4,7 @@
 
 GIT_URL="git://git.videolan.org/x264.git"
 DEFAULT_PATCHES="amdfam10_fix print_params dll_version psy_trellis fast_firstpass"
-COMPILERS_CURRENT="451" #460
+COMPILERS_CURRENT="451"
 COMPILERS_LEGACY="460 452 450 445 345"
 CPU_TYPES="i686 core2 amdfam10 pentium3 noasm"
 ROOT_DRIVE="e"
@@ -266,16 +266,16 @@ make_x264() {
 
 ######################################################
 
-# for k in $COMPILERS_CURRENT
-# do
-  # make_pthread "$k"
-  # for l in $CPU_TYPES
-  # do
-    # make_x264 "$k" "$l" "" ""
-    # make_x264 "$k" "$l" "AutoVAQ" "auto_vaq"
-    # make_x264 "$k" "$l" "OpenGOP" "open_gop"
-  # done
-# done
+for k in $COMPILERS_CURRENT
+do
+  make_pthread "$k"
+  for l in $CPU_TYPES
+  do
+    make_x264 "$k" "$l" "" ""
+    make_x264 "$k" "$l" "AutoVAQ" "auto_vaq"
+    make_x264 "$k" "$l" "OpenGOP" "open_gop"
+  done
+done
 
 for k in $COMPILERS_LEGACY
 do

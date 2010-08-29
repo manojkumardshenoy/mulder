@@ -27,7 +27,7 @@ index 9740522..99f6ed4 100755
  Platform:   $ARCH
  System:     $SYS
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 8876c63..220dba2 100644
+index 208095e..0acaaf0 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
 @@ -31,6 +31,7 @@
@@ -38,7 +38,7 @@ index 8876c63..220dba2 100644
  
  #if HAVE_VISUALIZE
  #include "common/visualize.h"
-@@ -1176,6 +1177,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -1174,6 +1175,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
              profile, h->sps->i_level_idc/10, h->sps->i_level_idc%10, BIT_DEPTH );
      }
  
