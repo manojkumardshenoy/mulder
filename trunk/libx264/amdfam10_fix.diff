@@ -12,10 +12,10 @@ index 0f4d0cf..797bcf2 100644
  	$(foreach V, $(VIDS), $(foreach I, 0 1 2 3 4 5 6 7, ./x264$(EXE) $(OPT$I) --threads 1 $(V) -o $(DEVNULL) ;))
  	rm -f $(SRC2:%.c=%.o)
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 6fd8838..8876c63 100644
+index f5fe2c5..208095e 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -1077,7 +1077,12 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -1075,7 +1075,12 @@ x264_t *x264_encoder_open( x264_param_t *param )
          x264_log( h, X264_LOG_ERROR, "Are you attempting to run an SSE4a-targeted build on a CPU that\n" );
          x264_log( h, X264_LOG_ERROR, "doesn't support it?\n" );
  #endif
