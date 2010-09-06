@@ -132,7 +132,9 @@ make_x264() {
   else
     ECFLAGS="-march=i686"
   fi
-
+  
+  ECFLAGS="$ECFLAGS -I../pthreads"
+  
   #if [ $1 -ge 440 ]; then
   #  ECFLAGS="$ECFLAGS" #"-fno-tree-vectorize -floop-interchange -floop-strip-mine -floop-block"
   #fi
@@ -204,6 +206,24 @@ make_x264() {
     return
   fi
 
+  if [ "$2" != "noasm" -a "$(grep '#define HAVE_MMX ' < config.h | cut -f 3 -d ' ')" != "1" ]; then
+    echo -e "\nError: MMX/ASM is *not* enabled. Aborting!\n"
+    cd ..
+    return
+  fi
+  
+  if [ "$(grep '#define HAVE_PTHREAD' < config.h | cut -f 3 -d ' ')" != "1" ]; then
+    echo -e "\nError: PThread is not enabled!\nAre the PThread library and the required .h files there?"
+    cd ..
+    return
+  fi
+
+  if [ "$(grep '#define PTW32_STATIC_LIB' < config.h | cut -f 3 -d ' ')" != "1" ]; then
+    echo -e "\nError: PThread library is not static!"
+    cd ..
+    return
+  fi
+
   VER=$(grep X264_VERSION < config.h | cut -f 4 -d ' ')
   API=$(grep '#define X264_BUILD' < x264.h | cut -f 3 -d ' ')
   
@@ -257,8 +277,8 @@ make_x264() {
   
   echo -e "\n------------------------------------------------------------------------------\n"
 
-  if [ -f "./libx264-$API.dll" -a -f "./history.txt" -a -f "./readme.txt" -a -f "./patches.tar" -a -f "./checkasm.log" ]; then
-    7z a "libx264-$API-$VER-$NAME-fprofiled.7z" "libx264-$API.dll" "readme.txt" "history.txt" "patches.tar" "checkasm.log"
+  if [ -f "./libx264-$API.dll" -a -f "./history.txt" -a -f "./readme.txt" -a -f "./patches.tar" -a -f "./checkasm.log" -a -f "./compiler.ver" ]; then
+    7z a "libx264-$API-$VER-$NAME-fprofiled.7z" "libx264-$API.dll" "readme.txt" "history.txt" "patches.tar" "checkasm.log" "compiler.ver"
   fi
   
   cd ..

@@ -1,8 +1,8 @@
 diff --git a/common/common.c b/common/common.c
-index 47fcaa2..f85580d 100644
+index b0bb4e7..805f9b2 100644
 --- a/common/common.c
 +++ b/common/common.c
-@@ -1016,8 +1016,10 @@ static void x264_log_default( void *p_unused, int i_level, const char *psz_fmt,
+@@ -1018,8 +1018,10 @@ static void x264_log_default( void *p_unused, int i_level, const char *psz_fmt,
              psz_prefix = "unknown";
              break;
      }
@@ -27,7 +27,7 @@ index 9740522..99f6ed4 100755
  Platform:   $ARCH
  System:     $SYS
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 208095e..0acaaf0 100644
+index 8a8f646..6a1ab74 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
 @@ -31,6 +31,7 @@
@@ -38,8 +38,8 @@ index 208095e..0acaaf0 100644
  
  #if HAVE_VISUALIZE
  #include "common/visualize.h"
-@@ -1174,6 +1175,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
-             profile, h->sps->i_level_idc/10, h->sps->i_level_idc%10, BIT_DEPTH );
+@@ -1178,6 +1179,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
+             profile, level, BIT_DEPTH );
      }
  
 +    x264_log( h, X264_LOG_INFO, "version: %s\n", X264_POINTVER );
