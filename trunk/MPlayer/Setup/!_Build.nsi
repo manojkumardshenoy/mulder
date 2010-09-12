@@ -4,18 +4,18 @@
 ; // Developed and tested with NSIS v2.46
 ; ////////////////////////////////////////////////////////////////
 
-!define BUILD_NO "79"
-!define COMPILE_DATE "2010-05-22"
-!define VER_MPLAYER "SVN-r31170 (2010-05-13)"
-!define VER_SMPLAYER "v0.6.9 (SVN-r3532)"
+!define BUILD_NO "80"
+!define COMPILE_DATE "2010-09-12"
+!define VER_MPLAYER "SVN-r32198 (2010-09-12)"
+!define VER_SMPLAYER "v0.6.9 (SVN-r3584)"
 !define VER_MPUI "v1.2-pre3 (Build 38)"
 !define VER_NSIS "v2.46"
 !define VER_CODECS "(2007-10-07)"
 
 ; ----------------------------------------------------------------------------------------------
 
-!define PATH_OUT "D:\MPUI\upload\MPUI.${COMPILE_DATE}.Build-${BUILD_NO}"
-!define PATH_BUILDS "D:\MPUI\builds"
+!define PATH_OUT "E:\MPUI\upload\MPUI.${COMPILE_DATE}.Build-${BUILD_NO}"
+!define PATH_BUILDS "E:\MPUI\builds"
 
 !system 'md "${PATH_OUT}"'
 
