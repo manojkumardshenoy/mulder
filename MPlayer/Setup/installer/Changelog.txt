@@ -1,3 +1,8 @@
+[2010-09-12]
+* MPlayer binaries updated to SVN-r32198
+* SMPlayer updated to Version 0.6.9 (SVN-r3584)
+* QT Runtime Libs updated to Version 4.6.3
+
 [2010-05-22]
 * MPlayer binaries updated to SVN-r31170
 * SMPlayer updated to Version 0.6.9 (SVN-r3532)
