@@ -76,6 +76,19 @@ apply_patch() {
 
 ######################################################
 
+test_configuration() {
+  rm -f ./conftest.c
+  rm -f ./conftest.exe
+  echo -e "int main(int argc, char **argv) { return 42; }\n" > ./conftest.c
+  gcc $1 -o ./conftest.exe ./conftest.c > /dev/null 2> /dev/null
+  SUCCESS=$?
+  rm -f ./conftest.c
+  rm -f ./conftest.exe
+  return $SUCCESS
+}
+
+######################################################
+
 make_pthread() {
   echo -e "\n=============================================================================="
   echo "GCC Version: $1"
@@ -134,6 +147,7 @@ make_x264() {
   fi
   
   ECFLAGS="$ECFLAGS -I../pthreads"
+  ELFLAGS="-L../pthreads"
   
   #if [ $1 -ge 440 ]; then
   #  ECFLAGS="$ECFLAGS" #"-fno-tree-vectorize -floop-interchange -floop-strip-mine -floop-block"
@@ -161,7 +175,21 @@ make_x264() {
   umount /mingw
   mount $ROOT_DRIVE:/mingw.$1 /mingw
   gcc --version
-  
+
+  if [ $? -ne 0 ]; then
+    echo "Error: GCC is not working !!!"
+    return
+  fi
+
+  test_configuration "-flto"
+  if [ $? -eq 0 ]; then
+    echo "LTO enabled :-)"
+    ECFLAGS="$ECFLAGS -flto"
+    ELFLAGS="$ELFLAGS -flto" # -fwhole-program
+  else
+    echo "LTO disabled :-("
+  fi
+
   echo -e "\n------------------------------------------------------------------------------\n"
 
   rm --recursive --force ./x264-$NAME
@@ -196,9 +224,9 @@ make_x264() {
   echo -e "Configure:\n"
   
   if [ "$2" != "noasm" ]; then
-    ./configure --enable-shared --extra-cflags="$ECFLAGS" --extra-ldflags="-L../pthreads"
+    ./configure --enable-shared --extra-cflags="$ECFLAGS" --extra-ldflags="$ELFLAGS"
   else
-    ./configure --enable-shared --disable-asm --extra-cflags="$ECFLAGS" --extra-ldflags="-L../pthreads"
+    ./configure --enable-shared --disable-asm --extra-cflags="$ECFLAGS" --extra-ldflags="$ELFLAGS"
   fi
 
   if [ $? -ne 0 ]; then
@@ -294,6 +322,7 @@ do
     make_x264 "$k" "$l" "" ""
     make_x264 "$k" "$l" "AutoVAQ" "auto_vaq"
     make_x264 "$k" "$l" "OpenGOP" "open_gop"
+    make_x264 "$k" "$l" "NALHRD" "nal_hrd_vbr"
   done
 done
 
