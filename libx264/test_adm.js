@@ -5,14 +5,14 @@ var app = new Avidemux();
 
 //** Video **
 app.load("F:/Samples/Lossless/foreman_cif.352x288.avi");
-app.append("F:/Samples/Lossless/bus_cif.352x288.avi");
 app.append("F:/Samples/Lossless/football_cif.352x288.avi");
-app.append("F:/Samples/Lossless/silent_cif.352x288.avi");
-app.append("F:/Samples/Lossless/stefan_cif.352x288.avi");
-app.append("F:/Samples/Lossless/paris_cif.352x288.avi");
 
 /*
 app.append("F:/Samples/Lossless/firebelly.352x288.avi");
+app.append("F:/Samples/Lossless/bus_cif.352x288.avi");
+app.append("F:/Samples/Lossless/silent_cif.352x288.avi");
+app.append("F:/Samples/Lossless/stefan_cif.352x288.avi");
+app.append("F:/Samples/Lossless/paris_cif.352x288.avi");
 */
 
 //** Postproc **

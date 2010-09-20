@@ -3,7 +3,7 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
-DEFAULT_PATCHES="amdfam10_fix print_params dll_version psy_trellis fast_firstpass"
+DEFAULT_PATCHES="core105to104 amdfam10_fix print_params dll_version psy_trellis fast_firstpass"
 COMPILERS_CURRENT="451"
 COMPILERS_LEGACY="460 452 450 445 345"
 CPU_TYPES="i686 core2 amdfam10 pentium3 noasm"
@@ -147,7 +147,7 @@ make_x264() {
   fi
   
   ECFLAGS="$ECFLAGS -I../pthreads"
-  ELFLAGS="-L../pthreads"
+  ELFLAGS="$ELFLAGS -L../pthreads"
   
   #if [ $1 -ge 440 ]; then
   #  ECFLAGS="$ECFLAGS" #"-fno-tree-vectorize -floop-interchange -floop-strip-mine -floop-block"
@@ -186,6 +186,7 @@ make_x264() {
     echo "LTO enabled :-)"
     ECFLAGS="$ECFLAGS -flto"
     ELFLAGS="$ELFLAGS -flto" # -fwhole-program
+    PATCHES="make_lto $PATCHES"
   else
     echo "LTO disabled :-("
   fi

@@ -1,3 +1,6 @@
 FFVideoSource("F:\Samples\Lossless\soccer.704x576.60fps.avi")
+#AssumeFrameBased()
+#FFVideoSource("F:\Samples\Lossless\crew.704x576.avi")
+#FFVideoSource("F:\Samples\Lossless\foreman_cif.352x288.avi") ++ FFVideoSource("F:\Samples\Lossless\football_cif.352x288.avi")
+#Dissolve(Last.Trim(0,199), Last.Trim(200,399), Last.Trim(400,599), 15)
 AssumeFrameBased()
-Dissolve(Last.Trim(0,199), Last.Trim(200,399), Last.Trim(400,599), 15)

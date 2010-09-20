@@ -1,8 +1,8 @@
 diff --git a/Makefile b/Makefile
-index 0f4d0cf..797bcf2 100644
+index bab55e5..c0eb2e9 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -176,7 +176,7 @@ else
+@@ -181,7 +181,7 @@ else
  fprofiled:
  	$(MAKE) clean
  	mv config.mak config.mak2
@@ -12,10 +12,10 @@ index 0f4d0cf..797bcf2 100644
  	$(foreach V, $(VIDS), $(foreach I, 0 1 2 3 4 5 6 7, ./x264$(EXE) $(OPT$I) --threads 1 $(V) -o $(DEVNULL) ;))
  	rm -f $(SRC2:%.c=%.o)
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index e9aa05c..8a8f646 100644
+index a7edf27..d48461f 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -1075,7 +1075,12 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -1078,7 +1078,12 @@ x264_t *x264_encoder_open( x264_param_t *param )
          x264_log( h, X264_LOG_ERROR, "Are you attempting to run an SSE4a-targeted build on a CPU that\n" );
          x264_log( h, X264_LOG_ERROR, "doesn't support it?\n" );
  #endif
