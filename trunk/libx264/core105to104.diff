@@ -1,0 +1,314 @@
+diff --git a/common/frame.c b/common/frame.c
+index ae5a01f..df7ef04 100644
+--- a/common/frame.c
++++ b/common/frame.c
+@@ -268,7 +268,6 @@ int x264_frame_copy_picture( x264_t *h, x264_frame_t *dst, x264_picture_t *src )
+     dst->i_pts      = dst->i_reordered_pts = src->i_pts;
+     dst->param      = src->param;
+     dst->i_pic_struct = src->i_pic_struct;
+-    dst->extra_sei  = src->extra_sei;
+ 
+     uint8_t *pix[3];
+     int stride[3];
+diff --git a/common/frame.h b/common/frame.h
+index 8057a52..b1fbe6c 100644
+--- a/common/frame.h
++++ b/common/frame.h
+@@ -151,9 +151,6 @@ typedef struct x264_frame
+ 
+     /* interactive encoder control */
+     int     b_corrupt;
+-
+-    /* user sei */
+-    x264_sei_t extra_sei;
+ } x264_frame_t;
+ 
+ /* synchronized frame list */
+diff --git a/encoder/encoder.c b/encoder/encoder.c
+index fa4401b..a7edf27 100644
+--- a/encoder/encoder.c
++++ b/encoder/encoder.c
+@@ -2606,26 +2606,7 @@ int     x264_encoder_encode( x264_t *h,
+         }
+ 
+         /* buffering period sei is written in x264_encoder_frame_end */
+-    }
+ 
+-    /* write extra sei */
+-    for( int i = 0; i < h->fenc->extra_sei.num_payloads; i++ )
+-    {
+-        x264_nal_start( h, NAL_SEI, NAL_PRIORITY_DISPOSABLE );
+-        x264_sei_write( &h->out.bs, h->fenc->extra_sei.payloads[i].payload, h->fenc->extra_sei.payloads[i].payload_size,
+-                        h->fenc->extra_sei.payloads[i].payload_type );
+-        if( x264_nal_end( h ) )
+-            return -1;
+-        overhead += h->out.nal[h->out.i_nal-1].i_payload + NALU_OVERHEAD - (h->param.b_annexb && h->out.i_nal-1);
+-        if( h->fenc->extra_sei.sei_free && h->fenc->extra_sei.payloads[i].payload )
+-            h->fenc->extra_sei.sei_free( h->fenc->extra_sei.payloads[i].payload );
+-    }
+-
+-    if( h->fenc->extra_sei.sei_free && h->fenc->extra_sei.payloads )
+-        h->fenc->extra_sei.sei_free( h->fenc->extra_sei.payloads );
+-
+-    if( h->fenc->b_keyframe )
+-    {
+         if( h->param.b_repeat_headers && h->fenc->i_frame == 0 )
+         {
+             /* identify ourself */
+diff --git a/encoder/set.c b/encoder/set.c
+index b0d2149..e0c9a1c 100644
+--- a/encoder/set.c
++++ b/encoder/set.c
+@@ -76,25 +76,27 @@ static void scaling_list_write( bs_t *s, x264_pps_t *pps, int idx )
+     }
+ }
+ 
+-void x264_sei_write( bs_t *s, uint8_t *payload, int payload_size, int payload_type )
++static uint8_t *x264_sei_write_header( bs_t *s, int payload_type )
+ {
+-    int i;
++    bs_write( s, 8, payload_type );
+ 
++    bs_flush( s );
++    uint8_t *p_start = s->p;
+     bs_realign( s );
+ 
+-    for( i = 0; i <= payload_type-255; i += 255 )
+-        bs_write( s, 8, 255 );
+-    bs_write( s, 8, payload_type-i );
++    bs_write( s, 8, 0 );
++    return p_start;
++}
+ 
+-    for( i = 0; i <= payload_size-255; i += 255 )
+-        bs_write( s, 8, 255 );
+-    bs_write( s, 8, payload_size-i );
++static void x264_sei_write( bs_t *s, uint8_t *p_start )
++{
++    bs_align_10( s );
++    bs_flush( s );
+ 
+-    for( i = 0; i < payload_size; i++ )
+-        bs_write(s, 8, payload[i] );
++    p_start[0] = s->p - p_start - 1; // -1 for the length byte
++    bs_realign( s );
+ 
+     bs_rbsp_trailing( s );
+-    bs_flush( s );
+ }
+ 
+ void x264_sps_init( x264_sps_t *sps, int i_id, x264_param_t *param )
+@@ -543,26 +545,21 @@ void x264_pps_write( bs_t *s, x264_pps_t *pps )
+ 
+ void x264_sei_recovery_point_write( x264_t *h, bs_t *s, int recovery_frame_cnt )
+ {
+-    bs_t q;
+-    uint8_t tmp_buf[100];
+-    bs_init( &q, tmp_buf, 100 );
+-
+-    bs_realign( &q );
+-
+-    bs_write_ue( &q, recovery_frame_cnt ); // recovery_frame_cnt
+-    bs_write( &q, 1, 1 ); //exact_match_flag 1
+-    bs_write( &q, 1, 0 ); //broken_link_flag 0
+-    bs_write( &q, 2, 0 ); //changing_slice_group 0
+-
+-    bs_align_10( &q );
+-    bs_flush( &q );
++    bs_realign( s );
++    uint8_t *p_start = x264_sei_write_header( s, SEI_RECOVERY_POINT );
+ 
+-    x264_sei_write( s, tmp_buf, bs_pos( &q ) / 8, SEI_RECOVERY_POINT );
++    bs_write_ue( s, recovery_frame_cnt ); // recovery_frame_cnt
++    bs_write( s, 1, 1 ); //exact_match_flag 1
++    bs_write( s, 1, 0 ); //broken_link_flag 0
++    bs_write( s, 2, 0 ); //changing_slice_group 0
+ 
++    x264_sei_write( s, p_start );
++    bs_flush( s );
+ }
+ 
+ int x264_sei_version_write( x264_t *h, bs_t *s )
+ {
++    int i;
+     // random ID number generated according to ISO-11578
+     static const uint8_t uuid[16] =
+     {
+@@ -570,23 +567,35 @@ int x264_sei_version_write( x264_t *h, bs_t *s )
+         0x96, 0x2c, 0xd8, 0x20, 0xd9, 0x23, 0xee, 0xef
+     };
+     char *opts = x264_param2string( &h->param, 0 );
+-    char *payload;
++    char *version;
+     int length;
+ 
+     if( !opts )
+         return -1;
+-    CHECKED_MALLOC( payload, 200 + strlen( opts ) );
++    CHECKED_MALLOC( version, 200 + strlen( opts ) );
+ 
+-    memcpy( payload, uuid, 16 );
+-    sprintf( payload+16, "x264 - core %d%s - H.264/MPEG-4 AVC codec - "
++    sprintf( version, "x264 - core %d%s - H.264/MPEG-4 AVC codec - "
+              "Copyleft 2003-2010 - http://www.videolan.org/x264.html - options: %s",
+              X264_BUILD, X264_VERSION, opts );
+-    length = strlen(payload)+1;
++    length = strlen(version)+1+16;
+ 
+-    x264_sei_write( s, (uint8_t *)payload, length, SEI_USER_DATA_UNREGISTERED );
++    bs_realign( s );
++    bs_write( s, 8, SEI_USER_DATA_UNREGISTERED );
++    // payload_size
++    for( i = 0; i <= length-255; i += 255 )
++        bs_write( s, 8, 255 );
++    bs_write( s, 8, length-i );
++
++    for( int j = 0; j < 16; j++ )
++        bs_write( s, 8, uuid[j] );
++    for( int j = 0; j < length-16; j++ )
++        bs_write( s, 8, version[j] );
++
++    bs_rbsp_trailing( s );
++    bs_flush( s );
+ 
+     x264_free( opts );
+-    x264_free( payload );
++    x264_free( version );
+     return 0;
+ fail:
+     x264_free( opts );
+@@ -596,54 +605,45 @@ fail:
+ void x264_sei_buffering_period_write( x264_t *h, bs_t *s )
+ {
+     x264_sps_t *sps = h->sps;
+-    bs_t q;
+-    uint8_t tmp_buf[100];
+-    bs_init( &q, tmp_buf, 100 );
++    bs_realign( s );
++    uint8_t *p_start = x264_sei_write_header( s, SEI_BUFFERING_PERIOD );
+ 
+-    bs_realign( &q );
+-    bs_write_ue( &q, sps->i_id );
++    bs_write_ue( s, sps->i_id );
+ 
+     if( sps->vui.b_nal_hrd_parameters_present )
+     {
+-        bs_write( &q, sps->vui.hrd.i_initial_cpb_removal_delay_length, h->initial_cpb_removal_delay );
+-        bs_write( &q, sps->vui.hrd.i_initial_cpb_removal_delay_length, h->initial_cpb_removal_delay_offset );
++        bs_write( s, sps->vui.hrd.i_initial_cpb_removal_delay_length, h->initial_cpb_removal_delay );
++        bs_write( s, sps->vui.hrd.i_initial_cpb_removal_delay_length, h->initial_cpb_removal_delay_offset );
+     }
+ 
+-    bs_align_10( &q );
+-    bs_flush( &q );
+-
+-    x264_sei_write( s, tmp_buf, bs_pos( &q ) / 8, SEI_BUFFERING_PERIOD );
++    x264_sei_write( s, p_start );
++    bs_flush( s );
+ }
+ 
+ void x264_sei_pic_timing_write( x264_t *h, bs_t *s )
+ {
+     x264_sps_t *sps = h->sps;
+-    bs_t q;
+-    uint8_t tmp_buf[100];
+-    bs_init( &q, tmp_buf, 100 );
+-
+-    bs_realign( &q );
++    bs_realign( s );
++    uint8_t *p_start = x264_sei_write_header( s, SEI_PIC_TIMING );
+ 
+     if( sps->vui.b_nal_hrd_parameters_present || sps->vui.b_vcl_hrd_parameters_present )
+     {
+-        bs_write( &q, sps->vui.hrd.i_cpb_removal_delay_length, h->fenc->i_cpb_delay );
+-        bs_write( &q, sps->vui.hrd.i_dpb_output_delay_length, h->fenc->i_dpb_output_delay );
++        bs_write( s, sps->vui.hrd.i_cpb_removal_delay_length, h->fenc->i_cpb_delay );
++        bs_write( s, sps->vui.hrd.i_dpb_output_delay_length, h->fenc->i_dpb_output_delay );
+     }
+ 
+     if( sps->vui.b_pic_struct_present )
+     {
+-        bs_write( &q, 4, h->fenc->i_pic_struct-1 ); // We use index 0 for "Auto"
++        bs_write( s, 4, h->fenc->i_pic_struct-1 ); // We use index 0 for "Auto"
+ 
+         // These clock timestamps are not standardised so we don't set them
+         // They could be time of origin, capture or alternative ideal display
+         for( int i = 0; i < num_clock_ts[h->fenc->i_pic_struct]; i++ )
+-            bs_write1( &q, 0 ); // clock_timestamp_flag
++            bs_write1( s, 0 ); // clock_timestamp_flag
+     }
+ 
+-    bs_align_10( &q );
+-    bs_flush( &q );
+-
+-    x264_sei_write( s, tmp_buf, bs_pos( &q ) / 8, SEI_PIC_TIMING );
++    x264_sei_write( s, p_start );
++    bs_flush( s );
+ }
+ 
+ void x264_filler_write( x264_t *h, bs_t *s, int filler )
+diff --git a/encoder/set.h b/encoder/set.h
+index 6d70e96..2e26303 100644
+--- a/encoder/set.h
++++ b/encoder/set.h
+@@ -36,7 +36,6 @@ int  x264_sei_version_write( x264_t *h, bs_t *s );
+ int  x264_validate_levels( x264_t *h, int verbose );
+ void x264_sei_buffering_period_write( x264_t *h, bs_t *s );
+ void x264_sei_pic_timing_write( x264_t *h, bs_t *s );
+-void x264_sei_write( bs_t *s, uint8_t *payload, int payload_size, int payload_type );
+ void x264_filler_write( x264_t *h, bs_t *s, int filler );
+ 
+ #endif
+diff --git a/x264.h b/x264.h
+index 8174015..a9f6719 100644
+--- a/x264.h
++++ b/x264.h
+@@ -39,7 +39,7 @@
+ 
+ #include <stdarg.h>
+ 
+-#define X264_BUILD 105
++#define X264_BUILD 104
+ 
+ /* x264_t:
+  *      opaque handler for encoder */
+@@ -586,30 +586,6 @@ typedef struct
+     double dpb_output_time;
+ } x264_hrd_t;
+ 
+-/* Arbitrary user SEI:
+- * Payload size is in bytes and the payload pointer must be valid.
+- * Payload types and syntax can be found in Annex D of the H.264 Specification.
+- * SEI payload alignment bits as described in Annex D must be included at the
+- * end of the payload if needed.
+- * The payload should not be NAL-encapsulated.
+- * Payloads are written first in order of input, apart from in the case when HRD
+- * is enabled where payloads are written after the Buffering Period SEI. */
+-
+-typedef struct
+-{
+-    int payload_size;
+-    int payload_type;
+-    uint8_t *payload;
+-} x264_sei_payload_t;
+-
+-typedef struct
+-{
+-    int num_payloads;
+-    x264_sei_payload_t *payloads;
+-    /* In: optional callback to free each payload AND x264_sei_payload_t when used. */
+-    void (*sei_free)( void* );
+-} x264_sei_t;
+-
+ typedef struct
+ {
+     int     i_csp;       /* Colorspace */
+@@ -669,8 +645,6 @@ typedef struct
+     x264_image_properties_t prop;
+     /* Out: HRD timing information. Output only when i_nal_hrd is set. */
+     x264_hrd_t hrd_timing;
+-    /* In: arbitrary user SEI (e.g subtitles, AFDs) */
+-    x264_sei_t extra_sei;
+     /* private user data. libx264 doesn't touch this,
+        not even copy it from input to output frames. */
+     void *opaque;

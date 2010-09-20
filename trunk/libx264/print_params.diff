@@ -1,8 +1,8 @@
 diff --git a/common/common.c b/common/common.c
-index b0bb4e7..805f9b2 100644
+index c329cb0..e9c92b0 100644
 --- a/common/common.c
 +++ b/common/common.c
-@@ -1018,8 +1018,10 @@ static void x264_log_default( void *p_unused, int i_level, const char *psz_fmt,
+@@ -1021,8 +1021,10 @@ static void x264_log_default( void *p_unused, int i_level, const char *psz_fmt,
              psz_prefix = "unknown";
              break;
      }
@@ -14,12 +14,12 @@ index b0bb4e7..805f9b2 100644
  
  /****************************************************************************
 diff --git a/configure b/configure
-index 9740522..99f6ed4 100755
+index 1ad2b57..5002e34 100755
 --- a/configure
 +++ b/configure
-@@ -777,6 +777,8 @@ EOF
- filters="crop select_every"
+@@ -792,6 +792,8 @@ gpl_filters=""
  [ $swscale = yes ] && filters="resize $filters"
+ [ $gpl = yes ] && filters="$filters $gpl_filters"
  
 +echo "#define X264_CFLAGS \"$CFLAGS\"" >> config.h
 +
@@ -27,10 +27,10 @@ index 9740522..99f6ed4 100755
  Platform:   $ARCH
  System:     $SYS
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 8a8f646..6a1ab74 100644
+index d48461f..f033122 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -31,6 +31,7 @@
+@@ -34,6 +34,7 @@
  #include "ratecontrol.h"
  #include "macroblock.h"
  #include "me.h"
@@ -38,7 +38,7 @@ index 8a8f646..6a1ab74 100644
  
  #if HAVE_VISUALIZE
  #include "common/visualize.h"
-@@ -1178,6 +1179,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -1181,6 +1182,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
              profile, level, BIT_DEPTH );
      }
  

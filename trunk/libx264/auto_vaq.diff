@@ -1,8 +1,8 @@
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 931a87e..15d1ed7 100644
+index 3e12772..951817b 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -919,6 +919,13 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -922,6 +922,13 @@ x264_t *x264_encoder_open( x264_param_t *param )
          h->param.i_keyint_max = X264_KEYINT_MAX_INFINITE;
      }
  
