@@ -146,8 +146,8 @@ make_x264() {
     ECFLAGS="-march=i686"
   fi
   
+  ELFLAGS="-L../pthreads"
   ECFLAGS="$ECFLAGS -I../pthreads"
-  ELFLAGS="$ELFLAGS -L../pthreads"
   
   #if [ $1 -ge 440 ]; then
   #  ECFLAGS="$ECFLAGS" #"-fno-tree-vectorize -floop-interchange -floop-strip-mine -floop-block"
