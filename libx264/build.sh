@@ -3,7 +3,7 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
-DEFAULT_PATCHES="core105to104 amdfam10_fix print_params dll_version psy_trellis fast_firstpass"
+DEFAULT_PATCHES="amdfam10_fix print_params dll_version psy_trellis fast_firstpass"
 COMPILERS_CURRENT="451"
 COMPILERS_LEGACY="460 452 450 445 345"
 CPU_TYPES="i686 core2 amdfam10 pentium3 noasm"
@@ -48,7 +48,7 @@ fi
 ######################################################
 
 apply_patch() {
-  sleep 2
+  sleep 1
 
   echo "[ $i.diff ]"
   SUCCESS=no
@@ -140,18 +140,19 @@ make_x264() {
 
   PATCHES="$DEFAULT_PATCHES"
   
-  if [ "$2" != "noasm" ]; then
-    ECFLAGS="-march=$2"
-  else
-    ECFLAGS="-march=i686"
+  ELFLAGS="-L../pthreads"
+  ECFLAGS="-I../pthreads"
+  
+  if [ -f "./libpack/lib/libavcodec.a" -a -f "./libpack/include/libavcodec/avcodec.h" -a $1 -eq 451 ]; then #TODO: Fix for other GCC versions
+    ELFLAGS="$ELFLAGS -L../libpack/lib"
+    ECFLAGS="$ECFLAGS -I../libpack/include"
   fi
   
-  ELFLAGS="-L../pthreads"
-  ECFLAGS="$ECFLAGS -I../pthreads"
-  
-  #if [ $1 -ge 440 ]; then
-  #  ECFLAGS="$ECFLAGS" #"-fno-tree-vectorize -floop-interchange -floop-strip-mine -floop-block"
-  #fi
+  if [ "$2" != "noasm" ]; then
+    ECFLAGS="$ECFLAGS -march=$2"
+  else
+    ECFLAGS="$ECFLAGS -march=i686"
+  fi
     
   if [ "$4" != "" ]; then
     PATCHES="$PATCHES $4"
@@ -306,14 +307,15 @@ make_x264() {
   
   echo -e "\n------------------------------------------------------------------------------\n"
 
-  if [ -f "./libx264-$API.dll" -a -f "./history.txt" -a -f "./readme.txt" -a -f "./patches.tar" -a -f "./checkasm.log" -a -f "./compiler.ver" ]; then
-    7z a "libx264-$API-$VER-$NAME-fprofiled.7z" "libx264-$API.dll" "readme.txt" "history.txt" "patches.tar" "checkasm.log" "compiler.ver"
+  if [ -f "./libx264-$API.dll" -a -f "./x264.exe" -a -f "./history.txt" -a -f "./readme.txt" -a -f "./patches.tar" -a -f "./checkasm.log" -a -f "./compiler.ver" ]; then
+    7z a "libx264-$API-$VER-$NAME-fprofiled.7z" "libx264-$API.dll" "x264.exe" "readme.txt" "history.txt" "patches.tar" "checkasm.log" "compiler.ver"
   fi
   
   cd ..
 }
 
 ######################################################
+
 
 for k in $COMPILERS_CURRENT
 do
@@ -322,8 +324,6 @@ do
   do
     make_x264 "$k" "$l" "" ""
     make_x264 "$k" "$l" "AutoVAQ" "auto_vaq"
-    make_x264 "$k" "$l" "OpenGOP" "open_gop"
-    make_x264 "$k" "$l" "NALHRD" "nal_hrd_vbr"
   done
 done
 
