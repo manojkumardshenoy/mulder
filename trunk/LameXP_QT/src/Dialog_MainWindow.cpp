@@ -43,6 +43,12 @@ MainWindow::MainWindow(QWidget *parent)
 	//Init the dialog, from the .ui file
 	setupUi(this);
 	
+	//Update window title
+	if(lamexp_version_demo())
+	{
+		setWindowTitle(windowTitle().append(" [DEMO VERSION]"));
+	}
+
 	//Enabled main buttons
 	connect(buttonAbout, SIGNAL(clicked()), this, SLOT(aboutButtonClicked()));
 	connect(buttonStart, SIGNAL(clicked()), this, SLOT(encodeButtonClicked()));
