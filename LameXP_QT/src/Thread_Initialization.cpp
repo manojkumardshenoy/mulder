@@ -104,7 +104,7 @@ void InitializationThread::run()
 	const char *temp = "|/-\\";
 	printf("Thread is doing something important... ?\b", temp[4]);
 
-	for(int i = 0; i < 50; i++)
+	for(int i = 0; i < 20; i++)
 	{
 		printf("%c\b", temp[i%4]);
 		msleep(100);

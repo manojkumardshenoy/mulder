@@ -26,6 +26,7 @@
 #include <QDir>
 #include <QUuid>
 #include <QMap>
+#include <QDate>
 
 //LameXP includes
 #include "LockedFile.h"
@@ -42,7 +43,7 @@ static const unsigned int g_lamexp_version_build = 1;
 static const char *g_lamexp_version_release = "Pre-Alpha";
 
 //Build date
-static char *g_lamexp_version_date = NULL;
+static QDate g_lamexp_version_date;
 static const char *g_lamexp_months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 static const char *g_lamexp_version_raw_date = __DATE__;
 
@@ -67,13 +68,10 @@ const char *lamexp_version_release(void) { return g_lamexp_version_release; }
 /*
  * Get build date date
  */
-const char *lamexp_version_date(void)
+const QDate &lamexp_version_date(void)
 {
-	if(!g_lamexp_version_date)
+	if(!g_lamexp_version_date.isValid())
 	{
-		g_lamexp_version_date = new char[32];
-		memset(g_lamexp_version_date, 0, 32);
-
 		char temp[32];
 		int date[3];
 
@@ -106,11 +104,7 @@ const char *lamexp_version_date(void)
 
 		if(date[0] >= 0 && date[1] >= 0 && date[2] >= 0)
 		{
-			sprintf_s(g_lamexp_version_date, 32, "%04d-%02d-%02d", date[2], date[0], date[1]);
-		}
-		else
-		{
-			strcpy_s(g_lamexp_version_date, 32, g_lamexp_version_raw_date);
+			g_lamexp_version_date = QDate(date[2], date[0], date[1]);
 		}
 	}
 

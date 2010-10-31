@@ -23,6 +23,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QPlastiqueStyle>
+#include <QDate>
 
 //LameXP includes
 #include "Global.h"
@@ -39,8 +40,8 @@ int lamexp_main(int argc, char* argv[])
 	//Print version info
 	SetConsoleTitle(L"LameXP - Audio Encoder Front-End | DO NOT CLOSE CONSOLE !!!");
 	qDebug("LameXP - Audio Encoder Front-End\n");
-	qDebug("Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>\n");
-	qDebug("Version %d.%02d %s, Build %d [%s]\n\n", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build(), lamexp_version_date());
+	qDebug("Version %d.%02d %s, Build %d [%s], MSVC compiler v%02d.%02d\n", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build(), lamexp_version_date().toString(Qt::ISODate).toLatin1().constData(), _MSC_VER / 100, _MSC_VER % 100);
+	qDebug("Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>\n\n");
 	
 	//print license info
 	qDebug("This program is free software: you can redistribute it and/or modify\n");
@@ -54,6 +55,18 @@ int lamexp_main(int argc, char* argv[])
 	qDebug("Using Qt Framework v%s, compiled with Qt v%s\n\n", qVersion(), QT_VERSION_STR);
 	QT_REQUIRE_VERSION(argc, argv, QT_VERSION_STR);
 	
+	//Check for expiration
+	if(!QString(lamexp_version_release()).contains("Final", Qt::CaseInsensitive))
+	{
+		QDate expireDate = lamexp_version_date().addDays(14);
+		qWarning(QString("Note: This demo (pre-release) version of LameXP will expired at %1.\n\n").arg(expireDate.toString(Qt::ISODate)).toLatin1().constData());
+		if(QDate::currentDate() >= expireDate)
+		{
+			QMessageBox::warning(NULL, "LameXP - Expired", QString("This demo (pre-release) version of LameXP has expired at %1.").arg(expireDate.toString()), "Exit Program");
+			return 0;
+		}
+	}
+
 	//Create Qt application instance and setup version info
 	QApplication application(argc, argv);
 	application.setApplicationName("LameXP - Audio Encoder Front-End");
@@ -61,7 +74,7 @@ int lamexp_main(int argc, char* argv[])
 	application.setOrganizationName("LoRd_MuldeR");
 	application.setOrganizationDomain("mulder.dummwiedeutsch.de");
 	application.setWindowIcon(QIcon(":/MainIcon.ico"));
-
+	
 	//Show splash screen
 	SplashScreen *poSplashScreen = new SplashScreen();
 	InitializationThread *poInitializationThread = new InitializationThread();
@@ -79,7 +92,7 @@ int lamexp_main(int argc, char* argv[])
 	LAMEXP_DELETE(poMainWindow);
 	
 	//Final clean-up
-	qDebug("Shutting down, please wait...");
+	qDebug("Shutting down, please wait...\n");
 	lamexp_finalization();
 	
 	//Terminate
