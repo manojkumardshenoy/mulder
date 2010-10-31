@@ -58,9 +58,9 @@ bool lamexp_clean_folder(const QString folderPath);
 //Check for debug build
 #if defined(_DEBUG) || defined(QT_DEBUG)
 #define LAMEXP_CHECK_DEBUG_BUILD \
-	printf("---------------------------------------------------------\n"); \
-	printf("DEBUG BUILD: DO NOT RELEASE THIS BINARY TO THE PUBLIC !!!\n"); \
-	printf("---------------------------------------------------------\n\n")
+	qWarning("---------------------------------------------------------\n"); \
+	qWarning("DEBUG BUILD: DO NOT RELEASE THIS BINARY TO THE PUBLIC !!!\n"); \
+	qWarning("---------------------------------------------------------\n\n")
 #else
-#define LAMEXP_CHECK_DEBUG_BUILD printf("")
+#define LAMEXP_CHECK_DEBUG_BUILD qDebug("")
 #endif

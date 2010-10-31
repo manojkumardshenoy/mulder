@@ -79,7 +79,7 @@ LockedFile::LockedFile(const QString &resourcePath, const QString &outPath, cons
 
 	if(_stricmp(fileHash.result().toHex().constData(), expectedHash.constData()))
 	{
-		printf("File '%s' checksum error:\n Expected = %040s\n Detected = %040s\n\n", QFileInfo(outFile).fileName().toLatin1().constData(), expectedHash.constData(), fileHash.result().toHex().constData());
+		qWarning("\nFile checksum error:\n Expected = %040s\n Detected = %040s\n", expectedHash.constData(), fileHash.result().toHex().constData());
 		LAMEXP_CLOSE(m_fileHandle);
 		QFile::remove(QFileInfo(outFile).absoluteFilePath());
 		char error_msg[256];

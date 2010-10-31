@@ -85,6 +85,7 @@ void InitializationThread::run()
 
 		try
 		{
+			qDebug("Extracting file: %s\n", g_lamexp_tools[i].pcName);
 			QString toolName = QString::fromLatin1(g_lamexp_tools[i].pcName);
 			QByteArray toolHash = QString::fromLatin1(g_lamexp_tools[i].pcHash).toLatin1();
 			LockedFile *lockedFile = new LockedFile(QString(":/tools/%1").arg(toolName), QString(lamexp_temp_folder()).append(QString("/tool_%1").arg(toolName)), toolHash);
@@ -96,10 +97,12 @@ void InitializationThread::run()
 			return;
 		}
 	}
-
+	
+	qDebug("All extracted.\n\n");
+	
 	//Give the splash screen some more time
 	const char *temp = "|/-\\";
-	printf("Thread is doing something important ?\b", temp[4]);
+	printf("Thread is doing something important... ?\b", temp[4]);
 
 	for(int i = 0; i < 50; i++)
 	{
@@ -107,7 +110,7 @@ void InitializationThread::run()
 		msleep(100);
 	}
 
-	printf("\nDone.\n\n\n");
+	printf("Done.\n\n");
 	m_bSuccess = true;
 }
 

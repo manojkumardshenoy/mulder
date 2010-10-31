@@ -38,20 +38,20 @@ int lamexp_main(int argc, char* argv[])
 {
 	//Print version info
 	SetConsoleTitle(L"LameXP - Audio Encoder Front-End | DO NOT CLOSE CONSOLE !!!");
-	printf("LameXP - Audio Encoder Front-End\n");
-	printf("Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>\n");
-	printf("Version %d.%02d %s, Build %d [%s]\n\n", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build(), lamexp_version_date());
+	qDebug("LameXP - Audio Encoder Front-End\n");
+	qDebug("Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>\n");
+	qDebug("Version %d.%02d %s, Build %d [%s]\n\n", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build(), lamexp_version_date());
 	
 	//print license info
-	printf("This program is free software: you can redistribute it and/or modify\n");
-    printf("it under the terms of the GNU General Public License <http://www.gnu.org/>.\n");
-	printf("This program comes with ABSOLUTELY NO WARRANTY.\n\n");
+	qDebug("This program is free software: you can redistribute it and/or modify\n");
+    qDebug("it under the terms of the GNU General Public License <http://www.gnu.org/>.\n");
+	qDebug("This program comes with ABSOLUTELY NO WARRANTY.\n\n");
 	
 	//Print warning, if this is a "debug" build
 	LAMEXP_CHECK_DEBUG_BUILD;
 
 	//Check Qt version
-	printf("Using Qt Framework v%s, compiled with Qt v%s\n\n", qVersion(), QT_VERSION_STR);
+	qDebug("Using Qt Framework v%s, compiled with Qt v%s\n\n", qVersion(), QT_VERSION_STR);
 	QT_REQUIRE_VERSION(argc, argv, QT_VERSION_STR);
 	
 	//Create Qt application instance and setup version info
@@ -79,6 +79,7 @@ int lamexp_main(int argc, char* argv[])
 	LAMEXP_DELETE(poMainWindow);
 	
 	//Final clean-up
+	qDebug("Shutting down, please wait...");
 	lamexp_finalization();
 	
 	//Terminate
@@ -86,25 +87,46 @@ int lamexp_main(int argc, char* argv[])
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Applicaton entry point
+// Message Handler
 ///////////////////////////////////////////////////////////////////////////////
 
 static void lamexp_message_handler(QtMsgType type, const char *msg)
 {
+	static HANDLE hConsole = NULL;
+	
+	if(!hConsole)
+	{
+		hConsole = CreateFile(L"CONOUT$", GENERIC_WRITE, FILE_SHARE_WRITE | FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
+	}
+
+	CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
+	GetConsoleScreenBufferInfo(hConsole, &bufferInfo);
+
 	switch (type)
 	{
 	case QtCriticalMsg:
 	case QtFatalMsg:
 		fflush(stdout);
 		fflush(stderr);
+		SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
 		fprintf(stderr, "\nCRITICAL ERROR !!!\n%s\n\n", msg);
 		MessageBoxA(NULL, msg, "LameXP - CRITICAL ERROR", MB_ICONERROR | MB_TOPMOST | MB_TASKMODAL);
 		FatalAppExit(0, L"The application has encountered a critical error and will exit now!");
 		TerminateProcess(GetCurrentProcess(), -1);
 		break;
+	case QtWarningMsg:
+		SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
+		fprintf(stderr, "%s", msg);
+		fflush(stderr);
+		break;
 	default:
-		printf("Message: %s\n", msg);
+		SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
+		fprintf(stderr, "%s", msg);
+		fflush(stderr);
+		break;
 	}
+
+	SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
  }
 
 
