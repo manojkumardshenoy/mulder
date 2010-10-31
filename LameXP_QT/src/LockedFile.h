@@ -21,19 +21,15 @@
 
 #pragma once
 
-#include <QtGui/QFileSystemModel>
-#include <QtGui/QSound>
-#include <QtGui/QSystemTrayIcon>
-#include <QtCore/QTemporaryFile>
-#include <QtCore/QProcess>
+#include <QString>
 
-#include "../tmp/UIC_MainWindow.h"
-
-class MainWindow: public QMainWindow, private Ui::MainWindow
+class LockedFile
 {
-	Q_OBJECT
-
 public:
-	MainWindow(QWidget *parent = 0);
-	~MainWindow(void);
+	LockedFile(const QString &resourcePath, const QString &outPath, const QByteArray &expectedHash = QByteArray());
+	~LockedFile(void);
+
+private:
+	QString m_filePath;
+	void *m_fileHandle;
 };
