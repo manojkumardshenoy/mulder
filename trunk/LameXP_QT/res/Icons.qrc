@@ -10,12 +10,16 @@
 		<file>icons/cancel.png</file>
 		<file>icons/cd_burn.png</file>
 		<file>icons/cd_edit.png</file>
-		<file>icons/controller.png</file>
-		<file>icons/door_out.png</file>
+    <file>icons/cd_go.png</file>
+    <file>icons/cog.png</file>
+    <file>icons/compress.png</file>
+    <file>icons/controller.png</file>
+    <file>icons/door_out.png</file>
 		<file>icons/drive_cd.png</file>
-		<file>icons/folder_image.png</file>
+    <file>icons/folder_go.png</file>
+    <file>icons/folder_image.png</file>
 		<file>icons/folder_page.png</file>
-		<file>icons/information.png</file>
+    <file>icons/information.png</file>
 		<file>icons/music.png</file>
 		<file>icons/sound.png</file>
 		<file>icons/table_edit.png</file>

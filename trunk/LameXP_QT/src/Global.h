@@ -34,12 +34,13 @@
 //Class declarations
 class QString;
 class LockedFile;
+class QDate;
 
 //LameXP version info
 unsigned int lamexp_version_major(void);
 unsigned int lamexp_version_minor(void);
 unsigned int lamexp_version_build(void);
-const char *lamexp_version_date(void);
+const QDate &lamexp_version_date(void);
 const char *lamexp_version_release(void);
 
 //Public functions

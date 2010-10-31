@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>609</width>
-    <height>456</height>
+    <width>673</width>
+    <height>439</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -46,7 +46,7 @@
                <number>4</number>
               </property>
               <item>
-               <widget class="QPushButton" name="pushButton">
+               <widget class="QPushButton" name="buttonAddFiles">
                 <property name="minimumSize">
                  <size>
                   <width>90</width>
@@ -63,7 +63,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_3">
+               <widget class="QPushButton" name="buttonRemoveFile">
                 <property name="minimumSize">
                  <size>
                   <width>90</width>
@@ -80,7 +80,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_2">
+               <widget class="QPushButton" name="buttonClearFiles">
                 <property name="minimumSize">
                  <size>
                   <width>90</width>
@@ -113,7 +113,7 @@
                </spacer>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_5">
+               <widget class="QPushButton" name="buttonFileUp">
                 <property name="text">
                  <string/>
                 </property>
@@ -124,7 +124,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_4">
+               <widget class="QPushButton" name="buttonFileDown">
                 <property name="text">
                  <string/>
                 </property>
@@ -164,7 +164,7 @@
                </spacer>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_6">
+               <widget class="QPushButton" name="buttonEditMeta">
                 <property name="minimumSize">
                  <size>
                   <width>90</width>
@@ -189,10 +189,37 @@
         <widget class="QWidget" name="tabOutputDir">
          <attribute name="icon">
           <iconset resource="../res/Icons.qrc">
-           <normaloff>:/icons/folder_page.png</normaloff>:/icons/folder_page.png</iconset>
+           <normaloff>:/icons/folder_go.png</normaloff>:/icons/folder_go.png</iconset>
          </attribute>
          <attribute name="title">
           <string>Output Directory</string>
+         </attribute>
+        </widget>
+        <widget class="QWidget" name="tabCompressionSetting">
+         <attribute name="icon">
+          <iconset resource="../res/Icons.qrc">
+           <normaloff>:/icons/compress.png</normaloff>:/icons/compress.png</iconset>
+         </attribute>
+         <attribute name="title">
+          <string>Compression</string>
+         </attribute>
+        </widget>
+        <widget class="QWidget" name="tabMetaData">
+         <attribute name="icon">
+          <iconset resource="../res/Icons.qrc">
+           <normaloff>:/icons/cd_edit.png</normaloff>:/icons/cd_edit.png</iconset>
+         </attribute>
+         <attribute name="title">
+          <string>Meta Data</string>
+         </attribute>
+        </widget>
+        <widget class="QWidget" name="tabOptions">
+         <attribute name="icon">
+          <iconset resource="../res/Icons.qrc">
+           <normaloff>:/icons/cog.png</normaloff>:/icons/cog.png</iconset>
+         </attribute>
+         <attribute name="title">
+          <string>Advanced Options</string>
          </attribute>
         </widget>
        </widget>
@@ -214,7 +241,7 @@
         </property>
         <property name="icon">
          <iconset resource="../res/Icons.qrc">
-          <normaloff>:/icons/cd_burn.png</normaloff>:/icons/cd_burn.png</iconset>
+          <normaloff>:/icons/cd_go.png</normaloff>:/icons/cd_go.png</iconset>
         </property>
        </widget>
       </item>
@@ -287,7 +314,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>609</width>
+     <width>673</width>
      <height>21</height>
     </rect>
    </property>
@@ -295,9 +322,35 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionQuit"/>
+   </widget>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>?</string>
+    </property>
+    <addaction name="actionAbout"/>
    </widget>
    <addaction name="menuFile"/>
+   <addaction name="menu"/>
   </widget>
+  <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="../res/Icons.qrc">
+     <normaloff>:/icons/information.png</normaloff>:/icons/information.png</iconset>
+   </property>
+   <property name="text">
+    <string>About...</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="icon">
+    <iconset resource="../res/Icons.qrc">
+     <normaloff>:/icons/door_out.png</normaloff>:/icons/door_out.png</iconset>
+   </property>
+   <property name="text">
+    <string>Quit</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../res/Icons.qrc"/>
@@ -316,6 +369,38 @@
     <hint type="destinationlabel">
      <x>276</x>
      <y>222</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionAbout</sender>
+   <signal>triggered()</signal>
+   <receiver>buttonAbout</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>304</x>
+     <y>433</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionQuit</sender>
+   <signal>triggered()</signal>
+   <receiver>buttonQuit</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>602</x>
+     <y>416</y>
     </hint>
    </hints>
   </connection>
