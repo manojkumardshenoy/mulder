@@ -19,17 +19,18 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-//Qt includes
-#include <QApplication>
-#include <QMessageBox>
-#include <QPlastiqueStyle>
-#include <QDate>
-
 //LameXP includes
 #include "Global.h"
 #include "Dialog_SplashScreen.h"
 #include "Dialog_MainWindow.h"
 #include "Thread_Initialization.h"
+
+//Qt includes
+#include <QApplication>
+#include <QMessageBox>
+#include <QPlastiqueStyle>
+#include <QDate>
+#include <QImageReader>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Main function
@@ -56,7 +57,7 @@ int lamexp_main(int argc, char* argv[])
 	QT_REQUIRE_VERSION(argc, argv, QT_VERSION_STR);
 	
 	//Check for expiration
-	if(!QString(lamexp_version_release()).contains("Final", Qt::CaseInsensitive))
+	if(lamexp_version_demo())
 	{
 		QDate expireDate = lamexp_version_date().addDays(14);
 		qWarning(QString("Note: This demo (pre-release) version of LameXP will expired at %1.\n\n").arg(expireDate.toString(Qt::ISODate)).toLatin1().constData());
@@ -74,7 +75,13 @@ int lamexp_main(int argc, char* argv[])
 	application.setOrganizationName("LoRd_MuldeR");
 	application.setOrganizationDomain("mulder.dummwiedeutsch.de");
 	application.setWindowIcon(QIcon(":/MainIcon.ico"));
+	QCoreApplication::addLibraryPath(QApplication::applicationDirPath());
 	
+	//Check for supported image formats
+	QList<QByteArray> supportedFormats = QImageReader::supportedImageFormats();
+	if(!supportedFormats.contains("gif")) qFatal("Support for GIF image format not available. Plugin missing!");
+	if(!supportedFormats.contains("ico")) qFatal("Support for ICO image format not available. Plugin missing!");
+
 	//Show splash screen
 	SplashScreen *poSplashScreen = new SplashScreen();
 	InitializationThread *poInitializationThread = new InitializationThread();
@@ -115,7 +122,7 @@ static void lamexp_message_handler(QtMsgType type, const char *msg)
 	CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
 	GetConsoleScreenBufferInfo(hConsole, &bufferInfo);
 
-	switch (type)
+	switch(type)
 	{
 	case QtCriticalMsg:
 	case QtFatalMsg:
@@ -124,8 +131,6 @@ static void lamexp_message_handler(QtMsgType type, const char *msg)
 		SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
 		fprintf(stderr, "\nCRITICAL ERROR !!!\n%s\n\n", msg);
 		MessageBoxA(NULL, msg, "LameXP - CRITICAL ERROR", MB_ICONERROR | MB_TOPMOST | MB_TASKMODAL);
-		FatalAppExit(0, L"The application has encountered a critical error and will exit now!");
-		TerminateProcess(GetCurrentProcess(), -1);
 		break;
 	case QtWarningMsg:
 		SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
@@ -140,6 +145,12 @@ static void lamexp_message_handler(QtMsgType type, const char *msg)
 	}
 
 	SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+
+	if(type == QtCriticalMsg || type == QtFatalMsg)
+	{
+		FatalAppExit(0, L"The application has encountered a critical error and will exit now!");
+		TerminateProcess(GetCurrentProcess(), -1);
+	}
  }
 
 

@@ -42,6 +42,7 @@ unsigned int lamexp_version_minor(void);
 unsigned int lamexp_version_build(void);
 const QDate &lamexp_version_date(void);
 const char *lamexp_version_release(void);
+bool lamexp_version_demo(void);
 
 //Public functions
 void lamexp_register_tool(const QString &toolName, LockedFile *file);

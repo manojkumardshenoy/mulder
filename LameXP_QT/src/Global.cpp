@@ -64,6 +64,7 @@ unsigned int lamexp_version_major(void) { return g_lamexp_version_major; }
 unsigned int lamexp_version_minor(void) { return g_lamexp_version_minor; }
 unsigned int lamexp_version_build(void) { return g_lamexp_version_build; }
 const char *lamexp_version_release(void) { return g_lamexp_version_release; }
+bool lamexp_version_demo(void) { return !(strstr(g_lamexp_version_release, "Final") || strstr(g_lamexp_version_release, "Hotfix")); }
 
 /*
  * Get build date date
