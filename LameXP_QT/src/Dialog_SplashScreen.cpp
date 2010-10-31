@@ -1,0 +1,146 @@
+///////////////////////////////////////////////////////////////////////////////
+// LameXP - Audio Encoder Front-End
+// Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//
+// http://www.gnu.org/licenses/gpl-2.0.txt
+///////////////////////////////////////////////////////////////////////////////
+
+#include <QMessageBox>
+#include <QScrollBar>
+#include <QImage>
+#include <QFileDialog>
+#include <QCloseEvent>
+#include <QMovie>
+#include <QTemporaryFile>
+#include <QProcess>
+#include <QTimer>
+#include <Windows.h>
+
+#include "Dialog_SplashScreen.h"
+
+#define EPS (1.0E-5)
+
+////////////////////////////////////////////////////////////
+// Constructor
+////////////////////////////////////////////////////////////
+
+SplashFrame::SplashFrame(QWidget *parent)
+	: QFrame(parent, Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint)
+{
+	//Init the dialog, from the .ui file
+	setupUi(this);
+
+	//Start animation
+	m_working = new QMovie(":/images/Loading.gif");
+	labelLoading->setMovie(m_working);
+	m_working->start();
+
+	//Set wait cursor
+	setCursor(Qt::WaitCursor);
+
+	//Prevent close
+	m_canClose = false;
+}
+
+////////////////////////////////////////////////////////////
+// Destructor
+////////////////////////////////////////////////////////////
+
+SplashFrame::~SplashFrame(void)
+{
+	if(m_working)
+	{
+		m_working->stop();
+		delete m_working;
+		m_working = NULL;
+	}
+}
+
+////////////////////////////////////////////////////////////
+// PUBLIC FUNCTIONS
+////////////////////////////////////////////////////////////
+
+void SplashFrame::showSplash(QThread *thread)
+{
+	//Show splash
+	m_canClose = false;
+	this->setWindowOpacity(0.0);
+	this->show();
+	QApplication::processEvents();
+
+	//Start the thread
+	thread->start();
+	
+	//Fade in
+	for(double d = 0.0; d <= 1.0 + EPS; d = d + 0.01)
+	{
+		this->setWindowOpacity(d);
+		QApplication::processEvents();
+		Sleep(6);
+	}
+
+	//Loop while thread is running
+	while(thread->isRunning())
+	{
+		QApplication::processEvents(QEventLoop::AllEvents | QEventLoop::WaitForMoreEvents);
+	}
+	
+	//Fade out
+	for(double d = 1.0; d >= 0.0; d = d - 0.01)
+	{
+		this->setWindowOpacity(d);
+		QApplication::processEvents();
+		Sleep(6);
+	}
+
+	//Hide splash
+	m_canClose = true;
+	this->close();
+}
+
+void SplashThread::run()
+{
+	const char *temp = "|/-\\";
+	printf("Thread is doing something important .\b", temp[4]);
+
+	for(int i = 0; i < 50; i++)
+	{
+		printf("%c\b", temp[i%4]);
+		msleep(100);
+	}
+
+	printf("\nDone.\n\n\n");
+}
+
+////////////////////////////////////////////////////////////
+// EVENTS
+////////////////////////////////////////////////////////////
+
+void SplashFrame::keyPressEvent(QKeyEvent *event)
+{
+	event->ignore();
+}
+
+void SplashFrame::keyReleaseEvent(QKeyEvent *event)
+{
+	event->ignore();
+}
+
+void SplashFrame::closeEvent(QCloseEvent *event)
+{
+	if(!m_canClose) event->ignore();
+}
