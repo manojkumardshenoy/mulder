@@ -21,19 +21,21 @@
 
 #pragma once
 
-#include <QtGui/QFileSystemModel>
-#include <QtGui/QSound>
-#include <QtGui/QSystemTrayIcon>
-#include <QtCore/QTemporaryFile>
-#include <QtCore/QProcess>
+#include <QThread>
 
-#include "../tmp/UIC_MainWindow.h"
+////////////////////////////////////////////////////////////
+// Splash Thread
+////////////////////////////////////////////////////////////
 
-class MainWindow: public QMainWindow, private Ui::MainWindow
+class InitializationThread: public QThread
 {
 	Q_OBJECT
 
 public:
-	MainWindow(QWidget *parent = 0);
-	~MainWindow(void);
+	InitializationThread(void);
+	void run();
+	bool getSuccess(void) { return !isRunning() && m_bSuccess; }
+
+private:
+	bool m_bSuccess;
 };

@@ -21,26 +21,19 @@
 
 #pragma once
 
-#include <QtGui/QFileSystemModel>
-#include <QtGui/QSound>
-#include <QtGui/QSystemTrayIcon>
-#include <QtCore/QTemporaryFile>
-#include <QtCore/QProcess>
-#include <QtCore/QThread>
-
 #include "../tmp/UIC_SplashScreen.h"
 
 ////////////////////////////////////////////////////////////
 // Splash Frame
 ////////////////////////////////////////////////////////////
 
-class SplashFrame: public QFrame, private Ui::SplashScreen
+class SplashScreen: public QFrame, private Ui::SplashScreen
 {
 	Q_OBJECT
 
 public:
-	SplashFrame(QWidget *parent = 0);
-	~SplashFrame(void);
+	SplashScreen(QWidget *parent = 0);
+	~SplashScreen(void);
 	void showSplash(QThread *thread);
 
 private:
@@ -51,16 +44,4 @@ protected:
 	void keyPressEvent(QKeyEvent *event);
 	void keyReleaseEvent(QKeyEvent *event);
 	void closeEvent(QCloseEvent *event);
-};
-
-////////////////////////////////////////////////////////////
-// Splash Thread
-////////////////////////////////////////////////////////////
-
-class SplashThread: public QThread
-{
-	Q_OBJECT
-
-public:
-	void run();
 };

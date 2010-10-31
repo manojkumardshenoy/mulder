@@ -187,7 +187,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\LockedFile.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\Main.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Thread_Initialization.cpp"
 				>
 			</File>
 		</Filter>
@@ -229,8 +237,30 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\LockedFile.h"
+				>
+			</File>
+			<File
+				RelativePath=".\resource.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\Targetver.h"
 				>
+			</File>
+			<File
+				RelativePath=".\src\Thread_Initialization.h"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="MOC &quot;$(SolutionDir)tmp\MOC_$(SafeInputName).cpp&quot;"
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot; -o &quot;$(SolutionDir)tmp\MOC_$(SafeInputName).cpp&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+						Outputs="&quot;$(SolutionDir)tmp\MOC_$(SafeInputName).cpp&quot;"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -244,6 +274,10 @@
 			</File>
 			<File
 				RelativePath=".\tmp\MOC_Dialog_SplashScreen.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\tmp\MOC_Thread_Initialization.cpp"
 				>
 			</File>
 			<File
@@ -291,6 +325,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\LameXP.rc"
+				>
+			</File>
+			<File
+				RelativePath=".\res\MainIcon.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\res\Tools.qrc"
 				>
 				<FileConfiguration
@@ -299,7 +341,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="RCC &quot;$(SolutionDir)tmp\RCC_$(SafeInputName).cpp&quot;"
-						CommandLine="&quot;$(QTDIR)\bin\rcc.exe&quot; -o &quot;$(SolutionDir)tmp\RCC_$(SafeInputName).cpp&quot; -name &quot;$(SafeInputName)&quot; &quot;$(InputPath)&quot;"
+						CommandLine="&quot;$(QTDIR)\bin\rcc.exe&quot; -o &quot;$(SolutionDir)tmp\RCC_$(SafeInputName).cpp&quot; -name &quot;$(SafeInputName)&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 						Outputs="&quot;$(SolutionDir)tmp\RCC_$(SafeInputName).cpp&quot;"
 					/>
 				</FileConfiguration>

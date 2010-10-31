@@ -31,6 +31,10 @@
 //Win32
 #include <Windows.h>
 
+//Class declarations
+class QString;
+class LockedFile;
+
 //LameXP version info
 unsigned int lamexp_version_major(void);
 unsigned int lamexp_version_minor(void);
@@ -38,12 +42,25 @@ unsigned int lamexp_version_build(void);
 const char *lamexp_version_date(void);
 const char *lamexp_version_release(void);
 
+//Public functions
+void lamexp_register_tool(const QString &toolName, LockedFile *file);
+void lamexp_finalization(void);
+const QString &lamexp_temp_folder(void);
+
+//Auxiliary functions
+bool lamexp_clean_folder(const QString folderPath);
+
 //Helper macros
 #define LAMEXP_DELETE(PTR) if(PTR) { delete PTR; PTR = NULL; }
+#define LAMEXP_CLOSE(HANDLE) if(HANDLE != NULL && HANDLE != INVALID_HANDLE_VALUE) { CloseHandle(HANDLE); HANDLE = NULL; }
+#define QWCHAR(STR) reinterpret_cast<const wchar_t*>(STR.utf16())
 
 //Check for debug build
 #if defined(_DEBUG) || defined(QT_DEBUG)
-#define LAMEXP_CHECK_DEBUG_BUILD printf("\nDEBUG BUILD: DO NOT RELEASE THIS BINARY TO THE PUBLIC !!!\n\n")
+#define LAMEXP_CHECK_DEBUG_BUILD \
+	printf("---------------------------------------------------------\n"); \
+	printf("DEBUG BUILD: DO NOT RELEASE THIS BINARY TO THE PUBLIC !!!\n"); \
+	printf("---------------------------------------------------------\n\n")
 #else
-#define LAMEXP_CHECK_DEBUG_BUILD printf("\n")
+#define LAMEXP_CHECK_DEBUG_BUILD printf("")
 #endif

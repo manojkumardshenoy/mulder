@@ -19,18 +19,12 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <QMessageBox>
-#include <QScrollBar>
-#include <QImage>
-#include <QFileDialog>
-#include <QCloseEvent>
-#include <QMovie>
-#include <QTemporaryFile>
-#include <QProcess>
-#include <QTimer>
-#include <Windows.h>
-
 #include "Dialog_SplashScreen.h"
+
+#include <QThread>
+#include <QMovie>
+#include <QKeyEvent>
+#include <Windows.h>
 
 #define EPS (1.0E-5)
 
@@ -38,7 +32,7 @@
 // Constructor
 ////////////////////////////////////////////////////////////
 
-SplashFrame::SplashFrame(QWidget *parent)
+SplashScreen::SplashScreen(QWidget *parent)
 	: QFrame(parent, Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint)
 {
 	//Init the dialog, from the .ui file
@@ -60,7 +54,7 @@ SplashFrame::SplashFrame(QWidget *parent)
 // Destructor
 ////////////////////////////////////////////////////////////
 
-SplashFrame::~SplashFrame(void)
+SplashScreen::~SplashScreen(void)
 {
 	if(m_working)
 	{
@@ -74,7 +68,7 @@ SplashFrame::~SplashFrame(void)
 // PUBLIC FUNCTIONS
 ////////////////////////////////////////////////////////////
 
-void SplashFrame::showSplash(QThread *thread)
+void SplashScreen::showSplash(QThread *thread)
 {
 	//Show splash
 	m_canClose = false;
@@ -112,35 +106,21 @@ void SplashFrame::showSplash(QThread *thread)
 	this->close();
 }
 
-void SplashThread::run()
-{
-	const char *temp = "|/-\\";
-	printf("Thread is doing something important .\b", temp[4]);
-
-	for(int i = 0; i < 50; i++)
-	{
-		printf("%c\b", temp[i%4]);
-		msleep(100);
-	}
-
-	printf("\nDone.\n\n\n");
-}
-
 ////////////////////////////////////////////////////////////
 // EVENTS
 ////////////////////////////////////////////////////////////
 
-void SplashFrame::keyPressEvent(QKeyEvent *event)
+void SplashScreen::keyPressEvent(QKeyEvent *event)
 {
 	event->ignore();
 }
 
-void SplashFrame::keyReleaseEvent(QKeyEvent *event)
+void SplashScreen::keyReleaseEvent(QKeyEvent *event)
 {
 	event->ignore();
 }
 
-void SplashFrame::closeEvent(QCloseEvent *event)
+void SplashScreen::closeEvent(QCloseEvent *event)
 {
 	if(!m_canClose) event->ignore();
 }
