@@ -30,7 +30,7 @@
 FileListModel::FileListModel(void)
 	: m_fileIcon(":/icons/page_white_cd.png")
 {
-	m_fileList.append(AudioFileModel("G:/Mp3z/More MP3z/Walter Trout - Common Ground (2010)/01 May Be A Fool.mp3", "May Be A Fool"));
+	m_fileList.append(AudioFileModel("C:/Music/Buckethead - Crime Slunk Scene/The Fairy and the Devil.ogg", "The Fairy and the Devil"));
 }
 
 FileListModel::~FileListModel(void)
@@ -53,7 +53,7 @@ int FileListModel::rowCount(const QModelIndex &parent) const
 
 QVariant FileListModel::data(const QModelIndex &index, int role) const
 {
-	if(role == Qt::DisplayRole && index.row() < m_fileList.count() && index.row() >= 0)
+	if((role == Qt::DisplayRole || role == Qt::ToolTipRole) && index.row() < m_fileList.count() && index.row() >= 0)
 	{
 		switch(index.column())
 		{
@@ -87,7 +87,7 @@ QVariant FileListModel::headerData(int section, Qt::Orientation orientation, int
 			switch(section)
 			{
 			case 0:
-				return QVariant("File Name");
+				return QVariant("Title");
 				break;
 			case 1:
 				return QVariant("Full Path");
@@ -158,4 +158,46 @@ void FileListModel::clearFiles(void)
 	beginResetModel();
 	m_fileList.clear();
 	endResetModel();
+}
+
+bool FileListModel::moveFile(const QModelIndex &index, int delta)
+{
+	if(delta != 0 && index.row() >= 0 && index.row() < m_fileList.count() && index.row() + delta >= 0 && index.row() + delta < m_fileList.count())
+	{
+		beginResetModel();
+		m_fileList.move(index.row(), index.row() + delta);
+		endResetModel();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+AudioFileModel FileListModel::getFile(const QModelIndex &index)
+{
+	if(index.row() >= 0 && index.row() < m_fileList.count())
+	{
+		return m_fileList.at(index.row());
+	}
+	else
+	{
+		return AudioFileModel();
+	}
+}
+
+bool FileListModel::setFile(const QModelIndex &index, const AudioFileModel &audioFile)
+{
+	if(index.row() >= 0 && index.row() < m_fileList.count())
+	{
+		beginResetModel();
+		m_fileList.replace(index.row(), audioFile);
+		endResetModel();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }

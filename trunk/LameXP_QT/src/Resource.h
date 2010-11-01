@@ -3,7 +3,7 @@
 // Used by LameXP.rc
 //
 #define IDI_ICON1                       101
-
+#define IDR_WAVE_ABOUT                  666
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

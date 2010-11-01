@@ -48,3 +48,13 @@ const QString &AudioFileModel::fileName(void) const
 {
 	return m_fileName;
 }
+
+void AudioFileModel::setFilePath(const QString &path)
+{
+	m_filePath = path;
+}
+
+void AudioFileModel::setFileName(const QString &name)
+{
+	m_fileName = name;
+}

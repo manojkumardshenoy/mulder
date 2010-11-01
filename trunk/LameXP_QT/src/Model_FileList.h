@@ -42,7 +42,9 @@ public:
 	bool addFile(const QString &filePath);
 	bool removeFile(const QModelIndex &index);
 	void clearFiles(void);
-	
+	bool moveFile(const QModelIndex &index, int delta);
+	AudioFileModel getFile(const QModelIndex &index);
+	bool setFile(const QModelIndex &index, const AudioFileModel &audioFile);
 
 private:
 	QList<AudioFileModel> m_fileList;
