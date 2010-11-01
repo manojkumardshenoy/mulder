@@ -45,6 +45,8 @@ const char *lamexp_version_release(void);
 bool lamexp_version_demo(void);
 
 //Public functions
+bool lamexp_init_qt(int argc, char* argv[]);
+bool lamexp_check_instances(void);
 void lamexp_register_tool(const QString &toolName, LockedFile *file);
 void lamexp_finalization(void);
 const QString &lamexp_temp_folder(void);
@@ -64,5 +66,5 @@ bool lamexp_clean_folder(const QString folderPath);
 	qWarning("DEBUG BUILD: DO NOT RELEASE THIS BINARY TO THE PUBLIC !!!\n"); \
 	qWarning("---------------------------------------------------------\n\n")
 #else
-#define LAMEXP_CHECK_DEBUG_BUILD qDebug("")
+#define LAMEXP_CHECK_DEBUG_BUILD {}
 #endif

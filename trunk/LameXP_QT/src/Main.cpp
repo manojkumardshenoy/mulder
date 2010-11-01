@@ -28,9 +28,7 @@
 //Qt includes
 #include <QApplication>
 #include <QMessageBox>
-#include <QPlastiqueStyle>
 #include <QDate>
-#include <QImageReader>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Main function
@@ -52,9 +50,8 @@ int lamexp_main(int argc, char* argv[])
 	//Print warning, if this is a "debug" build
 	LAMEXP_CHECK_DEBUG_BUILD;
 
-	//Check Qt version
-	qDebug("Using Qt Framework v%s, compiled with Qt v%s\n\n", qVersion(), QT_VERSION_STR);
-	QT_REQUIRE_VERSION(argc, argv, QT_VERSION_STR);
+	//Initialize Qt
+	lamexp_init_qt(argc, argv);
 	
 	//Check for expiration
 	if(lamexp_version_demo())
@@ -68,20 +65,9 @@ int lamexp_main(int argc, char* argv[])
 		}
 	}
 
-	//Create Qt application instance and setup version info
-	QApplication application(argc, argv);
-	application.setApplicationName("LameXP - Audio Encoder Front-End");
-	application.setApplicationVersion(QString().sprintf("%d.%02d.%04d", lamexp_version_major(), lamexp_version_minor(), lamexp_version_build())); 
-	application.setOrganizationName("LoRd_MuldeR");
-	application.setOrganizationDomain("mulder.dummwiedeutsch.de");
-	application.setWindowIcon(QIcon(":/MainIcon.ico"));
-	QCoreApplication::addLibraryPath(QApplication::applicationDirPath());
+	//Check for multiple instances
+	if(!lamexp_check_instances()) return 0;
 	
-	//Check for supported image formats
-	QList<QByteArray> supportedFormats = QImageReader::supportedImageFormats();
-	if(!supportedFormats.contains("gif")) qFatal("Support for GIF image format not available. Plugin missing!");
-	if(!supportedFormats.contains("ico")) qFatal("Support for ICO image format not available. Plugin missing!");
-
 	//Show splash screen
 	SplashScreen *poSplashScreen = new SplashScreen();
 	InitializationThread *poInitializationThread = new InitializationThread();
@@ -89,18 +75,14 @@ int lamexp_main(int argc, char* argv[])
 	LAMEXP_DELETE(poSplashScreen);
 	LAMEXP_DELETE(poInitializationThread);
 
-	//Change application look
-	QApplication::setStyle(new QPlastiqueStyle());
-
 	//Show main window
 	MainWindow *poMainWindow = new MainWindow();
 	poMainWindow->show();
-	int iResult = application.exec();
+	int iResult = QApplication::instance()->exec();
 	LAMEXP_DELETE(poMainWindow);
 	
 	//Final clean-up
 	qDebug("Shutting down, please wait...\n");
-	lamexp_finalization();
 	
 	//Terminate
 	return iResult;
@@ -163,7 +145,9 @@ int main(int argc, char* argv[])
 	try
 	{
 		qInstallMsgHandler(lamexp_message_handler);
-		return lamexp_main(argc, argv);
+		int iResult = lamexp_main(argc, argv);
+		lamexp_finalization();
+		return iResult;
 	}
 	catch(char *error)
 	{

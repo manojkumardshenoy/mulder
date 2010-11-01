@@ -22,11 +22,16 @@
 #include "Global.h"
 
 //Qt includes
-#include <QString>
+#include <QApplication>
+#include <QMessageBox>
 #include <QDir>
 #include <QUuid>
 #include <QMap>
 #include <QDate>
+#include <QIcon>
+#include <QPlastiqueStyle>
+#include <QImageReader>
+#include <QSharedMemory>
 
 //LameXP includes
 #include "LockedFile.h"
@@ -52,6 +57,10 @@ static QString g_lamexp_temp_folder;
 
 //Tools
 static QMap<QString, LockedFile*> g_lamexp_tool_registry;
+
+//Shared memory
+static const char *g_lamexp_sharedmem_uuid = "{21A68A42-6923-43bb-9CF6-64BF151942EE}";
+static QSharedMemory *g_lamexp_sharedmem_ptr = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBAL FUNCTIONS
@@ -110,6 +119,84 @@ const QDate &lamexp_version_date(void)
 	}
 
 	return g_lamexp_version_date;
+}
+
+/*
+ * Initialize Qt framework
+ */
+bool lamexp_init_qt(int argc, char* argv[])
+{
+	static bool qt_initialized = false;
+
+	//Don't initialized again, if done already
+	if(qt_initialized)
+	{
+		return true;
+	}
+	
+	//Check Qt version
+	qDebug("Using Qt Framework v%s, compiled with Qt v%s\n\n", qVersion(), QT_VERSION_STR);
+	QT_REQUIRE_VERSION(argc, argv, QT_VERSION_STR);
+
+	//Create Qt application instance and setup version info
+	QApplication *application = new QApplication(argc, argv);
+	application->setApplicationName("LameXP - Audio Encoder Front-End");
+	application->setApplicationVersion(QString().sprintf("%d.%02d.%04d", lamexp_version_major(), lamexp_version_minor(), lamexp_version_build())); 
+	application->setOrganizationName("LoRd_MuldeR");
+	application->setOrganizationDomain("mulder.dummwiedeutsch.de");
+	application->setWindowIcon(QIcon(":/MainIcon.ico"));
+	
+	//Load plugins from application directory
+	QCoreApplication::addLibraryPath(QApplication::applicationDirPath());
+	
+	//Check for supported image formats
+	QList<QByteArray> supportedFormats = QImageReader::supportedImageFormats();
+	if(!(supportedFormats.contains("png") && supportedFormats.contains("gif")  && supportedFormats.contains("ico")))
+	{
+		qFatal("Qt initialization error: At least one image format plugin is missing!");
+		return false;
+	}
+
+	//Change application look
+	QApplication::setStyle(new QPlastiqueStyle());
+
+	//Done
+	qt_initialized = true;
+	return true;
+}
+
+/*
+ * Check for running instances of LameXP
+ */
+bool lamexp_check_instances(void)
+{
+	if(g_lamexp_sharedmem_ptr)
+	{
+		return true;
+	}
+	
+	QSharedMemory *sharedMemory = new QSharedMemory(g_lamexp_sharedmem_uuid, NULL);
+	
+	if(!sharedMemory->create(1048576))
+	{
+		if(sharedMemory->error() == QSharedMemory::AlreadyExists)
+		{
+			LAMEXP_DELETE(sharedMemory);
+			qWarning("Another instance of LameXP is already running on this computer!");
+			QMessageBox::warning(NULL, "LameXP", "LameXP is already running. Please use the running instance!");
+			return false;
+		}
+		else
+		{
+			QString errorMessage = sharedMemory->errorString();
+			LAMEXP_DELETE(sharedMemory);
+			qFatal("Failed to create shared memory: %s", errorMessage.toLatin1().constData());
+			return false;
+		}
+	}
+
+	g_lamexp_sharedmem_ptr = sharedMemory;
+	return true;
 }
 
 /*
@@ -190,6 +277,13 @@ void lamexp_finalization(void)
 		}
 		g_lamexp_temp_folder.clear();
 	}
+
+	//Destroy Qt application object
+	QCoreApplication *application = QApplication::instance();
+	LAMEXP_DELETE(application);
+
+	//Detach from shared memory
+	LAMEXP_DELETE(g_lamexp_sharedmem_ptr);
 }
 
 /*
