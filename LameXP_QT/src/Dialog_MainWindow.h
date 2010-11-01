@@ -39,6 +39,11 @@ private slots:
 	void addFilesButtonClicked(void);
 	void clearFilesButtonClicked(void);
 	void removeFileButtonClicked(void);
+	void fileDownButtonClicked(void);
+	void fileUpButtonClicked(void);
+	void editMetaButtonClicked(void);
+	void tabPageChanged(int idx);
+	void tabActionActivated(void);
 
 private:
 	FileListModel m_fileListModel;

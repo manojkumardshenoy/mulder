@@ -71,9 +71,24 @@ InitializationThread::InitializationThread(void)
 	m_bSuccess = false;
 }
 
+void InitializationThread::delay(void)
+{
+	const char *temp = "|/-\\";
+	printf("Thread is doing something important... ?\b", temp[4]);
+
+	for(int i = 0; i < 20; i++)
+	{
+		printf("%c\b", temp[i%4]);
+		msleep(100);
+	}
+
+	printf("Done\n\n");
+}
+
 void InitializationThread::run()
 {
 	m_bSuccess = false;
+	delay();
 	
 	//Extract all files
 	for(int i = 0; i < INT_MAX; i++)
@@ -100,17 +115,7 @@ void InitializationThread::run()
 	
 	qDebug("All extracted.\n\n");
 	
-	//Give the splash screen some more time
-	const char *temp = "|/-\\";
-	printf("Thread is doing something important... ?\b", temp[4]);
-
-	for(int i = 0; i < 20; i++)
-	{
-		printf("%c\b", temp[i%4]);
-		msleep(100);
-	}
-
-	printf("Done.\n\n");
+	delay();
 	m_bSuccess = true;
 }
 

@@ -26,12 +26,16 @@
 class AudioFileModel
 {
 public:
-	AudioFileModel(const QString &path, const QString &name);
+	AudioFileModel(const QString &path = QString(), const QString &name = QString());
 	~AudioFileModel(void);
 	
 	//Getters
 	const QString &filePath(void) const;
 	const QString &fileName(void) const;
+
+	//Setters
+	void setFilePath(const QString &path);
+	void setFileName(const QString &name);
 
 private:
 	QString m_filePath;

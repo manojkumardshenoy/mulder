@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>673</width>
-    <height>553</height>
+    <width>658</width>
+    <height>539</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -94,7 +94,7 @@
                 </property>
                 <property name="icon">
                  <iconset resource="../res/Icons.qrc">
-                  <normaloff>:/icons/cancel.png</normaloff>:/icons/cancel.png</iconset>
+                  <normaloff>:/icons/delete.png</normaloff>:/icons/delete.png</iconset>
                 </property>
                </widget>
               </item>
@@ -111,7 +111,7 @@
                 </property>
                 <property name="icon">
                  <iconset resource="../res/Icons.qrc">
-                  <normaloff>:/icons/bomb.png</normaloff>:/icons/bomb.png</iconset>
+                  <normaloff>:/icons/bin.png</normaloff>:/icons/bin.png</iconset>
                 </property>
                </widget>
               </item>
@@ -554,6 +554,22 @@
      </layout>
     </item>
     <item>
+     <widget class="QFrame" name="frame">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>12</height>
+       </size>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::HLine</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Sunken</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QPushButton" name="buttonStart">
@@ -564,11 +580,11 @@
          </size>
         </property>
         <property name="text">
-         <string>Encode Now!</string>
+         <string> Encode Now!</string>
         </property>
         <property name="icon">
          <iconset resource="../res/Icons.qrc">
-          <normaloff>:/icons/cd_go.png</normaloff>:/icons/cd_go.png</iconset>
+          <normaloff>:/icons/play.png</normaloff>:/icons/play.png</iconset>
         </property>
        </widget>
       </item>
@@ -624,7 +640,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Exit Program</string>
+         <string> Exit Program</string>
         </property>
         <property name="icon">
          <iconset resource="../res/Icons.qrc">
@@ -641,7 +657,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>673</width>
+     <width>658</width>
      <height>21</height>
     </rect>
    </property>
@@ -649,16 +665,29 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionOpen"/>
+    <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
-   <widget class="QMenu" name="menu">
+   <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>?</string>
     </property>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionSourceFiles"/>
+    <addaction name="actionOutputDirectory"/>
+    <addaction name="actionCompression"/>
+    <addaction name="actionMetaData"/>
+    <addaction name="actionAdvancedOptions"/>
+   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menu"/>
+   <addaction name="menuView"/>
+   <addaction name="menuHelp"/>
   </widget>
   <action name="actionAbout">
    <property name="icon">
@@ -678,9 +707,61 @@
     <string>Quit</string>
    </property>
   </action>
+  <action name="actionSourceFiles">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Source Files</string>
+   </property>
+  </action>
+  <action name="actionOutputDirectory">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Output Directory</string>
+   </property>
+  </action>
+  <action name="actionCompression">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Compression</string>
+   </property>
+  </action>
+  <action name="actionMetaData">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Meta Data</string>
+   </property>
+  </action>
+  <action name="actionAdvancedOptions">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Advanced Options</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="icon">
+    <iconset resource="../res/Icons.qrc">
+     <normaloff>:/icons/folder_page.png</normaloff>:/icons/folder_page.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open File(s)...</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../res/Icons.qrc"/>
+  <include location="../res/Images.qrc"/>
+  <include location="../res/Images.qrc"/>
+  <include location="../res/Images.qrc"/>
   <include location="../res/Images.qrc"/>
   <include location="../res/Images.qrc"/>
   <include location="../res/Images.qrc"/>
@@ -731,6 +812,38 @@
     <hint type="destinationlabel">
      <x>602</x>
      <y>416</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionOpen</sender>
+   <signal>triggered()</signal>
+   <receiver>buttonAddFiles</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>67</x>
+     <y>460</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sourceFileView</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>buttonEditMeta</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>327</x>
+     <y>253</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>587</x>
+     <y>460</y>
     </hint>
    </hints>
   </connection>

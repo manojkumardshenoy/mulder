@@ -6,14 +6,16 @@
 		<file>icons/application_view_list.png</file>
 		<file>icons/arrow_down.png</file>
 		<file>icons/arrow_up.png</file>
-		<file>icons/bomb.png</file>
-		<file>icons/cancel.png</file>
+		<file>icons/bin.png</file>
+    <file>icons/bomb.png</file>
+    <file>icons/cancel.png</file>
 		<file>icons/cd_burn.png</file>
 		<file>icons/cd_edit.png</file>
     <file>icons/cd_go.png</file>
     <file>icons/cog.png</file>
     <file>icons/compress.png</file>
     <file>icons/controller.png</file>
+    <file>icons/delete.png</file>
     <file>icons/door_out.png</file>
 		<file>icons/drive_cd.png</file>
     <file>icons/folder_go.png</file>
@@ -22,6 +24,7 @@
     <file>icons/information.png</file>
 		<file>icons/music.png</file>
     <file>icons/page_white_cd.png</file>
+    <file>icons/play.png</file>
     <file>icons/sound.png</file>
 		<file>icons/table_edit.png</file>
 	</qresource>

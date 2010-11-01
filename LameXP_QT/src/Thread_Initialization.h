@@ -37,5 +37,6 @@ public:
 	bool getSuccess(void) { return !isRunning() && m_bSuccess; }
 
 private:
+	void delay(void);
 	bool m_bSuccess;
 };

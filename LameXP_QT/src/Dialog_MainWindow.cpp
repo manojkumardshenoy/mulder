@@ -23,6 +23,7 @@
 
 //LameXP includes
 #include "Global.h"
+#include "Resource.h"
 
 //Qt includes
 #include <QMessageBox>
@@ -30,6 +31,7 @@
 #include <QDesktopWidget>
 #include <QDate>
 #include <QFileDialog>
+#include <QInputDialog>
 
 //Win32 includes
 #include <Windows.h>
@@ -54,11 +56,10 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(buttonAbout, SIGNAL(clicked()), this, SLOT(aboutButtonClicked()));
 	connect(buttonStart, SIGNAL(clicked()), this, SLOT(encodeButtonClicked()));
 
-	//Center window in screen
-	QRect desktopRect = QApplication::desktop()->screenGeometry();
-	QRect thisRect = this->geometry();
-	move((desktopRect.width() - thisRect.width()) / 2, (desktopRect.height() - thisRect.height()) / 2);
-	setMinimumSize(thisRect.width(), thisRect.height());
+	//Setup tab widget
+	tabWidget->setCurrentIndex(0);
+	connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabPageChanged(int)));
+	tabPageChanged(tabWidget->currentIndex());
 
 	//Setup "Source" tab
 	sourceFileView->setModel(&m_fileListModel);
@@ -67,6 +68,22 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(buttonAddFiles, SIGNAL(clicked()), this, SLOT(addFilesButtonClicked()));
 	connect(buttonRemoveFile, SIGNAL(clicked()), this, SLOT(removeFileButtonClicked()));
 	connect(buttonClearFiles, SIGNAL(clicked()), this, SLOT(clearFilesButtonClicked()));
+	connect(buttonFileUp, SIGNAL(clicked()), this, SLOT(fileUpButtonClicked()));
+	connect(buttonFileDown, SIGNAL(clicked()), this, SLOT(fileDownButtonClicked()));
+	connect(buttonEditMeta, SIGNAL(clicked()), this, SLOT(editMetaButtonClicked()));
+	
+	//Activate view actions
+	connect(actionSourceFiles, SIGNAL(triggered()), this, SLOT(tabActionActivated()));
+	connect(actionOutputDirectory, SIGNAL(triggered()), this, SLOT(tabActionActivated()));
+	connect(actionCompression, SIGNAL(triggered()), this, SLOT(tabActionActivated()));
+	connect(actionMetaData, SIGNAL(triggered()), this, SLOT(tabActionActivated()));
+	connect(actionAdvancedOptions, SIGNAL(triggered()), this, SLOT(tabActionActivated()));
+
+	//Center window in screen
+	QRect desktopRect = QApplication::desktop()->screenGeometry();
+	QRect thisRect = this->geometry();
+	move((desktopRect.width() - thisRect.width()) / 2, (desktopRect.height() - thisRect.height()) / 2);
+	setMinimumSize(thisRect.width(), thisRect.height());
 }
 
 ////////////////////////////////////////////////////////////
@@ -111,6 +128,10 @@ void MainWindow::aboutButtonClicked(void)
 	aboutText += "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.<br><hr><br>";
 	aboutText += "This software uses the 'slick' icon set by <a href=\"http://www.famfamfam.com/lab/icons/silk/\">http://www.famfamfam.com/</a>.<br>";
 	aboutText += "Released under the Creative Commons Attribution 2.5 License.<br>";
+	
+	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+	PlaySound(MAKEINTRESOURCE(IDR_WAVE_ABOUT), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
+	QApplication::restoreOverrideCursor();
 
 	while(1)
 	{
@@ -148,11 +169,12 @@ void MainWindow::encodeButtonClicked(void)
  */
 void MainWindow::addFilesButtonClicked(void)
 {
+	tabWidget->setCurrentIndex(0);
 	QStringList selectedFiles = QFileDialog::getOpenFileNames(this, "Add file(s)", QString(), "All supported files (*.*)");
-	
-	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
+	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	selectedFiles.sort();
+
 	while(!selectedFiles.isEmpty())
 	{
 		QString currentFile = selectedFiles.takeFirst();
@@ -184,4 +206,86 @@ void MainWindow::removeFileButtonClicked(void)
 void MainWindow::clearFilesButtonClicked(void)
 {
 	m_fileListModel.clearFiles();
+}
+
+/*
+ * Move file up button
+ */
+void MainWindow::fileUpButtonClicked(void)
+{
+	if(sourceFileView->currentIndex().isValid())
+	{
+		int iRow = sourceFileView->currentIndex().row() - 1;
+		m_fileListModel.moveFile(sourceFileView->currentIndex(), -1);
+		sourceFileView->selectRow(iRow >= 0 ? iRow : 0);
+	}
+}
+
+/*
+ * Move file down button
+ */
+void MainWindow::fileDownButtonClicked(void)
+{
+	if(sourceFileView->currentIndex().isValid())
+	{
+		int iRow = sourceFileView->currentIndex().row() + 1;
+		m_fileListModel.moveFile(sourceFileView->currentIndex(), 1);
+		sourceFileView->selectRow(iRow < m_fileListModel.rowCount() ? iRow : m_fileListModel.rowCount()-1);
+	}
+}
+
+/*
+ * Edit meta button
+ */
+void MainWindow::editMetaButtonClicked(void)
+{
+	if(sourceFileView->currentIndex().isValid())
+	{
+		AudioFileModel file = m_fileListModel.getFile(sourceFileView->currentIndex());
+		bool bApplied = false;
+		QString text = QInputDialog::getText(this, "Edit title", "Enter the new title:", QLineEdit::Normal, file.fileName(), &bApplied, Qt::WindowStaysOnTopHint);
+		
+		if(bApplied)
+		{
+			file.setFileName(text);
+			m_fileListModel.setFile(sourceFileView->currentIndex(), file);
+		}
+	}
+}
+
+/*
+ * Tab page changed
+ */
+void MainWindow::tabPageChanged(int idx)
+{
+	actionSourceFiles->setChecked(idx == 0);
+	actionOutputDirectory->setChecked(idx == 1);
+	actionCompression->setChecked(idx == 2);
+	actionMetaData->setChecked(idx == 3);
+	actionAdvancedOptions->setChecked(idx == 4);
+}
+
+/*
+ * Tab action triggered
+ */
+void MainWindow::tabActionActivated()
+{
+	QAction *poSender = NULL;
+	LAMEXP_DYNCAST(poSender, QAction*, sender());
+
+	if(poSender)
+	{
+		int idx = -1;
+
+		if(actionSourceFiles == poSender) idx = 0;
+		if(actionOutputDirectory == poSender) idx = 1;
+		if(actionCompression == poSender) idx = 2;
+		if(actionMetaData == poSender) idx = 3;
+		if(actionAdvancedOptions == poSender) idx = 4;
+
+		if(idx >= 0)
+		{
+			tabWidget->setCurrentIndex(idx);
+		}
+	}
 }
