@@ -19,27 +19,32 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#include "Model_AudioFile.h"
 
-#include "../tmp/UIC_MainWindow.h"
+////////////////////////////////////////////////////////////
+// Constructor & Destructor
+////////////////////////////////////////////////////////////
 
-#include "Model_FileList.h"
-
-class MainWindow: public QMainWindow, private Ui::MainWindow
+AudioFileModel::AudioFileModel(const QString &path, const QString &name)
 {
-	Q_OBJECT
+	m_filePath = path;
+	m_fileName = name;
+}
 
-public:
-	MainWindow(QWidget *parent = 0);
-	~MainWindow(void);
+AudioFileModel::~AudioFileModel(void)
+{
+}
 
-private slots:
-	void aboutButtonClicked(void);
-	void encodeButtonClicked(void);
-	void addFilesButtonClicked(void);
-	void clearFilesButtonClicked(void);
-	void removeFileButtonClicked(void);
+////////////////////////////////////////////////////////////
+// Public Functions
+////////////////////////////////////////////////////////////
 
-private:
-	FileListModel m_fileListModel;
-};
+const QString &AudioFileModel::filePath(void) const
+{
+	return m_filePath;
+}
+
+const QString &AudioFileModel::fileName(void) const
+{
+	return m_fileName;
+}

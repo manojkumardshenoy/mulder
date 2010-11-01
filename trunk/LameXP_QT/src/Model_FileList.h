@@ -21,25 +21,30 @@
 
 #pragma once
 
-#include "../tmp/UIC_MainWindow.h"
+#include "Model_AudioFile.h"
 
-#include "Model_FileList.h"
+#include <QAbstractTableModel>
+#include <QIcon>
 
-class MainWindow: public QMainWindow, private Ui::MainWindow
+class FileListModel : public QAbstractTableModel
 {
-	Q_OBJECT
-
 public:
-	MainWindow(QWidget *parent = 0);
-	~MainWindow(void);
+	FileListModel(void);
+	~FileListModel(void);
 
-private slots:
-	void aboutButtonClicked(void);
-	void encodeButtonClicked(void);
-	void addFilesButtonClicked(void);
-	void clearFilesButtonClicked(void);
-	void removeFileButtonClicked(void);
+	//Model functions
+	int columnCount(const QModelIndex &parent = QModelIndex()) const;
+	int rowCount(const QModelIndex &parent = QModelIndex()) const;
+	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+
+	//Edit functions
+	bool addFile(const QString &filePath);
+	bool removeFile(const QModelIndex &index);
+	void clearFiles(void);
+	
 
 private:
-	FileListModel m_fileListModel;
+	QList<AudioFileModel> m_fileList;
+	const QIcon m_fileIcon;
 };

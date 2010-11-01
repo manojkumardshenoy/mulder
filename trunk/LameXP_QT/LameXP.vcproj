@@ -208,6 +208,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\Model_AudioFile.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Model_FileList.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\Thread_Initialization.cpp"
 				>
 			</File>
@@ -271,6 +279,14 @@
 			</File>
 			<File
 				RelativePath=".\src\LockedFile.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Model_AudioFile.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Model_FileList.h"
 				>
 			</File>
 			<File

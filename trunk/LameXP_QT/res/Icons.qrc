@@ -21,7 +21,8 @@
 		<file>icons/folder_page.png</file>
     <file>icons/information.png</file>
 		<file>icons/music.png</file>
-		<file>icons/sound.png</file>
+    <file>icons/page_white_cd.png</file>
+    <file>icons/sound.png</file>
 		<file>icons/table_edit.png</file>
 	</qresource>
 </RCC>

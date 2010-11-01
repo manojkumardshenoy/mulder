@@ -21,25 +21,19 @@
 
 #pragma once
 
-#include "../tmp/UIC_MainWindow.h"
+#include <QString>
 
-#include "Model_FileList.h"
-
-class MainWindow: public QMainWindow, private Ui::MainWindow
+class AudioFileModel
 {
-	Q_OBJECT
-
 public:
-	MainWindow(QWidget *parent = 0);
-	~MainWindow(void);
-
-private slots:
-	void aboutButtonClicked(void);
-	void encodeButtonClicked(void);
-	void addFilesButtonClicked(void);
-	void clearFilesButtonClicked(void);
-	void removeFileButtonClicked(void);
+	AudioFileModel(const QString &path, const QString &name);
+	~AudioFileModel(void);
+	
+	//Getters
+	const QString &filePath(void) const;
+	const QString &fileName(void) const;
 
 private:
-	FileListModel m_fileListModel;
+	QString m_filePath;
+	QString m_fileName;
 };
