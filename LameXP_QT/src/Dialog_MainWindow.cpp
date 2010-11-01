@@ -29,6 +29,7 @@
 #include <QTimer>
 #include <QDesktopWidget>
 #include <QDate>
+#include <QFileDialog>
 
 //Win32 includes
 #include <Windows.h>
@@ -58,6 +59,14 @@ MainWindow::MainWindow(QWidget *parent)
 	QRect thisRect = this->geometry();
 	move((desktopRect.width() - thisRect.width()) / 2, (desktopRect.height() - thisRect.height()) / 2);
 	setMinimumSize(thisRect.width(), thisRect.height());
+
+	//Setup "Source" tab
+	sourceFileView->setModel(&m_fileListModel);
+	sourceFileView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+	sourceFileView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+	connect(buttonAddFiles, SIGNAL(clicked()), this, SLOT(addFilesButtonClicked()));
+	connect(buttonRemoveFile, SIGNAL(clicked()), this, SLOT(removeFileButtonClicked()));
+	connect(buttonClearFiles, SIGNAL(clicked()), this, SLOT(clearFilesButtonClicked()));
 }
 
 ////////////////////////////////////////////////////////////
@@ -132,4 +141,47 @@ void MainWindow::aboutButtonClicked(void)
 void MainWindow::encodeButtonClicked(void)
 {
 	QMessageBox::warning(this, "LameXP", "Not implemented yet, please try again with a later version!");
+}
+
+/*
+ * Add file(s) button
+ */
+void MainWindow::addFilesButtonClicked(void)
+{
+	QStringList selectedFiles = QFileDialog::getOpenFileNames(this, "Add file(s)", QString(), "All supported files (*.*)");
+	
+	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+
+	selectedFiles.sort();
+	while(!selectedFiles.isEmpty())
+	{
+		QString currentFile = selectedFiles.takeFirst();
+		qDebug("Adding: %s\n", currentFile.toLatin1().constData());
+		m_fileListModel.addFile(currentFile);
+		sourceFileView->scrollToBottom();
+	}
+
+	qDebug("All files added.\n\n");
+	QApplication::restoreOverrideCursor();
+}
+
+/*
+ * Remove file button
+ */
+void MainWindow::removeFileButtonClicked(void)
+{
+	if(sourceFileView->currentIndex().isValid())
+	{
+		int iRow = sourceFileView->currentIndex().row();
+		m_fileListModel.removeFile(sourceFileView->currentIndex());
+		sourceFileView->selectRow(iRow < m_fileListModel.rowCount() ? iRow : m_fileListModel.rowCount()-1);
+	}
+}
+
+/*
+ * Clear files button
+ */
+void MainWindow::clearFilesButtonClicked(void)
+{
+	m_fileListModel.clearFiles();
 }
