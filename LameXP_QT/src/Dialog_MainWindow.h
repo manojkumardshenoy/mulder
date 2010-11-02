@@ -25,6 +25,9 @@
 
 #include "Model_FileList.h"
 
+//Class declarations
+class QFileSystemModel;
+
 class MainWindow: public QMainWindow, private Ui::MainWindow
 {
 	Q_OBJECT
@@ -43,8 +46,11 @@ private slots:
 	void fileUpButtonClicked(void);
 	void editMetaButtonClicked(void);
 	void tabPageChanged(int idx);
-	void tabActionActivated(void);
+	void tabActionActivated(QAction *action);
+	void outputFolderViewClicked(const QModelIndex &index);
 
 private:
-	FileListModel m_fileListModel;
+	FileListModel *m_fileListModel;
+	QFileSystemModel *m_fileSystemModel;
+	QActionGroup *m_tabActionGroup;
 };

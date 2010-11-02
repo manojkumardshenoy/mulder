@@ -32,6 +32,7 @@
 #include <QDate>
 #include <QFileDialog>
 #include <QInputDialog>
+#include <QFileSystemModel>
 
 //Win32 includes
 #include <Windows.h>
@@ -59,10 +60,10 @@ MainWindow::MainWindow(QWidget *parent)
 	//Setup tab widget
 	tabWidget->setCurrentIndex(0);
 	connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabPageChanged(int)));
-	tabPageChanged(tabWidget->currentIndex());
 
 	//Setup "Source" tab
-	sourceFileView->setModel(&m_fileListModel);
+	m_fileListModel = new FileListModel();
+	sourceFileView->setModel(m_fileListModel);
 	sourceFileView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 	sourceFileView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 	connect(buttonAddFiles, SIGNAL(clicked()), this, SLOT(addFilesButtonClicked()));
@@ -72,12 +73,30 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(buttonFileDown, SIGNAL(clicked()), this, SLOT(fileDownButtonClicked()));
 	connect(buttonEditMeta, SIGNAL(clicked()), this, SLOT(editMetaButtonClicked()));
 	
+	//Setup "Output" tab
+	m_fileSystemModel = new QFileSystemModel();
+	m_fileSystemModel->setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
+	m_fileSystemModel->setRootPath("");
+	outputFolderView->setModel(m_fileSystemModel);
+	outputFolderView->header()->setStretchLastSection(true);
+	outputFolderView->header()->hideSection(1);
+	outputFolderView->header()->hideSection(2);
+	outputFolderView->header()->hideSection(3);
+	outputFolderView->setHeaderHidden(true);
+	outputFolderView->setAnimated(true);
+	connect(outputFolderView, SIGNAL(clicked(QModelIndex)), this, SLOT(outputFolderViewClicked(QModelIndex)));
+	outputFolderView->setCurrentIndex(m_fileSystemModel->index(QDir::homePath()));
+	outputFolderViewClicked(outputFolderView->currentIndex());
+	
 	//Activate view actions
-	connect(actionSourceFiles, SIGNAL(triggered()), this, SLOT(tabActionActivated()));
-	connect(actionOutputDirectory, SIGNAL(triggered()), this, SLOT(tabActionActivated()));
-	connect(actionCompression, SIGNAL(triggered()), this, SLOT(tabActionActivated()));
-	connect(actionMetaData, SIGNAL(triggered()), this, SLOT(tabActionActivated()));
-	connect(actionAdvancedOptions, SIGNAL(triggered()), this, SLOT(tabActionActivated()));
+	m_tabActionGroup = new QActionGroup(this);
+	m_tabActionGroup->addAction(actionSourceFiles);
+	m_tabActionGroup->addAction(actionOutputDirectory);
+	m_tabActionGroup->addAction(actionCompression);
+	m_tabActionGroup->addAction(actionMetaData);
+	m_tabActionGroup->addAction(actionAdvancedOptions);
+	actionSourceFiles->setChecked(true);
+	connect(m_tabActionGroup, SIGNAL(triggered(QAction*)), this, SLOT(tabActionActivated(QAction*)));
 
 	//Center window in screen
 	QRect desktopRect = QApplication::desktop()->screenGeometry();
@@ -92,6 +111,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow(void)
 {
+	LAMEXP_DELETE(m_tabActionGroup);
+	LAMEXP_DELETE(m_fileListModel);
 }
 
 ////////////////////////////////////////////////////////////
@@ -179,7 +200,7 @@ void MainWindow::addFilesButtonClicked(void)
 	{
 		QString currentFile = selectedFiles.takeFirst();
 		qDebug("Adding: %s\n", currentFile.toLatin1().constData());
-		m_fileListModel.addFile(currentFile);
+		m_fileListModel->addFile(currentFile);
 		sourceFileView->scrollToBottom();
 	}
 
@@ -195,8 +216,8 @@ void MainWindow::removeFileButtonClicked(void)
 	if(sourceFileView->currentIndex().isValid())
 	{
 		int iRow = sourceFileView->currentIndex().row();
-		m_fileListModel.removeFile(sourceFileView->currentIndex());
-		sourceFileView->selectRow(iRow < m_fileListModel.rowCount() ? iRow : m_fileListModel.rowCount()-1);
+		m_fileListModel->removeFile(sourceFileView->currentIndex());
+		sourceFileView->selectRow(iRow < m_fileListModel->rowCount() ? iRow : m_fileListModel->rowCount()-1);
 	}
 }
 
@@ -205,7 +226,7 @@ void MainWindow::removeFileButtonClicked(void)
  */
 void MainWindow::clearFilesButtonClicked(void)
 {
-	m_fileListModel.clearFiles();
+	m_fileListModel->clearFiles();
 }
 
 /*
@@ -216,7 +237,7 @@ void MainWindow::fileUpButtonClicked(void)
 	if(sourceFileView->currentIndex().isValid())
 	{
 		int iRow = sourceFileView->currentIndex().row() - 1;
-		m_fileListModel.moveFile(sourceFileView->currentIndex(), -1);
+		m_fileListModel->moveFile(sourceFileView->currentIndex(), -1);
 		sourceFileView->selectRow(iRow >= 0 ? iRow : 0);
 	}
 }
@@ -229,8 +250,8 @@ void MainWindow::fileDownButtonClicked(void)
 	if(sourceFileView->currentIndex().isValid())
 	{
 		int iRow = sourceFileView->currentIndex().row() + 1;
-		m_fileListModel.moveFile(sourceFileView->currentIndex(), 1);
-		sourceFileView->selectRow(iRow < m_fileListModel.rowCount() ? iRow : m_fileListModel.rowCount()-1);
+		m_fileListModel->moveFile(sourceFileView->currentIndex(), 1);
+		sourceFileView->selectRow(iRow < m_fileListModel->rowCount() ? iRow : m_fileListModel->rowCount()-1);
 	}
 }
 
@@ -241,14 +262,14 @@ void MainWindow::editMetaButtonClicked(void)
 {
 	if(sourceFileView->currentIndex().isValid())
 	{
-		AudioFileModel file = m_fileListModel.getFile(sourceFileView->currentIndex());
+		AudioFileModel file = m_fileListModel->getFile(sourceFileView->currentIndex());
 		bool bApplied = false;
 		QString text = QInputDialog::getText(this, "Edit title", "Enter the new title:", QLineEdit::Normal, file.fileName(), &bApplied, Qt::WindowStaysOnTopHint);
 		
 		if(bApplied)
 		{
 			file.setFileName(text);
-			m_fileListModel.setFile(sourceFileView->currentIndex(), file);
+			m_fileListModel->setFile(sourceFileView->currentIndex(), file);
 		}
 	}
 }
@@ -258,34 +279,51 @@ void MainWindow::editMetaButtonClicked(void)
  */
 void MainWindow::tabPageChanged(int idx)
 {
-	actionSourceFiles->setChecked(idx == 0);
-	actionOutputDirectory->setChecked(idx == 1);
-	actionCompression->setChecked(idx == 2);
-	actionMetaData->setChecked(idx == 3);
-	actionAdvancedOptions->setChecked(idx == 4);
+	switch(idx)
+	{
+	case 0:
+		actionSourceFiles->setChecked(true);
+		break;
+	case 1:
+		actionOutputDirectory->setChecked(true);
+		break;
+	case 2:
+		actionCompression->setChecked(true);
+		break;
+	case 3:
+		actionMetaData->setChecked(true);
+		break;
+	case 4:
+		actionAdvancedOptions->setChecked(true);
+		break;
+	}
 }
 
 /*
  * Tab action triggered
  */
-void MainWindow::tabActionActivated()
+void MainWindow::tabActionActivated(QAction *action)
 {
-	QAction *poSender = NULL;
-	LAMEXP_DYNCAST(poSender, QAction*, sender());
+	int idx = -1;
 
-	if(poSender)
+	if(actionSourceFiles == action) idx = 0;
+	else if(actionOutputDirectory == action) idx = 1;
+	else if(actionCompression == action) idx = 2;
+	else if(actionMetaData == action) idx = 3;
+	else if(actionAdvancedOptions == action) idx = 4;
+
+	if(idx >= 0)
 	{
-		int idx = -1;
-
-		if(actionSourceFiles == poSender) idx = 0;
-		if(actionOutputDirectory == poSender) idx = 1;
-		if(actionCompression == poSender) idx = 2;
-		if(actionMetaData == poSender) idx = 3;
-		if(actionAdvancedOptions == poSender) idx = 4;
-
-		if(idx >= 0)
-		{
-			tabWidget->setCurrentIndex(idx);
-		}
+		tabWidget->setCurrentIndex(idx);
 	}
+}
+
+/*
+ * Output folder changed
+ */
+void MainWindow::outputFolderViewClicked(const QModelIndex &index)
+{
+	QString selectedDir = m_fileSystemModel->filePath(index);
+	if(selectedDir.length() < 3) selectedDir.append(QDir::separator());
+	outputFolderLabel->setText(selectedDir);
 }

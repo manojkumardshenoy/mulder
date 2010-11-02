@@ -33,7 +33,7 @@
 ////////////////////////////////////////////////////////////
 
 SplashScreen::SplashScreen(QWidget *parent)
-	: QFrame(parent, Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint)
+	: QFrame(parent, Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint)
 {
 	//Init the dialog, from the .ui file
 	setupUi(this);
