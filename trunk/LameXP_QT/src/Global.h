@@ -65,7 +65,10 @@ bool lamexp_clean_folder(const QString folderPath);
 #define LAMEXP_CHECK_DEBUG_BUILD \
 	qWarning("---------------------------------------------------------\n"); \
 	qWarning("DEBUG BUILD: DO NOT RELEASE THIS BINARY TO THE PUBLIC !!!\n"); \
-	qWarning("---------------------------------------------------------\n\n")
+	qWarning("---------------------------------------------------------\n\n"); 
 #else
-#define LAMEXP_CHECK_DEBUG_BUILD {}
+#define LAMEXP_CHECK_DEBUG_BUILD \
+	if(IsDebuggerPresent())	{ \
+	FatalAppExit(0, L"Not a debug build. Please unload debugger and try again!"); \
+	TerminateProcess(GetCurrentProcess, -1); }
 #endif

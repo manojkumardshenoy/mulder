@@ -137,7 +137,7 @@ bool lamexp_init_qt(int argc, char* argv[])
 	//Check Qt version
 	qDebug("Using Qt Framework v%s, compiled with Qt v%s\n\n", qVersion(), QT_VERSION_STR);
 	QT_REQUIRE_VERSION(argc, argv, QT_VERSION_STR);
-
+	
 	//Create Qt application instance and setup version info
 	QApplication *application = new QApplication(argc, argv);
 	application->setApplicationName("LameXP - Audio Encoder Front-End");

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>658</width>
+    <width>691</width>
     <height>539</height>
    </rect>
   </property>
@@ -23,10 +23,22 @@
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <widget class="QTabWidget" name="tabWidget">
+        <property name="font">
+         <font>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
         <property name="currentIndex">
          <number>0</number>
         </property>
         <widget class="QWidget" name="tabSourceFiles">
+         <property name="font">
+          <font>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
          <attribute name="icon">
           <iconset resource="../res/Icons.qrc">
            <normaloff>:/icons/music.png</normaloff>:/icons/music.png</iconset>
@@ -206,6 +218,12 @@
          </layout>
         </widget>
         <widget class="QWidget" name="tabOutputDir">
+         <property name="font">
+          <font>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
          <attribute name="icon">
           <iconset resource="../res/Icons.qrc">
            <normaloff>:/icons/folder_go.png</normaloff>:/icons/folder_go.png</iconset>
@@ -215,9 +233,9 @@
          </attribute>
          <layout class="QGridLayout" name="gridLayout_2">
           <item row="0" column="0">
-           <layout class="QGridLayout" name="gridLayout">
-            <item row="1" column="1">
-             <widget class="QLabel" name="label">
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <item>
+             <widget class="QLabel" name="outputFolderLabel">
               <property name="frameShape">
                <enum>QFrame::StyledPanel</enum>
               </property>
@@ -225,67 +243,35 @@
                <enum>QFrame::Sunken</enum>
               </property>
               <property name="text">
-               <string/>
-              </property>
-              <property name="pixmap">
-               <pixmap resource="../res/Images.qrc">:/images/Construction.gif</pixmap>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
+               <string>($OUTDIR)</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <spacer name="horizontalSpacer_6">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
+            <item>
+             <widget class="QTreeView" name="outputFolderView"/>
             </item>
-            <item row="1" column="2">
-             <spacer name="horizontalSpacer_7">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="0" column="1">
+            <item>
              <spacer name="verticalSpacer">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Fixed</enum>
+              </property>
               <property name="sizeHint" stdset="0">
                <size>
                 <width>20</width>
-                <height>40</height>
+                <height>1</height>
                </size>
               </property>
              </spacer>
             </item>
-            <item row="2" column="1">
-             <spacer name="verticalSpacer_2">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
+            <item>
+             <widget class="QCheckBox" name="saveToSourceFolderCheckBox">
+              <property name="text">
+               <string>Save output filed to the same folder where the input file is loacated</string>
               </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
+             </widget>
             </item>
            </layout>
           </item>
@@ -657,7 +643,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>658</width>
+     <width>691</width>
      <height>21</height>
     </rect>
    </property>
@@ -765,6 +751,11 @@
   <include location="../res/Images.qrc"/>
   <include location="../res/Images.qrc"/>
   <include location="../res/Images.qrc"/>
+  <include location="../res/Images.qrc"/>
+  <include location="../res/Images.qrc"/>
+  <include location="../res/Images.qrc"/>
+  <include location="../res/Images.qrc"/>
+  <include location="../res/Images.qrc"/>
  </resources>
  <connections>
   <connection>
@@ -844,6 +835,38 @@
     <hint type="destinationlabel">
      <x>587</x>
      <y>460</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>saveToSourceFolderCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>outputFolderView</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>327</x>
+     <y>465</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>327</x>
+     <y>264</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>saveToSourceFolderCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>outputFolderLabel</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>327</x>
+     <y>465</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>327</x>
+     <y>72</y>
     </hint>
    </hints>
   </connection>

@@ -6,20 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>258</width>
-    <height>84</height>
+    <width>256</width>
+    <height>82</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>258</width>
-    <height>84</height>
+    <width>256</width>
+    <height>82</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>320</width>
-    <height>84</height>
+    <width>256</width>
+    <height>82</height>
    </size>
   </property>
   <property name="palette">
@@ -120,13 +120,16 @@
    <bool>true</bool>
   </property>
   <property name="frameShape">
-   <enum>QFrame::Box</enum>
+   <enum>QFrame::NoFrame</enum>
+  </property>
+  <property name="lineWidth">
+   <number>0</number>
   </property>
   <widget class="QLabel" name="labelLoading">
    <property name="geometry">
     <rect>
      <x>50</x>
-     <y>70</y>
+     <y>69</y>
      <width>192</width>
      <height>6</height>
     </rect>
@@ -255,6 +258,8 @@
   <zorder>labelLoading</zorder>
  </widget>
  <resources>
+  <include location="../res/Images.qrc"/>
+  <include location="../res/Images.qrc"/>
   <include location="../res/Images.qrc"/>
  </resources>
  <connections/>

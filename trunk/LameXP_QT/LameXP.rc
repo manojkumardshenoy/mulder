@@ -29,7 +29,7 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
 
 1 TEXTINCLUDE 
 BEGIN
-    "src\Resource.h\0"
+    "src\\Resource.h\0"
 END
 
 2 TEXTINCLUDE 
@@ -62,6 +62,47 @@ IDI_ICON1               ICON                    "res\\MainIcon.ico"
 //
 
 IDR_WAVE_ABOUT          WAVE                    "res\\sounds\\uuaarrgh.wav"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 4,0,0,0
+ PRODUCTVERSION 4,0,0,0
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x3L
+#else
+ FILEFLAGS 0x2L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "Comments", "This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY"
+            VALUE "CompanyName", "Free Software Foundation"
+            VALUE "FileDescription", "LameXP - Audio Encoder Front-End"
+            VALUE "FileVersion", "4.0.0.0"
+            VALUE "InternalName", "LameXP Qt"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>"
+            VALUE "LegalTrademarks", "This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License <http://www.gnu.org/>"
+            VALUE "OriginalFilename", "LameXP.exe"
+            VALUE "ProductName", "LameXP - Audio Encoder Front-End"
+            VALUE "ProductVersion", "v4.00 Pre-Alpha"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0, 1200
+    END
+END
+
 #endif    // German (Germany) resources
 /////////////////////////////////////////////////////////////////////////////
 
