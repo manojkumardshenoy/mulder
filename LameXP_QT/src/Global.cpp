@@ -32,6 +32,7 @@
 #include <QPlastiqueStyle>
 #include <QImageReader>
 #include <QSharedMemory>
+#include <QSysInfo>
 
 //LameXP includes
 #include "LockedFile.h"
@@ -44,7 +45,7 @@
 //Build version
 static const unsigned int g_lamexp_version_major = 4;
 static const unsigned int g_lamexp_version_minor = 0;
-static const unsigned int g_lamexp_version_build = 1;
+static const unsigned int g_lamexp_version_build = 2;
 static const char *g_lamexp_version_release = "Pre-Alpha";
 
 //Build date
@@ -135,8 +136,34 @@ bool lamexp_init_qt(int argc, char* argv[])
 	}
 	
 	//Check Qt version
-	qDebug("Using Qt Framework v%s, compiled with Qt v%s\n\n", qVersion(), QT_VERSION_STR);
+	qDebug("Using Qt Framework v%s, compiled with Qt v%s\n", qVersion(), QT_VERSION_STR);
 	QT_REQUIRE_VERSION(argc, argv, QT_VERSION_STR);
+	
+	//Check the Windows version
+	switch(QSysInfo::WindowsVersion)
+	{
+	case QSysInfo::WV_NT:
+		qDebug("Running on Windows NT.\n\n");
+		break;
+	case QSysInfo::WV_2000:
+		qDebug("Running on Windows 2000.\n\n");
+		break;
+	case QSysInfo::WV_XP:
+		qDebug("Running on Windows XP.\n\n");
+		break;
+	case QSysInfo::WV_2003:
+		qDebug("Running on Windows Server 2003 or Windows XP Professional x64 Edition.\n\n");
+		break;
+	case QSysInfo::WV_VISTA:
+		qDebug("Running on Windows Vista or Windows Server 200.8\n\n");
+		break;
+	case QSysInfo::WV_WINDOWS7:
+		qDebug("Running on Windows 7 or Windows Server 2008 R2.\n\n");
+		break;
+	default:
+		qFatal("Unsupported OS, only Windows 2000 or later is supported!");
+		break;
+	}
 	
 	//Create Qt application instance and setup version info
 	QApplication *application = new QApplication(argc, argv);

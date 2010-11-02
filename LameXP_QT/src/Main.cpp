@@ -38,7 +38,7 @@ int lamexp_main(int argc, char* argv[])
 {
 	//Print version info
 	SetConsoleTitle(L"LameXP - Audio Encoder Front-End | DO NOT CLOSE CONSOLE !!!");
-	qDebug("LameXP - Audio Encoder Front-End\n");
+	qDebug("\nLameXP - Audio Encoder Front-End\n");
 	qDebug("Version %d.%02d %s, Build %d [%s], MSVC compiler v%02d.%02d\n", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build(), lamexp_version_date().toString(Qt::ISODate).toLatin1().constData(), _MSC_VER / 100, _MSC_VER % 100);
 	qDebug("Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>\n\n");
 	
