@@ -24,6 +24,7 @@
 //LameXP includes
 #include "Global.h"
 #include "Resource.h"
+#include "Dialog_WorkingBanner.h"
 
 //Qt includes
 #include <QMessageBox>
@@ -33,6 +34,8 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QFileSystemModel>
+#include <QDesktopServices>
+#include <QUrl>
 
 //Win32 includes
 #include <Windows.h>
@@ -85,10 +88,17 @@ MainWindow::MainWindow(QWidget *parent)
 	outputFolderView->setHeaderHidden(true);
 	outputFolderView->setAnimated(true);
 	connect(outputFolderView, SIGNAL(clicked(QModelIndex)), this, SLOT(outputFolderViewClicked(QModelIndex)));
-	outputFolderView->setCurrentIndex(m_fileSystemModel->index(QDir::homePath()));
+	outputFolderView->setCurrentIndex(m_fileSystemModel->index(QDesktopServices::storageLocation(QDesktopServices::MusicLocation)));
 	outputFolderViewClicked(outputFolderView->currentIndex());
+	connect(buttonMakeFolder, SIGNAL(clicked()), this, SLOT(makeFolderButtonClicked()));
+	connect(buttonGotoHome, SIGNAL(clicked()), SLOT(gotoHomeFolderButtonClicked()));
+	connect(buttonGotoDesktop, SIGNAL(clicked()), this, SLOT(gotoDesktopButtonClicked()));
+	connect(buttonGotoMusic, SIGNAL(clicked()), this, SLOT(gotoMusicFolderButtonClicked()));
 	
-	//Activate view actions
+	//Activate file menu actions
+	connect(actionOpenFolder, SIGNAL(triggered()), this, SLOT(openFolderActionActivated()));
+
+	//Activate view menu actions
 	m_tabActionGroup = new QActionGroup(this);
 	m_tabActionGroup->addAction(actionSourceFiles);
 	m_tabActionGroup->addAction(actionOutputDirectory);
@@ -98,6 +108,10 @@ MainWindow::MainWindow(QWidget *parent)
 	actionSourceFiles->setChecked(true);
 	connect(m_tabActionGroup, SIGNAL(triggered(QAction*)), this, SLOT(tabActionActivated(QAction*)));
 
+	//Activate help menu actions
+	connect(actionCheckUpdates, SIGNAL(triggered()), this, SLOT(checkUpdatesActionActivated()));
+	connect(actionVisitHomepage, SIGNAL(triggered()), this, SLOT(visitHomepageActionActivated()));
+	
 	//Center window in screen
 	QRect desktopRect = QApplication::desktop()->screenGeometry();
 	QRect thisRect = this->geometry();
@@ -192,20 +206,31 @@ void MainWindow::addFilesButtonClicked(void)
 {
 	tabWidget->setCurrentIndex(0);
 	QStringList selectedFiles = QFileDialog::getOpenFileNames(this, "Add file(s)", QString(), "All supported files (*.*)");
+	
+	if(selectedFiles.isEmpty())
+	{
+		return;
+	}
 
-	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+	WorkingBanner banner(this);
+	banner.setText("Adding file(s), please wait...");
+	banner.show();
+	QApplication::processEvents();
+
 	selectedFiles.sort();
 
 	while(!selectedFiles.isEmpty())
 	{
 		QString currentFile = selectedFiles.takeFirst();
-		qDebug("Adding: %s\n", currentFile.toLatin1().constData());
+		qDebug("Adding: %s", currentFile.toLatin1().constData());
+		banner.setText(QFile(currentFile).fileName());
 		m_fileListModel->addFile(currentFile);
 		sourceFileView->scrollToBottom();
+		QApplication::processEvents();
 	}
 
-	qDebug("All files added.\n\n");
-	QApplication::restoreOverrideCursor();
+	qDebug("All files added.\n");
+	banner.close();
 }
 
 /*
@@ -326,4 +351,128 @@ void MainWindow::outputFolderViewClicked(const QModelIndex &index)
 	QString selectedDir = m_fileSystemModel->filePath(index);
 	if(selectedDir.length() < 3) selectedDir.append(QDir::separator());
 	outputFolderLabel->setText(selectedDir);
+}
+
+
+/*
+ * Goto desktop button
+ */
+void MainWindow::gotoDesktopButtonClicked(void)
+{
+	outputFolderView->setCurrentIndex(m_fileSystemModel->index(QDesktopServices::storageLocation(QDesktopServices::DesktopLocation)));
+	outputFolderViewClicked(outputFolderView->currentIndex());
+	outputFolderView->setFocus();
+}
+
+/*
+ * Goto home folder button
+ */
+void MainWindow::gotoHomeFolderButtonClicked(void)
+{
+	outputFolderView->setCurrentIndex(m_fileSystemModel->index(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)));
+	outputFolderViewClicked(outputFolderView->currentIndex());
+	outputFolderView->setFocus();
+}
+
+/*
+ * Goto music folder button
+ */
+void MainWindow::gotoMusicFolderButtonClicked(void)
+{
+	outputFolderView->setCurrentIndex(m_fileSystemModel->index(QDesktopServices::storageLocation(QDesktopServices::MusicLocation)));
+	outputFolderViewClicked(outputFolderView->currentIndex());
+	outputFolderView->setFocus();
+}
+
+/*
+ * Make folder button
+ */
+void MainWindow::makeFolderButtonClicked(void)
+{
+	QDir basePath(m_fileSystemModel->filePath(outputFolderView->currentIndex()));
+	
+	bool bApplied = true;
+	QString folderName = QInputDialog::getText(this, "New Folder", "Enter the name of the new folder:", QLineEdit::Normal, "New folder", &bApplied, Qt::WindowStaysOnTopHint).simplified();
+
+	if(bApplied)
+	{
+		folderName.remove(":", Qt::CaseInsensitive);
+		folderName.remove("/", Qt::CaseInsensitive);
+		folderName.remove("\\", Qt::CaseInsensitive);
+		folderName.remove("?", Qt::CaseInsensitive);
+		folderName.remove("*", Qt::CaseInsensitive);
+		folderName.remove("<", Qt::CaseInsensitive);
+		folderName.remove(">", Qt::CaseInsensitive);
+		
+		int i = 1;
+		QString newFolder = folderName;
+
+		while(basePath.exists(newFolder))
+		{
+			newFolder = QString(folderName).append(QString().sprintf(" (%d)", ++i));
+		}
+		
+		if(basePath.mkdir(newFolder))
+		{
+			QDir createdDir = basePath;
+			if(createdDir.cd(newFolder))
+			{
+				outputFolderView->setCurrentIndex(m_fileSystemModel->index(createdDir.absolutePath()));
+				outputFolderViewClicked(outputFolderView->currentIndex());
+				outputFolderView->setFocus();
+			}
+		}
+		else
+		{
+			QMessageBox::warning(this, "Failed to create folder", QString("The folder '%1' could not be created!").arg(newFolder));
+		}
+	}
+}
+
+
+/*
+ * Visit homepage action
+ */
+void MainWindow::visitHomepageActionActivated(void)
+{
+	QDesktopServices::openUrl(QUrl("http://mulder.dummwiedeutsch.de/"));
+}
+
+/*
+ * Check for updates action
+ */
+void MainWindow::checkUpdatesActionActivated(void)
+{
+	WorkingBanner::showBanner(this, "Checking for updates, please be patient...");
+	QMessageBox::information(this, "Update Check", "Your version of LameXP is still up-to-date. There are no updates available.\nPlease remember to check for updates at regular intervals!");
+}
+
+/*
+ * Open folder action
+ */
+void MainWindow::openFolderActionActivated(void)
+{
+	QString selectedFolder = QFileDialog::getExistingDirectory(this, "Add folder", QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
+	
+	if(!selectedFolder.isEmpty())
+	{
+		WorkingBanner banner(this);
+		banner.setText("Adding folder, please wait...");
+		banner.show();
+		QApplication::processEvents();
+
+		QDir sourceDir(selectedFolder);
+		QFileInfoList fileList = sourceDir.entryInfoList(QDir::Files);
+		
+		for(int i = 0; i < fileList.count(); i++)
+		{
+			qDebug("Adding: %s", fileList.at(i).absoluteFilePath().toLatin1().constData());
+			banner.setText(fileList.at(i).fileName());
+			m_fileListModel->addFile(fileList.at(i).absoluteFilePath());
+			sourceFileView->scrollToBottom();
+			QApplication::processEvents();
+		}
+
+		banner.close();
+	}
 }

@@ -107,9 +107,13 @@ QVariant FileListModel::headerData(int section, Qt::Orientation orientation, int
 			{
 				return QVariant(QString().sprintf("%02d", section + 1));
 			}
-			else
+			else if(m_fileList.count() < 1000)
 			{
 				return QVariant(QString().sprintf("%03d", section + 1));
+			}
+			else
+			{
+				return QVariant(QString().sprintf("%04d", section + 1));
 			}
 		}
 	}

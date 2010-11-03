@@ -21,25 +21,28 @@
 
 #pragma once
 
-#include "../tmp/UIC_SplashScreen.h"
+#include "../tmp/UIC_WorkingBanner.h"
 
 ////////////////////////////////////////////////////////////
 // Splash Frame
 ////////////////////////////////////////////////////////////
 
-class SplashScreen: public QFrame, private Ui::SplashScreen
+class WorkingBanner: public QDialog, private Ui::WorkingBanner
 {
 	Q_OBJECT
 
 public:
-	SplashScreen(QWidget *parent = 0);
-	~SplashScreen(void);
+	WorkingBanner(QWidget *parent = 0);
+	~WorkingBanner(void);
 	
-	static void showSplash(QThread *thread);
+	static void showBanner(QWidget *parent = 0, const QString &text = QString(), QThread *thread = 0);
 
 private:
 	QMovie *m_working;
 	bool m_canClose;
+
+public slots:
+	void setText(const QString &text);
 
 protected:
 	void keyPressEvent(QKeyEvent *event);

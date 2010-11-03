@@ -48,6 +48,13 @@ private slots:
 	void tabPageChanged(int idx);
 	void tabActionActivated(QAction *action);
 	void outputFolderViewClicked(const QModelIndex &index);
+	void makeFolderButtonClicked(void);
+	void gotoHomeFolderButtonClicked(void);
+	void gotoDesktopButtonClicked(void);
+	void gotoMusicFolderButtonClicked(void);
+	void checkUpdatesActionActivated(void);
+	void visitHomepageActionActivated(void);
+	void openFolderActionActivated(void);
 
 private:
 	FileListModel *m_fileListModel;
