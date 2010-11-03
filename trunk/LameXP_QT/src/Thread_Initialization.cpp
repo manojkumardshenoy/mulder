@@ -100,7 +100,7 @@ void InitializationThread::run()
 
 		try
 		{
-			qDebug("Extracting file: %s\n", g_lamexp_tools[i].pcName);
+			qDebug("Extracting file: %s", g_lamexp_tools[i].pcName);
 			QString toolName = QString::fromLatin1(g_lamexp_tools[i].pcName);
 			QByteArray toolHash = QString::fromLatin1(g_lamexp_tools[i].pcHash).toLatin1();
 			LockedFile *lockedFile = new LockedFile(QString(":/tools/%1").arg(toolName), QString(lamexp_temp_folder()).append(QString("/tool_%1").arg(toolName)), toolHash);
@@ -113,7 +113,7 @@ void InitializationThread::run()
 		}
 	}
 	
-	qDebug("All extracted.\n\n");
+	qDebug("All extracted.\n");
 	
 	delay();
 	m_bSuccess = true;

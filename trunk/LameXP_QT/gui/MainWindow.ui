@@ -57,6 +57,9 @@
               <property name="selectionBehavior">
                <enum>QAbstractItemView::SelectRows</enum>
               </property>
+              <property name="horizontalScrollMode">
+               <enum>QAbstractItemView::ScrollPerPixel</enum>
+              </property>
               <property name="wordWrap">
                <bool>false</bool>
               </property>
@@ -240,7 +243,7 @@
                <enum>QFrame::StyledPanel</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Sunken</enum>
+               <enum>QFrame::Plain</enum>
               </property>
               <property name="text">
                <string>($OUTDIR)</string>
@@ -248,7 +251,96 @@
              </widget>
             </item>
             <item>
-             <widget class="QTreeView" name="outputFolderView"/>
+             <widget class="QTreeView" name="outputFolderView">
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QPushButton" name="buttonGotoHome">
+                <property name="minimumSize">
+                 <size>
+                  <width>124</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Goto Home Folder</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../res/Icons.qrc">
+                  <normaloff>:/icons/house.png</normaloff>:/icons/house.png</iconset>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="buttonGotoMusic">
+                <property name="minimumSize">
+                 <size>
+                  <width>124</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Goto Music Folder</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../res/Icons.qrc">
+                  <normaloff>:/icons/music.png</normaloff>:/icons/music.png</iconset>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="buttonGotoDesktop">
+                <property name="minimumSize">
+                 <size>
+                  <width>124</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Goto Desktop Folder</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../res/Icons.qrc">
+                  <normaloff>:/icons/computer.png</normaloff>:/icons/computer.png</iconset>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_6">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="buttonMakeFolder">
+                <property name="minimumSize">
+                 <size>
+                  <width>124</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Make New Folder</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../res/Icons.qrc">
+                  <normaloff>:/icons/folder_add.png</normaloff>:/icons/folder_add.png</iconset>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
             <item>
              <spacer name="verticalSpacer">
@@ -261,7 +353,7 @@
               <property name="sizeHint" stdset="0">
                <size>
                 <width>20</width>
-                <height>1</height>
+                <height>3</height>
                </size>
               </property>
              </spacer>
@@ -269,7 +361,7 @@
             <item>
              <widget class="QCheckBox" name="saveToSourceFolderCheckBox">
               <property name="text">
-               <string>Save output filed to the same folder where the input file is loacated</string>
+               <string>Save output files to the same location where the input file is loacated</string>
               </property>
              </widget>
             </item>
@@ -652,13 +744,19 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionOpenFolder"/>
+    <addaction name="actionClearAll"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>?</string>
     </property>
+    <addaction name="actionCheckUpdates"/>
+    <addaction name="actionVisitHomepage"/>
+    <addaction name="separator"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -736,15 +834,58 @@
   <action name="actionOpen">
    <property name="icon">
     <iconset resource="../res/Icons.qrc">
-     <normaloff>:/icons/folder_page.png</normaloff>:/icons/folder_page.png</iconset>
+     <normaloff>:/icons/page_white_add.png</normaloff>:/icons/page_white_add.png</iconset>
    </property>
    <property name="text">
     <string>Open File(s)...</string>
    </property>
   </action>
+  <action name="actionVisitHomepage">
+   <property name="icon">
+    <iconset resource="../res/Icons.qrc">
+     <normaloff>:/icons/world.png</normaloff>:/icons/world.png</iconset>
+   </property>
+   <property name="text">
+    <string>Visit Official Homepage</string>
+   </property>
+  </action>
+  <action name="actionCheckUpdates">
+   <property name="icon">
+    <iconset resource="../res/Icons.qrc">
+     <normaloff>:/icons/feed.png</normaloff>:/icons/feed.png</iconset>
+   </property>
+   <property name="text">
+    <string>Check for Updates</string>
+   </property>
+  </action>
+  <action name="actionOpenFolder">
+   <property name="icon">
+    <iconset resource="../res/Icons.qrc">
+     <normaloff>:/icons/folder_add.png</normaloff>:/icons/folder_add.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open Folder...</string>
+   </property>
+  </action>
+  <action name="actionClearAll">
+   <property name="icon">
+    <iconset resource="../res/Icons.qrc">
+     <normaloff>:/icons/bomb.png</normaloff>:/icons/bomb.png</iconset>
+   </property>
+   <property name="text">
+    <string>Clear All</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../res/Icons.qrc"/>
+  <include location="../res/Images.qrc"/>
+  <include location="../res/Images.qrc"/>
+  <include location="../res/Images.qrc"/>
+  <include location="../res/Images.qrc"/>
+  <include location="../res/Images.qrc"/>
+  <include location="../res/Images.qrc"/>
+  <include location="../res/Images.qrc"/>
   <include location="../res/Images.qrc"/>
   <include location="../res/Images.qrc"/>
   <include location="../res/Images.qrc"/>
@@ -867,6 +1008,86 @@
     <hint type="destinationlabel">
      <x>327</x>
      <y>72</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>saveToSourceFolderCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>buttonGotoDesktop</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>344</x>
+     <y>465</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>215</x>
+     <y>430</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>saveToSourceFolderCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>buttonGotoHome</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>344</x>
+     <y>465</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>84</x>
+     <y>430</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>saveToSourceFolderCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>buttonMakeFolder</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>344</x>
+     <y>465</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>603</x>
+     <y>430</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>saveToSourceFolderCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>buttonGotoMusic</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>344</x>
+     <y>465</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>214</x>
+     <y>430</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionClearAll</sender>
+   <signal>triggered()</signal>
+   <receiver>buttonClearFiles</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>255</x>
+     <y>460</y>
     </hint>
    </hints>
   </connection>

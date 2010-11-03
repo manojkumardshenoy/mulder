@@ -33,6 +33,7 @@
 #include <QImageReader>
 #include <QSharedMemory>
 #include <QSysInfo>
+#include <QStringList>
 
 //LameXP includes
 #include "LockedFile.h"
@@ -136,29 +137,26 @@ bool lamexp_init_qt(int argc, char* argv[])
 	}
 	
 	//Check Qt version
-	qDebug("Using Qt Framework v%s, compiled with Qt v%s\n", qVersion(), QT_VERSION_STR);
+	qDebug("Using Qt Framework v%s, compiled with Qt v%s", qVersion(), QT_VERSION_STR);
 	QT_REQUIRE_VERSION(argc, argv, QT_VERSION_STR);
 	
 	//Check the Windows version
 	switch(QSysInfo::WindowsVersion)
 	{
-	case QSysInfo::WV_NT:
-		qDebug("Running on Windows NT.\n\n");
-		break;
 	case QSysInfo::WV_2000:
-		qDebug("Running on Windows 2000.\n\n");
+		qDebug("Running on Windows 2000 (not offically supported!).\n");
 		break;
 	case QSysInfo::WV_XP:
 		qDebug("Running on Windows XP.\n\n");
 		break;
 	case QSysInfo::WV_2003:
-		qDebug("Running on Windows Server 2003 or Windows XP Professional x64 Edition.\n\n");
+		qDebug("Running on Windows Server 2003 or Windows XP Professional x64 Edition.\n");
 		break;
 	case QSysInfo::WV_VISTA:
-		qDebug("Running on Windows Vista or Windows Server 200.8\n\n");
+		qDebug("Running on Windows Vista or Windows Server 200.8\n");
 		break;
 	case QSysInfo::WV_WINDOWS7:
-		qDebug("Running on Windows 7 or Windows Server 2008 R2.\n\n");
+		qDebug("Running on Windows 7 or Windows Server 2008 R2.\n");
 		break;
 	default:
 		qFatal("Unsupported OS, only Windows 2000 or later is supported!");
@@ -174,7 +172,7 @@ bool lamexp_init_qt(int argc, char* argv[])
 	application->setWindowIcon(QIcon(":/MainIcon.ico"));
 	
 	//Load plugins from application directory
-	QCoreApplication::addLibraryPath(QApplication::applicationDirPath());
+	QCoreApplication::setLibraryPaths(QStringList() << QApplication::applicationDirPath());
 	
 	//Check for supported image formats
 	QList<QByteArray> supportedFormats = QImageReader::supportedImageFormats();

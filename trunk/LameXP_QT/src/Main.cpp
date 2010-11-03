@@ -38,14 +38,14 @@ int lamexp_main(int argc, char* argv[])
 {
 	//Print version info
 	SetConsoleTitle(L"LameXP - Audio Encoder Front-End | DO NOT CLOSE CONSOLE !!!");
-	qDebug("\nLameXP - Audio Encoder Front-End\n");
-	qDebug("Version %d.%02d %s, Build %d [%s], MSVC compiler v%02d.%02d\n", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build(), lamexp_version_date().toString(Qt::ISODate).toLatin1().constData(), _MSC_VER / 100, _MSC_VER % 100);
-	qDebug("Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>\n\n");
+	qDebug("\nLameXP - Audio Encoder Front-End");
+	qDebug("Version %d.%02d %s, Build %d [%s], MSVC compiler v%02d.%02d", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build(), lamexp_version_date().toString(Qt::ISODate).toLatin1().constData(), _MSC_VER / 100, _MSC_VER % 100);
+	qDebug("Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>\n");
 	
 	//print license info
-	qDebug("This program is free software: you can redistribute it and/or modify\n");
-    qDebug("it under the terms of the GNU General Public License <http://www.gnu.org/>.\n");
-	qDebug("This program comes with ABSOLUTELY NO WARRANTY.\n\n");
+	qDebug("This program is free software: you can redistribute it and/or modify");
+    qDebug("it under the terms of the GNU General Public License <http://www.gnu.org/>.");
+	qDebug("This program comes with ABSOLUTELY NO WARRANTY.\n");
 	
 	//Print warning, if this is a "debug" build
 	LAMEXP_CHECK_DEBUG_BUILD;
@@ -57,7 +57,7 @@ int lamexp_main(int argc, char* argv[])
 	if(lamexp_version_demo())
 	{
 		QDate expireDate = lamexp_version_date().addDays(14);
-		qWarning(QString("Note: This demo (pre-release) version of LameXP will expire at %1.\n\n").arg(expireDate.toString(Qt::ISODate)).toLatin1().constData());
+		qWarning(QString("Note: This demo (pre-release) version of LameXP will expire at %1.\n").arg(expireDate.toString(Qt::ISODate)).toLatin1().constData());
 		if(QDate::currentDate() >= expireDate)
 		{
 			QMessageBox::warning(NULL, "LameXP - Expired", QString("This demo (pre-release) version of LameXP has expired at %1.").arg(expireDate.toString()), "Exit Program");
@@ -69,10 +69,8 @@ int lamexp_main(int argc, char* argv[])
 	if(!lamexp_check_instances()) return 0;
 	
 	//Show splash screen
-	SplashScreen *poSplashScreen = new SplashScreen();
 	InitializationThread *poInitializationThread = new InitializationThread();
-	poSplashScreen->showSplash(poInitializationThread);
-	LAMEXP_DELETE(poSplashScreen);
+	SplashScreen::showSplash(poInitializationThread);
 	LAMEXP_DELETE(poInitializationThread);
 
 	//Show main window
@@ -116,12 +114,12 @@ static void lamexp_message_handler(QtMsgType type, const char *msg)
 		break;
 	case QtWarningMsg:
 		SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
-		fprintf(stderr, "%s", msg);
+		fprintf(stderr, "%s\n", msg);
 		fflush(stderr);
 		break;
 	default:
 		SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
-		fprintf(stderr, "%s", msg);
+		fprintf(stderr, "%s\n", msg);
 		fflush(stderr);
 		break;
 	}

@@ -19,7 +19,7 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "Dialog_SplashScreen.h"
+#include "Dialog_WorkingBanner.h"
 
 #include "Global.h"
 
@@ -34,15 +34,16 @@
 // Constructor
 ////////////////////////////////////////////////////////////
 
-SplashScreen::SplashScreen(QWidget *parent)
-	: QFrame(parent, Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint)
+WorkingBanner::WorkingBanner(QWidget *parent)
+: QDialog(parent, Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint)
 {
 	//Init the dialog, from the .ui file
 	setupUi(this);
+	setModal(true);
 
 	//Start animation
-	m_working = new QMovie(":/images/Loading.gif");
-	labelLoading->setMovie(m_working);
+	m_working = new QMovie(":/images/Busy.gif");
+	labelWorking->setMovie(m_working);
 	m_working->start();
 
 	//Set wait cursor
@@ -56,7 +57,7 @@ SplashScreen::SplashScreen(QWidget *parent)
 // Destructor
 ////////////////////////////////////////////////////////////
 
-SplashScreen::~SplashScreen(void)
+WorkingBanner::~WorkingBanner(void)
 {
 	if(m_working)
 	{
@@ -70,63 +71,58 @@ SplashScreen::~SplashScreen(void)
 // PUBLIC FUNCTIONS
 ////////////////////////////////////////////////////////////
 
-void SplashScreen::showSplash(QThread *thread)
+void WorkingBanner::showBanner(QWidget *parent, const QString &text, QThread *thread)
 {
-	SplashScreen *splashScreen = new SplashScreen();
+	WorkingBanner *workingBanner = new WorkingBanner(parent);
 	
 	//Show splash
-	splashScreen->m_canClose = false;
-	splashScreen->setWindowOpacity(0.0);
-	splashScreen->show();
+	workingBanner->m_canClose = false;
+	workingBanner->labelStatus->setText(text);
+	workingBanner->show();
 	QApplication::processEvents();
 
 	//Start the thread
-	thread->start();
-	
-	//Fade in
-	for(double d = 0.0; d <= 1.0 + EPS; d = d + 0.01)
-	{
-		splashScreen->setWindowOpacity(d);
-		QApplication::processEvents();
-		Sleep(6);
-	}
+	//thread->start();
 
 	//Loop while thread is running
-	while(thread->isRunning())
+	//while(thread->isRunning())
+	for(int i = 0; i < 1500; i++)
 	{
-		QApplication::processEvents(QEventLoop::AllEvents | QEventLoop::WaitForMoreEvents);
-	}
-	
-	//Fade out
-	for(double d = 1.0; d >= 0.0; d = d - 0.01)
-	{
-		splashScreen->setWindowOpacity(d);
 		QApplication::processEvents();
-		Sleep(6);
+		Sleep(5);
 	}
 
 	//Hide splash
-	splashScreen->m_canClose = true;
-	splashScreen->close();
+	workingBanner->m_canClose = true;
+	workingBanner->close();
 
-	LAMEXP_DELETE(splashScreen);
+	LAMEXP_DELETE(workingBanner);
 }
 
 ////////////////////////////////////////////////////////////
 // EVENTS
 ////////////////////////////////////////////////////////////
 
-void SplashScreen::keyPressEvent(QKeyEvent *event)
+void WorkingBanner::keyPressEvent(QKeyEvent *event)
 {
 	event->ignore();
 }
 
-void SplashScreen::keyReleaseEvent(QKeyEvent *event)
+void WorkingBanner::keyReleaseEvent(QKeyEvent *event)
 {
 	event->ignore();
 }
 
-void SplashScreen::closeEvent(QCloseEvent *event)
+void WorkingBanner::closeEvent(QCloseEvent *event)
 {
 	if(!m_canClose) event->ignore();
+}
+
+////////////////////////////////////////////////////////////
+// SLOTS
+////////////////////////////////////////////////////////////
+
+void WorkingBanner::setText(const QString &text)
+{
+	labelStatus->setText(text);
 }
