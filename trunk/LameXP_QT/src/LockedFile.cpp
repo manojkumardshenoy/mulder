@@ -92,3 +92,8 @@ LockedFile::~LockedFile(void)
 {
 	LAMEXP_CLOSE(m_fileHandle);
 }
+
+const QString &LockedFile::filePath()
+{
+	return m_filePath;
+}

@@ -44,6 +44,18 @@ signals:
 	void fileAnalyzed(const AudioFileModel &file);
 
 private:
-	bool m_bSuccess;
+	enum section_t
+	{
+		sectionGeneral,
+		sectionAudio,
+		sectionOther
+	};
+
+	const AudioFileModel analyzeFile(const QString &filePath);
+	void updateInfo(AudioFileModel &audioFile, const QString &key, const QString &value);
+	void updateSection(const QString &section);
+
 	QStringList m_inputFiles;
+	section_t m_currentSection;
+	bool m_bSuccess;
 };

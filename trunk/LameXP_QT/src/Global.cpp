@@ -323,3 +323,18 @@ void lamexp_register_tool(const QString &toolName, LockedFile *file)
 
 	g_lamexp_tool_registry.insert(toolName, file);
 }
+
+/*
+ * Register tool
+ */
+const QString &lamexp_lookup_tool(const QString &toolName)
+{
+	if(g_lamexp_tool_registry.contains(toolName))
+	{
+		return g_lamexp_tool_registry.value(toolName)->filePath();
+	}
+	else
+	{
+		return QString();
+	}
+}

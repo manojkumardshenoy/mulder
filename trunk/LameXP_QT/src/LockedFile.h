@@ -29,6 +29,8 @@ public:
 	LockedFile(const QString &resourcePath, const QString &outPath, const QByteArray &expectedHash = QByteArray());
 	~LockedFile(void);
 
+	const QString &filePath();
+
 private:
 	QString m_filePath;
 	void *m_fileHandle;
