@@ -27,6 +27,7 @@
 
 //Class declarations
 class QFileSystemModel;
+class WorkingBanner;
 
 class MainWindow: public QMainWindow, private Ui::MainWindow
 {
@@ -60,4 +61,5 @@ private:
 	FileListModel *m_fileListModel;
 	QFileSystemModel *m_fileSystemModel;
 	QActionGroup *m_tabActionGroup;
+	WorkingBanner *m_banner;
 };

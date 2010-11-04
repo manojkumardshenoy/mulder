@@ -25,6 +25,7 @@
 #include "Global.h"
 #include "Resource.h"
 #include "Dialog_WorkingBanner.h"
+#include "Thread_FileAnalyzer.h"
 
 //Qt includes
 #include <QMessageBox>
@@ -50,6 +51,9 @@ MainWindow::MainWindow(QWidget *parent)
 	//Init the dialog, from the .ui file
 	setupUi(this);
 	
+	//Register meta types
+	qRegisterMetaType<AudioFileModel>("AudioFileModel");
+
 	//Update window title
 	if(lamexp_version_demo())
 	{
@@ -117,6 +121,9 @@ MainWindow::MainWindow(QWidget *parent)
 	QRect thisRect = this->geometry();
 	move((desktopRect.width() - thisRect.width()) / 2, (desktopRect.height() - thisRect.height()) / 2);
 	setMinimumSize(thisRect.width(), thisRect.height());
+
+	//Create banner
+	m_banner = new WorkingBanner(this);
 }
 
 ////////////////////////////////////////////////////////////
@@ -127,6 +134,7 @@ MainWindow::~MainWindow(void)
 {
 	LAMEXP_DELETE(m_tabActionGroup);
 	LAMEXP_DELETE(m_fileListModel);
+	LAMEXP_DELETE(m_banner);
 }
 
 ////////////////////////////////////////////////////////////
@@ -212,25 +220,41 @@ void MainWindow::addFilesButtonClicked(void)
 		return;
 	}
 
-	WorkingBanner banner(this);
-	banner.setText("Adding file(s), please wait...");
-	banner.show();
-	QApplication::processEvents();
+	FileAnalyzer *analyzer = new FileAnalyzer(selectedFiles);
+	connect(analyzer, SIGNAL(fileSelected(QString)), m_banner, SLOT(setText(QString)), Qt::QueuedConnection);
+	connect(analyzer, SIGNAL(fileAnalyzed(AudioFileModel)), m_fileListModel, SLOT(addFile(AudioFileModel)), Qt::QueuedConnection);
 
-	selectedFiles.sort();
+	m_banner->show("Adding file(s), please wait...", analyzer);
+	LAMEXP_DELETE(analyzer);
+	
+	sourceFileView->scrollToBottom();
+	m_banner->close();
+}
 
-	while(!selectedFiles.isEmpty())
+/*
+ * Open folder action
+ */
+void MainWindow::openFolderActionActivated(void)
+{
+	QString selectedFolder = QFileDialog::getExistingDirectory(this, "Add folder", QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
+	
+	if(!selectedFolder.isEmpty())
 	{
-		QString currentFile = selectedFiles.takeFirst();
-		qDebug("Adding: %s", currentFile.toLatin1().constData());
-		banner.setText(QFile(currentFile).fileName());
-		m_fileListModel->addFile(currentFile);
-		sourceFileView->scrollToBottom();
-		QApplication::processEvents();
-	}
+		m_banner->show("Adding folder, please wait...");
 
-	qDebug("All files added.\n");
-	banner.close();
+		QDir sourceDir(selectedFolder);
+		QStringList fileList = sourceDir.entryList(QDir::Files);
+		
+		FileAnalyzer *analyzer = new FileAnalyzer(fileList);
+		connect(analyzer, SIGNAL(fileSelected(QString)), m_banner, SLOT(setText(QString)), Qt::QueuedConnection);
+		connect(analyzer, SIGNAL(fileAnalyzed(AudioFileModel)), m_fileListModel, SLOT(addFile(AudioFileModel)), Qt::QueuedConnection);
+
+		m_banner->show("Adding file(s), please wait...", analyzer);
+		LAMEXP_DELETE(analyzer);
+	
+		sourceFileView->scrollToBottom();
+		m_banner->close();
+	}
 }
 
 /*
@@ -443,36 +467,16 @@ void MainWindow::visitHomepageActionActivated(void)
  */
 void MainWindow::checkUpdatesActionActivated(void)
 {
-	WorkingBanner::showBanner(this, "Checking for updates, please be patient...");
+	m_banner->show("Checking for updates, please be patient...");
+	
+	for(int i = 0; i < 300; i++)
+	{
+		QApplication::processEvents();
+		Sleep(5);
+	}
+	
+	m_banner->close();
+	
 	QMessageBox::information(this, "Update Check", "Your version of LameXP is still up-to-date. There are no updates available.\nPlease remember to check for updates at regular intervals!");
 }
 
-/*
- * Open folder action
- */
-void MainWindow::openFolderActionActivated(void)
-{
-	QString selectedFolder = QFileDialog::getExistingDirectory(this, "Add folder", QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
-	
-	if(!selectedFolder.isEmpty())
-	{
-		WorkingBanner banner(this);
-		banner.setText("Adding folder, please wait...");
-		banner.show();
-		QApplication::processEvents();
-
-		QDir sourceDir(selectedFolder);
-		QFileInfoList fileList = sourceDir.entryInfoList(QDir::Files);
-		
-		for(int i = 0; i < fileList.count(); i++)
-		{
-			qDebug("Adding: %s", fileList.at(i).absoluteFilePath().toLatin1().constData());
-			banner.setText(fileList.at(i).fileName());
-			m_fileListModel->addFile(fileList.at(i).absoluteFilePath());
-			sourceFileView->scrollToBottom();
-			QApplication::processEvents();
-		}
-
-		banner.close();
-	}
-}
