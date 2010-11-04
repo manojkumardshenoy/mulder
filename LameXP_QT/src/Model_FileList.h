@@ -28,6 +28,8 @@
 
 class FileListModel : public QAbstractTableModel
 {
+	Q_OBJECT
+
 public:
 	FileListModel(void);
 	~FileListModel(void);
@@ -39,12 +41,15 @@ public:
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
 	//Edit functions
-	bool addFile(const QString &filePath);
 	bool removeFile(const QModelIndex &index);
 	void clearFiles(void);
 	bool moveFile(const QModelIndex &index, int delta);
 	AudioFileModel getFile(const QModelIndex &index);
 	bool setFile(const QModelIndex &index, const AudioFileModel &audioFile);
+
+public slots:
+	void addFile(const QString &filePath);
+	void addFile(const AudioFileModel &file);
 
 private:
 	QList<AudioFileModel> m_fileList;

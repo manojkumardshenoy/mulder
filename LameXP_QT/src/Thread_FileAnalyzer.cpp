@@ -19,35 +19,48 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#include "Thread_FileAnalyzer.h"
 
-#include "../tmp/UIC_WorkingBanner.h"
+#include "Global.h"
+#include "LockedFile.h"
+
+#include <QFileInfo>
 
 ////////////////////////////////////////////////////////////
-// Splash Frame
+// Constructor
 ////////////////////////////////////////////////////////////
 
-class WorkingBanner: public QDialog, private Ui::WorkingBanner
+FileAnalyzer::FileAnalyzer(const QStringList &inputFiles)
+	: m_inputFiles(inputFiles)
 {
-	Q_OBJECT
+	m_bSuccess = false;
+}
 
-public:
-	WorkingBanner(QWidget *parent = 0);
-	~WorkingBanner(void);
-	
-	void show(const QString &text);
-	void show(const QString &text, QThread *thread);
-	void close(void);
+////////////////////////////////////////////////////////////
+// Thread Main
+////////////////////////////////////////////////////////////
 
-private:
-	QMovie *m_working;
-	bool m_canClose;
+void FileAnalyzer::run()
+{
+	m_bSuccess = false;
+	m_inputFiles.sort();
 
-public slots:
-	void setText(const QString &text);
+	while(!m_inputFiles.isEmpty())
+	{
+		QString currentFile = m_inputFiles.takeFirst();
+		qDebug("Adding: %s", currentFile.toLatin1().constData());
+		emit fileSelected(QFileInfo(currentFile).fileName());
+		QThread::msleep(500);
+		AudioFileModel file(currentFile, QFileInfo(currentFile).fileName());
+		emit fileAnalyzed(file);
+	}
 
-protected:
-	void keyPressEvent(QKeyEvent *event);
-	void keyReleaseEvent(QKeyEvent *event);
-	void closeEvent(QCloseEvent *event);
-};
+	qDebug("All files added.\n");
+	m_bSuccess = true;
+}
+
+////////////////////////////////////////////////////////////
+// EVENTS
+////////////////////////////////////////////////////////////
+
+/*NONE*/

@@ -26,6 +26,7 @@
 #include <QThread>
 #include <QMovie>
 #include <QKeyEvent>
+#include <QFontMetrics>
 #include <Windows.h>
 
 #define EPS (1.0E-5)
@@ -48,9 +49,6 @@ WorkingBanner::WorkingBanner(QWidget *parent)
 
 	//Set wait cursor
 	setCursor(Qt::WaitCursor);
-
-	//Prevent close
-	m_canClose = false;
 }
 
 ////////////////////////////////////////////////////////////
@@ -71,32 +69,36 @@ WorkingBanner::~WorkingBanner(void)
 // PUBLIC FUNCTIONS
 ////////////////////////////////////////////////////////////
 
-void WorkingBanner::showBanner(QWidget *parent, const QString &text, QThread *thread)
+void WorkingBanner::show(const QString &text)
 {
-	WorkingBanner *workingBanner = new WorkingBanner(parent);
-	
-	//Show splash
-	workingBanner->m_canClose = false;
-	workingBanner->labelStatus->setText(text);
-	workingBanner->show();
+	m_canClose = false;
+	QDialog::show();
+	setText(text);
 	QApplication::processEvents();
+}
+
+void WorkingBanner::close(void)
+{
+	m_canClose = true;
+	QDialog::close();
+}
+
+void WorkingBanner::show(const QString &text, QThread *thread)
+{
+	//Show splash
+	this->show(text);
 
 	//Start the thread
-	//thread->start();
+	thread->start();
 
 	//Loop while thread is running
-	//while(thread->isRunning())
-	for(int i = 0; i < 1500; i++)
+	while(thread->isRunning())
 	{
-		QApplication::processEvents();
-		Sleep(5);
+		QApplication::processEvents(QEventLoop::AllEvents | QEventLoop::WaitForMoreEvents);
 	}
 
 	//Hide splash
-	workingBanner->m_canClose = true;
-	workingBanner->close();
-
-	LAMEXP_DELETE(workingBanner);
+	this->close();
 }
 
 ////////////////////////////////////////////////////////////
@@ -124,5 +126,20 @@ void WorkingBanner::closeEvent(QCloseEvent *event)
 
 void WorkingBanner::setText(const QString &text)
 {
-	labelStatus->setText(text);
+	QFontMetrics metrics(labelStatus->font());
+	if(metrics.width(text) <= labelStatus->width())
+	{
+		labelStatus->setText(text);
+	}
+	else
+	{
+		QString choppedText = text.simplified().append("...");
+		while(metrics.width(choppedText) > labelStatus->width() && choppedText.length() > 8)
+		{
+			choppedText.chop(4);
+			choppedText = choppedText.trimmed();
+			choppedText.append("...");
+		}
+		labelStatus->setText(choppedText);
+	}
 }

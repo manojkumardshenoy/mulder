@@ -21,33 +21,29 @@
 
 #pragma once
 
-#include "../tmp/UIC_WorkingBanner.h"
+#include "Model_AudioFile.h"
+
+#include <QThread>
+#include <QStringList>
 
 ////////////////////////////////////////////////////////////
-// Splash Frame
+// Splash Thread
 ////////////////////////////////////////////////////////////
 
-class WorkingBanner: public QDialog, private Ui::WorkingBanner
+class FileAnalyzer: public QThread
 {
 	Q_OBJECT
 
 public:
-	WorkingBanner(QWidget *parent = 0);
-	~WorkingBanner(void);
-	
-	void show(const QString &text);
-	void show(const QString &text, QThread *thread);
-	void close(void);
+	FileAnalyzer(const QStringList &inputFiles);
+	void run();
+	bool getSuccess(void) { return !isRunning() && m_bSuccess; }
+
+signals:
+	void fileSelected(const QString &fileName);
+	void fileAnalyzed(const AudioFileModel &file);
 
 private:
-	QMovie *m_working;
-	bool m_canClose;
-
-public slots:
-	void setText(const QString &text);
-
-protected:
-	void keyPressEvent(QKeyEvent *event);
-	void keyReleaseEvent(QKeyEvent *event);
-	void closeEvent(QCloseEvent *event);
+	bool m_bSuccess;
+	QStringList m_inputFiles;
 };

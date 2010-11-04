@@ -123,7 +123,7 @@ QVariant FileListModel::headerData(int section, Qt::Orientation orientation, int
 	}
 }
 
-bool FileListModel::addFile(const QString &filePath)
+void FileListModel::addFile(const QString &filePath)
 {
 	QFileInfo fileInfo(filePath);
 
@@ -131,15 +131,28 @@ bool FileListModel::addFile(const QString &filePath)
 	{
 		if(m_fileList.at(i).filePath().compare(fileInfo.absoluteFilePath(), Qt::CaseInsensitive) == 0)
 		{
-			return false;
+			return;
 		}
 	}
 	
 	beginResetModel();
 	m_fileList.append(AudioFileModel(fileInfo.absoluteFilePath(), fileInfo.baseName()));
 	endResetModel();
+}
 
-	return true;
+void FileListModel::addFile(const AudioFileModel &file)
+{
+	for(int i = 0; i < m_fileList.count(); i++)
+	{
+		if(m_fileList.at(i).filePath().compare(file.filePath(), Qt::CaseInsensitive) == 0)
+		{
+			return;
+		}
+	}
+	
+	beginResetModel();
+	m_fileList.append(file);
+	endResetModel();
 }
 
 bool FileListModel::removeFile(const QModelIndex &index)

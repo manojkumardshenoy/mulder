@@ -28,7 +28,7 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				CommandLine="copy &quot;$(QTDIR)\plugins\imageformats\q???d4.dll&quot; &quot;$(TargetDir)\imageformats&quot;"
+				CommandLine="copy &quot;$(QTDIR)\plugins\imageformats\q???d4.dll&quot; &quot;$(TargetDir)\imageformats&quot;&#x0D;&#x0A;"
 				Outputs="&quot;$(TargetDir)\imageformats\qgifd4.dll&quot;"
 			/>
 			<Tool
@@ -224,6 +224,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\Thread_FileAnalyzer.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\Thread_Initialization.cpp"
 				>
 			</File>
@@ -290,7 +294,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="MOC &quot;$(SolutionDir)tmp\MOC_$(SafeInputName).cpp&quot;"
-						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot; -o &quot;$(SolutionDir)tmp\MOC_$(SafeInputName).cpp&quot; &quot;$(InputPath)&quot;"
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot; -o &quot;$(SolutionDir)tmp\MOC_$(SafeInputName).cpp&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 						Outputs="&quot;$(SolutionDir)tmp\MOC_$(SafeInputName).cpp&quot;"
 					/>
 				</FileConfiguration>
@@ -310,6 +314,16 @@
 			<File
 				RelativePath=".\src\Model_FileList.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="MOC &quot;$(SolutionDir)tmp\MOC_$(SafeInputName).cpp&quot;"
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot; -o &quot;$(SolutionDir)tmp\MOC_$(SafeInputName).cpp&quot; &quot;$(InputPath)&quot;"
+						Outputs="&quot;$(SolutionDir)tmp\MOC_$(SafeInputName).cpp&quot;"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\Resource.h"
@@ -318,6 +332,20 @@
 			<File
 				RelativePath=".\src\Targetver.h"
 				>
+			</File>
+			<File
+				RelativePath=".\src\Thread_FileAnalyzer.h"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="MOC &quot;$(SolutionDir)tmp\MOC_$(SafeInputName).cpp&quot;"
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot; -o &quot;$(SolutionDir)tmp\MOC_$(SafeInputName).cpp&quot; &quot;$(InputPath)&quot;"
+						Outputs="&quot;$(SolutionDir)tmp\MOC_$(SafeInputName).cpp&quot;"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\src\Thread_Initialization.h"
@@ -359,6 +387,14 @@
 			</File>
 			<File
 				RelativePath=".\tmp\MOC_Dialog_WorkingBanner.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\tmp\MOC_Model_FileList.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\tmp\MOC_Thread_FileAnalyzer.cpp"
 				>
 			</File>
 			<File
@@ -526,7 +562,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="UIC &quot;$(SolutionDir)tmp\UIC_$(SafeInputName).h&quot;"
-						CommandLine="&quot;$(QTDIR)\bin\uic.exe&quot; -o &quot;$(SolutionDir)tmp\UIC_$(SafeInputName).h&quot; &quot;$(InputPath)&quot;"
+						CommandLine="&quot;$(QTDIR)\bin\uic.exe&quot; -o &quot;$(SolutionDir)tmp\UIC_$(SafeInputName).h&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 						Outputs="&quot;$(SolutionDir)tmp\UIC_$(SafeInputName).h&quot;"
 					/>
 				</FileConfiguration>
