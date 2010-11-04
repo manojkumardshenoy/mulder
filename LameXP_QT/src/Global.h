@@ -48,6 +48,7 @@ bool lamexp_version_demo(void);
 bool lamexp_init_qt(int argc, char* argv[]);
 bool lamexp_check_instances(void);
 void lamexp_register_tool(const QString &toolName, LockedFile *file);
+const QString &lamexp_lookup_tool(const QString &toolName);
 void lamexp_finalization(void);
 const QString &lamexp_temp_folder(void);
 
