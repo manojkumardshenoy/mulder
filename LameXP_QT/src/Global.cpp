@@ -327,7 +327,7 @@ void lamexp_register_tool(const QString &toolName, LockedFile *file)
 /*
  * Register tool
  */
-const QString &lamexp_lookup_tool(const QString &toolName)
+const QString lamexp_lookup_tool(const QString &toolName)
 {
 	if(g_lamexp_tool_registry.contains(toolName))
 	{

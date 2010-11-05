@@ -56,6 +56,7 @@ private:
 	void updateSection(const QString &section);
 
 	QStringList m_inputFiles;
+	QString m_mediaInfoBin;
 	section_t m_currentSection;
 	bool m_bSuccess;
 };

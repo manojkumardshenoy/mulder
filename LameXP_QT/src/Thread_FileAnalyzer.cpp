@@ -35,6 +35,12 @@ FileAnalyzer::FileAnalyzer(const QStringList &inputFiles)
 	: m_inputFiles(inputFiles)
 {
 	m_bSuccess = false;
+	m_mediaInfoBin = lamexp_lookup_tool("mediainfo_icl11.exe");
+	
+	if(m_mediaInfoBin.isEmpty())
+	{
+		qFatal("Invalid path to MediaInfo binary. Tool not initialized properly.");
+	}
 }
 
 ////////////////////////////////////////////////////////////
@@ -71,7 +77,7 @@ const AudioFileModel FileAnalyzer::analyzeFile(const QString &filePath)
 	QProcess process;
 	process.setProcessChannelMode(QProcess::MergedChannels);
 	process.setReadChannel(QProcess::StandardOutput);
-	process.start(lamexp_lookup_tool("mediainfo_icl11.exe"), QStringList() << filePath);
+	process.start(m_mediaInfoBin, QStringList() << filePath);
 
 	while(process.state() != QProcess::NotRunning)
 	{
@@ -79,7 +85,7 @@ const AudioFileModel FileAnalyzer::analyzeFile(const QString &filePath)
 		QByteArray data = process.readLine().constData();
 		while(data.size() > 0)
 		{
-			QString line = QString::fromLatin1(data).trimmed();
+			QString line = QString::fromUtf8(data).trimmed();
 			if(!line.isEmpty())
 			{
 				int index = line.indexOf(':');
@@ -87,7 +93,7 @@ const AudioFileModel FileAnalyzer::analyzeFile(const QString &filePath)
 				{
 					QString key = line.left(index-1).trimmed();
 					QString val = line.mid(index+1).trimmed();
-					if(!(key.isEmpty() || val.isEmpty()))
+					if(!key.isEmpty() && !val.isEmpty())
 					{
 						updateInfo(audioFile, key, val);
 					}
@@ -134,8 +140,10 @@ void FileAnalyzer::updateInfo(AudioFileModel &audioFile, const QString &key, con
 		{
 			audioFile.setFileName(value);
 		}
+		/* !!! TODO !!! */
 		break;
 	case sectionAudio:
+		/* !!! TODO !!! */
 		break;
 	}
 }

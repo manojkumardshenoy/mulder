@@ -1,5 +1,6 @@
 @echo off
-set "PATH=E:\7-Zip;E:\MPress;%PATH%
+set "PATH_SEVENZ=E:\7-Zip\7z.exe"
+set "PATH_MPRESS=E:\MPress\mpress.exe"
 REM ------------------------------------------
 set "TEMP_DIR=%TEMP%\_LameXP.tmp"
 set "OUT_PATH=..\..\out\Release"
@@ -34,16 +35,16 @@ copy "%QTDIR%\bin\qtgui4.dll" "%TEMP_DIR%"
 copy "%QTDIR%\plugins\imageformats\q???4.dll" "%TEMP_DIR%\imageformats"
 REM ------------------------------------------
 for %%f in ("%TEMP_DIR%\*.exe") do (
-	mpress.exe -s "%%f"
+	"%PATH_MPRESS%" -s "%%f"
 )
 for %%f in ("%TEMP_DIR%\*.dll") do (
-	mpress.exe -s "%%f"
+	"%PATH_MPRESS%" -s "%%f"
 )
 REM ------------------------------------------
 copy "..\Redist\*.*" "%TEMP_DIR%"
 copy "..\..\License.txt" "%TEMP_DIR%"
 REM ------------------------------------------
-7z.exe a -tzip -r "%OUT_FILE%" "%TEMP_DIR%\*"
+"%PATH_SEVENZ%" a -tzip -r "%OUT_FILE%" "%TEMP_DIR%\*"
 rd /S /Q "%TEMP_DIR%"
 REM ------------------------------------------
 pause
