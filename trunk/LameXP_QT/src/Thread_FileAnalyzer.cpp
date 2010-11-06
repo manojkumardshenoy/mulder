@@ -30,6 +30,8 @@
 #include <QProcess>
 #include <QDate>
 
+#include <math.h>
+
 ////////////////////////////////////////////////////////////
 // Constructor
 ////////////////////////////////////////////////////////////
@@ -74,16 +76,7 @@ void FileAnalyzer::run()
 
 const AudioFileModel FileAnalyzer::analyzeFile(const QString &filePath)
 {
-	QString baseName = QFileInfo(filePath).baseName();
-	baseName = baseName.replace("_", " ").simplified();
-	
-	int index = baseName.lastIndexOf(" - ");
-	if(index >= 0)
-	{
-		baseName = baseName.mid(index + 3).trimmed();
-	}
-
-	AudioFileModel audioFile(filePath, baseName);
+	AudioFileModel audioFile(filePath);
 	m_currentSection = sectionOther;
 
 	QProcess process;
@@ -117,6 +110,27 @@ const AudioFileModel FileAnalyzer::analyzeFile(const QString &filePath)
 			}
 			data = process.readLine().constData();
 		}
+	}
+
+	if(audioFile.fileName().isEmpty())
+	{
+		QString baseName = QFileInfo(filePath).fileName();
+		int index = baseName.lastIndexOf(".");
+
+		if(index >= 0)
+		{
+			baseName = baseName.left(index);
+		}
+
+		baseName = baseName.replace("_", " ").simplified();
+		index = baseName.lastIndexOf(" - ");
+
+		if(index >= 0)
+		{
+			baseName = baseName.mid(index + 3).trimmed();
+		}
+
+		audioFile.setFileName(baseName);
 	}
 
 	return audioFile;
@@ -166,23 +180,50 @@ void FileAnalyzer::updateInfo(AudioFileModel &audioFile, const QString &key, con
 		}
 		else if(!key.compare("Year", Qt::CaseInsensitive) || !key.compare("Recorded Date", Qt::CaseInsensitive) || !key.compare("Encoded Date", Qt::CaseInsensitive))
 		{
-			if(audioFile.fileYear() == 0)
-			{
-				audioFile.setFileYear(parseYear(value));
-			}
+			if(!audioFile.fileYear()) audioFile.setFileYear(parseYear(value));
 		}
 		else if(!key.compare("Comment", Qt::CaseInsensitive))
 		{
 			if(audioFile.fileComment().isEmpty()) audioFile.setFileComment(value);
 		}
+		else if(!key.compare("Track Name/Position", Qt::CaseInsensitive))
+		{
+			if(!audioFile.filePosition()) audioFile.setFilePosition(value.toInt());
+		}
+		else if(!key.compare("Format", Qt::CaseInsensitive))
+		{
+			if(audioFile.formatContainerType().isEmpty()) audioFile.setFormatContainerType(value);
+		}
+		else if(!key.compare("Format Profile", Qt::CaseInsensitive))
+		{
+			if(audioFile.formatContainerProfile().isEmpty()) audioFile.setFormatContainerProfile(value);
+		}
 		break;
+
 	case sectionAudio:
 		if(!key.compare("Year", Qt::CaseInsensitive) || !key.compare("Recorded Date", Qt::CaseInsensitive) || !key.compare("Encoded Date", Qt::CaseInsensitive))
 		{
-			if(audioFile.fileYear() == 0)
-			{
-				audioFile.setFileYear(parseYear(value));
-			}
+			if(!audioFile.fileYear()) audioFile.setFileYear(parseYear(value));
+		}
+		else if(!key.compare("Format", Qt::CaseInsensitive))
+		{
+			if(audioFile.formatAudioType().isEmpty()) audioFile.setFormatAudioType(value);
+		}
+		else if(!key.compare("Format Profile", Qt::CaseInsensitive))
+		{
+			if(audioFile.formatAudioProfile().isEmpty()) audioFile.setFormatAudioProfile(value);
+		}
+		else if(!key.compare("Format Version", Qt::CaseInsensitive))
+		{
+			if(audioFile.formatAudioVersion().isEmpty()) audioFile.setFormatAudioVersion(value);
+		}
+		else if(!key.compare("Channel(s)", Qt::CaseInsensitive))
+		{
+			if(!audioFile.formatAudioChannels()) audioFile.setFormatAudioChannels(value.split(" ", QString::SkipEmptyParts).first().toInt());
+		}
+		else if(!key.compare("Sampling rate", Qt::CaseInsensitive))
+		{
+			if(!audioFile.formatAudioSamplerate()) audioFile.setFormatAudioSamplerate(ceil(value.split(" ", QString::SkipEmptyParts).first().toFloat() * 1000.0f));
 		}
 		break;
 	}

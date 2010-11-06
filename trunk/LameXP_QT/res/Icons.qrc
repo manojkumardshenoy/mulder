@@ -20,6 +20,7 @@
     <file>icons/computer.png</file>
     <file>icons/controller.png</file>
     <file>icons/cross.png</file>
+    <file>icons/date.png</file>
     <file>icons/delete.png</file>
     <file>icons/door_out.png</file>
 		<file>icons/drive_cd.png</file>
@@ -32,12 +33,14 @@
     <file>icons/information.png</file>
     <file>icons/monitor.png</file>
     <file>icons/music.png</file>
+    <file>icons/package.png</file>
     <file>icons/page_white_add.png</file>
     <file>icons/page_white_cd.png</file>
     <file>icons/play.png</file>
     <file>icons/sound.png</file>
     <file>icons/star.png</file>
     <file>icons/table_edit.png</file>
+    <file>icons/timeline_marker.png</file>
     <file>icons/transmit.png</file>
     <file>icons/user.png</file>
     <file>icons/world.png</file>

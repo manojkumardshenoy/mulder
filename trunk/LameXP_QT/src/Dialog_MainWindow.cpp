@@ -84,7 +84,7 @@ MainWindow::MainWindow(QWidget *parent)
 	//Setup "Output" tab
 	m_fileSystemModel = new QFileSystemModel();
 	m_fileSystemModel->setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
-	m_fileSystemModel->setRootPath("");
+	m_fileSystemModel->setRootPath(m_fileSystemModel->rootPath());
 	outputFolderView->setModel(m_fileSystemModel);
 	outputFolderView->header()->setStretchLastSection(true);
 	outputFolderView->header()->hideSection(1);
