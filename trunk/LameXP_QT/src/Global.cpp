@@ -46,7 +46,7 @@
 //Build version
 static const unsigned int g_lamexp_version_major = 4;
 static const unsigned int g_lamexp_version_minor = 0;
-static const unsigned int g_lamexp_version_build = 3;
+static const unsigned int g_lamexp_version_build = 4;
 static const char *g_lamexp_version_release = "Pre-Alpha";
 
 //Build date
