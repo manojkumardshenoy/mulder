@@ -241,16 +241,20 @@ void MainWindow::openFolderActionActivated(void)
 	
 	if(!selectedFolder.isEmpty())
 	{
-		m_banner->show("Adding folder, please wait...");
-
 		QDir sourceDir(selectedFolder);
-		QStringList fileList = sourceDir.entryList(QDir::Files);
+		QFileInfoList fileInfoList = sourceDir.entryInfoList(QDir::Files);
+		QStringList fileList;
+
+		while(!fileInfoList.isEmpty())
+		{
+			fileList << fileInfoList.takeFirst().absoluteFilePath();
+		}
 		
 		FileAnalyzer *analyzer = new FileAnalyzer(fileList);
 		connect(analyzer, SIGNAL(fileSelected(QString)), m_banner, SLOT(setText(QString)), Qt::QueuedConnection);
 		connect(analyzer, SIGNAL(fileAnalyzed(AudioFileModel)), m_fileListModel, SLOT(addFile(AudioFileModel)), Qt::QueuedConnection);
 
-		m_banner->show("Adding file(s), please wait...", analyzer);
+		m_banner->show("Adding folder, please wait...", analyzer);
 		LAMEXP_DELETE(analyzer);
 	
 		sourceFileView->scrollToBottom();
@@ -312,21 +316,25 @@ void MainWindow::editMetaButtonClicked(void)
 {
 	int iResult = 0;
 	MetaInfoDialog *metaInfoDialog = new MetaInfoDialog(this);
-	
-	while(sourceFileView->currentIndex().isValid())
+	QModelIndex index = sourceFileView->currentIndex();
+
+	while(index.isValid())
 	{
 		if(iResult > 0)
 		{
-			sourceFileView->selectRow(sourceFileView->currentIndex().row() + 1);
+			index = m_fileListModel->index(index.row() + 1, index.column()); 
+			sourceFileView->selectRow(index.row());
 		}
 		if(iResult < 0)
 		{
-			sourceFileView->selectRow(sourceFileView->currentIndex().row() - 1);
+			index = m_fileListModel->index(index.row() - 1, index.column()); 
+			sourceFileView->selectRow(index.row());
 		}
 
-		AudioFileModel file = m_fileListModel->getFile(sourceFileView->currentIndex());
-		
-		iResult = metaInfoDialog->exec(file, sourceFileView->currentIndex().row() > 0, sourceFileView->currentIndex().row() < m_fileListModel->rowCount() - 1);
+		AudioFileModel file = m_fileListModel->getFile(index);
+		iResult = metaInfoDialog->exec(file, index.row() > 0, index.row() < m_fileListModel->rowCount() - 1);
+		m_fileListModel->setFile(index, file);
+
 		if(!iResult) break;
 	}
 

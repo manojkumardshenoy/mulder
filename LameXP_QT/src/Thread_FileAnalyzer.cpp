@@ -91,7 +91,7 @@ const AudioFileModel FileAnalyzer::analyzeFile(const QString &filePath)
 		QByteArray data = process.readLine().constData();
 		while(data.size() > 0)
 		{
-			QString line = QString::fromUtf8(data).trimmed();
+			QString line = QString::fromUtf8(data).simplified();
 			if(!line.isEmpty())
 			{
 				int index = line.indexOf(':');
@@ -271,13 +271,19 @@ unsigned int FileAnalyzer::parseDuration(const QString &str)
 {
 	QTime time;
 
-	time = QTime::fromString(str, "m'mn' s's'");
+	time = QTime::fromString(str, "s's 'z'ms'");
 	if(time.isValid())
 	{
 		return (time.hour() * 60 * 60) + (time.minute() * 60) + time.second();
 	}
 
-	time = QTime::fromString(str, "h'h' m'mn'");
+	time = QTime::fromString(str, "m'mn 's's'");
+	if(time.isValid())
+	{
+		return (time.hour() * 60 * 60) + (time.minute() * 60) + time.second();
+	}
+
+	time = QTime::fromString(str, "h'h 'm'mn'");
 	if(time.isValid())
 	{
 		return (time.hour() * 60 * 60) + (time.minute() * 60) + time.second();

@@ -36,6 +36,7 @@ MetaInfoDialog::MetaInfoDialog(QWidget *parent)
 
 	//Fix size
 	setMinimumSize(this->size());
+	setMaximumHeight(this->height());
 
 	//Setup table view
 	tableView->verticalHeader()->setVisible(false);
@@ -46,6 +47,7 @@ MetaInfoDialog::MetaInfoDialog(QWidget *parent)
 	//Enable up/down button
 	connect(upButton, SIGNAL(clicked()), this, SLOT(upButtonClicked()));
 	connect(downButton, SIGNAL(clicked()), this, SLOT(downButtonClicked()));
+	connect(editButton, SIGNAL(clicked()), this, SLOT(editButtonClicked()));
 }
 
 MetaInfoDialog::~MetaInfoDialog(void)
@@ -56,7 +58,7 @@ int MetaInfoDialog::exec(AudioFileModel &audioFile, bool allowUp, bool allowDown
 {
 	MetaInfoModel *model = new MetaInfoModel(&audioFile);
 	tableView->setModel(model);
-	setWindowTitle(QString("Meta Information: ").append(QFileInfo(audioFile.filePath()).fileName()));
+	setWindowTitle(QString("Meta Information: %1").arg(QFileInfo(audioFile.filePath()).fileName()));
 	upButton->setEnabled(allowUp);
 	downButton->setEnabled(allowDown);
 
@@ -76,4 +78,9 @@ void MetaInfoDialog::upButtonClicked(void)
 void MetaInfoDialog::downButtonClicked(void)
 {
 	done(+1);
+}
+
+void MetaInfoDialog::editButtonClicked(void)
+{
+	dynamic_cast<MetaInfoModel*>(tableView->model())->editItem(tableView->currentIndex(), this);
 }

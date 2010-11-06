@@ -250,9 +250,6 @@
          </item>
          <item>
           <widget class="QPushButton" name="editButton">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
            <property name="minimumSize">
             <size>
              <width>90</width>
@@ -318,6 +315,7 @@
   <include location="../res/Images.qrc"/>
   <include location="../res/Images.qrc"/>
   <include location="../res/Images.qrc"/>
+  <include location="../res/Images.qrc"/>
  </resources>
  <connections>
   <connection>
@@ -333,6 +331,22 @@
     <hint type="destinationlabel">
      <x>310</x>
      <y>240</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tableView</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>editButton</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>310</x>
+     <y>226</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>396</y>
     </hint>
    </hints>
   </connection>
