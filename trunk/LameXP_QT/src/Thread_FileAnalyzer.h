@@ -21,10 +21,12 @@
 
 #pragma once
 
-#include "Model_AudioFile.h"
+//#include "Model_AudioFile.h"
 
 #include <QThread>
 #include <QStringList>
+
+class AudioFileModel;
 
 ////////////////////////////////////////////////////////////
 // Splash Thread
@@ -54,6 +56,7 @@ private:
 	const AudioFileModel analyzeFile(const QString &filePath);
 	void updateInfo(AudioFileModel &audioFile, const QString &key, const QString &value);
 	void updateSection(const QString &section);
+	unsigned int parseYear(const QString &str);
 
 	QStringList m_inputFiles;
 	QString m_mediaInfoBin;

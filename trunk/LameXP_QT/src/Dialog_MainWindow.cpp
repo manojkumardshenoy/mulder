@@ -25,6 +25,7 @@
 #include "Global.h"
 #include "Resource.h"
 #include "Dialog_WorkingBanner.h"
+#include "Dialog_MetaInfo.h"
 #include "Thread_FileAnalyzer.h"
 
 //Qt includes
@@ -312,14 +313,9 @@ void MainWindow::editMetaButtonClicked(void)
 	if(sourceFileView->currentIndex().isValid())
 	{
 		AudioFileModel file = m_fileListModel->getFile(sourceFileView->currentIndex());
-		bool bApplied = false;
-		QString text = QInputDialog::getText(this, "Edit title", "Enter the new title:", QLineEdit::Normal, file.fileName(), &bApplied, Qt::WindowStaysOnTopHint);
-		
-		if(bApplied)
-		{
-			file.setFileName(text);
-			m_fileListModel->setFile(sourceFileView->currentIndex(), file);
-		}
+		MetaInfoDialog *metaInfoDialog = new MetaInfoDialog(this);
+		metaInfoDialog->exec(file);
+		LAMEXP_DELETE(metaInfoDialog);
 	}
 }
 

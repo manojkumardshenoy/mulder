@@ -306,7 +306,7 @@
                 </property>
                 <property name="icon">
                  <iconset resource="../res/Icons.qrc">
-                  <normaloff>:/icons/computer.png</normaloff>:/icons/computer.png</iconset>
+                  <normaloff>:/icons/monitor.png</normaloff>:/icons/monitor.png</iconset>
                 </property>
                </widget>
               </item>
@@ -852,7 +852,7 @@
   <action name="actionCheckUpdates">
    <property name="icon">
     <iconset resource="../res/Icons.qrc">
-     <normaloff>:/icons/feed.png</normaloff>:/icons/feed.png</iconset>
+     <normaloff>:/icons/transmit.png</normaloff>:/icons/transmit.png</iconset>
    </property>
    <property name="text">
     <string>Check for Updates</string>
@@ -879,6 +879,7 @@
  </widget>
  <resources>
   <include location="../res/Icons.qrc"/>
+  <include location="../res/Images.qrc"/>
   <include location="../res/Images.qrc"/>
   <include location="../res/Images.qrc"/>
   <include location="../res/Images.qrc"/>

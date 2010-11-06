@@ -21,39 +21,18 @@
 
 #pragma once
 
-#include <QString>
+#include <QDialog>
+#include "../tmp/UIC_MetaInfo.h"
 
-class AudioFileModel
+#include "Model_AudioFile.h"
+
+class MetaInfoDialog : public QDialog, private Ui::MetaInfo
 {
+	Q_OBJECT
 
 public:
-	AudioFileModel(const QString &path = QString(), const QString &name = QString());
-	~AudioFileModel(void);
+	MetaInfoDialog(QWidget *parent);
+	~MetaInfoDialog(void);
 
-	//Getters
-	const QString &filePath(void) const;
-	const QString &fileName(void) const;
-	const QString &fileArtist(void) const;
-	const QString &fileAlbum(void) const;
-	const QString &fileGenre(void) const;
-	unsigned int fileYear(void) const;
-	const QString &fileComment(void) const;
-
-	//Setters
-	void setFilePath(const QString &path);
-	void setFileName(const QString &name);
-	void setFileArtist(const QString &artist);
-	void setFileAlbum(const QString &album);
-	void setFileGenre(const QString &genre);
-	void setFileYear(unsigned int year);
-	void setFileComment(const QString &comment);
-
-private:
-	QString m_filePath;
-	QString m_fileName;
-	QString m_fileArtist;
-	QString m_fileAlbum;
-	QString m_fileGenre;
-	unsigned int m_fileYear;
-	QString m_fileComment;
+	int exec(AudioFileModel &audioFile);
 };
