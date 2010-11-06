@@ -30,6 +30,9 @@ AudioFileModel::AudioFileModel(const QString &path, const QString &name)
 	m_filePath = path;
 	m_fileName = name;
 	m_fileYear = 0;
+	m_filePosition = 0;
+	m_formatAudioSamplerate = 0;
+	m_formatAudioChannels = 0;
 }
 
 AudioFileModel::~AudioFileModel(void)
@@ -40,7 +43,9 @@ AudioFileModel::~AudioFileModel(void)
 // Public Functions
 ////////////////////////////////////////////////////////////
 
-//Getter
+// ---------------------------------
+// Getter methods
+// ---------------------------------
 
 const QString &AudioFileModel::filePath(void) const
 {
@@ -67,17 +72,109 @@ const QString &AudioFileModel::fileGenre(void) const
 	return m_fileGenre;
 }
 
-unsigned int AudioFileModel::fileYear(void) const
-{
-	return m_fileYear;
-}
-
 const QString &AudioFileModel::fileComment(void) const
 {
 	return m_fileComment;
 }
 
-//Setter
+unsigned int AudioFileModel::fileYear(void) const
+{
+	return m_fileYear;
+}
+
+unsigned int AudioFileModel::filePosition(void) const
+{
+	return m_filePosition;
+}
+
+const QString &AudioFileModel::formatContainerType(void) const
+{
+	return m_formatContainerType;
+}
+
+const QString &AudioFileModel::formatContainerProfile(void) const
+{
+	return m_formatContainerProfile;
+}
+
+const QString &AudioFileModel::formatAudioType(void) const
+{
+	return m_formatAudioType;
+}
+
+const QString &AudioFileModel::formatAudioProfile(void) const
+{
+	return m_formatAudioProfile;
+}
+
+const QString &AudioFileModel::formatAudioVersion(void) const
+{
+	return m_formatAudioVersion;
+}
+
+unsigned int AudioFileModel::formatAudioSamplerate(void) const
+{
+	return m_formatAudioSamplerate;
+}
+
+unsigned int AudioFileModel::formatAudioChannels(void) const
+{
+	return m_formatAudioSamplerate;
+}
+
+const QString AudioFileModel::formatContainerInfo(void) const
+{
+	if(!m_formatContainerType.isEmpty())
+	{
+		QString info = m_formatContainerType;
+		if(!m_formatContainerProfile.isEmpty()) info.append(" (Profile: ").append(m_formatContainerProfile).append(")");
+		return info;
+	}
+	else
+	{
+		return QString();
+	}
+}
+
+const QString AudioFileModel::formatAudioBaseInfo(void) const
+{
+	if(m_formatAudioSamplerate && m_formatAudioChannels)
+	{
+		QString info;
+		info.append("Channels: ").append(QString::number(m_formatAudioChannels));
+		info.append(", Samplerate: ").append(QString::number(m_formatAudioSamplerate)).append(" Hz");
+		return info;
+	}
+	else
+	{
+		return QString();
+	}
+}
+
+const QString AudioFileModel::formatAudioCompressInfo(void) const
+{
+	if(!m_formatAudioType.isEmpty())
+	{
+		QString info = m_formatAudioType;
+		if(!m_formatAudioProfile.isEmpty())
+		{
+			info.append(", Profile: ").append(m_formatAudioProfile);
+		}
+		if(!m_formatAudioVersion.isEmpty())
+		{
+			info.append(", Version: ").append(m_formatAudioVersion);
+		}
+		return info;
+	}
+	else
+	{
+		return QString();
+	}
+}
+
+// ---------------------------------
+// Setter methods
+// ---------------------------------
 
 void AudioFileModel::setFilePath(const QString &path)
 {
@@ -104,12 +201,52 @@ void AudioFileModel::setFileGenre(const QString &genre)
 	m_fileGenre = genre;
 }
 
+void AudioFileModel::setFileComment(const QString &comment)
+{
+	m_fileComment = comment;
+}
+
 void AudioFileModel::setFileYear(unsigned int year)
 {
 	m_fileYear = year;
 }
 
-void AudioFileModel::setFileComment(const QString &comment)
+void AudioFileModel::setFilePosition(unsigned int position)
 {
-	m_fileComment = comment;
+	m_filePosition = position;
+}
+
+void AudioFileModel::setFormatContainerType(const QString &type)
+{
+	m_formatContainerType = type;
+}
+
+void AudioFileModel::setFormatContainerProfile(const QString &profile)
+{
+	m_formatContainerProfile = profile;
+}
+
+void AudioFileModel::setFormatAudioType(const QString &type)
+{
+	m_formatAudioType = type;
+}
+
+void AudioFileModel::setFormatAudioProfile(const QString &profile)
+{
+	m_formatAudioProfile = profile;
+}
+
+void AudioFileModel::setFormatAudioVersion(const QString &version)
+{
+	m_formatAudioVersion = version;
+}
+
+void AudioFileModel::setFormatAudioSamplerate(unsigned int samplerate)
+{
+	m_formatAudioSamplerate = samplerate;
+}
+
+void AudioFileModel::setFormatAudioChannels(unsigned int channels)
+{
+	m_formatAudioChannels = channels;
 }

@@ -21,7 +21,10 @@
 
 #include "Model_MetaInfo.h"
 
-#define CHECK(STR) (STR.isEmpty() ? "(Unknown)" : STR)
+#define CHECK1(STR) (STR.isEmpty() ? "(Unknown)" : STR)
+#define CHECK2(VAL) ((VAL > 0) ? QString::number(VAL) : "(Unknown)")
+#define CHECK3(STR) (STR.isEmpty() ? Qt::darkGray : QVariant())
+#define CHECK4(VAL) ((VAL == 0) ? Qt::darkGray : QVariant())
 
 ////////////////////////////////////////////////////////////
 // Constructor & Destructor
@@ -47,7 +50,7 @@ int MetaInfoModel::columnCount(const QModelIndex &parent) const
 
 int MetaInfoModel::rowCount(const QModelIndex &parent) const
 {
-	return 7;
+	return 11;
 }
 
 QVariant MetaInfoModel::data(const QModelIndex &index, int role) const
@@ -57,25 +60,37 @@ QVariant MetaInfoModel::data(const QModelIndex &index, int role) const
 		switch(index.row())
 		{
 		case 0:
-			return (!index.column()) ? "Full Path" : CHECK(m_audioFile->filePath());
+			return (!index.column()) ? "Full Path" : CHECK1(m_audioFile->filePath());
 			break;
 		case 1:
-			return (!index.column()) ? "Title" : CHECK(m_audioFile->fileName());
+			return (!index.column()) ? "Format" : CHECK1(m_audioFile->formatAudioBaseInfo());
 			break;
 		case 2:
-			return (!index.column()) ? "Artist" : CHECK(m_audioFile->fileArtist());
+			return (!index.column()) ? "Container" : CHECK1(m_audioFile->formatContainerInfo());
 			break;
 		case 3:
-			return (!index.column()) ? "Album" : CHECK(m_audioFile->fileAlbum());
+			return (!index.column()) ? "Compression" : CHECK1(m_audioFile->formatAudioCompressInfo());
 			break;
 		case 4:
-			return (!index.column()) ? "Genre" : CHECK(m_audioFile->fileGenre());
+			return (!index.column()) ? "Title" : CHECK1(m_audioFile->fileName());
 			break;
 		case 5:
-			return (!index.column()) ? "Year" : ((m_audioFile->fileYear() > 0) ? QString::number(m_audioFile->fileYear()) : "(Unknown)");
+			return (!index.column()) ? "Artist" : CHECK1(m_audioFile->fileArtist());
 			break;
 		case 6:
-			return (!index.column()) ? "Comment" : CHECK(m_audioFile->fileComment());
+			return (!index.column()) ? "Album" : CHECK1(m_audioFile->fileAlbum());
+			break;
+		case 7:
+			return (!index.column()) ? "Genre" : CHECK1(m_audioFile->fileGenre());
+			break;
+		case 8:
+			return (!index.column()) ? "Year" : CHECK2(m_audioFile->fileYear());
+			break;
+		case 9:
+			return (!index.column()) ? "Position" : CHECK2(m_audioFile->filePosition());
+			break;
+		case 10:
+			return (!index.column()) ? "Comment" : CHECK1(m_audioFile->fileComment());
 			break;
 		default:
 			return QVariant();
@@ -90,21 +105,33 @@ QVariant MetaInfoModel::data(const QModelIndex &index, int role) const
 			return QIcon(":/icons/folder_page.png");
 			break;
 		case 1:
-			return QIcon(":/icons/music.png");
+			return QIcon(":/icons/sound.png");
 			break;
 		case 2:
-			return QIcon(":/icons/user.png");
+			return QIcon(":/icons/package.png");
 			break;
 		case 3:
-			return QIcon(":/icons/cd.png");
+			return QIcon(":/icons/compress.png");
 			break;
 		case 4:
-			return QIcon(":/icons/star.png");
+			return QIcon(":/icons/music.png");
 			break;
 		case 5:
-			return QIcon(":/icons/calendar.png");
+			return QIcon(":/icons/user.png");
 			break;
 		case 6:
+			return QIcon(":/icons/cd.png");
+			break;
+		case 7:
+			return QIcon(":/icons/star.png");
+			break;
+		case 8:
+			return QIcon(":/icons/date.png");
+			break;
+		case 9:
+			return QIcon(":/icons/timeline_marker.png");
+			break;
+		case 10:
 			return QIcon(":/icons/comment.png");
 			break;
 		default:
@@ -117,25 +144,37 @@ QVariant MetaInfoModel::data(const QModelIndex &index, int role) const
 		switch(index.row())
 		{
 		case 0:
-			return m_audioFile->filePath().isEmpty() ? Qt::darkGray : QVariant();
+			return CHECK3(m_audioFile->filePath());
 			break;
 		case 1:
-			return m_audioFile->fileName().isEmpty() ? Qt::darkGray : QVariant();
+			return CHECK3(m_audioFile->formatAudioBaseInfo());
 			break;
 		case 2:
-			return m_audioFile->fileArtist().isEmpty() ? Qt::darkGray : QVariant();
+			return CHECK3(m_audioFile->formatContainerInfo());
 			break;
 		case 3:
-			return m_audioFile->fileAlbum().isEmpty() ? Qt::darkGray : QVariant();
+			return CHECK3(m_audioFile->formatAudioCompressInfo());
 			break;
 		case 4:
-			return m_audioFile->fileGenre().isEmpty() ? Qt::darkGray : QVariant();
+			return CHECK3(m_audioFile->fileName());
 			break;
 		case 5:
-			return (m_audioFile->fileYear() == 0) ? Qt::darkGray : QVariant();
+			return CHECK3(m_audioFile->fileArtist());
 			break;
 		case 6:
-			return m_audioFile->fileComment().isEmpty() ? Qt::darkGray : QVariant();
+			return CHECK3(m_audioFile->fileAlbum());
+			break;
+		case 7:
+			return CHECK3(m_audioFile->fileGenre());
+			break;
+		case 8:
+			return CHECK4(m_audioFile->fileYear());
+			break;
+		case 9:
+			return CHECK4(m_audioFile->filePosition());
+			break;
+		case 10:
+			return CHECK3(m_audioFile->fileComment());
 			break;
 		default:
 			return QVariant();

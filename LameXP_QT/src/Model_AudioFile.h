@@ -30,23 +30,51 @@ public:
 	AudioFileModel(const QString &path = QString(), const QString &name = QString());
 	~AudioFileModel(void);
 
+	//-----------------------
 	//Getters
+	//-----------------------
+
 	const QString &filePath(void) const;
 	const QString &fileName(void) const;
 	const QString &fileArtist(void) const;
 	const QString &fileAlbum(void) const;
 	const QString &fileGenre(void) const;
-	unsigned int fileYear(void) const;
 	const QString &fileComment(void) const;
+	unsigned int fileYear(void) const;
+	unsigned int filePosition(void) const;
 
+	const QString &formatContainerType(void) const;
+	const QString &formatContainerProfile(void) const;
+	const QString &formatAudioType(void) const;
+	const QString &formatAudioProfile(void) const;
+	const QString &formatAudioVersion(void) const;
+	unsigned int formatAudioSamplerate(void) const;
+	unsigned int formatAudioChannels(void) const;
+
+	const QString formatContainerInfo(void) const;
+	const QString formatAudioBaseInfo(void) const;
+	const QString formatAudioCompressInfo(void) const;
+
+	//-----------------------
 	//Setters
+	//-----------------------
+
 	void setFilePath(const QString &path);
 	void setFileName(const QString &name);
 	void setFileArtist(const QString &artist);
 	void setFileAlbum(const QString &album);
 	void setFileGenre(const QString &genre);
-	void setFileYear(unsigned int year);
 	void setFileComment(const QString &comment);
+	void setFileYear(unsigned int year);
+	void setFilePosition(unsigned int position);
+
+	void setFormatContainerType(const QString &type);
+	void setFormatContainerProfile(const QString &profile);
+	void setFormatAudioType(const QString &type);
+	void setFormatAudioProfile(const QString &profile);
+	void setFormatAudioVersion(const QString &version);
+	void setFormatAudioSamplerate(unsigned int samplerate);
+	void setFormatAudioChannels(unsigned int channels);
 
 private:
 	QString m_filePath;
@@ -54,6 +82,15 @@ private:
 	QString m_fileArtist;
 	QString m_fileAlbum;
 	QString m_fileGenre;
-	unsigned int m_fileYear;
 	QString m_fileComment;
+	unsigned int m_fileYear;
+	unsigned int m_filePosition;
+
+	QString m_formatContainerType;
+	QString m_formatContainerProfile;
+	QString m_formatAudioType;
+	QString m_formatAudioProfile;
+	QString m_formatAudioVersion;
+	unsigned int m_formatAudioSamplerate;
+	unsigned int m_formatAudioChannels;
 };
