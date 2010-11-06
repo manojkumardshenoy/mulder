@@ -39,4 +39,6 @@ public:
 private slots:
 	void upButtonClicked(void);
 	void downButtonClicked(void);
+	void editButtonClicked(void);
+
 };
