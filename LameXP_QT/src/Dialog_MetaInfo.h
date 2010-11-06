@@ -34,5 +34,9 @@ public:
 	MetaInfoDialog(QWidget *parent);
 	~MetaInfoDialog(void);
 
-	int exec(AudioFileModel &audioFile);
+	int exec(AudioFileModel &audioFile,  bool allowUp, bool allowDown);
+
+private slots:
+	void upButtonClicked(void);
+	void downButtonClicked(void);
 };

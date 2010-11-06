@@ -310,13 +310,27 @@ void MainWindow::fileDownButtonClicked(void)
  */
 void MainWindow::editMetaButtonClicked(void)
 {
-	if(sourceFileView->currentIndex().isValid())
+	int iResult = 0;
+	MetaInfoDialog *metaInfoDialog = new MetaInfoDialog(this);
+	
+	while(sourceFileView->currentIndex().isValid())
 	{
+		if(iResult > 0)
+		{
+			sourceFileView->selectRow(sourceFileView->currentIndex().row() + 1);
+		}
+		if(iResult < 0)
+		{
+			sourceFileView->selectRow(sourceFileView->currentIndex().row() - 1);
+		}
+
 		AudioFileModel file = m_fileListModel->getFile(sourceFileView->currentIndex());
-		MetaInfoDialog *metaInfoDialog = new MetaInfoDialog(this);
-		metaInfoDialog->exec(file);
-		LAMEXP_DELETE(metaInfoDialog);
+		
+		iResult = metaInfoDialog->exec(file, sourceFileView->currentIndex().row() > 0, sourceFileView->currentIndex().row() < m_fileListModel->rowCount() - 1);
+		if(!iResult) break;
 	}
+
+	LAMEXP_DELETE(metaInfoDialog);
 }
 
 /*

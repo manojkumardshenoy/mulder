@@ -42,6 +42,7 @@ public:
 	const QString &fileComment(void) const;
 	unsigned int fileYear(void) const;
 	unsigned int filePosition(void) const;
+	unsigned int fileDuration(void) const;
 
 	const QString &formatContainerType(void) const;
 	const QString &formatContainerProfile(void) const;
@@ -51,6 +52,7 @@ public:
 	unsigned int formatAudioSamplerate(void) const;
 	unsigned int formatAudioChannels(void) const;
 
+	const QString fileDurationInfo(void) const;
 	const QString formatContainerInfo(void) const;
 	const QString formatAudioBaseInfo(void) const;
 	const QString formatAudioCompressInfo(void) const;
@@ -67,6 +69,7 @@ public:
 	void setFileComment(const QString &comment);
 	void setFileYear(unsigned int year);
 	void setFilePosition(unsigned int position);
+	void setFileDuration(unsigned int duration);
 
 	void setFormatContainerType(const QString &type);
 	void setFormatContainerProfile(const QString &profile);
@@ -85,6 +88,7 @@ private:
 	QString m_fileComment;
 	unsigned int m_fileYear;
 	unsigned int m_filePosition;
+	unsigned int m_fileDuration;
 
 	QString m_formatContainerType;
 	QString m_formatContainerProfile;
