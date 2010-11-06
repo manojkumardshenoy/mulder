@@ -1,8 +1,7 @@
 @echo off
-set "PATH_SEVENZ=E:\7-Zip\7z.exe"
-set "PATH_MPRESS=E:\MPress\mpress.exe"
+call _paths.bat
 REM ------------------------------------------
-set "TEMP_DIR=%TEMP%\_LameXP.tmp"
+set "TEMP_DIR=%TEMP%\~LameXP.%DATE%.tmp"
 set "OUT_PATH=..\..\out\Release"
 set "OUT_FILE=%OUT_PATH%\..\LameXP.%DATE:~6,4%-%DATE:~3,2%-%DATE:~0,2%.Release.zip"
 REM ------------------------------------------

@@ -36,6 +36,7 @@ AudioFileModel::AudioFileModel(const QString &path, const QString &name)
 	m_fileDuration = 0;
 	m_formatAudioSamplerate = 0;
 	m_formatAudioChannels = 0;
+	m_formatAudioBitdepth = 0;
 }
 
 AudioFileModel::~AudioFileModel(void)
@@ -127,7 +128,12 @@ unsigned int AudioFileModel::formatAudioSamplerate(void) const
 
 unsigned int AudioFileModel::formatAudioChannels(void) const
 {
-	return m_formatAudioSamplerate;
+	return m_formatAudioChannels;
+}
+
+unsigned int AudioFileModel::formatAudioBitdepth(void) const
+{
+	return m_formatAudioBitdepth;
 }
 
 const QString AudioFileModel::fileDurationInfo(void) const
@@ -159,11 +165,24 @@ const QString AudioFileModel::formatContainerInfo(void) const
 
 const QString AudioFileModel::formatAudioBaseInfo(void) const
 {
-	if(m_formatAudioSamplerate && m_formatAudioChannels)
+	if(m_formatAudioSamplerate || m_formatAudioChannels || m_formatAudioBitdepth)
 	{
 		QString info;
-		info.append("Channels: ").append(QString::number(m_formatAudioChannels));
-		info.append(", Samplerate: ").append(QString::number(m_formatAudioSamplerate)).append(" Hz");
+		if(m_formatAudioChannels)
+		{
+			if(!info.isEmpty()) info.append(", ");
+			info.append("Channels: ").append(QString::number(m_formatAudioChannels));
+		}
+		if(m_formatAudioSamplerate)
+		{
+			if(!info.isEmpty()) info.append(", ");
+			info.append("Samplerate: ").append(QString::number(m_formatAudioSamplerate)).append(" Hz");
+		}
+		if(m_formatAudioBitdepth)
+		{
+			if(!info.isEmpty()) info.append(", ");
+			info.append("Bitdepth: ").append(QString::number(m_formatAudioBitdepth)).append(" Bit");
+		}
 		return info;
 	}
 	else
@@ -280,4 +299,9 @@ void AudioFileModel::setFormatAudioSamplerate(unsigned int samplerate)
 void AudioFileModel::setFormatAudioChannels(unsigned int channels)
 {
 	m_formatAudioChannels = channels;
+}
+
+void AudioFileModel::setFormatAudioBitdepth(unsigned int bitdepth)
+{
+	m_formatAudioBitdepth = bitdepth;
 }

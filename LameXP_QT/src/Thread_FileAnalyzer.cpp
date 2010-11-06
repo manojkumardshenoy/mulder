@@ -230,6 +230,10 @@ void FileAnalyzer::updateInfo(AudioFileModel &audioFile, const QString &key, con
 		{
 			if(!audioFile.formatAudioSamplerate()) audioFile.setFormatAudioSamplerate(ceil(value.split(" ", QString::SkipEmptyParts).first().toFloat() * 1000.0f));
 		}
+		else if(!key.compare("Bit depth", Qt::CaseInsensitive))
+		{
+			if(!audioFile.formatAudioBitdepth()) audioFile.setFormatAudioBitdepth(value.split(" ", QString::SkipEmptyParts).first().toInt());
+		}
 		else if(!key.compare("Duration", Qt::CaseInsensitive))
 		{
 			if(!audioFile.fileDuration()) audioFile.setFileDuration(parseDuration(value));

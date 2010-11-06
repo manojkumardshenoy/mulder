@@ -51,6 +51,7 @@ public:
 	const QString &formatAudioVersion(void) const;
 	unsigned int formatAudioSamplerate(void) const;
 	unsigned int formatAudioChannels(void) const;
+	unsigned int formatAudioBitdepth(void) const;
 
 	const QString fileDurationInfo(void) const;
 	const QString formatContainerInfo(void) const;
@@ -78,6 +79,7 @@ public:
 	void setFormatAudioVersion(const QString &version);
 	void setFormatAudioSamplerate(unsigned int samplerate);
 	void setFormatAudioChannels(unsigned int channels);
+	void setFormatAudioBitdepth(unsigned int bitdepth);
 
 private:
 	QString m_filePath;
@@ -97,4 +99,5 @@ private:
 	QString m_formatAudioVersion;
 	unsigned int m_formatAudioSamplerate;
 	unsigned int m_formatAudioChannels;
+	unsigned int m_formatAudioBitdepth;
 };
