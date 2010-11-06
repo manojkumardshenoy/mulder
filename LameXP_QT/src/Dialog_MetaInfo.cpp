@@ -19,41 +19,43 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#include "Dialog_MetaInfo.h"
 
-#include <QString>
+#include "Global.h"
+#include "Model_MetaInfo.h"
 
-class AudioFileModel
+#include <QFileInfo>
+
+MetaInfoDialog::MetaInfoDialog(QWidget *parent)
+	: QDialog(parent)
 {
+	//Init the dialog, from the .ui file
+	setupUi(this);
 
-public:
-	AudioFileModel(const QString &path = QString(), const QString &name = QString());
-	~AudioFileModel(void);
+	//Fix size
+	setMinimumSize(this->size());
 
-	//Getters
-	const QString &filePath(void) const;
-	const QString &fileName(void) const;
-	const QString &fileArtist(void) const;
-	const QString &fileAlbum(void) const;
-	const QString &fileGenre(void) const;
-	unsigned int fileYear(void) const;
-	const QString &fileComment(void) const;
+	//Setup table view
+	tableView->verticalHeader()->setVisible(false);
+	tableView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+	tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+	tableView->horizontalHeader()->setStretchLastSection(true);
+}
 
-	//Setters
-	void setFilePath(const QString &path);
-	void setFileName(const QString &name);
-	void setFileArtist(const QString &artist);
-	void setFileAlbum(const QString &album);
-	void setFileGenre(const QString &genre);
-	void setFileYear(unsigned int year);
-	void setFileComment(const QString &comment);
+MetaInfoDialog::~MetaInfoDialog(void)
+{
+}
 
-private:
-	QString m_filePath;
-	QString m_fileName;
-	QString m_fileArtist;
-	QString m_fileAlbum;
-	QString m_fileGenre;
-	unsigned int m_fileYear;
-	QString m_fileComment;
-};
+int MetaInfoDialog::exec(AudioFileModel &audioFile)
+{
+	MetaInfoModel *model = new MetaInfoModel(&audioFile);
+	tableView->setModel(model);
+	setWindowTitle(QString("Meta Information: ").append(QFileInfo(audioFile.filePath()).fileName()));
+
+	int iResult = QDialog::exec();
+	
+	tableView->setModel(NULL);
+	LAMEXP_DELETE(model);
+
+	return iResult;
+}

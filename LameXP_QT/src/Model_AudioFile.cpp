@@ -29,6 +29,7 @@ AudioFileModel::AudioFileModel(const QString &path, const QString &name)
 {
 	m_filePath = path;
 	m_fileName = name;
+	m_fileYear = 0;
 }
 
 AudioFileModel::~AudioFileModel(void)
@@ -38,6 +39,8 @@ AudioFileModel::~AudioFileModel(void)
 ////////////////////////////////////////////////////////////
 // Public Functions
 ////////////////////////////////////////////////////////////
+
+//Getter
 
 const QString &AudioFileModel::filePath(void) const
 {
@@ -49,6 +52,33 @@ const QString &AudioFileModel::fileName(void) const
 	return m_fileName;
 }
 
+const QString &AudioFileModel::fileArtist(void) const
+{
+	return m_fileArtist;
+}
+
+const QString &AudioFileModel::fileAlbum(void) const
+{
+	return m_fileAlbum;
+}
+
+const QString &AudioFileModel::fileGenre(void) const
+{
+	return m_fileGenre;
+}
+
+unsigned int AudioFileModel::fileYear(void) const
+{
+	return m_fileYear;
+}
+
+const QString &AudioFileModel::fileComment(void) const
+{
+	return m_fileComment;
+}
+
+//Setter
+
 void AudioFileModel::setFilePath(const QString &path)
 {
 	m_filePath = path;
@@ -57,4 +87,29 @@ void AudioFileModel::setFilePath(const QString &path)
 void AudioFileModel::setFileName(const QString &name)
 {
 	m_fileName = name;
+}
+
+void AudioFileModel::setFileArtist(const QString &artist)
+{
+	m_fileArtist = artist;
+}
+
+void AudioFileModel::setFileAlbum(const QString &album)
+{
+	m_fileAlbum = album;
+}
+
+void AudioFileModel::setFileGenre(const QString &genre)
+{
+	m_fileGenre = genre;
+}
+
+void AudioFileModel::setFileYear(unsigned int year)
+{
+	m_fileYear = year;
+}
+
+void AudioFileModel::setFileComment(const QString &comment)
+{
+	m_fileComment = comment;
 }

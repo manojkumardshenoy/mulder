@@ -21,39 +21,25 @@
 
 #pragma once
 
-#include <QString>
+#include "Model_AudioFile.h"
 
-class AudioFileModel
+#include <QAbstractTableModel>
+#include <QIcon>
+
+class MetaInfoModel : public QAbstractTableModel
 {
+	Q_OBJECT
 
 public:
-	AudioFileModel(const QString &path = QString(), const QString &name = QString());
-	~AudioFileModel(void);
+	MetaInfoModel(AudioFileModel *file);
+	~MetaInfoModel(void);
 
-	//Getters
-	const QString &filePath(void) const;
-	const QString &fileName(void) const;
-	const QString &fileArtist(void) const;
-	const QString &fileAlbum(void) const;
-	const QString &fileGenre(void) const;
-	unsigned int fileYear(void) const;
-	const QString &fileComment(void) const;
-
-	//Setters
-	void setFilePath(const QString &path);
-	void setFileName(const QString &name);
-	void setFileArtist(const QString &artist);
-	void setFileAlbum(const QString &album);
-	void setFileGenre(const QString &genre);
-	void setFileYear(unsigned int year);
-	void setFileComment(const QString &comment);
+	//Model functions
+	int columnCount(const QModelIndex &parent = QModelIndex()) const;
+	int rowCount(const QModelIndex &parent = QModelIndex()) const;
+	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
 private:
-	QString m_filePath;
-	QString m_fileName;
-	QString m_fileArtist;
-	QString m_fileAlbum;
-	QString m_fileGenre;
-	unsigned int m_fileYear;
-	QString m_fileComment;
+	AudioFileModel* m_audioFile;
 };
