@@ -29,6 +29,7 @@
 #include <QFileInfo>
 #include <QProcess>
 #include <QDate>
+#include <QTime>
 
 #include <math.h>
 
@@ -166,13 +167,17 @@ void FileAnalyzer::updateInfo(AudioFileModel &audioFile, const QString &key, con
 		{
 			if(audioFile.fileName().isEmpty()) audioFile.setFileName(value);
 		}
+		else if(!key.compare("Duration", Qt::CaseInsensitive))
+		{
+			if(!audioFile.fileDuration()) audioFile.setFileDuration(parseDuration(value));
+		}
 		else if(!key.compare("Artist", Qt::CaseInsensitive) || !key.compare("Performer", Qt::CaseInsensitive))
 		{
 			if(audioFile.fileArtist().isEmpty()) audioFile.setFileArtist(value);
 		}
 		else if(!key.compare("Album", Qt::CaseInsensitive))
 		{
-			audioFile.setFileAlbum(value);
+			if(audioFile.fileAlbum().isEmpty()) audioFile.setFileAlbum(value);
 		}
 		else if(!key.compare("Genre", Qt::CaseInsensitive))
 		{
@@ -225,6 +230,10 @@ void FileAnalyzer::updateInfo(AudioFileModel &audioFile, const QString &key, con
 		{
 			if(!audioFile.formatAudioSamplerate()) audioFile.setFormatAudioSamplerate(ceil(value.split(" ", QString::SkipEmptyParts).first().toFloat() * 1000.0f));
 		}
+		else if(!key.compare("Duration", Qt::CaseInsensitive))
+		{
+			if(!audioFile.fileDuration()) audioFile.setFileDuration(parseDuration(value));
+		}
 		break;
 	}
 }
@@ -257,6 +266,26 @@ unsigned int FileAnalyzer::parseYear(const QString &str)
 		}
 	}
 }
+
+unsigned int FileAnalyzer::parseDuration(const QString &str)
+{
+	QTime time;
+
+	time = QTime::fromString(str, "m'mn' s's'");
+	if(time.isValid())
+	{
+		return (time.hour() * 60 * 60) + (time.minute() * 60) + time.second();
+	}
+
+	time = QTime::fromString(str, "h'h' m'mn'");
+	if(time.isValid())
+	{
+		return (time.hour() * 60 * 60) + (time.minute() * 60) + time.second();
+	}
+
+	return 0;
+}
+
 
 ////////////////////////////////////////////////////////////
 // EVENTS

@@ -25,6 +25,8 @@
 #include "Model_MetaInfo.h"
 
 #include <QFileInfo>
+#include <QMessageBox>
+#include <QTimer>
 
 MetaInfoDialog::MetaInfoDialog(QWidget *parent)
 	: QDialog(parent)
@@ -40,17 +42,23 @@ MetaInfoDialog::MetaInfoDialog(QWidget *parent)
 	tableView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 	tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 	tableView->horizontalHeader()->setStretchLastSection(true);
+
+	//Enable up/down button
+	connect(upButton, SIGNAL(clicked()), this, SLOT(upButtonClicked()));
+	connect(downButton, SIGNAL(clicked()), this, SLOT(downButtonClicked()));
 }
 
 MetaInfoDialog::~MetaInfoDialog(void)
 {
 }
 
-int MetaInfoDialog::exec(AudioFileModel &audioFile)
+int MetaInfoDialog::exec(AudioFileModel &audioFile, bool allowUp, bool allowDown)
 {
 	MetaInfoModel *model = new MetaInfoModel(&audioFile);
 	tableView->setModel(model);
 	setWindowTitle(QString("Meta Information: ").append(QFileInfo(audioFile.filePath()).fileName()));
+	upButton->setEnabled(allowUp);
+	downButton->setEnabled(allowDown);
 
 	int iResult = QDialog::exec();
 	
@@ -58,4 +66,14 @@ int MetaInfoDialog::exec(AudioFileModel &audioFile)
 	LAMEXP_DELETE(model);
 
 	return iResult;
+}
+
+void MetaInfoDialog::upButtonClicked(void)
+{
+	done(-1);
+}
+
+void MetaInfoDialog::downButtonClicked(void)
+{
+	done(+1);
 }

@@ -21,6 +21,8 @@
 
 #include "Model_AudioFile.h"
 
+#include <QTime>
+
 ////////////////////////////////////////////////////////////
 // Constructor & Destructor
 ////////////////////////////////////////////////////////////
@@ -31,6 +33,7 @@ AudioFileModel::AudioFileModel(const QString &path, const QString &name)
 	m_fileName = name;
 	m_fileYear = 0;
 	m_filePosition = 0;
+	m_fileDuration = 0;
 	m_formatAudioSamplerate = 0;
 	m_formatAudioChannels = 0;
 }
@@ -87,6 +90,11 @@ unsigned int AudioFileModel::filePosition(void) const
 	return m_filePosition;
 }
 
+unsigned int AudioFileModel::fileDuration(void) const
+{
+	return m_fileDuration;
+}
+
 const QString &AudioFileModel::formatContainerType(void) const
 {
 	return m_formatContainerType;
@@ -122,6 +130,19 @@ unsigned int AudioFileModel::formatAudioChannels(void) const
 	return m_formatAudioSamplerate;
 }
 
+const QString AudioFileModel::fileDurationInfo(void) const
+{
+	if(m_fileDuration)
+	{
+		QTime time = QTime().addSecs(m_fileDuration);
+		return time.toString("hh:mm:ss");
+	}
+	else
+	{
+		return QString();
+	}
+}
+
 const QString AudioFileModel::formatContainerInfo(void) const
 {
 	if(!m_formatContainerType.isEmpty())
@@ -155,7 +176,12 @@ const QString AudioFileModel::formatAudioCompressInfo(void) const
 {
 	if(!m_formatAudioType.isEmpty())
 	{
-		QString info = m_formatAudioType;
+		QString info;
+		if(!m_formatAudioProfile.isEmpty() || !m_formatAudioVersion.isEmpty())
+		{
+			info.append("Type: ");
+		}
+		info.append(m_formatAudioType);
 		if(!m_formatAudioProfile.isEmpty())
 		{
 			info.append(", Profile: ").append(m_formatAudioProfile);
@@ -214,6 +240,11 @@ void AudioFileModel::setFileYear(unsigned int year)
 void AudioFileModel::setFilePosition(unsigned int position)
 {
 	m_filePosition = position;
+}
+
+void AudioFileModel::setFileDuration(unsigned int duration)
+{
+	m_fileDuration = duration;
 }
 
 void AudioFileModel::setFormatContainerType(const QString &type)

@@ -57,6 +57,7 @@ private:
 	void updateInfo(AudioFileModel &audioFile, const QString &key, const QString &value);
 	void updateSection(const QString &section);
 	unsigned int parseYear(const QString &str);
+	unsigned int parseDuration(const QString &str);
 
 	QStringList m_inputFiles;
 	QString m_mediaInfoBin;
