@@ -69,7 +69,7 @@
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(QTDIR)\lib&quot;;&quot;$(QTDIR)\plugins\imageformats&quot;"
 				GenerateDebugInformation="true"
-				SubSystem="1"
+				SubSystem="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -156,7 +156,7 @@
 				GenerateDebugInformation="false"
 				AssemblyDebug="0"
 				MapExports="false"
-				SubSystem="1"
+				SubSystem="2"
 				LinkTimeCodeGeneration="1"
 				TargetMachine="1"
 			/>

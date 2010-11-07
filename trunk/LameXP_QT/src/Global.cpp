@@ -38,6 +38,12 @@
 //LameXP includes
 #include "LockedFile.h"
 
+//Windows includes
+#include <Windows.h>
+#include <stdio.h>
+#include <io.h>
+#include <fcntl.h>
+
 //Debug only includes
 #ifdef _DEBUG
 #include <Psapi.h>
@@ -79,7 +85,11 @@ unsigned int lamexp_version_major(void) { return g_lamexp_version_major; }
 unsigned int lamexp_version_minor(void) { return g_lamexp_version_minor; }
 unsigned int lamexp_version_build(void) { return g_lamexp_version_build; }
 const char *lamexp_version_release(void) { return g_lamexp_version_release; }
-bool lamexp_version_demo(void) { return !(strstr(g_lamexp_version_release, "Final") || strstr(g_lamexp_version_release, "Hotfix")); }
+
+bool lamexp_version_demo(void)
+{ 
+	return !(strstr(g_lamexp_version_release, "Final") || strstr(g_lamexp_version_release, "Hotfix"));
+}
 
 /*
  * Get build date date
@@ -125,6 +135,41 @@ const QDate &lamexp_version_date(void)
 	}
 
 	return g_lamexp_version_date;
+}
+
+/*
+ * Initialize the console
+ */
+void lamexp_init_console(int argc, char* argv[])
+{
+	for(int i = 0; i < argc; i++)
+	{
+		if(lamexp_version_demo() || !_stricmp(argv[i], "--console"))
+		{
+			if(AllocConsole())
+			{
+				//See: http://support.microsoft.com/default.aspx?scid=kb;en-us;105305
+				int hCrtStdOut = _open_osfhandle((long) GetStdHandle(STD_OUTPUT_HANDLE), _O_TEXT);
+				int hCrtStdErr = _open_osfhandle((long) GetStdHandle(STD_ERROR_HANDLE), _O_TEXT);
+				FILE *hfStdOut = _fdopen(hCrtStdOut, "w");
+				FILE *hfStderr = _fdopen(hCrtStdErr, "w");
+				*stdout = *hfStdOut;
+				*stderr = *hfStderr;
+				setvbuf(stdout, NULL, _IONBF, 0);
+				setvbuf(stderr, NULL, _IONBF, 0);
+			}
+
+			HMENU hMenu = GetSystemMenu(GetConsoleWindow(), 0);
+			EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
+			RemoveMenu(hMenu, SC_CLOSE, MF_BYCOMMAND);
+
+			SetConsoleCtrlHandler(NULL, TRUE);
+			SetConsoleTitle(L"LameXP - Audio Encoder Front-End | Debug Console");
+			SetConsoleOutputCP(CP_UTF8);
+			
+			break;
+		}
+	}
 }
 
 /*
