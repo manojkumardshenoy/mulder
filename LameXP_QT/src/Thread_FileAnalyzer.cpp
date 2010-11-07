@@ -61,9 +61,14 @@ void FileAnalyzer::run()
 	while(!m_inputFiles.isEmpty())
 	{
 		QString currentFile = QDir::fromNativeSeparators(m_inputFiles.takeFirst());
-		qDebug("Adding: %s", currentFile.toLatin1().constData());
+		qDebug("Analyzing: %s", currentFile.toLatin1().constData());
 		emit fileSelected(QFileInfo(currentFile).fileName());
 		AudioFileModel file = analyzeFile(currentFile);
+		if(file.formatContainerType().isEmpty() || file.formatAudioType().isEmpty())
+		{
+			qDebug("Skipped: %s", file.filePath().toLatin1().constData());
+			continue;
+		}
 		emit fileAnalyzed(file);
 	}
 
@@ -83,7 +88,8 @@ const AudioFileModel FileAnalyzer::analyzeFile(const QString &filePath)
 	QProcess process;
 	process.setProcessChannelMode(QProcess::MergedChannels);
 	process.setReadChannel(QProcess::StandardOutput);
-	process.start(m_mediaInfoBin, QStringList() << filePath);
+	process.start(m_mediaInfoBin, QStringList() << QDir::toNativeSeparators(filePath));
+	process.waitForStarted();
 
 	while(process.state() != QProcess::NotRunning)
 	{
