@@ -61,12 +61,12 @@ void FileAnalyzer::run()
 	while(!m_inputFiles.isEmpty())
 	{
 		QString currentFile = QDir::fromNativeSeparators(m_inputFiles.takeFirst());
-		qDebug("Analyzing: %s", currentFile.toLatin1().constData());
+		qDebug("Analyzing: %s", currentFile.toUtf8().constData());
 		emit fileSelected(QFileInfo(currentFile).fileName());
 		AudioFileModel file = analyzeFile(currentFile);
 		if(file.formatContainerType().isEmpty() || file.formatAudioType().isEmpty())
 		{
-			qDebug("Skipped: %s", file.filePath().toLatin1().constData());
+			qDebug("Skipped: %s", file.filePath().toUtf8().constData());
 			continue;
 		}
 		emit fileAnalyzed(file);
@@ -160,7 +160,7 @@ void FileAnalyzer::updateSection(const QString &section)
 	}
 	else
 	{
-		qWarning("Unknown section: %s", section.toLatin1().constData());
+		qWarning("Unknown section: %s", section.toUtf8().constData());
 	}
 }
 
