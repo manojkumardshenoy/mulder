@@ -36,10 +36,10 @@
 #include <QStringList>
 
 //LameXP includes
+#include "Resource.h"
 #include "LockedFile.h"
 
-//Windows includes
-#include <Windows.h>
+//CRT includes
 #include <stdio.h>
 #include <io.h>
 #include <fcntl.h>
@@ -54,10 +54,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 //Build version
-static const unsigned int g_lamexp_version_major = 4;
-static const unsigned int g_lamexp_version_minor = 0;
-static const unsigned int g_lamexp_version_build = 4;
-static const char *g_lamexp_version_release = "Pre-Alpha";
+static const unsigned int g_lamexp_version_major = VER_LAMEXP_MAJOR;
+static const unsigned int g_lamexp_version_minor = VER_LAMEXP_MINOR;
+static const unsigned int g_lamexp_version_build = VER_LAMEXP_BUILD;
+static const char *g_lamexp_version_release = VER_LAMEXP_SUFFIX_STR;
 
 //Build date
 static QDate g_lamexp_version_date;
@@ -218,14 +218,15 @@ bool lamexp_init_qt(int argc, char* argv[])
 	application->setApplicationVersion(QString().sprintf("%d.%02d.%04d", lamexp_version_major(), lamexp_version_minor(), lamexp_version_build())); 
 	application->setOrganizationName("LoRd_MuldeR");
 	application->setOrganizationDomain("mulder.dummwiedeutsch.de");
-	application->setWindowIcon(QIcon(":/MainIcon.ico"));
+	application->setWindowIcon(QIcon(":/MainIcon.png"));
 	
 	//Load plugins from application directory
 	QCoreApplication::setLibraryPaths(QStringList() << QApplication::applicationDirPath());
-	
+	qDebug("Library Path:\n%s\n", QApplication::libraryPaths().first().toUtf8().constData());
+
 	//Check for supported image formats
 	QList<QByteArray> supportedFormats = QImageReader::supportedImageFormats();
-	if(!(supportedFormats.contains("png") && supportedFormats.contains("gif")  && supportedFormats.contains("ico")))
+	if(!(supportedFormats.contains("png") && supportedFormats.contains("gif")  && supportedFormats.contains("ico") && supportedFormats.contains("svg")))
 	{
 		qFatal("Qt initialization error: At least one image format plugin is missing!");
 		return false;
@@ -264,7 +265,7 @@ bool lamexp_check_instances(void)
 		{
 			QString errorMessage = sharedMemory->errorString();
 			LAMEXP_DELETE(sharedMemory);
-			qFatal("Failed to create shared memory: %s", errorMessage.toLatin1().constData());
+			qFatal("Failed to create shared memory: %s", errorMessage.toUtf8().constData());
 			return false;
 		}
 	}
