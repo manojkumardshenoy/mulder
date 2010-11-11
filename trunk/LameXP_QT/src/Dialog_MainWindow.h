@@ -28,6 +28,9 @@
 //Class declarations
 class QFileSystemModel;
 class WorkingBanner;
+class MessageHandlerThread;
+class AudioFileModel;
+class MetaInfoModel;
 
 class MainWindow: public QMainWindow, private Ui::MainWindow
 {
@@ -38,6 +41,7 @@ public:
 	~MainWindow(void);
 
 private slots:
+	void windowShown(void);
 	void aboutButtonClicked(void);
 	void encodeButtonClicked(void);
 	void addFilesButtonClicked(void);
@@ -45,9 +49,10 @@ private slots:
 	void removeFileButtonClicked(void);
 	void fileDownButtonClicked(void);
 	void fileUpButtonClicked(void);
-	void editMetaButtonClicked(void);
+	void showDetailsButtonClicked(void);
 	void tabPageChanged(int idx);
 	void tabActionActivated(QAction *action);
+	void styleActionActivated(QAction *action);
 	void outputFolderViewClicked(const QModelIndex &index);
 	void makeFolderButtonClicked(void);
 	void gotoHomeFolderButtonClicked(void);
@@ -56,10 +61,24 @@ private slots:
 	void checkUpdatesActionActivated(void);
 	void visitHomepageActionActivated(void);
 	void openFolderActionActivated(void);
+	void notifyOtherInstance(void);
+	void addFileDelayed(const QString &filePath);
+	void handleDelayedFiles(void);
+	void editMetaButtonClicked(void);
+	void clearMetaButtonClicked(void);
+
+protected:
+	void showEvent(QShowEvent *event);
 
 private:
 	FileListModel *m_fileListModel;
 	QFileSystemModel *m_fileSystemModel;
 	QActionGroup *m_tabActionGroup;
+	QActionGroup *m_styleActionGroup;
 	WorkingBanner *m_banner;
+	MessageHandlerThread *m_messageHandler;
+	QStringList *m_delayedFileList;
+	QTimer *m_delayedFileTimer;
+	AudioFileModel *m_metaData;
+	MetaInfoModel *m_metaInfoModel;
 };

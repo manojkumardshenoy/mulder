@@ -19,31 +19,25 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+/*
+ * LameXP Version Info
+ */
+#define VER_LAMEXP_MAJOR				4
+#define VER_LAMEXP_MINOR_HI				0
+#define VER_LAMEXP_MINOR_LO				0
+#define VER_LAMEXP_BUILD				10
+#define VER_LAMEXP_SUFFIX				TechPreview
 
-#include "Model_AudioFile.h"
-
-#include <QAbstractTableModel>
-#include <QIcon>
-
-class MetaInfoModel : public QAbstractTableModel
-{
-	Q_OBJECT
-
-public:
-	MetaInfoModel(AudioFileModel *file, unsigned int offset = 0);
-	~MetaInfoModel(void);
-
-	//Model functions
-	int columnCount(const QModelIndex &parent = QModelIndex()) const;
-	int rowCount(const QModelIndex &parent = QModelIndex()) const;
-	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-	Qt::ItemFlags flags(const QModelIndex &index) const;
-	void editItem(const QModelIndex &index, QWidget *parent);
-	void clearData(void);
-
-private:
-	AudioFileModel* m_audioFile;
-	unsigned int m_offset;
-};
+/*
+ * Helper macros (aka: having fun with the C pre-processor)
+ */
+#define VER_LAMEXP_STR_HLP1(X)			#X
+#define VER_LAMEXP_STR_HLP2(V,W,X,Y,Z)	VER_LAMEXP_STR_HLP1(v##V.W##X Z [Build Y])
+#define VER_LAMEXP_STR_HLP3(V,W,X,Y,Z)	VER_LAMEXP_STR_HLP2(V,W,X,Y,Z)
+#define VER_LAMEXP_STR					VER_LAMEXP_STR_HLP3(VER_LAMEXP_MAJOR,VER_LAMEXP_MINOR_HI,VER_LAMEXP_MINOR_LO,VER_LAMEXP_BUILD,VER_LAMEXP_SUFFIX)
+#define VER_LAMEXP_SUFFIX_STR_HLP1(X)	#X		
+#define VER_LAMEXP_SUFFIX_STR_HLP2(X)	VER_LAMEXP_SUFFIX_STR_HLP1(X)
+#define VER_LAMEXP_SUFFIX_STR			VER_LAMEXP_SUFFIX_STR_HLP2(VER_LAMEXP_SUFFIX)
+#define VER_LAMEXP_MINOR_HLP1(X,Y)		X##Y
+#define VER_LAMEXP_MINOR_HLP2(X,Y)		VER_LAMEXP_MINOR_HLP1(X,Y)
+#define VER_LAMEXP_MINOR				VER_LAMEXP_MINOR_HLP2(VER_LAMEXP_MINOR_HI,VER_LAMEXP_MINOR_LO)

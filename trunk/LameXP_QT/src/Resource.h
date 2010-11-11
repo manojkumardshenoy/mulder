@@ -19,14 +19,7 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-/*
- * LameXP Version Info
- */
-#define VER_LAMEXP_MAJOR				4
-#define VER_LAMEXP_MINOR_HI				0
-#define VER_LAMEXP_MINOR_LO				0
-#define VER_LAMEXP_BUILD				7
-#define VER_LAMEXP_SUFFIX				TechPreview
+#include "Config.h"
 
 /*
  * Resource ID's
@@ -45,17 +38,3 @@
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
-
-/*
- * Helper macros (having fun with the C pre-processor)
- */
-#define VER_LAMEXP_STR_HLP1(X)			#X
-#define VER_LAMEXP_STR_HLP2(V,W,X,Y,Z)	VER_LAMEXP_STR_HLP1(v##V.W##X Z [Build Y])
-#define VER_LAMEXP_STR_HLP3(V,W,X,Y,Z)	VER_LAMEXP_STR_HLP2(V,W,X,Y,Z)
-#define VER_LAMEXP_STR					VER_LAMEXP_STR_HLP3(VER_LAMEXP_MAJOR,VER_LAMEXP_MINOR_HI,VER_LAMEXP_MINOR_LO,VER_LAMEXP_BUILD,VER_LAMEXP_SUFFIX)
-#define VER_LAMEXP_SUFFIX_STR_HLP1(X)	#X		
-#define VER_LAMEXP_SUFFIX_STR_HLP2(X)	VER_LAMEXP_SUFFIX_STR_HLP1(X)
-#define VER_LAMEXP_SUFFIX_STR			VER_LAMEXP_SUFFIX_STR_HLP2(VER_LAMEXP_SUFFIX)
-#define VER_LAMEXP_MINOR_HLP1(X,Y)		X##Y
-#define VER_LAMEXP_MINOR_HLP2(X,Y)		VER_LAMEXP_MINOR_HLP1(X,Y)
-#define VER_LAMEXP_MINOR				VER_LAMEXP_MINOR_HLP2(VER_LAMEXP_MINOR_HI,VER_LAMEXP_MINOR_LO)
