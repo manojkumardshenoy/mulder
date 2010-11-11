@@ -27,6 +27,8 @@
 #include "Dialog_WorkingBanner.h"
 #include "Dialog_MetaInfo.h"
 #include "Thread_FileAnalyzer.h"
+#include "Thread_MessageHandler.h"
+#include "Model_MetaInfo.h"
 
 //Qt includes
 #include <QMessageBox>
@@ -38,11 +40,22 @@
 #include <QFileSystemModel>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QPlastiqueStyle>
+#include <QCleanlooksStyle>
+#include <QWindowsVistaStyle>
+#include <QWindowsStyle>
 
 //Win32 includes
 #include <Windows.h>
 
+//Helper macros
 #define LINK(URL) QString("<a href=\"%1\">%2</a>").arg(URL).arg(URL)
+#define ABORT_IF_BUSY \
+if(m_banner->isVisible() || m_delayedFileTimer->isActive()) \
+{ \
+	MessageBeep(MB_ICONEXCLAMATION); \
+	return; \
+} \
 
 ////////////////////////////////////////////////////////////
 // Constructor
@@ -81,7 +94,7 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(buttonClearFiles, SIGNAL(clicked()), this, SLOT(clearFilesButtonClicked()));
 	connect(buttonFileUp, SIGNAL(clicked()), this, SLOT(fileUpButtonClicked()));
 	connect(buttonFileDown, SIGNAL(clicked()), this, SLOT(fileDownButtonClicked()));
-	connect(buttonEditMeta, SIGNAL(clicked()), this, SLOT(editMetaButtonClicked()));
+	connect(buttonShowDetails, SIGNAL(clicked()), this, SLOT(showDetailsButtonClicked()));
 	
 	//Setup "Output" tab
 	m_fileSystemModel = new QFileSystemModel();
@@ -102,6 +115,17 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(buttonGotoDesktop, SIGNAL(clicked()), this, SLOT(gotoDesktopButtonClicked()));
 	connect(buttonGotoMusic, SIGNAL(clicked()), this, SLOT(gotoMusicFolderButtonClicked()));
 	
+	//Setup "Meta Data" tab
+	m_metaData = new AudioFileModel();
+	m_metaInfoModel = new MetaInfoModel(m_metaData, 6);
+	m_metaInfoModel->clearData();
+	metaDataView->setModel(m_metaInfoModel);
+	metaDataView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+	metaDataView->verticalHeader()->hide();
+	metaDataView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+	connect(buttonEditMeta, SIGNAL(clicked()), this, SLOT(editMetaButtonClicked()));
+	connect(buttonClearMeta, SIGNAL(clicked()), this, SLOT(clearMetaButtonClicked()));
+	
 	//Activate file menu actions
 	connect(actionOpenFolder, SIGNAL(triggered()), this, SLOT(openFolderActionActivated()));
 
@@ -115,6 +139,16 @@ MainWindow::MainWindow(QWidget *parent)
 	actionSourceFiles->setChecked(true);
 	connect(m_tabActionGroup, SIGNAL(triggered(QAction*)), this, SLOT(tabActionActivated(QAction*)));
 
+	//Activate style menu actions
+	m_styleActionGroup = new QActionGroup(this);
+	m_styleActionGroup->addAction(actionStylePlastique);
+	m_styleActionGroup->addAction(actionStyleCleanlooks);
+	m_styleActionGroup->addAction(actionStyleWindowsVista);
+	m_styleActionGroup->addAction(actionStyleWindowsXP);
+	m_styleActionGroup->addAction(actionStyleWindowsClassic);
+	actionStylePlastique->setChecked(true);
+	connect(m_styleActionGroup, SIGNAL(triggered(QAction*)), this, SLOT(styleActionActivated(QAction*)));
+
 	//Activate help menu actions
 	connect(actionCheckUpdates, SIGNAL(triggered()), this, SLOT(checkUpdatesActionActivated()));
 	connect(actionVisitHomepage, SIGNAL(triggered()), this, SLOT(visitHomepageActionActivated()));
@@ -127,6 +161,16 @@ MainWindow::MainWindow(QWidget *parent)
 
 	//Create banner
 	m_banner = new WorkingBanner(this);
+
+	//Create message handler thread
+	m_messageHandler = new MessageHandlerThread();
+	m_delayedFileList = new QStringList();
+	m_delayedFileTimer = new QTimer();
+	connect(m_messageHandler, SIGNAL(otherInstanceDetected()), this, SLOT(notifyOtherInstance()), Qt::QueuedConnection);
+	connect(m_messageHandler, SIGNAL(fileReceived(QString)), this, SLOT(addFileDelayed(QString)), Qt::QueuedConnection);
+	connect(m_messageHandler, SIGNAL(killSignalReceived()), this, SLOT(close()), Qt::QueuedConnection);
+	connect(m_delayedFileTimer, SIGNAL(timeout()), this, SLOT(handleDelayedFiles()));
+	m_messageHandler->start();
 }
 
 ////////////////////////////////////////////////////////////
@@ -135,10 +179,32 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow(void)
 {
+	//Stop message handler thread
+	if(m_messageHandler && m_messageHandler->isRunning())
+	{
+		m_messageHandler->stop();
+		if(!m_messageHandler->wait(10000))
+		{
+			m_messageHandler->terminate();
+			m_messageHandler->wait();
+		}
+	}
+
+	//Unset models
+	sourceFileView->setModel(NULL);
+	metaDataView->setModel(NULL);
+	
+	//Free memory
 	LAMEXP_DELETE(m_tabActionGroup);
+	LAMEXP_DELETE(m_styleActionGroup);
 	LAMEXP_DELETE(m_fileListModel);
 	LAMEXP_DELETE(m_banner);
 	LAMEXP_DELETE(m_fileSystemModel);
+	LAMEXP_DELETE(m_messageHandler);
+	LAMEXP_DELETE(m_delayedFileList);
+	LAMEXP_DELETE(m_delayedFileTimer);
+	LAMEXP_DELETE(m_metaData);
+	LAMEXP_DELETE(m_metaInfoModel);
 }
 
 ////////////////////////////////////////////////////////////
@@ -148,16 +214,56 @@ MainWindow::~MainWindow(void)
 /*NONE*/
 
 ////////////////////////////////////////////////////////////
+// EVENTS
+////////////////////////////////////////////////////////////
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+	QTimer::singleShot(0, this, SLOT(windowShown()));
+}
+
+////////////////////////////////////////////////////////////
 // Slots
 ////////////////////////////////////////////////////////////
+
+/*
+ * Window shown
+ */
+void MainWindow::windowShown(void)
+{
+	QStringList arguments = QApplication::arguments();
+
+	for(int i = 0; i < arguments.count() - 1; i++)
+	{
+		if(!arguments[i].compare("--add", Qt::CaseInsensitive))
+		{
+			QFileInfo currentFile(arguments[++i].trimmed());
+			qDebug("Adding file from CLI: %s", currentFile.absoluteFilePath().toUtf8().constData());
+			if(currentFile.exists())
+			{
+				m_delayedFileList->append(currentFile.absoluteFilePath());
+			}
+			else
+			{
+				qWarning("File doesn't exist: %s", currentFile.absoluteFilePath().toUtf8().constData());
+			}
+		}
+	}
+
+	if(!m_delayedFileList->isEmpty() && !m_delayedFileTimer->isActive())
+	{
+		m_delayedFileTimer->start(5000);
+	}
+}
 
 /*
  * About button
  */
 void MainWindow::aboutButtonClicked(void)
 {
-	QString aboutText;
+	ABORT_IF_BUSY;
 	
+	QString aboutText;
 	aboutText += "<h2>LameXP - Audio Encoder Front-end</h2>";
 	aboutText += QString("<b>Copyright (C) 2004-%1 LoRd_MuldeR &lt;MuldeR2@GMX.de&gt;. Some rights reserved.</b><br>").arg(max(lamexp_version_date().year(),QDate::currentDate().year()));
 	aboutText += QString().sprintf("<b>Version %d.%02d %s, Build %d [%s]</b><br><br>", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build(), lamexp_version_date().toString(Qt::ISODate).toLatin1().constData());
@@ -250,6 +356,7 @@ void MainWindow::aboutButtonClicked(void)
  */
 void MainWindow::encodeButtonClicked(void)
 {
+	ABORT_IF_BUSY;
 	QMessageBox::warning(this, "LameXP", "Not implemented yet, please try again with a later version!");
 }
 
@@ -258,6 +365,8 @@ void MainWindow::encodeButtonClicked(void)
  */
 void MainWindow::addFilesButtonClicked(void)
 {
+	ABORT_IF_BUSY;
+
 	tabWidget->setCurrentIndex(0);
 	QStringList selectedFiles = QFileDialog::getOpenFileNames(this, "Add file(s)", QString(), "All supported files (*.*)");
 	
@@ -282,6 +391,9 @@ void MainWindow::addFilesButtonClicked(void)
  */
 void MainWindow::openFolderActionActivated(void)
 {
+	ABORT_IF_BUSY;
+
+	tabWidget->setCurrentIndex(0);
 	QString selectedFolder = QFileDialog::getExistingDirectory(this, "Add folder", QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
 	
 	if(!selectedFolder.isEmpty())
@@ -355,10 +467,12 @@ void MainWindow::fileDownButtonClicked(void)
 }
 
 /*
- * Edit meta button
+ * Show details button
  */
-void MainWindow::editMetaButtonClicked(void)
+void MainWindow::showDetailsButtonClicked(void)
 {
+	ABORT_IF_BUSY;
+
 	int iResult = 0;
 	MetaInfoDialog *metaInfoDialog = new MetaInfoDialog(this);
 	QModelIndex index = sourceFileView->currentIndex();
@@ -376,9 +490,8 @@ void MainWindow::editMetaButtonClicked(void)
 			sourceFileView->selectRow(index.row());
 		}
 
-		AudioFileModel file = m_fileListModel->getFile(index);
+		AudioFileModel &file = (*m_fileListModel)[index];
 		iResult = metaInfoDialog->exec(file, index.row() > 0, index.row() < m_fileListModel->rowCount() - 1);
-		m_fileListModel->setFile(index, file);
 
 		if(!iResult) break;
 	}
@@ -400,10 +513,10 @@ void MainWindow::tabPageChanged(int idx)
 		actionOutputDirectory->setChecked(true);
 		break;
 	case 2:
-		actionCompression->setChecked(true);
+		actionMetaData->setChecked(true);
 		break;
 	case 3:
-		actionMetaData->setChecked(true);
+		actionCompression->setChecked(true);
 		break;
 	case 4:
 		actionAdvancedOptions->setChecked(true);
@@ -420,14 +533,26 @@ void MainWindow::tabActionActivated(QAction *action)
 
 	if(actionSourceFiles == action) idx = 0;
 	else if(actionOutputDirectory == action) idx = 1;
-	else if(actionCompression == action) idx = 2;
-	else if(actionMetaData == action) idx = 3;
+	else if(actionMetaData == action) idx = 2;
+	else if(actionCompression == action) idx = 3;
 	else if(actionAdvancedOptions == action) idx = 4;
 
 	if(idx >= 0)
 	{
 		tabWidget->setCurrentIndex(idx);
 	}
+}
+
+/*
+ * Style action triggered
+ */
+void MainWindow::styleActionActivated(QAction *action)
+{
+	if(action == actionStylePlastique) QApplication::setStyle(new QPlastiqueStyle());
+	else if(action == actionStyleCleanlooks) QApplication::setStyle(new QCleanlooksStyle());
+	else if(action == actionStyleWindowsVista) QApplication::setStyle(new QWindowsVistaStyle());
+	else if(action == actionStyleWindowsXP) QApplication::setStyle(new QWindowsXPStyle());
+	else if(action == actionStyleWindowsClassic) QApplication::setStyle(new QWindowsStyle());
 }
 
 /*
@@ -439,7 +564,6 @@ void MainWindow::outputFolderViewClicked(const QModelIndex &index)
 	if(selectedDir.length() < 3) selectedDir.append(QDir::separator());
 	outputFolderLabel->setText(selectedDir);
 }
-
 
 /*
  * Goto desktop button
@@ -476,6 +600,8 @@ void MainWindow::gotoMusicFolderButtonClicked(void)
  */
 void MainWindow::makeFolderButtonClicked(void)
 {
+	ABORT_IF_BUSY;
+
 	QDir basePath(m_fileSystemModel->filePath(outputFolderView->currentIndex()));
 	
 	bool bApplied = true;
@@ -516,6 +642,23 @@ void MainWindow::makeFolderButtonClicked(void)
 	}
 }
 
+/*
+ * Edit meta button clicked
+ */
+void MainWindow::editMetaButtonClicked(void)
+{
+	ABORT_IF_BUSY;
+	m_metaInfoModel->editItem(metaDataView->currentIndex(), this);
+}
+
+/*
+ * Reset meta button clicked
+ */
+void MainWindow::clearMetaButtonClicked(void)
+{
+	ABORT_IF_BUSY;
+	m_metaInfoModel->clearData();
+}
 
 /*
  * Visit homepage action
@@ -530,6 +673,8 @@ void MainWindow::visitHomepageActionActivated(void)
  */
 void MainWindow::checkUpdatesActionActivated(void)
 {
+	ABORT_IF_BUSY;
+
 	m_banner->show("Checking for updates, please be patient...");
 	
 	for(int i = 0; i < 300; i++)
@@ -543,3 +688,60 @@ void MainWindow::checkUpdatesActionActivated(void)
 	QMessageBox::information(this, "Update Check", "Your version of LameXP is still up-to-date. There are no updates available.\nPlease remember to check for updates at regular intervals!");
 }
 
+/*
+ * Other instance detected
+ */
+void MainWindow::notifyOtherInstance(void)
+{
+	if(!m_banner->isVisible())
+	{
+		QMessageBox msgBox(QMessageBox::Warning, "Already running", "LameXP is already running, please use the running instance!", QMessageBox::NoButton, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+		msgBox.exec();
+	}
+}
+
+/*
+ * Add file from another instance
+ */
+void MainWindow::addFileDelayed(const QString &filePath)
+{
+	m_delayedFileTimer->stop();
+	qDebug("Received file: %s", filePath.toUtf8().constData());
+	m_delayedFileList->append(filePath);
+	m_delayedFileTimer->start(5000);
+}
+
+/*
+ * Add all pending files
+ */
+void MainWindow::handleDelayedFiles(void)
+{
+	if(m_banner->isVisible())
+	{
+		return;
+	}
+	
+	m_delayedFileTimer->stop();
+	if(m_delayedFileList->isEmpty())
+	{
+		return;
+	}
+
+	QStringList selectedFiles;
+	tabWidget->setCurrentIndex(0);
+
+	while(!m_delayedFileList->isEmpty())
+	{
+		selectedFiles << QFileInfo(m_delayedFileList->takeFirst()).absoluteFilePath();
+	}
+
+	FileAnalyzer *analyzer = new FileAnalyzer(selectedFiles);
+	connect(analyzer, SIGNAL(fileSelected(QString)), m_banner, SLOT(setText(QString)), Qt::QueuedConnection);
+	connect(analyzer, SIGNAL(fileAnalyzed(AudioFileModel)), m_fileListModel, SLOT(addFile(AudioFileModel)), Qt::QueuedConnection);
+
+	m_banner->show("Adding file(s), please wait...", analyzer);
+	LAMEXP_DELETE(analyzer);
+	
+	sourceFileView->scrollToBottom();
+	m_banner->close();
+}

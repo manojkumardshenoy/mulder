@@ -24,6 +24,7 @@
 #include "Dialog_SplashScreen.h"
 #include "Dialog_MainWindow.h"
 #include "Thread_Initialization.h"
+#include "Thread_MessageProducer.h"
 
 //Qt includes
 #include <QApplication>
@@ -36,6 +37,8 @@
 
 int lamexp_main(int argc, char* argv[])
 {
+	int iResult = -1;
+	
 	//Init console
 	lamexp_init_console(argc, argv);
 	
@@ -46,12 +49,12 @@ int lamexp_main(int argc, char* argv[])
 	
 	//print license info
 	qDebug("This program is free software: you can redistribute it and/or modify");
-    qDebug("it under the terms of the GNU General Public License <http://www.gnu.org/>.");
+	qDebug("it under the terms of the GNU General Public License <http://www.gnu.org/>.");
 	qDebug("This program comes with ABSOLUTELY NO WARRANTY.\n");
 	
 	//Print warning, if this is a "debug" build
 	LAMEXP_CHECK_DEBUG_BUILD;
-
+	
 	//Initialize Qt
 	lamexp_init_qt(argc, argv);
 	
@@ -68,8 +71,36 @@ int lamexp_main(int argc, char* argv[])
 		}
 	}
 
-	//Check for multiple instances
-	if(!lamexp_check_instances()) return 0;
+	//Check for multiple instances of LameXP
+	if((iResult = lamexp_init_ipc()) != 0)
+	{
+		qDebug("LameXP is already running, connecting to running instance...");
+		if(iResult == 1)
+		{
+			MessageProducerThread *messageProducerThread = new MessageProducerThread();
+			messageProducerThread->start();
+			if(!messageProducerThread->wait(30000))
+			{
+				messageProducerThread->terminate();
+				QMessageBox messageBox(QMessageBox::Critical, "LameXP", "LameXP is already running, but the running instance doesn't respond!", QMessageBox::NoButton, NULL, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+				messageBox.exec();
+				messageProducerThread->wait();
+				LAMEXP_DELETE(messageProducerThread);
+				return -1;
+			}
+			LAMEXP_DELETE(messageProducerThread);
+		}
+		return 0;
+	}
+
+	//Kill application?
+	for(int i = 0; i < argc; i++)
+	{
+		if(!_stricmp("--kill", argv[i]) || !_stricmp("--force-kill", argv[i]))
+		{
+			return 0;
+		}
+	}
 	
 	//Show splash screen
 	InitializationThread *poInitializationThread = new InitializationThread();
@@ -79,7 +110,7 @@ int lamexp_main(int argc, char* argv[])
 	//Show main window
 	MainWindow *poMainWindow = new MainWindow();
 	poMainWindow->show();
-	int iResult = QApplication::instance()->exec();
+	iResult = QApplication::instance()->exec();
 	LAMEXP_DELETE(poMainWindow);
 	
 	//Final clean-up

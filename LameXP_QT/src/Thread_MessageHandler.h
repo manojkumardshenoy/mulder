@@ -21,38 +21,24 @@
 
 #pragma once
 
-#include "Model_AudioFile.h"
+#include <QThread>
 
-#include <QAbstractTableModel>
-#include <QIcon>
-
-class FileListModel : public QAbstractTableModel
+class MessageHandlerThread: public QThread
 {
 	Q_OBJECT
 
 public:
-	FileListModel(void);
-	~FileListModel(void);
-
-	//Model functions
-	int columnCount(const QModelIndex &parent = QModelIndex()) const;
-	int rowCount(const QModelIndex &parent = QModelIndex()) const;
-	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-
-	//Edit functions
-	bool removeFile(const QModelIndex &index);
-	void clearFiles(void);
-	bool moveFile(const QModelIndex &index, int delta);
-	AudioFileModel getFile(const QModelIndex &index);
-	bool setFile(const QModelIndex &index, const AudioFileModel &audioFile);
-	AudioFileModel &operator[] (const QModelIndex &index);
-
-public slots:
-	void addFile(const QString &filePath);
-	void addFile(const AudioFileModel &file);
+	MessageHandlerThread(void);
+	~MessageHandlerThread(void);
+	void run();
+	void stop(void);
 
 private:
-	QList<AudioFileModel> m_fileList;
-	const QIcon m_fileIcon;
+	char *m_parameter;
+	bool m_aborted;
+
+signals:
+	void otherInstanceDetected(void);
+	void fileReceived(const QString &filePath);
+	void killSignalReceived(void);
 };
