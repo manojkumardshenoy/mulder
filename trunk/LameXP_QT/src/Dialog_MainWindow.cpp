@@ -26,9 +26,11 @@
 #include "Resource.h"
 #include "Dialog_WorkingBanner.h"
 #include "Dialog_MetaInfo.h"
+#include "Dialog_About.h"
 #include "Thread_FileAnalyzer.h"
 #include "Thread_MessageHandler.h"
 #include "Model_MetaInfo.h"
+#include "Model_Settings.h"
 
 //Qt includes
 #include <QMessageBox>
@@ -44,18 +46,31 @@
 #include <QCleanlooksStyle>
 #include <QWindowsVistaStyle>
 #include <QWindowsStyle>
+#include <QSysInfo>
+#include <QDragEnterEvent>
+#include <QWindowsMime>
 
 //Win32 includes
 #include <Windows.h>
 
 //Helper macros
-#define LINK(URL) QString("<a href=\"%1\">%2</a>").arg(URL).arg(URL)
 #define ABORT_IF_BUSY \
 if(m_banner->isVisible() || m_delayedFileTimer->isActive()) \
 { \
 	MessageBeep(MB_ICONEXCLAMATION); \
 	return; \
-} \
+}
+#define LINK(URL) QString("<a href=\"%1\">%2</a>").arg(URL).arg(URL)
+
+//Helper class
+class Index: public QObjectUserData
+{
+public:
+	Index(int index) { m_index = index; }
+	int value(void) { return m_index; }
+private:
+	int m_index;
+};
 
 ////////////////////////////////////////////////////////////
 // Constructor
@@ -75,6 +90,9 @@ MainWindow::MainWindow(QWidget *parent)
 	{
 		setWindowTitle(windowTitle().append(" [DEMO VERSION]"));
 	}
+
+	//Load configuration
+	m_settings = new SettingsModel();
 
 	//Enabled main buttons
 	connect(buttonAbout, SIGNAL(clicked()), this, SLOT(aboutButtonClicked()));
@@ -126,6 +144,11 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(buttonEditMeta, SIGNAL(clicked()), this, SLOT(editMetaButtonClicked()));
 	connect(buttonClearMeta, SIGNAL(clicked()), this, SLOT(clearMetaButtonClicked()));
 	
+	//Setup "Compression" tab
+	sliderBitrate->setValue(24);
+	connect(sliderBitrate, SIGNAL(valueChanged(int)), this, SLOT(updateBitrate(int)));
+	updateBitrate(sliderBitrate->value());
+
 	//Activate file menu actions
 	connect(actionOpenFolder, SIGNAL(triggered()), this, SLOT(openFolderActionActivated()));
 
@@ -136,6 +159,11 @@ MainWindow::MainWindow(QWidget *parent)
 	m_tabActionGroup->addAction(actionCompression);
 	m_tabActionGroup->addAction(actionMetaData);
 	m_tabActionGroup->addAction(actionAdvancedOptions);
+	actionSourceFiles->setUserData(0, new Index(0));
+	actionOutputDirectory->setUserData(0, new Index(1));
+	actionMetaData->setUserData(0, new Index(2));
+	actionCompression->setUserData(0, new Index(3));
+	actionAdvancedOptions->setUserData(0, new Index(4));
 	actionSourceFiles->setChecked(true);
 	connect(m_tabActionGroup, SIGNAL(triggered(QAction*)), this, SLOT(tabActionActivated(QAction*)));
 
@@ -146,8 +174,16 @@ MainWindow::MainWindow(QWidget *parent)
 	m_styleActionGroup->addAction(actionStyleWindowsVista);
 	m_styleActionGroup->addAction(actionStyleWindowsXP);
 	m_styleActionGroup->addAction(actionStyleWindowsClassic);
+	actionStylePlastique->setUserData(0, new Index(0));
+	actionStyleCleanlooks->setUserData(0, new Index(1));
+	actionStyleWindowsVista->setUserData(0, new Index(2));
+	actionStyleWindowsXP->setUserData(0, new Index(3));
+	actionStyleWindowsClassic->setUserData(0, new Index(4));
 	actionStylePlastique->setChecked(true);
+	actionStyleWindowsXP->setEnabled((QSysInfo::windowsVersion() & QSysInfo::WV_NT_based) >= QSysInfo::WV_XP);
+	actionStyleWindowsVista->setEnabled((QSysInfo::windowsVersion() & QSysInfo::WV_NT_based) >= QSysInfo::WV_VISTA);
 	connect(m_styleActionGroup, SIGNAL(triggered(QAction*)), this, SLOT(styleActionActivated(QAction*)));
+	styleActionActivated(NULL);
 
 	//Activate help menu actions
 	connect(actionCheckUpdates, SIGNAL(triggered()), this, SLOT(checkUpdatesActionActivated()));
@@ -171,6 +207,9 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(m_messageHandler, SIGNAL(killSignalReceived()), this, SLOT(close()), Qt::QueuedConnection);
 	connect(m_delayedFileTimer, SIGNAL(timeout()), this, SLOT(handleDelayedFiles()));
 	m_messageHandler->start();
+
+	//Enable Drag & Drop
+	this->setAcceptDrops(true);
 }
 
 ////////////////////////////////////////////////////////////
@@ -205,13 +244,41 @@ MainWindow::~MainWindow(void)
 	LAMEXP_DELETE(m_delayedFileTimer);
 	LAMEXP_DELETE(m_metaData);
 	LAMEXP_DELETE(m_metaInfoModel);
+	LAMEXP_DELETE(m_settings);
 }
 
 ////////////////////////////////////////////////////////////
-// PUBLIC FUNCTIONS
+// PRIVATE FUNCTIONS
 ////////////////////////////////////////////////////////////
 
-/*NONE*/
+void MainWindow::addFiles(const QStringList &files)
+{
+	if(files.isEmpty())
+	{
+		return;
+	}
+
+	tabWidget->setCurrentIndex(0);
+
+	FileAnalyzer *analyzer = new FileAnalyzer(files);
+	connect(analyzer, SIGNAL(fileSelected(QString)), m_banner, SLOT(setText(QString)), Qt::QueuedConnection);
+	connect(analyzer, SIGNAL(fileAnalyzed(AudioFileModel)), m_fileListModel, SLOT(addFile(AudioFileModel)), Qt::QueuedConnection);
+
+	m_banner->show("Adding file(s), please wait...", analyzer);
+
+	if(analyzer->filesDenied())
+	{
+		QMessageBox::warning(this, "Access Denied", QString("<nobr>%1 file(s) have been rejected, because read access was not granted!<br>This usually means the file is locked by another process.</nobr>").arg(analyzer->filesDenied()));
+	}
+	if(analyzer->filesRejected())
+	{
+		QMessageBox::warning(this, "Files Rejected", QString("<nobr>%1 file(s) have been rejected, because the file format could not be recognized!<br>This usually means the file is damaged or the file format is not supported.</nobr>").arg(analyzer->filesRejected()));
+	}
+
+	LAMEXP_DELETE(analyzer);
+	sourceFileView->scrollToBottom();
+	m_banner->close();
+}
 
 ////////////////////////////////////////////////////////////
 // EVENTS
@@ -220,6 +287,48 @@ MainWindow::~MainWindow(void)
 void MainWindow::showEvent(QShowEvent *event)
 {
 	QTimer::singleShot(0, this, SLOT(windowShown()));
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+	QStringList formats = event->mimeData()->formats();
+	
+	if(formats.contains("application/x-qt-windows-mime;value=\"FileNameW\"", Qt::CaseInsensitive) && formats.contains("text/uri-list", Qt::CaseInsensitive))
+	{
+		event->acceptProposedAction();
+	}
+}
+
+void MainWindow::dropEvent(QDropEvent *event)
+{
+	ABORT_IF_BUSY;
+
+	QStringList droppedFiles;
+	const QList<QUrl> urls = event->mimeData()->urls();
+
+	for(int i = 0; i < urls.count(); i++)
+	{
+		QFileInfo file(urls.at(i).toLocalFile());
+		if(!file.exists())
+		{
+			continue;
+		}
+		if(file.isFile())
+		{
+			droppedFiles << file.canonicalFilePath();
+			continue;
+		}
+		if(file.isDir())
+		{
+			QList<QFileInfo> list = QDir(file.canonicalFilePath()).entryInfoList(QDir::Files);
+			for(int j = 0; j < list.count(); j++)
+			{
+				droppedFiles << list.at(j).absoluteFilePath();
+			}
+		}
+	}
+	
+	addFiles(droppedFiles);
 }
 
 ////////////////////////////////////////////////////////////
@@ -233,20 +342,61 @@ void MainWindow::windowShown(void)
 {
 	QStringList arguments = QApplication::arguments();
 
+	if(m_settings->licenseAccepted() <= 0)
+	{
+		int iAccepted = -1;
+
+		if(m_settings->licenseAccepted() == 0)
+		{
+			AboutDialog *about = new AboutDialog(this, true);
+			iAccepted = about->exec();
+			LAMEXP_DELETE(about);
+		}
+
+		if(iAccepted <= 0)
+		{
+			m_settings->setLicenseAccepted(-1);
+			QMessageBox::critical(this, "License Declined", "You have declined the license. Consequently the application will exit now!");
+			QApplication::quit();
+			return;
+		}
+
+		m_settings->setLicenseAccepted(1);
+	}
+	
+	//Check for AAC support
+	if(lamexp_check_tool("neroAacEnc.exe") && lamexp_check_tool("neroAacDec.exe") && lamexp_check_tool("neroAacTag.exe"))
+	{
+		if(lamexp_tool_version("neroAacEnc.exe") < lamexp_toolver_neroaac())
+		{
+			QString messageText;
+			messageText += "<nobr>LameXP detected that your version of the Nero AAC encoder is outdated!<br>";
+			messageText += "The current version available is " + lamexp_version2string("?.?.?.?", lamexp_toolver_neroaac()) + " (or later), but you still have version " + lamexp_version2string("?.?.?.?", lamexp_tool_version("neroAacEnc.exe")) + " installed.<br><br>";
+			messageText += "You can download the latest version of the Nero AAC encoder from the Nero website at:<br>";
+			messageText += "<b>" + LINK(AboutDialog::neroAacUrl) + "</b><br></nobr>";
+			QMessageBox::information(this, "AAC Encoder Outdated", messageText);
+		}
+		radioButtonEncoderAAC->setEnabled(true);
+	}
+	else
+	{
+		QString messageText;
+		messageText += "<nobr>The Nero AAC encoder could not be found. AAC encoding support will be disabled.<br>";
+		messageText += "Please put 'neroAacEnc.exe', 'neroAacDec.exe' and 'neroAacTag.exe' into the LameXP directory!<br><br>";
+		messageText += "You can download the Nero AAC encoder for free from the official Nero website at:<br>";
+		messageText += "<b>" + LINK(AboutDialog::neroAacUrl) + "</b><br></nobr>";
+		QMessageBox::information(this, "AAC Support Disabled", messageText);
+		radioButtonEncoderAAC->setEnabled(false);
+	}
+	
+	//Add files from the command-line
 	for(int i = 0; i < arguments.count() - 1; i++)
 	{
 		if(!arguments[i].compare("--add", Qt::CaseInsensitive))
 		{
 			QFileInfo currentFile(arguments[++i].trimmed());
-			qDebug("Adding file from CLI: %s", currentFile.absoluteFilePath().toUtf8().constData());
-			if(currentFile.exists())
-			{
-				m_delayedFileList->append(currentFile.absoluteFilePath());
-			}
-			else
-			{
-				qWarning("File doesn't exist: %s", currentFile.absoluteFilePath().toUtf8().constData());
-			}
+			qDebug("Adding file from CLI: %s", currentFile.canonicalFilePath().toUtf8().constData());
+			m_delayedFileList->append(currentFile.canonicalFilePath());
 		}
 	}
 
@@ -262,92 +412,8 @@ void MainWindow::windowShown(void)
 void MainWindow::aboutButtonClicked(void)
 {
 	ABORT_IF_BUSY;
-	
-	QString aboutText;
-	aboutText += "<h2>LameXP - Audio Encoder Front-end</h2>";
-	aboutText += QString("<b>Copyright (C) 2004-%1 LoRd_MuldeR &lt;MuldeR2@GMX.de&gt;. Some rights reserved.</b><br>").arg(max(lamexp_version_date().year(),QDate::currentDate().year()));
-	aboutText += QString().sprintf("<b>Version %d.%02d %s, Build %d [%s]</b><br><br>", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build(), lamexp_version_date().toString(Qt::ISODate).toLatin1().constData());
-	aboutText += "<nobr>Please visit the official web-site at ";
-	aboutText += LINK("http://mulder.dummwiedeutsch.de/") += " for news and updates!</nobr><br>";
-	aboutText += "<hr><br>";
-	aboutText += "<nobr><tt>This program is free software; you can redistribute it and/or<br>";
-	aboutText += "modify it under the terms of the GNU General Public License<br>";
-	aboutText += "as published by the Free Software Foundation; either version 2<br>";
-	aboutText += "of the License, or (at your option) any later version.<br><br>";
-	aboutText += "This program is distributed in the hope that it will be useful,<br>";
-	aboutText += "but WITHOUT ANY WARRANTY; without even the implied warranty of<br>";
-	aboutText += "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the<br>";
-	aboutText += "GNU General Public License for more details.<br><br>";
-	aboutText += "You should have received a copy of the GNU General Public License<br>";
-	aboutText += "along with this program; if not, write to the Free Software<br>";
-	aboutText += "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</tt></nobr><br>";
-	aboutText += "<hr><br>";
-	aboutText += "This software uses the 'slick' icon set by Mark James &ndash; <a href=\"http://www.famfamfam.com/lab/icons/silk/\">http://www.famfamfam.com/</a>.<br>";
-	aboutText += "Released under the Creative Commons Attribution 2.5 License.<br>";
-	
-	QMessageBox *aboutBox = new QMessageBox(this);
-	aboutBox->setText(aboutText);
-	aboutBox->setIconPixmap(dynamic_cast<QApplication*>(QApplication::instance())->windowIcon().pixmap(QSize(64,64)));
-	aboutBox->setWindowTitle("About LameXP");
-	
-	QPushButton *firstButton = aboutBox->addButton("More About...", QMessageBox::AcceptRole);
-	firstButton->setIcon(QIcon(":/icons/information.png"));
-	firstButton->setMinimumWidth(120);
-
-	QPushButton *secondButton = aboutBox->addButton("About Qt...", QMessageBox::AcceptRole);
-	secondButton->setIcon(QIcon(":/images/Qt.svg"));
-	secondButton->setMinimumWidth(120);
-
-	QPushButton *thirdButton = aboutBox->addButton("Discard", QMessageBox::AcceptRole);
-	thirdButton->setIcon(QIcon(":/icons/cross.png"));
-	thirdButton->setMinimumWidth(90);
-
-	PlaySound(MAKEINTRESOURCE(IDR_WAVE_ABOUT), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
-
-	while(1)
-	{
-		switch(aboutBox->exec())
-		{
-		case 0:
-			{
-				const QString li("<li style=\"margin-left:-25px\">");
-				QString moreAboutText;
-				moreAboutText += "<h3>The following third-party software is used in LameXP:</h3>";
-				moreAboutText += "<ul>";
-				moreAboutText += li + "<b>LAME - OpenSource mp3 Encoder</b><br>";
-				moreAboutText += "Released under the terms of the GNU Leser General Public License.<br>";
-				moreAboutText += LINK("http://lame.sourceforge.net/");
-				moreAboutText += "<br>";
-				moreAboutText += li + "<b>OggEnc - Ogg Vorbis Encoder</b>";
-				moreAboutText += "<br>Completely open and patent-free audio encoding technology.<br>";
-				moreAboutText += LINK("http://www.vorbis.com/");
-				moreAboutText += "<br>";
-				moreAboutText += li + "<b>Nero AAC reference MPEG-4 Encoder</b><br>";
-				moreAboutText += "Freeware state-of-the-art HE-AAC encoder with 2-Pass support.<br>";
-				moreAboutText += LINK("http://www.nero.com/eng/technologies-aac-codec.html/");
-				moreAboutText += "<br>";
-				moreAboutText += li + "<b>MediaInfo - Media File Analysis Tool</b><br>";
-				moreAboutText += "Released under the terms of the GNU Leser General Public License.<br>";
-				moreAboutText += LINK("http://mediainfo.sourceforge.net/");
-				moreAboutText += "<br></ul>";
-
-				QMessageBox *moreAboutBox = new QMessageBox(this);
-				moreAboutBox->setText(moreAboutText);
-				moreAboutBox->setIconPixmap(dynamic_cast<QApplication*>(QApplication::instance())->windowIcon().pixmap(QSize(64,64)));
-				moreAboutBox->setWindowTitle("About Third-party Software");
-				moreAboutBox->exec();
-				
-				LAMEXP_DELETE(moreAboutBox);
-				break;
-			}
-		case 1:
-			QMessageBox::aboutQt(this);
-			break;
-		default:
-			return;
-		}
-	}
-
+	AboutDialog *aboutBox = new AboutDialog(this);
+	aboutBox->exec();
 	LAMEXP_DELETE(aboutBox);
 }
 
@@ -366,24 +432,8 @@ void MainWindow::encodeButtonClicked(void)
 void MainWindow::addFilesButtonClicked(void)
 {
 	ABORT_IF_BUSY;
-
-	tabWidget->setCurrentIndex(0);
 	QStringList selectedFiles = QFileDialog::getOpenFileNames(this, "Add file(s)", QString(), "All supported files (*.*)");
-	
-	if(selectedFiles.isEmpty())
-	{
-		return;
-	}
-
-	FileAnalyzer *analyzer = new FileAnalyzer(selectedFiles);
-	connect(analyzer, SIGNAL(fileSelected(QString)), m_banner, SLOT(setText(QString)), Qt::QueuedConnection);
-	connect(analyzer, SIGNAL(fileAnalyzed(AudioFileModel)), m_fileListModel, SLOT(addFile(AudioFileModel)), Qt::QueuedConnection);
-
-	m_banner->show("Adding file(s), please wait...", analyzer);
-	LAMEXP_DELETE(analyzer);
-	
-	sourceFileView->scrollToBottom();
-	m_banner->close();
+	addFiles(selectedFiles);
 }
 
 /*
@@ -392,8 +442,6 @@ void MainWindow::addFilesButtonClicked(void)
 void MainWindow::openFolderActionActivated(void)
 {
 	ABORT_IF_BUSY;
-
-	tabWidget->setCurrentIndex(0);
 	QString selectedFolder = QFileDialog::getExistingDirectory(this, "Add folder", QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
 	
 	if(!selectedFolder.isEmpty())
@@ -404,18 +452,10 @@ void MainWindow::openFolderActionActivated(void)
 
 		while(!fileInfoList.isEmpty())
 		{
-			fileList << fileInfoList.takeFirst().absoluteFilePath();
+			fileList << fileInfoList.takeFirst().canonicalFilePath();
 		}
-		
-		FileAnalyzer *analyzer = new FileAnalyzer(fileList);
-		connect(analyzer, SIGNAL(fileSelected(QString)), m_banner, SLOT(setText(QString)), Qt::QueuedConnection);
-		connect(analyzer, SIGNAL(fileAnalyzed(AudioFileModel)), m_fileListModel, SLOT(addFile(AudioFileModel)), Qt::QueuedConnection);
 
-		m_banner->show("Adding folder, please wait...", analyzer);
-		LAMEXP_DELETE(analyzer);
-	
-		sourceFileView->scrollToBottom();
-		m_banner->close();
+		addFiles(fileList);
 	}
 }
 
@@ -504,23 +544,13 @@ void MainWindow::showDetailsButtonClicked(void)
  */
 void MainWindow::tabPageChanged(int idx)
 {
-	switch(idx)
+	QList<QAction*> actions = m_tabActionGroup->actions();
+	for(int i = 0; i < actions.count(); i++)
 	{
-	case 0:
-		actionSourceFiles->setChecked(true);
-		break;
-	case 1:
-		actionOutputDirectory->setChecked(true);
-		break;
-	case 2:
-		actionMetaData->setChecked(true);
-		break;
-	case 3:
-		actionCompression->setChecked(true);
-		break;
-	case 4:
-		actionAdvancedOptions->setChecked(true);
-		break;
+		if(actions.at(i)->userData(0) && dynamic_cast<Index*>(actions.at(i)->userData(0))->value() == idx)
+		{
+			actions.at(i)->setChecked(true);
+		}
 	}
 }
 
@@ -529,17 +559,10 @@ void MainWindow::tabPageChanged(int idx)
  */
 void MainWindow::tabActionActivated(QAction *action)
 {
-	int idx = -1;
-
-	if(actionSourceFiles == action) idx = 0;
-	else if(actionOutputDirectory == action) idx = 1;
-	else if(actionMetaData == action) idx = 2;
-	else if(actionCompression == action) idx = 3;
-	else if(actionAdvancedOptions == action) idx = 4;
-
-	if(idx >= 0)
+	if(action && action->userData(0))
 	{
-		tabWidget->setCurrentIndex(idx);
+		int index = dynamic_cast<Index*>(action->userData(0))->value();
+		tabWidget->setCurrentIndex(index);
 	}
 }
 
@@ -548,11 +571,34 @@ void MainWindow::tabActionActivated(QAction *action)
  */
 void MainWindow::styleActionActivated(QAction *action)
 {
-	if(action == actionStylePlastique) QApplication::setStyle(new QPlastiqueStyle());
-	else if(action == actionStyleCleanlooks) QApplication::setStyle(new QCleanlooksStyle());
-	else if(action == actionStyleWindowsVista) QApplication::setStyle(new QWindowsVistaStyle());
-	else if(action == actionStyleWindowsXP) QApplication::setStyle(new QWindowsXPStyle());
-	else if(action == actionStyleWindowsClassic) QApplication::setStyle(new QWindowsStyle());
+	if(action && action->userData(0))
+	{
+		m_settings->setInterfaceStyle(dynamic_cast<Index*>(action->userData(0))->value());
+	}
+
+	switch(m_settings->interfaceStyle())
+	{
+	case 1:
+		actionStyleCleanlooks->setChecked(true);
+		QApplication::setStyle(new QCleanlooksStyle());
+		break;
+	case 2:
+		actionStyleWindowsVista->setChecked(true);
+		QApplication::setStyle(new QWindowsVistaStyle());
+		break;
+	case 3:
+		actionStyleWindowsXP->setChecked(true);
+		QApplication::setStyle(new QWindowsXPStyle());
+		break;
+	case 4:
+		actionStyleWindowsClassic->setChecked(true);
+		QApplication::setStyle(new QWindowsStyle());
+		break;
+	default:
+		actionStylePlastique->setChecked(true);
+		QApplication::setStyle(new QPlastiqueStyle());
+		break;
+	}
 }
 
 /*
@@ -732,16 +778,33 @@ void MainWindow::handleDelayedFiles(void)
 
 	while(!m_delayedFileList->isEmpty())
 	{
-		selectedFiles << QFileInfo(m_delayedFileList->takeFirst()).absoluteFilePath();
+		QFileInfo currentFile = QFileInfo(m_delayedFileList->takeFirst());
+		if(!currentFile.exists())
+		{
+			continue;
+		}
+		if(currentFile.isFile())
+		{
+			selectedFiles << currentFile.canonicalFilePath();
+			continue;
+		}
+		if(currentFile.isDir())
+		{
+			QList<QFileInfo> list = QDir(currentFile.canonicalFilePath()).entryInfoList(QDir::Files);
+			for(int j = 0; j < list.count(); j++)
+			{
+				selectedFiles << list.at(j).absoluteFilePath();
+			}
+		}
 	}
-
-	FileAnalyzer *analyzer = new FileAnalyzer(selectedFiles);
-	connect(analyzer, SIGNAL(fileSelected(QString)), m_banner, SLOT(setText(QString)), Qt::QueuedConnection);
-	connect(analyzer, SIGNAL(fileAnalyzed(AudioFileModel)), m_fileListModel, SLOT(addFile(AudioFileModel)), Qt::QueuedConnection);
-
-	m_banner->show("Adding file(s), please wait...", analyzer);
-	LAMEXP_DELETE(analyzer);
 	
-	sourceFileView->scrollToBottom();
-	m_banner->close();
+	addFiles(selectedFiles);
+}
+
+/*
+ * Update bitrate
+ */
+void MainWindow::updateBitrate(int value)
+{
+	labelBitrate->setText(QString("%1 kbps").arg(value * 8));
 }

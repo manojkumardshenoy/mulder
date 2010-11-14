@@ -20,19 +20,28 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include <QMessageBox>
 
-#include <QString>
-
-class LockedFile
+class AboutDialog : public QMessageBox
 {
-public:
-	LockedFile(const QString &resourcePath, const QString &outPath, const QByteArray &expectedHash = QByteArray());
-	LockedFile(const QString &filePath);
-	~LockedFile(void);
+	Q_OBJECT
 
-	const QString &filePath();
+public:
+	AboutDialog(QWidget *parent = 0, bool firstStart = false);
+	~AboutDialog(void);
+
+	static const char *neroAacUrl;
+
+public slots:
+	int exec();
+	void enableButtons(void);
+	void openLicenseText(void);
+	void showMoreAbout(void);
+	void showAboutQt(void);
+
+protected:
+	void showEvent(QShowEvent *e);
 
 private:
-	QString m_filePath;
-	void *m_fileHandle;
+	bool m_firstShow;
 };

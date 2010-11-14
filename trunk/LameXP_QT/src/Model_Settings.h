@@ -21,18 +21,22 @@
 
 #pragma once
 
-#include <QString>
+class QSettings;
 
-class LockedFile
+class SettingsModel
 {
 public:
-	LockedFile(const QString &resourcePath, const QString &outPath, const QByteArray &expectedHash = QByteArray());
-	LockedFile(const QString &filePath);
-	~LockedFile(void);
+	SettingsModel(void);
+	~SettingsModel(void);
 
-	const QString &filePath();
+	//Getters
+	int licenseAccepted(void);
+	int interfaceStyle(void);
+
+	//Setters
+	void setLicenseAccepted(int value);
+	void setInterfaceStyle(int value);
 
 private:
-	QString m_filePath;
-	void *m_fileHandle;
+	QSettings *m_settings;
 };
