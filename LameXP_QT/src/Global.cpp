@@ -50,6 +50,14 @@
 #include <Psapi.h>
 #endif //_DEBUG
 
+//Static build only macros
+#ifdef QT_NODLL
+#pragma warning(disable:4101)
+#define LAMEXP_INIT_QT_STATIC_PLUGIN(X) Q_IMPORT_PLUGIN(X)
+#else
+#define LAMEXP_INIT_QT_STATIC_PLUGIN(X)
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 ///////////////////////////////////////////////////////////////////////////////
@@ -77,11 +85,15 @@ static QDate g_lamexp_version_date;
 static const char *g_lamexp_months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 static const char *g_lamexp_version_raw_date = __DATE__;
 
+//Tool versions (expected)
+static const unsigned int g_lamexp_toolver_neroaac = VER_LAMEXP_TOOL_NEROAAC;
+
 //Special folders
 static QString g_lamexp_temp_folder;
 
 //Tools
 static QMap<QString, LockedFile*> g_lamexp_tool_registry;
+static QMap<QString, unsigned int> g_lamexp_tool_versions;
 
 //Shared memory
 static const char *g_lamexp_sharedmem_uuid = "{21A68A42-6923-43bb-9CF6-64BF151942EE}";
@@ -90,6 +102,9 @@ static const char *g_lamexp_semaphore_read_uuid = "{7A605549-F58C-4d78-B4E5-06EF
 static QSystemSemaphore *g_lamexp_semaphore_read_ptr = NULL;
 static const char *g_lamexp_semaphore_write_uuid = "{60AA8D04-F6B8-497d-81EB-0F600F4A65B5}";
 static QSystemSemaphore *g_lamexp_semaphore_write_ptr = NULL;
+
+//Image formats
+static const char *g_lamexp_imageformats[] = {"png", "gif", "ico", "svg", NULL};
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBAL FUNCTIONS
@@ -102,6 +117,7 @@ unsigned int lamexp_version_major(void) { return g_lamexp_version_major; }
 unsigned int lamexp_version_minor(void) { return g_lamexp_version_minor; }
 unsigned int lamexp_version_build(void) { return g_lamexp_version_build; }
 const char *lamexp_version_release(void) { return g_lamexp_version_release; }
+unsigned int lamexp_toolver_neroaac(void) { return g_lamexp_toolver_neroaac; }
 
 bool lamexp_version_demo(void)
 { 
@@ -189,12 +205,6 @@ void lamexp_init_console(int argc, char* argv[])
 	}
 }
 
-/* Disable nasty warning */
-#if !defined(QT_DLL) || defined(QT_NODLL)
-#pragma warning(push)
-#pragma warning(disable:4101)
-#endif
-
 /*
  * Initialize Qt framework
  */
@@ -213,7 +223,7 @@ bool lamexp_init_qt(int argc, char* argv[])
 	QT_REQUIRE_VERSION(argc, argv, QT_VERSION_STR);
 	
 	//Check the Windows version
-	switch(QSysInfo::WindowsVersion)
+	switch(QSysInfo::windowsVersion() & QSysInfo::WV_NT_based)
 	{
 	case QSysInfo::WV_2000:
 		qDebug("Running on Windows 2000 (not offically supported!).\n");
@@ -247,32 +257,25 @@ bool lamexp_init_qt(int argc, char* argv[])
 	QCoreApplication::setLibraryPaths(QStringList() << QApplication::applicationDirPath());
 	qDebug("Library Path:\n%s\n", QApplication::libraryPaths().first().toUtf8().constData());
 
-	//Initialize static Qt plugins
-	#ifndef QT_DLL
-		Q_IMPORT_PLUGIN(qsvg);
-		Q_IMPORT_PLUGIN(qico);
-	#endif
+	//Init static Qt plugins
+	LAMEXP_INIT_QT_STATIC_PLUGIN(qico);
+	LAMEXP_INIT_QT_STATIC_PLUGIN(qsvg);
 
 	//Check for supported image formats
 	QList<QByteArray> supportedFormats = QImageReader::supportedImageFormats();
-	if(!(supportedFormats.contains("png") && supportedFormats.contains("gif") && supportedFormats.contains("ico") && supportedFormats.contains("svg")))
+	for(int i = 0; g_lamexp_imageformats[i]; i++)
 	{
-		qFatal("Qt initialization error: At least one image format plugin is missing!");
-		return false;
+		if(!supportedFormats.contains(g_lamexp_imageformats[i]))
+		{
+			qFatal("Qt initialization error: At least one image format plugin is missing! (%s)", g_lamexp_imageformats[i]);
+			return false;
+		}
 	}
-
-	//Change application look
-	QApplication::setStyle(new QPlastiqueStyle());
 
 	//Done
 	qt_initialized = true;
 	return true;
 }
-
-/* Re-enable the warning */
-#if !defined(QT_DLL) || defined(QT_NODLL)
-#pragma warning(pop)
-#endif
 
 /*
  * Initialize IPC
@@ -283,9 +286,9 @@ int lamexp_init_ipc(void)
 	{
 		return 0;
 	}
-	
-	g_lamexp_semaphore_read_ptr = new QSystemSemaphore(g_lamexp_semaphore_read_uuid, 0);
-	g_lamexp_semaphore_write_ptr = new QSystemSemaphore(g_lamexp_semaphore_write_uuid, 0);
+
+	g_lamexp_semaphore_read_ptr = new QSystemSemaphore(QString(g_lamexp_semaphore_read_uuid), 0);
+	g_lamexp_semaphore_write_ptr = new QSystemSemaphore(QString(g_lamexp_semaphore_write_uuid), 0);
 
 	if(g_lamexp_semaphore_read_ptr->error() != QSystemSemaphore::NoError)
 	{
@@ -304,7 +307,7 @@ int lamexp_init_ipc(void)
 		return -1;
 	}
 
-	g_lamexp_sharedmem_ptr = new QSharedMemory(g_lamexp_sharedmem_uuid, NULL);
+	g_lamexp_sharedmem_ptr = new QSharedMemory(QString(g_lamexp_sharedmem_uuid), NULL);
 	
 	if(!g_lamexp_sharedmem_ptr->create(sizeof(lamexp_ipc_t)))
 	{
@@ -465,6 +468,7 @@ void lamexp_finalization(void)
 			LAMEXP_DELETE(g_lamexp_tool_registry[keys.at(i)]);
 		}
 		g_lamexp_tool_registry.clear();
+		g_lamexp_tool_versions.clear();
 	}
 	
 	//Delete temporary files
@@ -492,30 +496,81 @@ void lamexp_finalization(void)
 /*
  * Register tool
  */
-void lamexp_register_tool(const QString &toolName, LockedFile *file)
+void lamexp_register_tool(const QString &toolName, LockedFile *file, unsigned int version)
 {
-	if(g_lamexp_tool_registry.contains(toolName))
+	if(g_lamexp_tool_registry.contains(toolName.toLower()))
 	{
 		throw "lamexp_register_tool: Tool is already registered!";
 	}
 
-	g_lamexp_tool_registry.insert(toolName, file);
+	g_lamexp_tool_registry.insert(toolName.toLower(), file);
+	g_lamexp_tool_versions.insert(toolName.toLower(), version);
 }
 
 /*
- * Register tool
+ * Check for tool
+ */
+bool lamexp_check_tool(const QString &toolName)
+{
+	return g_lamexp_tool_registry.contains(toolName.toLower());
+}
+
+/*
+ * Lookup tool
  */
 const QString lamexp_lookup_tool(const QString &toolName)
 {
-	if(g_lamexp_tool_registry.contains(toolName))
+	if(g_lamexp_tool_registry.contains(toolName.toLower()))
 	{
-		return g_lamexp_tool_registry.value(toolName)->filePath();
+		return g_lamexp_tool_registry.value(toolName.toLower())->filePath();
 	}
 	else
 	{
 		return QString();
 	}
 }
+
+/*
+ * Lookup tool
+ */
+unsigned int lamexp_tool_version(const QString &toolName)
+{
+	if(g_lamexp_tool_versions.contains(toolName.toLower()))
+	{
+		return g_lamexp_tool_versions.value(toolName.toLower());
+	}
+	else
+	{
+		return UINT_MAX;
+	}
+}
+
+/*
+ * Version number to human-readable string
+ */
+const QString lamexp_version2string(const QString &pattern, unsigned int version)
+{
+	QString result = pattern;
+	int digits = result.count("?", Qt::CaseInsensitive);
+	
+	if(digits < 1)
+	{
+		return result;
+	}
+	
+	int pos = 0;
+	QString versionStr = QString().sprintf(QString().sprintf("%%0%du", digits).toLatin1().constData(), version);
+	int index = result.indexOf("?", Qt::CaseInsensitive);
+	
+	while(index >= 0 && pos < versionStr.length())
+	{
+		result[index] = versionStr[pos++];
+		index = result.indexOf("?", Qt::CaseInsensitive);
+	}
+
+	return result;
+}
+
 
 /*
  * Get number private bytes [debug only]

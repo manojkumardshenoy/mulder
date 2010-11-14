@@ -31,6 +31,7 @@ class WorkingBanner;
 class MessageHandlerThread;
 class AudioFileModel;
 class MetaInfoModel;
+class SettingsModel;
 
 class MainWindow: public QMainWindow, private Ui::MainWindow
 {
@@ -66,11 +67,16 @@ private slots:
 	void handleDelayedFiles(void);
 	void editMetaButtonClicked(void);
 	void clearMetaButtonClicked(void);
+	void updateBitrate(int value);
 
 protected:
 	void showEvent(QShowEvent *event);
+	void dragEnterEvent(QDragEnterEvent *event);
+	void dropEvent(QDropEvent *event);
 
 private:
+	void addFiles(const QStringList &files);
+
 	FileListModel *m_fileListModel;
 	QFileSystemModel *m_fileSystemModel;
 	QActionGroup *m_tabActionGroup;
@@ -81,4 +87,5 @@ private:
 	QTimer *m_delayedFileTimer;
 	AudioFileModel *m_metaData;
 	MetaInfoModel *m_metaInfoModel;
+	SettingsModel *m_settings;
 };

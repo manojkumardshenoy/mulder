@@ -24,6 +24,10 @@
 #include "Global.h"
 #include "LockedFile.h"
 
+#include <QFileInfo>
+#include <QCoreApplication>
+#include <QProcess>
+
 ////////////////////////////////////////////////////////////
 // TOOLS
 ////////////////////////////////////////////////////////////
@@ -43,7 +47,6 @@ static const struct lamexp_tool_t g_lamexp_tools[] =
 	{"e613a1b56a2187edb4cdf3628a5a3e60de2e8cbc", "lame.exe"},
 	{"775b260b3f64101beaeb317b74746f9bccdab842", "MAC.exe"},
 	{"e770eaa5f2449d0fd6b3f3c02a1f574fc4370b5e", "mediainfo_icl11.exe"},
-//	{"6f57f93b597f143453c6a30ee0bc9d161afe2e4b", "mediainfo_msvc9.exe"},
 	{"55c293a80475f7aeccf449ac9487a4626e5139cb", "mpcdec.exe"},
 	{"8bbf4a3fffe2ff143eb5ba2cf82ca16d676e865d", "mpg123.exe"},
 	{"437a1b193727c3dbdd557b9a58659d1ce7fbec51", "oggdec.exe"},
@@ -71,19 +74,9 @@ InitializationThread::InitializationThread(void)
 	m_bSuccess = false;
 }
 
-void InitializationThread::delay(void)
-{
-	const char *temp = "|/-\\";
-	printf("Thread is doing something important... ?\b", temp[4]);
-
-	for(int i = 0; i < 20; i++)
-	{
-		printf("%c\b", temp[i%4]);
-		msleep(100);
-	}
-
-	printf("Done\n\n");
-}
+////////////////////////////////////////////////////////////
+// Thread Main
+////////////////////////////////////////////////////////////
 
 void InitializationThread::run()
 {
@@ -114,9 +107,132 @@ void InitializationThread::run()
 	}
 	
 	qDebug("All extracted.\n");
+
+	//Look for Nero encoder
+	initNeroAac();
 	
 	delay();
 	m_bSuccess = true;
+}
+
+////////////////////////////////////////////////////////////
+// PUBLIC FUNCTIONS
+////////////////////////////////////////////////////////////
+
+void InitializationThread::delay(void)
+{
+	const char *temp = "|/-\\";
+	printf("Thread is doing something important... ?\b", temp[4]);
+
+	for(int i = 0; i < 20; i++)
+	{
+		printf("%c\b", temp[i%4]);
+		msleep(100);
+	}
+
+	printf("Done\n\n");
+}
+
+void InitializationThread::initNeroAac(void)
+{
+	QFileInfo neroFileInfo[3];
+	neroFileInfo[0] = QFileInfo(QString("%1/neroAacEnc.exe").arg(QCoreApplication::applicationDirPath()));
+	neroFileInfo[1] = QFileInfo(QString("%1/neroAacDec.exe").arg(QCoreApplication::applicationDirPath()));
+	neroFileInfo[2] = QFileInfo(QString("%1/neroAacTag.exe").arg(QCoreApplication::applicationDirPath()));
+	
+	bool neroFilesFound = true;
+	for(int i = 0; i < 3; i++)	{ if(!neroFileInfo[i].exists()) neroFilesFound = false; }
+
+	//Lock the Nero binaries
+	if(!neroFilesFound)
+	{
+		qDebug("Nero encoder binaries not found -> AAC encoding support will be disabled!\n");
+		return;
+	}
+
+	qDebug("Found Nero AAC encoder binary:\n%s\n", neroFileInfo[0].absoluteFilePath().toUtf8().constData());
+
+	LockedFile *neroBin[3];
+	for(int i = 0; i < 3; i++) neroBin[i] = NULL;
+
+	try
+	{
+		for(int i = 0; i < 3; i++)
+		{
+			neroBin[i] = new LockedFile(neroFileInfo[i].absoluteFilePath());
+		}
+	}
+	catch(...)
+	{
+		for(int i = 0; i < 3; i++) LAMEXP_DELETE(neroBin[i]);
+		qWarning("Failed to lock Nero encoder binary -> AAC encoding support will be disabled!");
+		return;
+	}
+
+	QProcess process;
+	process.setProcessChannelMode(QProcess::MergedChannels);
+	process.setReadChannel(QProcess::StandardOutput);
+	process.start(neroFileInfo[0].absoluteFilePath());
+
+	if(!process.waitForStarted())
+	{
+		qWarning("Nero process failed to create!");
+		process.kill();
+		process.waitForFinished(-1);
+		for(int i = 0; i < 3; i++) LAMEXP_DELETE(neroBin[i]);
+		return;
+	}
+
+	unsigned int neroVersion = 0;
+
+	while(process.state() != QProcess::NotRunning)
+	{
+		if(!process.waitForReadyRead())
+		{
+			if(process.state() == QProcess::Running)
+			{
+				qWarning("Nero process time out -> killing!");
+				process.kill();
+				process.waitForFinished(-1);
+				for(int i = 0; i < 3; i++) LAMEXP_DELETE(neroBin[i]);
+				return;
+			}
+		}
+
+		QByteArray data = process.readLine();
+		while(!data.isEmpty())
+		{
+			QString line = QString::fromUtf8(data.constData()).simplified();
+			QStringList tokens = line.split(" ", QString::SkipEmptyParts, Qt::CaseInsensitive);
+			int index1 = tokens.indexOf("Package");
+			int index2 = tokens.indexOf("version:");
+			if(index1 >= 0 && index2 >= 0 && index1 + 1 == index2 && index2 < tokens.count() - 1)
+			{
+				QStringList versionTokens = tokens.at(index2 + 1).split(".", QString::SkipEmptyParts, Qt::CaseInsensitive);
+				if(versionTokens.count() == 4)
+				{
+					neroVersion = 0;
+					neroVersion += versionTokens.at(3).toInt();
+					neroVersion += versionTokens.at(2).toInt() * 10;
+					neroVersion += versionTokens.at(1).toInt() * 100;
+					neroVersion += versionTokens.at(0).toInt() * 1000;
+				}
+			}
+			data = process.readLine();
+		}
+	}
+
+	if(!(neroVersion > 0))
+	{
+		qWarning("Nero AAC version could not be determined!", neroVersion);
+		for(int i = 0; i < 3; i++) LAMEXP_DELETE(neroBin[i]);
+		return;
+	}
+	
+	for(int i = 0; i < 3; i++)
+	{
+		lamexp_register_tool(neroFileInfo[i].fileName(), neroBin[i], neroVersion);
+	}
 }
 
 ////////////////////////////////////////////////////////////
