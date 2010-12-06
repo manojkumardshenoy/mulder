@@ -30,6 +30,7 @@
 #include <QProcess>
 #include <QDate>
 #include <QTime>
+#include <QDebug>
 
 #include <math.h>
 
@@ -116,6 +117,7 @@ const AudioFileModel FileAnalyzer::analyzeFile(const QString &filePath)
 	if(!process.waitForStarted())
 	{
 		qWarning("MediaInfo process failed to create!");
+		qWarning("Error message: \"%s\"\n", process.errorString().toLatin1().constData());
 		process.kill();
 		process.waitForFinished(-1);
 		return audioFile;
@@ -134,10 +136,11 @@ const AudioFileModel FileAnalyzer::analyzeFile(const QString &filePath)
 			}
 		}
 
-		QByteArray data = process.readLine().constData();
-		while(data.size() > 0)
+		QByteArray data;
+
+		while(process.canReadLine())
 		{
-			QString line = QString::fromUtf8(data).simplified();
+			QString line = QString::fromUtf8(process.readLine().constData()).simplified();
 			if(!line.isEmpty())
 			{
 				int index = line.indexOf(':');
@@ -155,7 +158,6 @@ const AudioFileModel FileAnalyzer::analyzeFile(const QString &filePath)
 					updateSection(line);
 				}
 			}
-			data = process.readLine().constData();
 		}
 	}
 

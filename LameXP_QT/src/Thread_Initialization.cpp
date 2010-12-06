@@ -41,17 +41,19 @@ struct lamexp_tool_t
 static const struct lamexp_tool_t g_lamexp_tools[] =
 {
 	{"153f4274702f3629093b561a31dbf50e2c146305", "alac.exe"},
-	{"09e5a07555a24b8c9d6af880b81eb8ed75be16fd", "faad.exe"},
+	{"097dd004f44dbda57dbaeb5f15b34a220724ad60", "faad.exe"},
 	{"070bf98f78e572a97e4703ef5720c682567a6a56", "flac.exe"},
 	{"cf379081035ae6bfb6f7bc22f13bfb7ac6302ac5", "gpgv.exe"},
-	{"e613a1b56a2187edb4cdf3628a5a3e60de2e8cbc", "lame.exe"},
+	{"d837bf6ee4dab557d8b02d46c75a24e58980fffa", "gpgv.gpg"},
+	{"143fc001a2f6c56fe1b9e6f8a2eb2b53b9e1e504", "lame.exe"},
 	{"775b260b3f64101beaeb317b74746f9bccdab842", "MAC.exe"},
-	{"e770eaa5f2449d0fd6b3f3c02a1f574fc4370b5e", "mediainfo_icl11.exe"},
+	{"e8719fbfd7b690b3e518489f7aae3915305711c2", "mediainfo_icl11.exe"},
 	{"55c293a80475f7aeccf449ac9487a4626e5139cb", "mpcdec.exe"},
 	{"8bbf4a3fffe2ff143eb5ba2cf82ca16d676e865d", "mpg123.exe"},
-	{"437a1b193727c3dbdd557b9a58659d1ce7fbec51", "oggdec.exe"},
-	{"0fb39d4e0b40ea704d90cf8740a52ceee723e60b", "oggenc2_gen.exe"},
-	{"1747ecf0c8b26a56aa319900252c157467714ac1", "oggenc2_p4.exe"},
+	{"380c734e3c3948a844b9fae213d53a93ab20beba", "oggdec.exe"},
+	{"ecd15abe103184aca96e406f5f1c82c6fb2e665d", "oggenc2_i386.exe"},
+	{"ffe0fbd73352396dc3752ac9d484dbfc754a226d", "oggenc2_sse2.exe"},
+	{"a8c50872e544a55495a824426e9378984f2ae01d", "oggenc2_x64.exe"},
 	{"cd95369051f96b9ca3a997658771c5ea52bc874d", "selfdelete.exe"},
 	{"ffeaa70bd6321185eafcb067ab2dc441650038bf", "shorten.exe"},
 	{"346ce516281c97e92e1b8957ddeca52edcf2d056", "speexdec.exe"},
@@ -60,7 +62,7 @@ static const struct lamexp_tool_t g_lamexp_tools[] =
 	{"7dcf6517aa90ed15737ee8ea50ea00a6dece2d27", "valdec.exe"},
 	{"8159f4e824b3e343ece95ba6dbb5e16da9c4866e", "volumax.exe"},
 	{"62e2805d1b2eb2a4d86a5ca6e6ea58010d05d2a7", "wget.exe"},
-	{"b4c67ae8a1f67971a3092f3d6694d86eef7e3b2e", "wupdate.exe"},
+	{"acc9cdb9a0adf9760125f53f04ade6bb45422dc8", "wupdate.exe"},
 	{"4d018ac7f6a42abd53faacfae5055c2a3c176430", "wvunpack.exe"},
 	{NULL, NULL}
 };
@@ -150,7 +152,7 @@ void InitializationThread::initNeroAac(void)
 		return;
 	}
 
-	qDebug("Found Nero AAC encoder binary:\n%s\n", neroFileInfo[0].absoluteFilePath().toUtf8().constData());
+	qDebug("Found Nero AAC encoder binary:\n%s\n", neroFileInfo[0].canonicalFilePath().toUtf8().constData());
 
 	LockedFile *neroBin[3];
 	for(int i = 0; i < 3; i++) neroBin[i] = NULL;
@@ -159,24 +161,25 @@ void InitializationThread::initNeroAac(void)
 	{
 		for(int i = 0; i < 3; i++)
 		{
-			neroBin[i] = new LockedFile(neroFileInfo[i].absoluteFilePath());
+			neroBin[i] = new LockedFile(neroFileInfo[i].canonicalFilePath());
 		}
 	}
 	catch(...)
 	{
 		for(int i = 0; i < 3; i++) LAMEXP_DELETE(neroBin[i]);
-		qWarning("Failed to lock Nero encoder binary -> AAC encoding support will be disabled!");
+		qWarning("Failed to get excluive lock to Nero encoder binary -> AAC encoding support will be disabled!");
 		return;
 	}
 
 	QProcess process;
 	process.setProcessChannelMode(QProcess::MergedChannels);
 	process.setReadChannel(QProcess::StandardOutput);
-	process.start(neroFileInfo[0].absoluteFilePath());
+	process.start(neroFileInfo[0].canonicalFilePath(), QStringList() << "-help");
 
 	if(!process.waitForStarted())
 	{
 		qWarning("Nero process failed to create!");
+		qWarning("Error message: \"%s\"\n", process.errorString().toLatin1().constData());
 		process.kill();
 		process.waitForFinished(-1);
 		for(int i = 0; i < 3; i++) LAMEXP_DELETE(neroBin[i]);
@@ -199,10 +202,9 @@ void InitializationThread::initNeroAac(void)
 			}
 		}
 
-		QByteArray data = process.readLine();
-		while(!data.isEmpty())
+		while(process.canReadLine())
 		{
-			QString line = QString::fromUtf8(data.constData()).simplified();
+			QString line = QString::fromUtf8(process.readLine().constData()).simplified();
 			QStringList tokens = line.split(" ", QString::SkipEmptyParts, Qt::CaseInsensitive);
 			int index1 = tokens.indexOf("Package");
 			int index2 = tokens.indexOf("version:");
@@ -212,19 +214,18 @@ void InitializationThread::initNeroAac(void)
 				if(versionTokens.count() == 4)
 				{
 					neroVersion = 0;
-					neroVersion += versionTokens.at(3).toInt();
-					neroVersion += versionTokens.at(2).toInt() * 10;
-					neroVersion += versionTokens.at(1).toInt() * 100;
-					neroVersion += versionTokens.at(0).toInt() * 1000;
+					neroVersion += min(9, max(0, versionTokens.at(3).toInt()));
+					neroVersion += min(9, max(0, versionTokens.at(2).toInt())) * 10;
+					neroVersion += min(9, max(0, versionTokens.at(1).toInt())) * 100;
+					neroVersion += min(9, max(0, versionTokens.at(0).toInt())) * 1000;
 				}
 			}
-			data = process.readLine();
 		}
 	}
 
 	if(!(neroVersion > 0))
 	{
-		qWarning("Nero AAC version could not be determined!", neroVersion);
+		qWarning("Nero AAC version could not be determined -> AAC encoding support will be disabled!", neroVersion);
 		for(int i = 0; i < 3; i++) LAMEXP_DELETE(neroBin[i]);
 		return;
 	}

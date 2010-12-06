@@ -22,6 +22,19 @@
 #pragma once
 
 class QSettings;
+class QString;
+
+#define MAKE_OPTION_DEC1(OPT) \
+int OPT(void); \
+void OPT(int value);
+
+#define MAKE_OPTION_DEC2(OPT) \
+QString OPT(void); \
+void OPT(const QString &value);
+
+#define MAKE_OPTION_DEC3(OPT) \
+bool OPT(void); \
+void OPT(bool value);
 
 class SettingsModel
 {
@@ -29,14 +42,46 @@ public:
 	SettingsModel(void);
 	~SettingsModel(void);
 
-	//Getters
-	int licenseAccepted(void);
-	int interfaceStyle(void);
+	//Enums
+	enum Encoder
+	{
+		MP3Encoder = 0,
+		VorbisEncoder = 1,
+		AACEncoder = 2,
+		FLACEncoder = 3,
+		PCMEncoder = 4
+	};
+	enum RCMode
+	{
+		VBRMode = 0,
+		ABRMode = 1,
+		CBRMode = 2
+	};
+	
+	//Consts
+	static const int mp3Bitrates[15];
 
-	//Setters
-	void setLicenseAccepted(int value);
-	void setInterfaceStyle(int value);
+	//Getters & setters
+	MAKE_OPTION_DEC1(licenseAccepted);
+	MAKE_OPTION_DEC1(interfaceStyle);
+	MAKE_OPTION_DEC1(compressionEncoder);
+	MAKE_OPTION_DEC1(compressionRCMode);
+	MAKE_OPTION_DEC1(compressionBitrate);
+	MAKE_OPTION_DEC2(outputDir);
+	MAKE_OPTION_DEC3(outputToSourceDir);
+	MAKE_OPTION_DEC3(writeMetaTags);
+	MAKE_OPTION_DEC3(createPlaylist);
+	MAKE_OPTION_DEC2(autoUpdateLastCheck);
+	MAKE_OPTION_DEC3(autoUpdateEnabled);
+	MAKE_OPTION_DEC3(soundsEnabled);
+
+	//Misc
+	void validate(void);
 
 private:
 	QSettings *m_settings;
 };
+
+#undef MAKE_OPTION_DEC1
+#undef MAKE_OPTION_DEC2
+#undef MAKE_OPTION_DEC3

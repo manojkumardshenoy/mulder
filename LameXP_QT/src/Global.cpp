@@ -35,6 +35,9 @@
 #include <QSysInfo>
 #include <QStringList>
 #include <QSystemSemaphore>
+#include <QMutex>
+#include <QTextCodec>
+#include <QLibrary>
 
 //LameXP includes
 #include "Resource.h"
@@ -44,6 +47,7 @@
 #include <stdio.h>
 #include <io.h>
 #include <fcntl.h>
+#include <intrin.h>
 
 //Debug only includes
 #ifdef _DEBUG
@@ -85,6 +89,21 @@ static QDate g_lamexp_version_date;
 static const char *g_lamexp_months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 static const char *g_lamexp_version_raw_date = __DATE__;
 
+//Compiler version
+#if _MSC_VER == 1400
+	static const char *g_lamexp_version_compiler = "MSVC 8.0";
+#else
+	#if _MSC_VER == 1500
+		static const char *g_lamexp_version_compiler = "MSVC 9.0";
+	#else
+		#if _MSC_VER == 1600
+			static const char *g_lamexp_version_compiler = "MSVC 10.0";
+		#else
+			static const char *g_lamexp_version_compiler = "UNKNOWN";
+		#endif
+	#endif
+#endif
+
 //Tool versions (expected)
 static const unsigned int g_lamexp_toolver_neroaac = VER_LAMEXP_TOOL_NEROAAC;
 
@@ -106,6 +125,9 @@ static QSystemSemaphore *g_lamexp_semaphore_write_ptr = NULL;
 //Image formats
 static const char *g_lamexp_imageformats[] = {"png", "gif", "ico", "svg", NULL};
 
+//Global locks
+static QMutex g_lamexp_message_mutex;
+
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBAL FUNCTIONS
 ///////////////////////////////////////////////////////////////////////////////
@@ -117,11 +139,13 @@ unsigned int lamexp_version_major(void) { return g_lamexp_version_major; }
 unsigned int lamexp_version_minor(void) { return g_lamexp_version_minor; }
 unsigned int lamexp_version_build(void) { return g_lamexp_version_build; }
 const char *lamexp_version_release(void) { return g_lamexp_version_release; }
+const char *lamexp_version_compiler(void) {return g_lamexp_version_compiler; }
 unsigned int lamexp_toolver_neroaac(void) { return g_lamexp_toolver_neroaac; }
 
 bool lamexp_version_demo(void)
 { 
-	return !(strstr(g_lamexp_version_release, "Final") || strstr(g_lamexp_version_release, "Hotfix"));
+
+	return LAMEXP_DEBUG || !(strstr(g_lamexp_version_release, "Final") || strstr(g_lamexp_version_release, "Hotfix"));
 }
 
 /*
@@ -171,6 +195,57 @@ const QDate &lamexp_version_date(void)
 }
 
 /*
+ * Qt message handler
+ */
+void lamexp_message_handler(QtMsgType type, const char *msg)
+{
+	static HANDLE hConsole = NULL;
+	QMutexLocker lock(&g_lamexp_message_mutex);
+
+	if(!hConsole)
+	{
+		hConsole = CreateFile(L"CONOUT$", GENERIC_WRITE, FILE_SHARE_WRITE | FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
+		if(hConsole == INVALID_HANDLE_VALUE) hConsole = NULL;
+	}
+
+	CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
+	GetConsoleScreenBufferInfo(hConsole, &bufferInfo);
+	SetConsoleOutputCP(CP_UTF8);
+
+	switch(type)
+	{
+	case QtCriticalMsg:
+	case QtFatalMsg:
+		fflush(stdout);
+		fflush(stderr);
+		SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
+		fwprintf(stderr, L"\nCRITICAL ERROR !!!\n%S\n\n", msg);
+		MessageBoxW(NULL, (wchar_t*) QString::fromUtf8(msg).utf16(), L"LameXP - CRITICAL ERROR", MB_ICONERROR | MB_TOPMOST | MB_TASKMODAL);
+		break;
+	case QtWarningMsg:
+		SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
+		//MessageBoxW(NULL, (wchar_t*) QString::fromUtf8(msg).utf16(), L"LameXP - CRITICAL ERROR", MB_ICONWARNING | MB_TOPMOST | MB_TASKMODAL);
+		fwprintf(stderr, L"%S\n", msg);
+		fflush(stderr);
+		break;
+	default:
+		SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
+		fwprintf(stderr, L"%S\n", msg);
+		fflush(stderr);
+		break;
+	}
+
+	SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+
+	if(type == QtCriticalMsg || type == QtFatalMsg)
+	{
+		lock.unlock();
+		FatalAppExit(0, L"The application has encountered a critical error and will exit now!");
+		TerminateProcess(GetCurrentProcess(), -1);
+	}
+ }
+
+/*
  * Initialize the console
  */
 void lamexp_init_console(int argc, char* argv[])
@@ -204,6 +279,113 @@ void lamexp_init_console(int argc, char* argv[])
 		}
 	}
 }
+
+/*
+ * Detect CPU features
+ */
+lamexp_cpu_t lamexp_detect_cpu_features(void)
+{
+	typedef BOOL (WINAPI *IsWow64ProcessFun)(__in HANDLE hProcess, __out PBOOL Wow64Process);
+	typedef VOID (WINAPI *GetNativeSystemInfoFun)(__out LPSYSTEM_INFO lpSystemInfo);
+	
+	static IsWow64ProcessFun IsWow64ProcessPtr = NULL;
+	static GetNativeSystemInfoFun GetNativeSystemInfoPtr = NULL;
+
+	lamexp_cpu_t features;
+	SYSTEM_INFO systemInfo;
+	int CPUInfo[4] = {-1};
+	char CPUIdentificationString[0x40];
+	char CPUBrandString[0x40];
+	
+	memset(&features, 0, sizeof(lamexp_cpu_t));
+	memset(&systemInfo, 0, sizeof(SYSTEM_INFO));
+	memset(CPUIdentificationString, 0, sizeof(CPUIdentificationString));
+	memset(CPUBrandString, 0, sizeof(CPUBrandString));
+	
+	__cpuid(CPUInfo, 0);
+	memcpy(CPUIdentificationString, &CPUInfo[1], sizeof(int));
+	memcpy(CPUIdentificationString + 4, &CPUInfo[3], sizeof(int));
+	memcpy(CPUIdentificationString + 8, &CPUInfo[2], sizeof(int));
+	features.intel = (_stricmp(CPUIdentificationString, "GenuineIntel") == 0);
+	strcpy_s(features.vendor, 0x40, CPUIdentificationString);
+
+	if(CPUInfo[0] >= 1)
+	{
+		__cpuid(CPUInfo, 1);
+		features.mmx = (CPUInfo[3] & 0x800000) || false;
+		features.sse = (CPUInfo[3] & 0x2000000) || false;
+		features.sse2 = (CPUInfo[3] & 0x4000000) || false;
+		features.ssse3 = (CPUInfo[2] & 0x200) || false;
+		features.sse3 = (CPUInfo[2] & 0x1) || false;
+		features.ssse3 = (CPUInfo[2] & 0x200) || false;
+		features.stepping = CPUInfo[0] & 0xf;
+		features.model = ((CPUInfo[0] >> 4) & 0xf) + (((CPUInfo[0] >> 16) & 0xf) << 4);
+		features.family = ((CPUInfo[0] >> 8) & 0xf) + ((CPUInfo[0] >> 20) & 0xff);
+	}
+
+	__cpuid(CPUInfo, 0x80000000);
+	int nExIds = CPUInfo[0];
+
+	for(int i = 0x80000000; i <= nExIds; ++i)
+	{
+		__cpuid(CPUInfo, i);
+		if(i == 0x80000002) memcpy(CPUBrandString, CPUInfo, sizeof(CPUInfo));
+		else if(i == 0x80000003) memcpy(CPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
+		else if(i == 0x80000004) memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
+	}
+
+	strcpy_s(features.brand, 0x40, CPUBrandString);
+
+#if !defined(_M_X64 ) && !defined(_M_IA64)
+	if(!IsWow64ProcessPtr || !GetNativeSystemInfoPtr)
+	{
+		QLibrary Kernel32Lib("kernel32.dll");
+		IsWow64ProcessPtr = (IsWow64ProcessFun) Kernel32Lib.resolve("IsWow64Process");
+		GetNativeSystemInfoPtr = (GetNativeSystemInfoFun) Kernel32Lib.resolve("GetNativeSystemInfo");
+	}
+	if(IsWow64ProcessPtr)
+	{
+		BOOL x64 = FALSE;
+		if(IsWow64ProcessPtr(GetCurrentProcess(), &x64))
+		{
+			features.x64 = x64;
+		}
+	}
+	if(GetNativeSystemInfoPtr)
+	{
+		GetNativeSystemInfoPtr(&systemInfo);
+	}
+	else
+	{
+		GetSystemInfo(&systemInfo);
+	}
+	features.count = systemInfo.dwNumberOfProcessors;
+#else
+	GetNativeSystemInfo(&systemInfo);
+	features.count = systemInfo.dwNumberOfProcessors;
+	features.x64 = true;
+#endif
+
+	return features;
+}
+
+/*
+ * Check for debugger
+ */
+void WINAPI debugThreadProc(__in LPVOID lpParameter)
+{
+	BOOL remoteDebuggerPresent = FALSE;
+	//CheckRemoteDebuggerPresent(GetCurrentProcess, &remoteDebuggerPresent);
+
+	while(!IsDebuggerPresent() && !remoteDebuggerPresent)
+	{
+		Sleep(333);
+		//CheckRemoteDebuggerPresent(GetCurrentProcess, &remoteDebuggerPresent);
+	}
+	
+	TerminateProcess(GetCurrentProcess(), -1);
+}
+
 
 /*
  * Initialize Qt framework
@@ -271,7 +453,7 @@ bool lamexp_init_qt(int argc, char* argv[])
 			return false;
 		}
 	}
-
+	
 	//Done
 	qt_initialized = true;
 	return true;
@@ -408,18 +590,41 @@ const QString &lamexp_temp_folder(void)
 {
 	if(g_lamexp_temp_folder.isEmpty())
 	{
-		QDir tempFolder(QDir::tempPath());
+		QDir temp = QDir::temp();
+
+		if(!temp.exists())
+		{
+			temp.mkpath(".");
+			if(!temp.exists())
+			{
+				qFatal("The system's temporary directory does not exist:\n%s", temp.absolutePath().toUtf8().constData());
+				return g_lamexp_temp_folder;
+			}
+		}
+
 		QString uuid = QUuid::createUuid().toString();
-		tempFolder.mkdir(uuid);
+		if(!temp.mkdir(uuid))
+		{
+			qFatal("Temporary directory could not be created:\n%s", QString("%1/%2").arg(temp.canonicalPath(), uuid).toUtf8().constData());
+			return g_lamexp_temp_folder;
+		}
+		if(!temp.cd(uuid))
+		{
+			qFatal("Temporary directory could not be entered:\n%s", QString("%1/%2").arg(temp.canonicalPath(), uuid).toUtf8().constData());
+			return g_lamexp_temp_folder;
+		}
 		
-		if(tempFolder.cd(uuid))
+		QFile testFile(QString("%1/~test.txt").arg(temp.canonicalPath()));
+		if(!testFile.open(QIODevice::ReadWrite) || testFile.write("LAMEXP_TEST\n") < 12)
 		{
-			g_lamexp_temp_folder = tempFolder.absolutePath();
+			qFatal("Write access to temporary directory has been denied:\n%s", temp.canonicalPath().toUtf8().constData());
+			return g_lamexp_temp_folder;
 		}
-		else
-		{
-			g_lamexp_temp_folder = QDir::tempPath();
-		}
+
+		testFile.close();
+		QFile::remove(testFile.fileName());
+		
+		g_lamexp_temp_folder = temp.canonicalPath();
 	}
 	
 	return g_lamexp_temp_folder;
@@ -442,11 +647,11 @@ bool lamexp_clean_folder(const QString folderPath)
 		
 		if(entryList.at(i).isDir())
 		{
-			lamexp_clean_folder(entryList.at(i).absoluteFilePath());
+			lamexp_clean_folder(entryList.at(i).canonicalFilePath());
 		}
 		else
 		{
-			QFile::remove(entryList.at(i).absoluteFilePath());
+			QFile::remove(entryList.at(i).canonicalFilePath());
 		}
 	}
 	

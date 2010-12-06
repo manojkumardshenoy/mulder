@@ -43,7 +43,7 @@ LockedFile::LockedFile(const QString &resourcePath, const QString &outPath, cons
 	{
 		if(outFile.write(reinterpret_cast<const char*>(resource.data()), resource.size()) != resource.size())
 		{
-			QFile::remove(QFileInfo(outFile).absoluteFilePath());
+			QFile::remove(QFileInfo(outFile).canonicalFilePath());
 			char error_msg[512];
 			strcpy_s(error_msg, 512, QString("File '%1' could not be written!").arg(QFileInfo(outFile).fileName()).toUtf8().constData());
 			throw error_msg;
@@ -62,7 +62,7 @@ LockedFile::LockedFile(const QString &resourcePath, const QString &outPath, cons
 
 	if(m_fileHandle == INVALID_HANDLE_VALUE)
 	{
-		QFile::remove(QFileInfo(outFile).absoluteFilePath());
+		QFile::remove(QFileInfo(outFile).canonicalFilePath());
 		char error_msg[512];
 		strcpy_s(error_msg, 512, QString("File '%1' could not be locked!").arg(QFileInfo(outFile).fileName()).toLatin1().constData());
 		throw error_msg;
@@ -81,7 +81,7 @@ LockedFile::LockedFile(const QString &resourcePath, const QString &outPath, cons
 	{
 		qWarning("\nFile checksum error:\n Expected = %040s\n Detected = %040s\n", expectedHash.constData(), fileHash.result().toHex().constData());
 		LAMEXP_CLOSE(m_fileHandle);
-		QFile::remove(QFileInfo(outFile).absoluteFilePath());
+		QFile::remove(QFileInfo(outFile).canonicalFilePath());
 		char error_msg[512];
 		strcpy_s(error_msg, 512, QString("File '%1' is corruputed, take care!").arg(QFileInfo(outFile).fileName()).toLatin1().constData());
 		throw error_msg;
@@ -100,6 +100,9 @@ LockedFile::LockedFile(const QString &filePath)
 		throw error_msg;
 	}
 	
+	//Remember file path
+	m_filePath = existingFile.canonicalFilePath();
+
 	//Now lock the file
 	m_fileHandle = CreateFileW(QWCHAR(QDir::toNativeSeparators(filePath)), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
 
