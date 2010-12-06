@@ -27,10 +27,14 @@
 #include "Dialog_WorkingBanner.h"
 #include "Dialog_MetaInfo.h"
 #include "Dialog_About.h"
+#include "Dialog_Update.h"
 #include "Thread_FileAnalyzer.h"
 #include "Thread_MessageHandler.h"
 #include "Model_MetaInfo.h"
 #include "Model_Settings.h"
+#include "Model_FileList.h"
+#include "Model_FileSystem.h"
+#include "WinSevenTaskbar.h"
 
 //Qt includes
 #include <QMessageBox>
@@ -49,17 +53,17 @@
 #include <QSysInfo>
 #include <QDragEnterEvent>
 #include <QWindowsMime>
+#include <QProcess>
+#include <QUuid>
+#include <QProcessEnvironment>
 
 //Win32 includes
 #include <Windows.h>
 
 //Helper macros
-#define ABORT_IF_BUSY \
-if(m_banner->isVisible() || m_delayedFileTimer->isActive()) \
-{ \
-	MessageBeep(MB_ICONEXCLAMATION); \
-	return; \
-}
+#define ABORT_IF_BUSY if(m_banner->isVisible() || m_delayedFileTimer->isActive()) { MessageBeep(MB_ICONEXCLAMATION); return; }
+#define SET_TEXT_COLOR(WIDGET,COLOR) { QPalette _palette = WIDGET->palette(); _palette.setColor(QPalette::WindowText, COLOR); WIDGET->setPalette(_palette); }
+#define SET_FONT_BOLD(WIDGET,BOLD) { QFont _font = WIDGET->font(); _font.setBold(BOLD); WIDGET->setFont(_font); }
 #define LINK(URL) QString("<a href=\"%1\">%2</a>").arg(URL).arg(URL)
 
 //Helper class
@@ -76,11 +80,18 @@ private:
 // Constructor
 ////////////////////////////////////////////////////////////
 
-MainWindow::MainWindow(QWidget *parent)
-: QMainWindow(parent)
+MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, SettingsModel *settingsModel, QWidget *parent)
+:
+	QMainWindow(parent),
+	m_fileListModel(fileListModel),
+	m_metaData(metaInfo),
+	m_settings(settingsModel),
+	m_accepted(false),
+	m_firstTimeShown(true)
 {
 	//Init the dialog, from the .ui file
 	setupUi(this);
+	setWindowFlags(windowFlags() ^ Qt::WindowMaximizeButtonHint);
 	
 	//Register meta types
 	qRegisterMetaType<AudioFileModel>("AudioFileModel");
@@ -91,33 +102,48 @@ MainWindow::MainWindow(QWidget *parent)
 		setWindowTitle(windowTitle().append(" [DEMO VERSION]"));
 	}
 
-	//Load configuration
-	m_settings = new SettingsModel();
-
 	//Enabled main buttons
 	connect(buttonAbout, SIGNAL(clicked()), this, SLOT(aboutButtonClicked()));
 	connect(buttonStart, SIGNAL(clicked()), this, SLOT(encodeButtonClicked()));
+	connect(buttonQuit, SIGNAL(clicked()), this, SLOT(closeButtonClicked()));
 
 	//Setup tab widget
 	tabWidget->setCurrentIndex(0);
 	connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabPageChanged(int)));
 
 	//Setup "Source" tab
-	m_fileListModel = new FileListModel();
 	sourceFileView->setModel(m_fileListModel);
 	sourceFileView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 	sourceFileView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+	sourceFileView->setContextMenuPolicy(Qt::CustomContextMenu);
+	m_dropNoteLabel = new QLabel(sourceFileView);
+	m_dropNoteLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+	m_dropNoteLabel->setText("» You can drop in audio files here! «");
+	SET_FONT_BOLD(m_dropNoteLabel, true);
+	SET_TEXT_COLOR(m_dropNoteLabel, Qt::darkGray);
+	m_sourceFilesContextMenu = new QMenu();
+	QAction *showDetailsContextAction = m_sourceFilesContextMenu->addAction(QIcon(":/icons/zoom.png"), "Show Details");
+	QAction *previewContextAction = m_sourceFilesContextMenu->addAction(QIcon(":/icons/sound.png"), "Open File in External Application");
+	QAction *findFileContextAction = m_sourceFilesContextMenu->addAction(QIcon(":/icons/folder_go.png"), "Browse File Location");
+	SET_FONT_BOLD(showDetailsContextAction, true);
 	connect(buttonAddFiles, SIGNAL(clicked()), this, SLOT(addFilesButtonClicked()));
 	connect(buttonRemoveFile, SIGNAL(clicked()), this, SLOT(removeFileButtonClicked()));
 	connect(buttonClearFiles, SIGNAL(clicked()), this, SLOT(clearFilesButtonClicked()));
 	connect(buttonFileUp, SIGNAL(clicked()), this, SLOT(fileUpButtonClicked()));
 	connect(buttonFileDown, SIGNAL(clicked()), this, SLOT(fileDownButtonClicked()));
 	connect(buttonShowDetails, SIGNAL(clicked()), this, SLOT(showDetailsButtonClicked()));
-	
+	connect(m_fileListModel, SIGNAL(rowsInserted(QModelIndex,int,int)), this, SLOT(sourceModelChanged()));
+	connect(m_fileListModel, SIGNAL(rowsRemoved(QModelIndex,int,int)), this, SLOT(sourceModelChanged()));
+	connect(m_fileListModel, SIGNAL(modelReset()), this, SLOT(sourceModelChanged()));
+	connect(sourceFileView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(sourceFilesContextMenu(QPoint)));
+	connect(showDetailsContextAction, SIGNAL(triggered(bool)), this, SLOT(showDetailsButtonClicked()));
+	connect(previewContextAction, SIGNAL(triggered(bool)), this, SLOT(previewContextActionTriggered()));
+	connect(findFileContextAction, SIGNAL(triggered(bool)), this, SLOT(findFileContextActionTriggered()));
+
 	//Setup "Output" tab
-	m_fileSystemModel = new QFileSystemModel();
-	m_fileSystemModel->setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
+	m_fileSystemModel = new QFileSystemModelEx();
 	m_fileSystemModel->setRootPath(m_fileSystemModel->rootPath());
+	m_fileSystemModel->installEventFilter(this);
 	outputFolderView->setModel(m_fileSystemModel);
 	outputFolderView->header()->setStretchLastSection(true);
 	outputFolderView->header()->hideSection(1);
@@ -125,29 +151,63 @@ MainWindow::MainWindow(QWidget *parent)
 	outputFolderView->header()->hideSection(3);
 	outputFolderView->setHeaderHidden(true);
 	outputFolderView->setAnimated(true);
+	outputFolderView->installEventFilter(this);
+	outputFolderView->setMouseTracking(false);
+	outputFolderView->setContextMenuPolicy(Qt::CustomContextMenu);
+	while(saveToSourceFolderCheckBox->isChecked() != m_settings->outputToSourceDir()) saveToSourceFolderCheckBox->click();
 	connect(outputFolderView, SIGNAL(clicked(QModelIndex)), this, SLOT(outputFolderViewClicked(QModelIndex)));
-	outputFolderView->setCurrentIndex(m_fileSystemModel->index(QDesktopServices::storageLocation(QDesktopServices::MusicLocation)));
+	connect(outputFolderView, SIGNAL(activated(QModelIndex)), this, SLOT(outputFolderViewClicked(QModelIndex)));
+	connect(outputFolderView, SIGNAL(entered(QModelIndex)), this, SLOT(outputFolderViewClicked(QModelIndex)));
+	outputFolderView->setCurrentIndex(m_fileSystemModel->index(m_settings->outputDir()));
 	outputFolderViewClicked(outputFolderView->currentIndex());
 	connect(buttonMakeFolder, SIGNAL(clicked()), this, SLOT(makeFolderButtonClicked()));
 	connect(buttonGotoHome, SIGNAL(clicked()), SLOT(gotoHomeFolderButtonClicked()));
 	connect(buttonGotoDesktop, SIGNAL(clicked()), this, SLOT(gotoDesktopButtonClicked()));
 	connect(buttonGotoMusic, SIGNAL(clicked()), this, SLOT(gotoMusicFolderButtonClicked()));
+	connect(saveToSourceFolderCheckBox, SIGNAL(clicked()), this, SLOT(saveToSourceFolderChanged()));
+	m_outputFolderContextMenu = new QMenu();
+	QAction *showFolderContextAction = m_outputFolderContextMenu->addAction(QIcon(":/icons/zoom.png"), "Browse Selected Folder");
+	connect(outputFolderView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(outputFolderContextMenu(QPoint)));
+	connect(showFolderContextAction, SIGNAL(triggered(bool)), this, SLOT(showFolderContextActionTriggered()));
 	
 	//Setup "Meta Data" tab
-	m_metaData = new AudioFileModel();
 	m_metaInfoModel = new MetaInfoModel(m_metaData, 6);
 	m_metaInfoModel->clearData();
 	metaDataView->setModel(m_metaInfoModel);
 	metaDataView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 	metaDataView->verticalHeader()->hide();
 	metaDataView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+	while(writeMetaDataCheckBox->isChecked() != m_settings->writeMetaTags()) writeMetaDataCheckBox->click();
+	generatePlaylistCheckBox->setChecked(m_settings->createPlaylist());
 	connect(buttonEditMeta, SIGNAL(clicked()), this, SLOT(editMetaButtonClicked()));
 	connect(buttonClearMeta, SIGNAL(clicked()), this, SLOT(clearMetaButtonClicked()));
-	
+	connect(writeMetaDataCheckBox, SIGNAL(clicked()), this, SLOT(metaTagsEnabledChanged()));
+	connect(generatePlaylistCheckBox, SIGNAL(clicked()), this, SLOT(playlistEnabledChanged()));
+
 	//Setup "Compression" tab
-	sliderBitrate->setValue(24);
+	m_encoderButtonGroup = new QButtonGroup(this);
+	m_encoderButtonGroup->addButton(radioButtonEncoderMP3, SettingsModel::MP3Encoder);
+	m_encoderButtonGroup->addButton(radioButtonEncoderVorbis, SettingsModel::VorbisEncoder);
+	m_encoderButtonGroup->addButton(radioButtonEncoderAAC, SettingsModel::AACEncoder);
+	m_encoderButtonGroup->addButton(radioButtonEncoderFLAC, SettingsModel::FLACEncoder);
+	m_encoderButtonGroup->addButton(radioButtonEncoderPCM, SettingsModel::PCMEncoder);
+	m_modeButtonGroup = new QButtonGroup(this);
+	m_modeButtonGroup->addButton(radioButtonModeQuality, SettingsModel::VBRMode);
+	m_modeButtonGroup->addButton(radioButtonModeAverageBitrate, SettingsModel::ABRMode);
+	m_modeButtonGroup->addButton(radioButtonConstBitrate, SettingsModel::CBRMode);
+	radioButtonEncoderMP3->setChecked(m_settings->compressionEncoder() == SettingsModel::MP3Encoder);
+	radioButtonEncoderVorbis->setChecked(m_settings->compressionEncoder() == SettingsModel::VorbisEncoder);
+	radioButtonEncoderAAC->setChecked(m_settings->compressionEncoder() == SettingsModel::AACEncoder);
+	radioButtonEncoderFLAC->setChecked(m_settings->compressionEncoder() == SettingsModel::FLACEncoder);
+	radioButtonEncoderPCM->setChecked(m_settings->compressionEncoder() == SettingsModel::PCMEncoder);
+	radioButtonModeQuality->setChecked(m_settings->compressionRCMode() == SettingsModel::VBRMode);
+	radioButtonModeAverageBitrate->setChecked(m_settings->compressionRCMode() == SettingsModel::ABRMode);
+	radioButtonConstBitrate->setChecked(m_settings->compressionRCMode() == SettingsModel::CBRMode);
+	sliderBitrate->setValue(m_settings->compressionBitrate());
+	connect(m_encoderButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(updateEncoder(int)));
+	connect(m_modeButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(updateRCMode(int)));
 	connect(sliderBitrate, SIGNAL(valueChanged(int)), this, SLOT(updateBitrate(int)));
-	updateBitrate(sliderBitrate->value());
+	updateEncoder(m_encoderButtonGroup->checkedId());
 
 	//Activate file menu actions
 	connect(actionOpenFolder, SIGNAL(triggered()), this, SLOT(openFolderActionActivated()));
@@ -185,6 +245,12 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(m_styleActionGroup, SIGNAL(triggered(QAction*)), this, SLOT(styleActionActivated(QAction*)));
 	styleActionActivated(NULL);
 
+	//Activate tools menu actions
+	actionDisableUpdateReminder->setChecked(!m_settings->autoUpdateEnabled());
+	actionDisableSounds->setChecked(!m_settings->soundsEnabled());
+	connect(actionDisableUpdateReminder, SIGNAL(triggered(bool)), this, SLOT(disableUpdateReminderActionTriggered(bool)));
+	connect(actionDisableSounds, SIGNAL(triggered(bool)), this, SLOT(disableSoundsActionTriggered(bool)));
+		
 	//Activate help menu actions
 	connect(actionCheckUpdates, SIGNAL(triggered()), this, SLOT(checkUpdatesActionActivated()));
 	connect(actionVisitHomepage, SIGNAL(triggered()), this, SLOT(visitHomepageActionActivated()));
@@ -236,15 +302,15 @@ MainWindow::~MainWindow(void)
 	//Free memory
 	LAMEXP_DELETE(m_tabActionGroup);
 	LAMEXP_DELETE(m_styleActionGroup);
-	LAMEXP_DELETE(m_fileListModel);
 	LAMEXP_DELETE(m_banner);
 	LAMEXP_DELETE(m_fileSystemModel);
 	LAMEXP_DELETE(m_messageHandler);
 	LAMEXP_DELETE(m_delayedFileList);
 	LAMEXP_DELETE(m_delayedFileTimer);
-	LAMEXP_DELETE(m_metaData);
 	LAMEXP_DELETE(m_metaInfoModel);
-	LAMEXP_DELETE(m_settings);
+	LAMEXP_DELETE(m_encoderButtonGroup);
+	LAMEXP_DELETE(m_encoderButtonGroup);
+	LAMEXP_DELETE(m_sourceFilesContextMenu);
 }
 
 ////////////////////////////////////////////////////////////
@@ -286,7 +352,16 @@ void MainWindow::addFiles(const QStringList &files)
 
 void MainWindow::showEvent(QShowEvent *event)
 {
-	QTimer::singleShot(0, this, SLOT(windowShown()));
+	m_accepted = false;
+	m_dropNoteLabel->setGeometry(0, 0, sourceFileView->width(), sourceFileView->height());
+	sourceModelChanged();
+	tabWidget->setCurrentIndex(0);
+
+	if(m_firstTimeShown)
+	{
+		m_firstTimeShown = false;
+		QTimer::singleShot(0, this, SLOT(windowShown()));
+	}
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
@@ -323,12 +398,41 @@ void MainWindow::dropEvent(QDropEvent *event)
 			QList<QFileInfo> list = QDir(file.canonicalFilePath()).entryInfoList(QDir::Files);
 			for(int j = 0; j < list.count(); j++)
 			{
-				droppedFiles << list.at(j).absoluteFilePath();
+				droppedFiles << list.at(j).canonicalFilePath();
 			}
 		}
 	}
 	
 	addFiles(droppedFiles);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+	if(m_banner->isVisible() || m_delayedFileTimer->isActive())
+	{
+		MessageBeep(MB_ICONEXCLAMATION);
+		event->ignore();
+	}
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+	QMainWindow::resizeEvent(event);
+	m_dropNoteLabel->setGeometry(0, 0, sourceFileView->width(), sourceFileView->height());
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+	if(obj == m_fileSystemModel && QApplication::overrideCursor() == NULL)
+	{
+		QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+		QTimer::singleShot(250, this, SLOT(restoreCursor()));
+	}
+	else if(obj == outputFolderView && (event->type() == QEvent::KeyRelease || event->type() == QEvent::KeyPress))
+	{
+		outputFolderViewClicked(outputFolderView->currentIndex());
+	}
+	return false;
 }
 
 ////////////////////////////////////////////////////////////
@@ -342,28 +446,71 @@ void MainWindow::windowShown(void)
 {
 	QStringList arguments = QApplication::arguments();
 
+	//Check license
 	if(m_settings->licenseAccepted() <= 0)
 	{
 		int iAccepted = -1;
 
 		if(m_settings->licenseAccepted() == 0)
 		{
-			AboutDialog *about = new AboutDialog(this, true);
+			AboutDialog *about = new AboutDialog(m_settings, this, true);
 			iAccepted = about->exec();
 			LAMEXP_DELETE(about);
 		}
 
 		if(iAccepted <= 0)
 		{
-			m_settings->setLicenseAccepted(-1);
+			m_settings->licenseAccepted(-1);
 			QMessageBox::critical(this, "License Declined", "You have declined the license. Consequently the application will exit now!");
 			QApplication::quit();
 			return;
 		}
 
-		m_settings->setLicenseAccepted(1);
+		m_settings->licenseAccepted(1);
 	}
 	
+	//Check for expiration
+	if(lamexp_version_demo())
+	{
+		QDate expireDate = lamexp_version_date().addDays(14);
+		if(QDate::currentDate() >= expireDate)
+		{
+			qWarning("Binary has expired !!!");
+			if(QMessageBox::warning(this, "LameXP - Expired", QString("This demo (pre-release) version of LameXP has expired at %1.\nLameXP is free software and release versions won't expire.").arg(expireDate.toString(Qt::ISODate)), "Check for Updates", "Exit Program") == 0)
+			{
+				checkUpdatesActionActivated();
+			}
+			QApplication::quit();
+			return;
+		}
+	}
+
+	//Update reminder
+	if(QDate::currentDate() >= lamexp_version_date().addYears(1))
+	{
+		qWarning("Binary is more than a year old, time to update!");
+		if(QMessageBox::warning(this, "Urgent Update", "Your version of LameXP is more than a year old. Time for an update!", "Check for Updates", "Exit Program") == 0)
+		{
+			checkUpdatesActionActivated();
+		}
+		else
+		{
+			QApplication::quit();
+			return;
+		}
+	}
+	else if(m_settings->autoUpdateEnabled())
+	{
+		QDate lastUpdateCheck = QDate::fromString(m_settings->autoUpdateLastCheck(), Qt::ISODate);
+		if(!lastUpdateCheck.isValid() || QDate::currentDate() >= lastUpdateCheck.addDays(14))
+		{
+			if(QMessageBox::information(this, "Update Reminer", (lastUpdateCheck.isValid() ? "Your last update check was more than 14 days ago. Check for updates now?" :  "Your did not check for LameXP updates yet. Check for updates now?"), "Check for Updates", "Defer") == 0)
+			{
+				checkUpdatesActionActivated();
+			}
+		}
+	}
+
 	//Check for AAC support
 	if(lamexp_check_tool("neroAacEnc.exe") && lamexp_check_tool("neroAacDec.exe") && lamexp_check_tool("neroAacTag.exe"))
 	{
@@ -376,17 +523,16 @@ void MainWindow::windowShown(void)
 			messageText += "<b>" + LINK(AboutDialog::neroAacUrl) + "</b><br></nobr>";
 			QMessageBox::information(this, "AAC Encoder Outdated", messageText);
 		}
-		radioButtonEncoderAAC->setEnabled(true);
 	}
 	else
 	{
+		radioButtonEncoderAAC->setEnabled(false);
 		QString messageText;
 		messageText += "<nobr>The Nero AAC encoder could not be found. AAC encoding support will be disabled.<br>";
 		messageText += "Please put 'neroAacEnc.exe', 'neroAacDec.exe' and 'neroAacTag.exe' into the LameXP directory!<br><br>";
 		messageText += "You can download the Nero AAC encoder for free from the official Nero website at:<br>";
 		messageText += "<b>" + LINK(AboutDialog::neroAacUrl) + "</b><br></nobr>";
 		QMessageBox::information(this, "AAC Support Disabled", messageText);
-		radioButtonEncoderAAC->setEnabled(false);
 	}
 	
 	//Add files from the command-line
@@ -412,7 +558,7 @@ void MainWindow::windowShown(void)
 void MainWindow::aboutButtonClicked(void)
 {
 	ABORT_IF_BUSY;
-	AboutDialog *aboutBox = new AboutDialog(this);
+	AboutDialog *aboutBox = new AboutDialog(m_settings, this);
 	aboutBox->exec();
 	LAMEXP_DELETE(aboutBox);
 }
@@ -423,7 +569,48 @@ void MainWindow::aboutButtonClicked(void)
 void MainWindow::encodeButtonClicked(void)
 {
 	ABORT_IF_BUSY;
-	QMessageBox::warning(this, "LameXP", "Not implemented yet, please try again with a later version!");
+	
+	if(m_fileListModel->rowCount() < 1)
+	{
+		QMessageBox::warning(this, "LameXP", "You must add at least one file to the list before proceeding!");
+		tabWidget->setCurrentIndex(0);
+		return;
+	}
+	
+	if(m_settings->compressionEncoder() != SettingsModel::MP3Encoder && m_settings->compressionEncoder() != SettingsModel::VorbisEncoder && m_settings->compressionEncoder() != SettingsModel::AACEncoder)
+	{
+		QMessageBox::warning(this, "LameXP", "Sorry, only MP3, Vorbis and AAC encoding is supported at the moment.<br>Support for more encoders to be added in later versions!");
+		tabWidget->setCurrentIndex(3);
+		return;
+	}
+
+	if(!m_settings->outputToSourceDir())
+	{
+		QFile writeTest(QString("%1/~%2.txt").arg(m_settings->outputDir(), QUuid::createUuid().toString()));
+		if(!writeTest.open(QIODevice::ReadWrite))
+		{
+			QMessageBox::warning(this, "LameXP", QString("Cannot write to the selected output directory.<br><nobr>%1</nobr><br><br>Please choose a different directory!").arg(m_settings->outputDir()));
+			tabWidget->setCurrentIndex(1);
+			return;
+		}
+		else
+		{
+			writeTest.close();
+			writeTest.remove();
+		}
+	}
+		
+	m_accepted = true;
+	close();
+}
+
+/*
+ * Close button
+ */
+void MainWindow::closeButtonClicked(void)
+{
+	ABORT_IF_BUSY;
+	close();
 }
 
 /*
@@ -573,7 +760,7 @@ void MainWindow::styleActionActivated(QAction *action)
 {
 	if(action && action->userData(0))
 	{
-		m_settings->setInterfaceStyle(dynamic_cast<Index*>(action->userData(0))->value());
+		m_settings->interfaceStyle(dynamic_cast<Index*>(action->userData(0))->value());
 	}
 
 	switch(m_settings->interfaceStyle())
@@ -609,6 +796,7 @@ void MainWindow::outputFolderViewClicked(const QModelIndex &index)
 	QString selectedDir = m_fileSystemModel->filePath(index);
 	if(selectedDir.length() < 3) selectedDir.append(QDir::separator());
 	outputFolderLabel->setText(selectedDir);
+	m_settings->outputDir(selectedDir);
 }
 
 /*
@@ -648,7 +836,7 @@ void MainWindow::makeFolderButtonClicked(void)
 {
 	ABORT_IF_BUSY;
 
-	QDir basePath(m_fileSystemModel->filePath(outputFolderView->currentIndex()));
+	QDir basePath(m_fileSystemModel->fileInfo(outputFolderView->currentIndex()).absoluteFilePath());
 	
 	bool bApplied = true;
 	QString folderName = QInputDialog::getText(this, "New Folder", "Enter the name of the new folder:", QLineEdit::Normal, "New folder", &bApplied, Qt::WindowStaysOnTopHint).simplified();
@@ -676,14 +864,14 @@ void MainWindow::makeFolderButtonClicked(void)
 			QDir createdDir = basePath;
 			if(createdDir.cd(newFolder))
 			{
-				outputFolderView->setCurrentIndex(m_fileSystemModel->index(createdDir.absolutePath()));
+				outputFolderView->setCurrentIndex(m_fileSystemModel->index(createdDir.canonicalPath()));
 				outputFolderViewClicked(outputFolderView->currentIndex());
 				outputFolderView->setFocus();
 			}
 		}
 		else
 		{
-			QMessageBox::warning(this, "Failed to create folder", QString("The folder '%1' could not be created!").arg(newFolder));
+			QMessageBox::warning(this, "Failed to create folder", QString("The new folder could not be created:<br><nobr>%1</nobr><br><br>Drive is read-only or insufficient access rights!").arg(basePath.absoluteFilePath(newFolder)));
 		}
 	}
 }
@@ -721,17 +909,15 @@ void MainWindow::checkUpdatesActionActivated(void)
 {
 	ABORT_IF_BUSY;
 
-	m_banner->show("Checking for updates, please be patient...");
-	
-	for(int i = 0; i < 300; i++)
+	UpdateDialog *updateDialog = new UpdateDialog(m_settings, this);
+
+	updateDialog->exec();
+	if(updateDialog->getSuccess())
 	{
-		QApplication::processEvents();
-		Sleep(5);
+		m_settings->autoUpdateLastCheck(QDate::currentDate().toString(Qt::ISODate));
 	}
-	
-	m_banner->close();
-	
-	QMessageBox::information(this, "Update Check", "Your version of LameXP is still up-to-date. There are no updates available.\nPlease remember to check for updates at regular intervals!");
+
+	LAMEXP_DELETE(updateDialog);
 }
 
 /*
@@ -793,7 +979,7 @@ void MainWindow::handleDelayedFiles(void)
 			QList<QFileInfo> list = QDir(currentFile.canonicalFilePath()).entryInfoList(QDir::Files);
 			for(int j = 0; j < list.count(); j++)
 			{
-				selectedFiles << list.at(j).absoluteFilePath();
+				selectedFiles << list.at(j).canonicalFilePath();
 			}
 		}
 	}
@@ -802,9 +988,363 @@ void MainWindow::handleDelayedFiles(void)
 }
 
 /*
+ * Update encoder
+ */
+void MainWindow::updateEncoder(int id)
+{
+	m_settings->compressionEncoder(id);
+
+	switch(m_settings->compressionEncoder())
+	{
+	case SettingsModel::VorbisEncoder:
+		radioButtonModeQuality->setEnabled(true);
+		radioButtonModeAverageBitrate->setEnabled(true);
+		radioButtonConstBitrate->setEnabled(false);
+		if(radioButtonConstBitrate->isChecked()) radioButtonModeQuality->setChecked(true);
+		sliderBitrate->setEnabled(true);
+		break;
+	case SettingsModel::FLACEncoder:
+		radioButtonModeQuality->setEnabled(false);
+		radioButtonModeQuality->setChecked(true);
+		radioButtonModeAverageBitrate->setEnabled(false);
+		radioButtonConstBitrate->setEnabled(false);
+		sliderBitrate->setEnabled(true);
+		break;
+	case SettingsModel::PCMEncoder:
+		radioButtonModeQuality->setEnabled(false);
+		radioButtonModeQuality->setChecked(true);
+		radioButtonModeAverageBitrate->setEnabled(false);
+		radioButtonConstBitrate->setEnabled(false);
+		sliderBitrate->setEnabled(false);
+		break;
+	default:
+		radioButtonModeQuality->setEnabled(true);
+		radioButtonModeAverageBitrate->setEnabled(true);
+		radioButtonConstBitrate->setEnabled(true);
+		sliderBitrate->setEnabled(true);
+		break;
+	}
+
+	updateRCMode(m_modeButtonGroup->checkedId());
+}
+
+/*
+ * Update rate-control mode
+ */
+void MainWindow::updateRCMode(int id)
+{
+	m_settings->compressionRCMode(id);
+
+	switch(m_settings->compressionEncoder())
+	{
+	case SettingsModel::MP3Encoder:
+		switch(m_settings->compressionRCMode())
+		{
+		case SettingsModel::VBRMode:
+			sliderBitrate->setMinimum(0);
+			sliderBitrate->setMaximum(9);
+			break;
+		default:
+			sliderBitrate->setMinimum(0);
+			sliderBitrate->setMaximum(13);
+			break;
+		}
+		break;
+	case SettingsModel::VorbisEncoder:
+		switch(m_settings->compressionRCMode())
+		{
+		case SettingsModel::VBRMode:
+			sliderBitrate->setMinimum(-2);
+			sliderBitrate->setMaximum(10);
+			break;
+		default:
+			sliderBitrate->setMinimum(4);
+			sliderBitrate->setMaximum(63);
+			break;
+		}
+		break;
+	case SettingsModel::AACEncoder:
+		switch(m_settings->compressionRCMode())
+		{
+		case SettingsModel::VBRMode:
+			sliderBitrate->setMinimum(0);
+			sliderBitrate->setMaximum(20);
+			break;
+		default:
+			sliderBitrate->setMinimum(4);
+			sliderBitrate->setMaximum(63);
+			break;
+		}
+		break;
+	case SettingsModel::FLACEncoder:
+		sliderBitrate->setMinimum(0);
+		sliderBitrate->setMaximum(8);
+		break;
+	case SettingsModel::PCMEncoder:
+		sliderBitrate->setMinimum(0);
+		sliderBitrate->setMaximum(2);
+		sliderBitrate->setValue(1);
+		break;
+	default:
+		sliderBitrate->setMinimum(0);
+		sliderBitrate->setMaximum(0);
+		break;
+	}
+
+	updateBitrate(sliderBitrate->value());
+}
+
+/*
  * Update bitrate
  */
 void MainWindow::updateBitrate(int value)
 {
-	labelBitrate->setText(QString("%1 kbps").arg(value * 8));
+	m_settings->compressionBitrate(value);
+	
+	switch(m_settings->compressionRCMode())
+	{
+	case SettingsModel::VBRMode:
+		switch(m_settings->compressionEncoder())
+		{
+		case SettingsModel::MP3Encoder:
+			labelBitrate->setText(QString("Quality Level %1").arg(9 - value));
+			break;
+		case SettingsModel::VorbisEncoder:
+			labelBitrate->setText(QString("Quality Level %1").arg(value));
+			break;
+		case SettingsModel::AACEncoder:
+			labelBitrate->setText(QString("Quality Level %1").arg(QString().sprintf("%.2f", static_cast<double>(value * 5) / 100.0)));
+			break;
+		case SettingsModel::FLACEncoder:
+			labelBitrate->setText(QString("Compression %1").arg(value));
+			break;
+		case SettingsModel::PCMEncoder:
+			labelBitrate->setText("Uncompressed");
+			break;
+		default:
+			labelBitrate->setText(QString::number(value));
+			break;
+		}
+		break;
+	case SettingsModel::ABRMode:
+		switch(m_settings->compressionEncoder())
+		{
+		case SettingsModel::MP3Encoder:
+			labelBitrate->setText(QString("&asymp; %1 kbps").arg(SettingsModel::mp3Bitrates[value]));
+			break;
+		case SettingsModel::FLACEncoder:
+			labelBitrate->setText(QString("Compression %1").arg(value));
+			break;
+		case SettingsModel::PCMEncoder:
+			labelBitrate->setText("Uncompressed");
+			break;
+		default:
+			labelBitrate->setText(QString("&asymp; %1 kbps").arg(min(500, value * 8)));
+			break;
+		}
+		break;
+	default:
+		switch(m_settings->compressionEncoder())
+		{
+		case SettingsModel::MP3Encoder:
+			labelBitrate->setText(QString("%1 kbps").arg(SettingsModel::mp3Bitrates[value]));
+			break;
+		case SettingsModel::FLACEncoder:
+			labelBitrate->setText(QString("Compression %1").arg(value));
+			break;
+		case SettingsModel::PCMEncoder:
+			labelBitrate->setText("Uncompressed");
+			break;
+		default:
+			labelBitrate->setText(QString("%1 kbps").arg(min(500, value * 8)));
+			break;
+		}
+		break;
+	}
+}
+
+/*
+ * Model reset
+ */
+void MainWindow::sourceModelChanged(void)
+{
+	m_dropNoteLabel->setVisible(m_fileListModel->rowCount() <= 0);
+}
+
+/*
+ * Meta tags enabled changed
+ */
+void MainWindow::metaTagsEnabledChanged(void)
+{
+	m_settings->writeMetaTags(writeMetaDataCheckBox->isChecked());
+}
+
+/*
+ * Playlist enabled changed
+ */
+void MainWindow::playlistEnabledChanged(void)
+{
+	m_settings->createPlaylist(generatePlaylistCheckBox->isChecked());
+}
+
+/*
+ * Output to source dir changed
+ */
+void MainWindow::saveToSourceFolderChanged(void)
+{
+	m_settings->outputToSourceDir(saveToSourceFolderCheckBox->isChecked());
+}
+
+/*
+ * Restore the override cursor
+ */
+void MainWindow::restoreCursor(void)
+{
+	QApplication::restoreOverrideCursor();
+}
+
+/*
+ * Show context menu for source files
+ */
+void MainWindow::sourceFilesContextMenu(const QPoint &pos)
+{
+	m_sourceFilesContextMenu->popup(sourceFileView->mapToGlobal(pos));
+}
+
+/*
+ * Open selected file in external player
+ */
+void MainWindow::previewContextActionTriggered(void)
+{
+	const static char *appNames[3] = {"smplayer_portable.exe", "smplayer.exe", "mplayer.exe"};
+	const static wchar_t *registryKey = L"SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{DB9E4EAB-2717-499F-8D56-4CC8A644AB60}";
+	
+	QModelIndex index = sourceFileView->currentIndex();
+	if(!index.isValid())
+	{
+		return;
+	}
+
+	QString mplayerPath;
+	HKEY registryKeyHandle;
+
+	if(RegOpenKeyExW(HKEY_LOCAL_MACHINE, registryKey, 0, KEY_READ, &registryKeyHandle) == ERROR_SUCCESS)
+	{
+		wchar_t Buffer[4096];
+		DWORD BuffSize = sizeof(wchar_t*) * 4096;
+		if(RegQueryValueExW(registryKeyHandle, L"InstallLocation", 0, 0, reinterpret_cast<BYTE*>(Buffer), &BuffSize) == ERROR_SUCCESS)
+		{
+			mplayerPath = QString::fromUtf16(reinterpret_cast<const unsigned short*>(Buffer));
+		}
+	}
+
+	if(!mplayerPath.isEmpty())
+	{
+		QDir mplayerDir(mplayerPath);
+		if(mplayerDir.exists())
+		{
+			for(int i = 0; i < 3; i++)
+			{
+				if(mplayerDir.exists(appNames[i]))
+				{
+					QProcess::startDetached(mplayerDir.absoluteFilePath(appNames[i]), QStringList() << QDir::toNativeSeparators(m_fileListModel->getFile(index).filePath()));
+					return;
+				}
+			}
+		}
+	}
+	
+	QDesktopServices::openUrl(QString("file:///").append(m_fileListModel->getFile(index).filePath()));
+}
+
+/*
+ * Find selected file in explorer
+ */
+void MainWindow::findFileContextActionTriggered(void)
+{
+	QModelIndex index = sourceFileView->currentIndex();
+	if(index.isValid())
+	{
+		QProcessEnvironment procEnv = QProcessEnvironment::systemEnvironment();
+		QString systemRootPath = procEnv.value("SystemRoot", procEnv.value("windir"));
+		if(!systemRootPath.isEmpty())
+		{
+			QFileInfo explorer(QString("%1/explorer.exe").arg(systemRootPath));
+			if(explorer.exists() && explorer.isFile())
+			{
+				QProcess::execute(explorer.canonicalFilePath(), QStringList() << "/select," << QDir::toNativeSeparators(m_fileListModel->getFile(index).filePath()));
+				return;
+			}
+		}
+		qWarning("SystemRoot directory could not be detected!");
+		QProcess::execute("explorer.exe", QStringList() << "/select," << QDir::toNativeSeparators(m_fileListModel->getFile(index).filePath()));
+	}
+}
+
+/*
+ * Show context menu for output folder
+ */
+void MainWindow::outputFolderContextMenu(const QPoint &pos)
+{
+	m_outputFolderContextMenu->popup(outputFolderView->mapToGlobal(pos));
+}
+
+/*
+ * Show selected folder in explorer
+ */
+void MainWindow::showFolderContextActionTriggered(void)
+{
+	QDesktopServices::openUrl(QUrl::fromLocalFile(m_fileSystemModel->filePath(outputFolderView->currentIndex())));
+}
+
+/*
+ * Disable update reminder action
+ */
+void MainWindow::disableUpdateReminderActionTriggered(bool checked)
+{
+	if(checked)
+	{
+		if(QMessageBox::Yes == QMessageBox::question(this, "Disable Update Reminder", "Do you really want to disable the update reminder?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No))
+		{
+			QMessageBox::information(this, "Update Reminder", "The update reminder has been disabled.<br>Please remember to check for updates at regular intervals!");
+			m_settings->autoUpdateEnabled(false);
+		}
+		else
+		{
+			m_settings->autoUpdateEnabled(true);
+		}
+	}
+	else
+	{
+			QMessageBox::information(this, "Update Reminder", "The update reminder has been re-enabled.");
+			m_settings->autoUpdateEnabled(true);
+	}
+
+	actionDisableUpdateReminder->setChecked(!m_settings->autoUpdateEnabled());
+}
+
+/*
+ * Disable sound effects action
+ */
+void MainWindow::disableSoundsActionTriggered(bool checked)
+{
+	if(checked)
+	{
+		if(QMessageBox::Yes == QMessageBox::question(this, "Disable Sound Effects", "Do you really want to disable all sound effects?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No))
+		{
+			QMessageBox::information(this, "Sound Effects", "All sound effects have been disabled.");
+			m_settings->soundsEnabled(false);
+		}
+		else
+		{
+			m_settings->soundsEnabled(true);
+		}
+	}
+	else
+	{
+			QMessageBox::information(this, "Sound Effects", "The sound effects have been re-enabled.");
+			m_settings->soundsEnabled(true);
+	}
+
+	actionDisableSounds->setChecked(!m_settings->soundsEnabled());
 }

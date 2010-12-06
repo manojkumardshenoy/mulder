@@ -23,28 +23,33 @@
 
 #include "../tmp/UIC_MainWindow.h"
 
-#include "Model_FileList.h"
-
 //Class declarations
-class QFileSystemModel;
+class QFileSystemModelEx;
 class WorkingBanner;
 class MessageHandlerThread;
 class AudioFileModel;
 class MetaInfoModel;
 class SettingsModel;
+class QButtonGroup;
+class FileListModel;
+class AbstractEncoder;
+class QMenu;
 
 class MainWindow: public QMainWindow, private Ui::MainWindow
 {
 	Q_OBJECT
 
 public:
-	MainWindow(QWidget *parent = 0);
+	MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, SettingsModel *settingsModel, QWidget *parent = 0);
 	~MainWindow(void);
+
+	bool isAccepted() { return m_accepted; }
 
 private slots:
 	void windowShown(void);
 	void aboutButtonClicked(void);
 	void encodeButtonClicked(void);
+	void closeButtonClicked(void);
 	void addFilesButtonClicked(void);
 	void clearFilesButtonClicked(void);
 	void removeFileButtonClicked(void);
@@ -67,20 +72,41 @@ private slots:
 	void handleDelayedFiles(void);
 	void editMetaButtonClicked(void);
 	void clearMetaButtonClicked(void);
+	void updateEncoder(int id);
+	void updateRCMode(int id);
 	void updateBitrate(int value);
+	void sourceModelChanged(void);
+	void metaTagsEnabledChanged(void);
+	void playlistEnabledChanged(void);
+	void saveToSourceFolderChanged(void);
+	void restoreCursor(void);
+	void sourceFilesContextMenu(const QPoint &pos);
+	void previewContextActionTriggered(void);
+	void findFileContextActionTriggered(void);
+	void disableUpdateReminderActionTriggered(bool checked);
+	void disableSoundsActionTriggered(bool checked);
+	void outputFolderContextMenu(const QPoint &pos);
+	void showFolderContextActionTriggered(void);
 
 protected:
 	void showEvent(QShowEvent *event);
 	void dragEnterEvent(QDragEnterEvent *event);
 	void dropEvent(QDropEvent *event);
+	void closeEvent(QCloseEvent *event);
+	void resizeEvent(QResizeEvent *event);
+	bool eventFilter(QObject *obj, QEvent *event);
 
 private:
 	void addFiles(const QStringList &files);
 
+	bool m_accepted;
+	bool m_firstTimeShown;
 	FileListModel *m_fileListModel;
-	QFileSystemModel *m_fileSystemModel;
+	QFileSystemModelEx *m_fileSystemModel;
 	QActionGroup *m_tabActionGroup;
 	QActionGroup *m_styleActionGroup;
+	QButtonGroup *m_encoderButtonGroup;
+	QButtonGroup *m_modeButtonGroup;
 	WorkingBanner *m_banner;
 	MessageHandlerThread *m_messageHandler;
 	QStringList *m_delayedFileList;
@@ -88,4 +114,7 @@ private:
 	AudioFileModel *m_metaData;
 	MetaInfoModel *m_metaInfoModel;
 	SettingsModel *m_settings;
+	QLabel *m_dropNoteLabel;
+	QMenu *m_sourceFilesContextMenu;
+	QMenu *m_outputFolderContextMenu;
 };
