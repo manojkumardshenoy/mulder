@@ -2,13 +2,15 @@
 <RCC version="1.0">
   <qresource>
     <file>tools/alac.exe</file>
+    <file>tools/elevator.exe</file>
     <file>tools/faad.exe</file>
     <file>tools/flac.exe</file>
     <file>tools/gpgv.exe</file>
     <file>tools/gpgv.gpg</file>
     <file>tools/lame.exe</file>
     <file>tools/MAC.exe</file>
-    <file>tools/mediainfo_icl11.exe</file>
+    <file>tools/mediainfo_i386.exe</file>
+    <file>tools/mediainfo_x64.exe</file>
     <file>tools/mpcdec.exe</file>
     <file>tools/mpg123.exe</file>
     <file>tools/oggdec.exe</file>
@@ -17,6 +19,7 @@
     <file>tools/oggenc2_x64.exe</file>
     <file>tools/selfdelete.exe</file>
     <file>tools/shorten.exe</file>
+    <file>tools/sox.exe</file>
     <file>tools/speexdec.exe</file>
     <file>tools/takc.exe</file>
     <file>tools/ttaenc.exe</file>

@@ -34,6 +34,7 @@ class QButtonGroup;
 class FileListModel;
 class AbstractEncoder;
 class QMenu;
+class DropBox;
 
 class MainWindow: public QMainWindow, private Ui::MainWindow
 {
@@ -79,6 +80,7 @@ private slots:
 	void metaTagsEnabledChanged(void);
 	void playlistEnabledChanged(void);
 	void saveToSourceFolderChanged(void);
+	void prependRelativePathChanged(void);
 	void restoreCursor(void);
 	void sourceFilesContextMenu(const QPoint &pos);
 	void previewContextActionTriggered(void);
@@ -87,6 +89,10 @@ private slots:
 	void disableSoundsActionTriggered(bool checked);
 	void outputFolderContextMenu(const QPoint &pos);
 	void showFolderContextActionTriggered(void);
+	void installWMADecoderActionTriggered(bool checked);
+	void disableNeroAacNotificationsActionTriggered(bool checked);
+	void disableWmaDecoderNotificationsActionTriggered(bool checked);
+	void showDropBoxWidgetActionTriggered(bool checked);
 
 protected:
 	void showEvent(QShowEvent *event);
@@ -117,4 +123,5 @@ private:
 	QLabel *m_dropNoteLabel;
 	QMenu *m_sourceFilesContextMenu;
 	QMenu *m_outputFolderContextMenu;
+	DropBox *m_dropBox;
 };

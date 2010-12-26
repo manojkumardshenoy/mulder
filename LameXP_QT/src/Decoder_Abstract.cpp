@@ -21,6 +21,8 @@
 
 #include "Decoder_Abstract.h"
 
+#include <QStringList>
+
 AbstractDecoder::AbstractDecoder(void)
 {
 }
@@ -36,4 +38,14 @@ AbstractDecoder::~AbstractDecoder(void)
 bool AbstractDecoder::isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion)
 {
 	return false;
+}
+
+bool AbstractDecoder::isDecoderAvailable(void)
+{
+	return true;
+}
+
+QStringList AbstractDecoder::supportedTypes(void)
+{
+	return QStringList();
 }

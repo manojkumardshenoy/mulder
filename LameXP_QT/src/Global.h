@@ -56,6 +56,15 @@ typedef struct
 }
 lamexp_cpu_t;
 
+//Known folders
+typedef enum
+{
+	lamexp_folder_localappdata = 0,
+	lamexp_folder_programfiles = 2,
+	lamexp_folder_systemfolder = 3
+}
+lamexp_known_folder_t;
+
 //LameXP version info
 unsigned int lamexp_version_major(void);
 unsigned int lamexp_version_minor(void);
@@ -76,6 +85,7 @@ bool lamexp_check_tool(const QString &toolName);
 const QString lamexp_lookup_tool(const QString &toolName);
 unsigned int lamexp_tool_version(const QString &toolName);
 void lamexp_finalization(void);
+QString lamexp_rand_str(void);
 const QString &lamexp_temp_folder(void);
 void lamexp_ipc_read(unsigned int *command, char* message, size_t buffSize);
 void lamexp_ipc_send(unsigned int command, const char* message);
@@ -84,6 +94,9 @@ lamexp_cpu_t lamexp_detect_cpu_features(void);
 //Auxiliary functions
 bool lamexp_clean_folder(const QString folderPath);
 const QString lamexp_version2string(const QString &pattern, unsigned int version);
+QString lamexp_known_folder(lamexp_known_folder_t folder_id);
+__int64 lamexp_free_diskspace(const QString &path);
+bool lamexp_remove_file(const QString &filename);
 
 //Debug-only functions
 SIZE_T lamexp_dbg_private_bytes(void);

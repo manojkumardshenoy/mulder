@@ -38,10 +38,14 @@
 #include <QMutex>
 #include <QTextCodec>
 #include <QLibrary>
+#include <QRegExp>
 
 //LameXP includes
 #include "Resource.h"
 #include "LockedFile.h"
+
+//Windows includes
+#include <Windows.h>
 
 //CRT includes
 #include <stdio.h>
@@ -219,12 +223,12 @@ void lamexp_message_handler(QtMsgType type, const char *msg)
 		fflush(stdout);
 		fflush(stderr);
 		SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
-		fwprintf(stderr, L"\nCRITICAL ERROR !!!\n%S\n\n", msg);
-		MessageBoxW(NULL, (wchar_t*) QString::fromUtf8(msg).utf16(), L"LameXP - CRITICAL ERROR", MB_ICONERROR | MB_TOPMOST | MB_TASKMODAL);
+		fwprintf(stderr, L"\nGURU MEDITATION !!!\n%S\n\n", msg);
+		MessageBoxW(NULL, (wchar_t*) QString::fromUtf8(msg).utf16(), L"LameXP - GURU MEDITATION", MB_ICONERROR | MB_TOPMOST | MB_TASKMODAL);
 		break;
 	case QtWarningMsg:
 		SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
-		//MessageBoxW(NULL, (wchar_t*) QString::fromUtf8(msg).utf16(), L"LameXP - CRITICAL ERROR", MB_ICONWARNING | MB_TOPMOST | MB_TASKMODAL);
+		//MessageBoxW(NULL, (wchar_t*) QString::fromUtf8(msg).utf16(), L"LameXP - GURU MEDITATION", MB_ICONWARNING | MB_TOPMOST | MB_TASKMODAL);
 		fwprintf(stderr, L"%S\n", msg);
 		fflush(stderr);
 		break;
@@ -584,13 +588,50 @@ void lamexp_ipc_read(unsigned int *command, char* message, size_t buffSize)
 }
 
 /*
+ * Get a random string
+ */
+QString lamexp_rand_str(void)
+{
+	QRegExp regExp("\\{(\\w+)-(\\w+)-(\\w+)-(\\w+)-(\\w+)\\}");
+	QString uuid = QUuid::createUuid().toString();
+
+	if(regExp.indexIn(uuid) >= 0)
+	{
+		return QString().append(regExp.cap(1)).append(regExp.cap(2)).append(regExp.cap(3)).append(regExp.cap(4)).append(regExp.cap(5));
+	}
+
+	throw "The RegExp didn't match on the UUID string. This shouldn't happen ;-)";
+}
+
+/*
  * Get LameXP temp folder
  */
 const QString &lamexp_temp_folder(void)
 {
+	typedef HRESULT (WINAPI *SHGetKnownFolderPathFun)(__in const GUID &rfid, __in DWORD dwFlags, __in HANDLE hToken, __out PWSTR *ppszPath);
+	typedef HRESULT (WINAPI *SHGetFolderPathFun)(__in HWND hwndOwner, __in int nFolder, __in HANDLE hToken, __in DWORD dwFlags, __out LPWSTR pszPath);
+
+	static const char *TEMP_STR = "Temp";
+	static const int CSIDL_LOCAL_APPDATA = 0x001c;
+	static const GUID LocalAppDataID={0xF1B32785,0x6FBA,0x4FCF,{0x9D,0x55,0x7B,0x8E,0x7F,0x15,0x70,0x91}};
+	static const GUID LocalAppDataLowID={0xA520A1A4,0x1780,0x4FF6,{0xBD,0x18,0x16,0x73,0x43,0xC5,0xAF,0x16}};
+
 	if(g_lamexp_temp_folder.isEmpty())
 	{
 		QDir temp = QDir::temp();
+		QDir localAppData = QDir(lamexp_known_folder(lamexp_folder_localappdata));
+
+		if(!localAppData.path().isEmpty() && localAppData.exists())
+		{
+			if(!localAppData.entryList(QDir::AllDirs).contains(TEMP_STR, Qt::CaseInsensitive))
+			{
+				localAppData.mkdir(TEMP_STR);
+			}
+			if(localAppData.cd(TEMP_STR))
+			{
+				temp.setPath(localAppData.absolutePath());
+			}
+		}
 
 		if(!temp.exists())
 		{
@@ -602,19 +643,19 @@ const QString &lamexp_temp_folder(void)
 			}
 		}
 
-		QString uuid = QUuid::createUuid().toString();
-		if(!temp.mkdir(uuid))
+		QString subDir = QString("%1.tmp").arg(lamexp_rand_str());
+		if(!temp.mkdir(subDir))
 		{
-			qFatal("Temporary directory could not be created:\n%s", QString("%1/%2").arg(temp.canonicalPath(), uuid).toUtf8().constData());
+			qFatal("Temporary directory could not be created:\n%s", QString("%1/%2").arg(temp.canonicalPath(), subDir).toUtf8().constData());
 			return g_lamexp_temp_folder;
 		}
-		if(!temp.cd(uuid))
+		if(!temp.cd(subDir))
 		{
-			qFatal("Temporary directory could not be entered:\n%s", QString("%1/%2").arg(temp.canonicalPath(), uuid).toUtf8().constData());
+			qFatal("Temporary directory could not be entered:\n%s", QString("%1/%2").arg(temp.canonicalPath(), subDir).toUtf8().constData());
 			return g_lamexp_temp_folder;
 		}
 		
-		QFile testFile(QString("%1/~test.txt").arg(temp.canonicalPath()));
+		QFile testFile(QString("%1/.%2").arg(temp.canonicalPath(), lamexp_rand_str()));
 		if(!testFile.open(QIODevice::ReadWrite) || testFile.write("LAMEXP_TEST\n") < 12)
 		{
 			qFatal("Write access to temporary directory has been denied:\n%s", temp.canonicalPath().toUtf8().constData());
@@ -636,22 +677,23 @@ const QString &lamexp_temp_folder(void)
 bool lamexp_clean_folder(const QString folderPath)
 {
 	QDir tempFolder(folderPath);
-	QFileInfoList entryList = tempFolder.entryInfoList();
-	
+	QFileInfoList entryList = tempFolder.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
+
 	for(int i = 0; i < entryList.count(); i++)
 	{
-		if(entryList.at(i).fileName().compare(".") == 0 || entryList.at(i).fileName().compare("..") == 0)
-		{
-			continue;
-		}
-		
 		if(entryList.at(i).isDir())
 		{
 			lamexp_clean_folder(entryList.at(i).canonicalFilePath());
 		}
 		else
 		{
-			QFile::remove(entryList.at(i).canonicalFilePath());
+			for(int j = 0; j < 3; j++)
+			{
+				if(lamexp_remove_file(entryList.at(i).canonicalFilePath()))
+				{
+					break;
+				}
+			}
 		}
 	}
 	
@@ -681,7 +723,10 @@ void lamexp_finalization(void)
 	{
 		for(int i = 0; i < 100; i++)
 		{
-			if(lamexp_clean_folder(g_lamexp_temp_folder)) break;
+			if(lamexp_clean_folder(g_lamexp_temp_folder))
+			{
+				break;
+			}
 			Sleep(125);
 		}
 		g_lamexp_temp_folder.clear();
@@ -721,7 +766,7 @@ bool lamexp_check_tool(const QString &toolName)
 }
 
 /*
- * Lookup tool
+ * Lookup tool path
  */
 const QString lamexp_lookup_tool(const QString &toolName)
 {
@@ -736,7 +781,7 @@ const QString lamexp_lookup_tool(const QString &toolName)
 }
 
 /*
- * Lookup tool
+ * Lookup tool version
  */
 unsigned int lamexp_tool_version(const QString &toolName)
 {
@@ -755,6 +800,11 @@ unsigned int lamexp_tool_version(const QString &toolName)
  */
 const QString lamexp_version2string(const QString &pattern, unsigned int version)
 {
+	if(version == UINT_MAX)
+	{
+		return "n/a";
+	}
+	
 	QString result = pattern;
 	int digits = result.count("?", Qt::CaseInsensitive);
 	
@@ -776,6 +826,144 @@ const QString lamexp_version2string(const QString &pattern, unsigned int version
 	return result;
 }
 
+/*
+ * Locate known folder on local system
+ */
+QString lamexp_known_folder(lamexp_known_folder_t folder_id)
+{
+	typedef HRESULT (WINAPI *SHGetKnownFolderPathFun)(__in const GUID &rfid, __in DWORD dwFlags, __in HANDLE hToken, __out PWSTR *ppszPath);
+	typedef HRESULT (WINAPI *SHGetFolderPathFun)(__in HWND hwndOwner, __in int nFolder, __in HANDLE hToken, __in DWORD dwFlags, __out LPWSTR pszPath);
+
+	static const int CSIDL_LOCAL_APPDATA = 0x001c;
+	static const int CSIDL_PROGRAM_FILES = 0x0026;
+	static const int CSIDL_SYSTEM_FOLDER = 0x0025;
+	static const GUID GUID_LOCAL_APPDATA = {0xF1B32785,0x6FBA,0x4FCF,{0x9D,0x55,0x7B,0x8E,0x7F,0x15,0x70,0x91}};
+	static const GUID GUID_LOCAL_APPDATA_LOW = {0xA520A1A4,0x1780,0x4FF6,{0xBD,0x18,0x16,0x73,0x43,0xC5,0xAF,0x16}};
+	static const GUID GUID_PROGRAM_FILES = {0x905e63b6,0xc1bf,0x494e,{0xb2,0x9c,0x65,0xb7,0x32,0xd3,0xd2,0x1a}};
+	static const GUID GUID_SYSTEM_FOLDER = {0x1AC14E77,0x02E7,0x4E5D,{0xB7,0x44,0x2E,0xB1,0xAE,0x51,0x98,0xB7}};
+
+	static QLibrary *Kernel32Lib = NULL;
+	static SHGetKnownFolderPathFun SHGetKnownFolderPathPtr = NULL;
+	static SHGetFolderPathFun SHGetFolderPathPtr = NULL;
+
+	if((!SHGetKnownFolderPathPtr) && (!SHGetFolderPathPtr))
+	{
+		if(!Kernel32Lib) Kernel32Lib = new QLibrary("shell32.dll");
+		SHGetKnownFolderPathPtr = (SHGetKnownFolderPathFun) Kernel32Lib->resolve("SHGetKnownFolderPath");
+		SHGetFolderPathPtr = (SHGetFolderPathFun) Kernel32Lib->resolve("SHGetFolderPathW");
+	}
+
+	int folderCSIDL = -1;
+	GUID folderGUID = {0x0000,0x0000,0x0000,{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}};
+
+	switch(folder_id)
+	{
+	case lamexp_folder_localappdata:
+		folderCSIDL = CSIDL_LOCAL_APPDATA;
+		folderGUID = GUID_LOCAL_APPDATA;
+		break;
+	case lamexp_folder_programfiles:
+		folderCSIDL = CSIDL_PROGRAM_FILES;
+		folderGUID = GUID_PROGRAM_FILES;
+		break;
+	case lamexp_folder_systemfolder:
+		folderCSIDL = CSIDL_SYSTEM_FOLDER;
+		folderGUID = GUID_SYSTEM_FOLDER;
+		break;
+	default:
+		return QString();
+		break;
+	}
+
+	QString folder;
+
+	if(SHGetKnownFolderPathPtr)
+	{
+		WCHAR *path = NULL;
+		if(SHGetKnownFolderPathPtr(folderGUID, 0x00008000, NULL, &path) == S_OK)
+		{
+			//MessageBoxW(0, path, L"SHGetKnownFolderPath", MB_TOPMOST);
+			QDir folderTemp = QDir(QDir::fromNativeSeparators(QString::fromUtf16(reinterpret_cast<const unsigned short*>(path))));
+			if(!folderTemp.exists())
+			{
+				folderTemp.mkpath(".");
+			}
+			if(folderTemp.exists())
+			{
+				folder = folderTemp.canonicalPath();
+			}
+			CoTaskMemFree(path);
+		}
+	}
+	else if(SHGetFolderPathPtr)
+	{
+		WCHAR *path = new WCHAR[4096];
+		if(SHGetFolderPathPtr(NULL, folderCSIDL, NULL, NULL, path) == S_OK)
+		{
+			//MessageBoxW(0, path, L"SHGetFolderPathW", MB_TOPMOST);
+			QDir folderTemp = QDir(QDir::fromNativeSeparators(QString::fromUtf16(reinterpret_cast<const unsigned short*>(path))));
+			if(!folderTemp.exists())
+			{
+				folderTemp.mkpath(".");
+			}
+			if(folderTemp.exists())
+			{
+				folder = folderTemp.canonicalPath();
+			}
+		}
+		delete [] path;
+	}
+
+	return folder;
+}
+
+/*
+ * Safely remove a file
+ */
+bool lamexp_remove_file(const QString &filename)
+{
+	if(!QFileInfo(filename).exists() || !QFileInfo(filename).isFile())
+	{
+		return true;
+	}
+	else
+	{
+		if(!QFile::remove(filename))
+		{
+			DWORD attributes = GetFileAttributesW(reinterpret_cast<const wchar_t*>(filename.utf16()));
+			SetFileAttributesW(reinterpret_cast<const wchar_t*>(filename.utf16()), (attributes & (~FILE_ATTRIBUTE_READONLY)));
+			if(!QFile::remove(filename))
+			{
+				qWarning("Could not delete \"%s\"", filename.toLatin1().constData());
+				return false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+		else
+		{
+			return true;
+		}
+	}
+}
+
+/*
+ * Get number private bytes [debug only]
+ */
+__int64 lamexp_free_diskspace(const QString &path)
+{
+	ULARGE_INTEGER freeBytesAvailable, totalNumberOfBytes, totalNumberOfFreeBytes;
+	if(GetDiskFreeSpaceExW(reinterpret_cast<const wchar_t*>(QDir::toNativeSeparators(path).utf16()), &freeBytesAvailable, &totalNumberOfBytes, &totalNumberOfFreeBytes))
+	{
+		return freeBytesAvailable.QuadPart;
+	}
+	else
+	{
+		return 0;
+	}
+}
 
 /*
  * Get number private bytes [debug only]
