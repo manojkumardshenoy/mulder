@@ -30,7 +30,6 @@
 #include <QFileDialog>
 #include <QTimer>
 #include <QProcess>
-#include <QUuid>
 #include <QDate>
 #include <QRegExp>
 #include <QDesktopServices>
@@ -45,7 +44,7 @@ static const char *section_id = "LameXP";
 
 static const char *mirror_url_postfix = "update_beta.ver";
 
-static const char *mirrors[] =
+static const char *update_mirrors[] =
 {
 	"http://mulder.dummwiedeutsch.de/",
 	"http://mulder.brhack.net/",
@@ -54,6 +53,19 @@ static const char *mirrors[] =
 	"http://www.tricksoft.de/",
 	NULL
 };
+
+static const char *known_hosts[] =
+{
+	"http://www.example.com/",
+	"http://www.google.com/",
+	"http://www.wikipedia.org/",
+	"http://www.msn.com/",
+	"http://www.yahoo.com/",
+	NULL
+};
+
+static const int MIN_CONNSCORE = 2;
+static char *USER_AGENT_STR = "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.12) Gecko/20101101 IceCat/3.6.12 (like Firefox/3.6.12)";
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -123,7 +135,6 @@ void UpdateDialog::showEvent(QShowEvent *event)
 {
 	QDialog::showEvent(event);
 	
-	statusLabel->setText("Checking for new updates online, please wait...");
 	labelVersionInstalled->setText(QString("Build %1 (%2)").arg(QString::number(lamexp_version_build()), lamexp_version_date().toString(Qt::ISODate)));
 	labelVersionLatest->setText("(Unknown)");
 
@@ -135,18 +146,32 @@ void UpdateDialog::showEvent(QShowEvent *event)
 	retryButton->hide();
 	logButton->hide();
 	infoLabel->hide();
+	hintLabel->hide();
+	hintIcon->hide();
 	
-	for(int i = 0; mirrors[i]; i++)
-	{
-		progressBar->setMaximum(i+2);
-	}
+	int counter = 2;
+	for(int i = 0; known_hosts[i]; i++) counter++;
+	for(int i = 0; update_mirrors[i]; i++) counter++;
 
+	progressBar->setMaximum(counter);
 	progressBar->setValue(0);
 }
 
 void UpdateDialog::closeEvent(QCloseEvent *event)
 {
 	if(!closeButton->isEnabled()) event->ignore();
+}
+
+void UpdateDialog::keyPressEvent(QKeyEvent *e)
+{
+	if(e->key() == Qt::Key_F11)
+	{
+		if(closeButton->isEnabled()) logButtonClicked();
+	}
+	else
+	{
+		QDialog::keyPressEvent(e);
+	}
 }
 
 void UpdateDialog::updateInit(void)
@@ -160,6 +185,8 @@ void UpdateDialog::updateInit(void)
 void UpdateDialog::checkForUpdates(void)
 {
 	bool success = false;
+	int connectionScore = 0;
+
 	m_updateInfo = new UpdateInfo;
 
 	progressBar->setValue(0);
@@ -168,24 +195,69 @@ void UpdateDialog::checkForUpdates(void)
 	retryButton->setEnabled(false);
 	logButton->setEnabled(false);
 	if(infoLabel->isVisible()) infoLabel->hide();
+	if(hintLabel->isVisible()) hintLabel->hide();
+	if(hintIcon->isVisible()) hintIcon->hide();
 
 	QApplication::processEvents();
 	QApplication::setOverrideCursor(Qt::WaitCursor);
 
+	statusLabel->setText("Testing your internet connection, please wait...");
+
 	m_logFile->clear();
+	m_logFile->append("Checking internet connection...");
+
+	for(int i = 0; known_hosts[i]; i++)
+	{
+		progressBar->setValue(progressBar->value() + 1);
+		if(connectionScore < MIN_CONNSCORE)
+		{
+			m_logFile->append(QStringList() << "" << "Testing host:" << known_hosts[i] << "");
+			QString outFile = QString("%1/%2.htm").arg(lamexp_temp_folder(), lamexp_rand_str());
+			if(getFile(known_hosts[i], outFile))
+			{
+				connectionScore++;
+			}
+			QFile::remove(outFile);
+		}
+	}
+
+	if(connectionScore < MIN_CONNSCORE)
+	{
+		if(!retryButton->isVisible()) retryButton->show();
+		if(!logButton->isVisible()) logButton->show();
+		closeButton->setEnabled(true);
+		retryButton->setEnabled(true);
+		logButton->setEnabled(true);
+		statusLabel->setText("Network connectivity test has faild!");
+		progressBar->setValue(progressBar->maximum());
+		hintIcon->setPixmap(QIcon(":/icons/error.png").pixmap(16,16));
+		hintLabel->setText("Please make sure your internet connection is working properly and try again.");
+		hintIcon->show();
+		hintLabel->show();
+		LAMEXP_DELETE(m_updateInfo);
+		if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_ERROR), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+		QApplication::restoreOverrideCursor();
+		progressBar->setValue(progressBar->maximum());
+		return;
+	}
+
+	statusLabel->setText("Checking for new updates online, please wait...");
 	m_logFile->append("Checking for updates online...");
 	
-	for(int i = 0; mirrors[i]; i++)
+	for(int i = 0; update_mirrors[i]; i++)
 	{
-		progressBar->setValue(i+1);
-		if(tryUpdateMirror(m_updateInfo, mirrors[i]))
+		progressBar->setValue(progressBar->value() + 1);
+		if(!success)
 		{
-			success = true;
-			break;
+			if(tryUpdateMirror(m_updateInfo, update_mirrors[i]))
+			{
+				success = true;
+			}
 		}
 	}
 	
 	QApplication::restoreOverrideCursor();
+	progressBar->setValue(progressBar->maximum());
 
 	if(!success)
 	{
@@ -194,8 +266,12 @@ void UpdateDialog::checkForUpdates(void)
 		closeButton->setEnabled(true);
 		retryButton->setEnabled(true);
 		logButton->setEnabled(true);
-		statusLabel->setText("Failed to fetch update information. Check your internet connection!");
+		statusLabel->setText("Failed to fetch update information from server!");
 		progressBar->setValue(progressBar->maximum());
+		hintIcon->setPixmap(QIcon(":/icons/server_error.png").pixmap(16,16));
+		hintLabel->setText("Sorry, the update server might be busy at this time. Plase try again later.");
+		hintIcon->show();
+		hintLabel->show();
 		LAMEXP_DELETE(m_updateInfo);
 		if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_ERROR), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
 		return;
@@ -209,24 +285,35 @@ void UpdateDialog::checkForUpdates(void)
 	if(m_updateInfo->m_buildNo > lamexp_version_build())
 	{
 		installButton->setEnabled(true);
-		statusLabel->setText("A new version of LameXP is available. Update highly recommended!");
+		statusLabel->setText("A new version of LameXP is available!");
+		hintIcon->setPixmap(QIcon(":/icons/bell.png").pixmap(16,16));
+		hintLabel->setText("We highly recommend all users to install this update as soon as possible.");
+		hintIcon->show();
+		hintLabel->show();
 		MessageBeep(MB_ICONINFORMATION);
 	}
 	else if(m_updateInfo->m_buildNo == lamexp_version_build())
 	{
-		statusLabel->setText("No new updates avialbale. Your version of LameXP is up-to-date.");
+		statusLabel->setText("No new updates available at this time.");
+		hintIcon->setPixmap(QIcon(":/icons/information.png").pixmap(16,16));
+		hintLabel->setText("Your version of LameXP is still up-to-date. Please check for updates regularly!");
+		hintIcon->show();
+		hintLabel->show();
 		MessageBeep(MB_ICONINFORMATION);
 	}
 	else
 	{
 		statusLabel->setText("Your version appears to be newer than the latest release.");
+		hintIcon->setPixmap(QIcon(":/icons/bug.png").pixmap(16,16));
+		hintLabel->setText("This usually indicates your are currently using a pre-release version of LameXP.");
+		hintIcon->show();
+		hintLabel->show();
 		MessageBeep(MB_ICONEXCLAMATION);
 	}
 
 	closeButton->setEnabled(true);
 	if(retryButton->isVisible()) retryButton->hide();
 	if(logButton->isVisible()) logButton->hide();
-	progressBar->setValue(progressBar->maximum());
 
 	m_success = true;
 }
@@ -236,9 +323,9 @@ bool UpdateDialog::tryUpdateMirror(UpdateInfo *updateInfo, const QString &url)
 	bool success = false;
 	m_logFile->append(QStringList() << "" << "Trying mirror:" << url);
 	
-	QUuid uuid = QUuid::createUuid();
-	QString outFileVersionInfo = QString("%1/%2.ver").arg(QDir::tempPath(), uuid.toString());
-	QString outFileSignature = QString("%1/%2.sig").arg(QDir::tempPath(), uuid.toString());
+	QString randPart = lamexp_rand_str();
+	QString outFileVersionInfo = QString("%1/%2.ver").arg(lamexp_temp_folder(), randPart);
+	QString outFileSignature = QString("%1/%2.sig").arg(lamexp_temp_folder(), randPart);
 
 	m_logFile->append(QStringList() << "" << "Downloading update info:");
 	bool ok1 = getFile(QString("%1%2").arg(url,mirror_url_postfix), outFileVersionInfo);
@@ -287,13 +374,14 @@ bool UpdateDialog::getFile(const QString &url, const QString &outFile)
 	QProcess process;
 	process.setProcessChannelMode(QProcess::MergedChannels);
 	process.setReadChannel(QProcess::StandardOutput);
+	process.setWorkingDirectory(output.absolutePath());
 
 	QEventLoop loop;
 	connect(&process, SIGNAL(error(QProcess::ProcessError)), &loop, SLOT(quit()));
 	connect(&process, SIGNAL(finished(int,QProcess::ExitStatus)), &loop, SLOT(quit()));
 	connect(&process, SIGNAL(readyRead()), &loop, SLOT(quit()));
 
-	process.start(m_binaryWGet, QStringList() << "-O" << output.absoluteFilePath() << url);
+	process.start(m_binaryWGet, QStringList() << "-U" << USER_AGENT_STR << "-O" << output.fileName() << url);
 	
 	if(!process.waitForStarted())
 	{
@@ -315,16 +403,28 @@ bool UpdateDialog::getFile(const QString &url, const QString &outFile)
 
 bool UpdateDialog::checkSignature(const QString &file, const QString &signature)
 {
+	if(QFileInfo(file).absolutePath().compare(QFileInfo(signature).absolutePath(), Qt::CaseInsensitive) != 0)
+	{
+		qWarning("CheckSignature: File and signature should be in same folder!");
+		return false;
+	}
+	if(QFileInfo(file).absolutePath().compare(QFileInfo(m_binaryKeys).absolutePath(), Qt::CaseInsensitive) != 0)
+	{
+		qWarning("CheckSignature: File and keyring should be in same folder!");
+		return false;
+	}
+
 	QProcess process;
 	process.setProcessChannelMode(QProcess::MergedChannels);
 	process.setReadChannel(QProcess::StandardOutput);
+	process.setWorkingDirectory(QFileInfo(file).absolutePath());
 
 	QEventLoop loop;
 	connect(&process, SIGNAL(error(QProcess::ProcessError)), &loop, SLOT(quit()));
 	connect(&process, SIGNAL(finished(int,QProcess::ExitStatus)), &loop, SLOT(quit()));
 	connect(&process, SIGNAL(readyRead()), &loop, SLOT(quit()));
 	
-	process.start(m_binaryGnuPG, QStringList() << "--homedir" << lamexp_temp_folder() << "--keyring" << QDir::toNativeSeparators(m_binaryKeys) << QDir::toNativeSeparators(signature) << QDir::toNativeSeparators(file));
+	process.start(m_binaryGnuPG, QStringList() << "--homedir" << "." << "--keyring" << QFileInfo(m_binaryKeys).fileName() << QFileInfo(signature).fileName() << QFileInfo(file).fileName());
 
 	if(!process.waitForStarted())
 	{

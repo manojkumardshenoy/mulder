@@ -26,6 +26,8 @@
 #include "Model_Progress.h"
 #include "Encoder_Abstract.h"
 #include "Decoder_Abstract.h"
+#include "Filter_Abstract.h"
+#include "Filter_Downmix.h"
 #include "Registry_Decoder.h"
 #include "Model_Settings.h"
 
@@ -44,12 +46,13 @@ QMutex *ProcessThread::m_mutex_genFileName = NULL;
 // Constructor
 ////////////////////////////////////////////////////////////
 
-ProcessThread::ProcessThread(const AudioFileModel &audioFile, const QString &outputDirectory, AbstractEncoder *encoder)
+ProcessThread::ProcessThread(const AudioFileModel &audioFile, const QString &outputDirectory, AbstractEncoder *encoder, const bool prependRelativeSourcePath)
 :
 	m_audioFile(audioFile),
 	m_outputDirectory(outputDirectory),
 	m_encoder(encoder),
 	m_jobId(QUuid::createUuid()),
+	m_prependRelativeSourcePath(prependRelativeSourcePath),
 	m_aborted(false)
 {
 	if(m_mutex_genFileName)
@@ -67,7 +70,7 @@ ProcessThread::~ProcessThread(void)
 {
 	while(!m_tempFiles.isEmpty())
 	{
-		QFile::remove(m_tempFiles.takeFirst());
+		lamexp_remove_file(m_tempFiles.takeFirst());
 	}
 
 	LAMEXP_DELETE(m_encoder);
@@ -83,7 +86,7 @@ void ProcessThread::run()
 	{
 		fflush(stdout);
 		fflush(stderr);
-		fprintf(stderr, "\nEXCEPTION ERROR !!!\n");
+		fprintf(stderr, "\nGURU MEDITATION !!!\n");
 		FatalAppExit(0, L"Unhandeled exception error, application will exit!");
 		TerminateProcess(GetCurrentProcess(), -1);
 	}
@@ -93,7 +96,7 @@ void ProcessThread::processFile()
 {
 	m_aborted = false;
 	bool bSuccess = true;
-
+		
 	qDebug("Process thread %s has started.", m_jobId.toString().toLatin1().constData());
 	emit processStateInitialized(m_jobId, QFileInfo(m_audioFile.filePath()).fileName(), "Starting...", ProgressModel::JobRunning);
 
@@ -106,10 +109,18 @@ void ProcessThread::processFile()
 		return;
 	}
 
+	QList<AbstractFilter*> filters;
+	
+	//Do we need Stereo downmix?
+	if(m_audioFile.formatAudioChannels() > 2 && m_encoder->requiresDownmix())
+	{
+		filters.prepend(new DownmixFilter());
+	}
+
 	QString sourceFile = m_audioFile.filePath();
 
 	//Decode source file
-	if(!m_encoder->isFormatSupported(m_audioFile.formatContainerType(), m_audioFile.formatContainerProfile(), m_audioFile.formatAudioType(), m_audioFile.formatAudioProfile(), m_audioFile.formatAudioVersion()))
+	if(!filters.isEmpty() || !m_encoder->isFormatSupported(m_audioFile.formatContainerType(), m_audioFile.formatContainerProfile(), m_audioFile.formatAudioType(), m_audioFile.formatAudioProfile(), m_audioFile.formatAudioVersion()))
 	{
 		m_currentStep = DecodingStep;
 		AbstractDecoder *decoder = DecoderRegistry::lookup(m_audioFile.formatContainerType(), m_audioFile.formatContainerProfile(), m_audioFile.formatAudioType(), m_audioFile.formatAudioProfile(), m_audioFile.formatAudioVersion());
@@ -136,6 +147,30 @@ void ProcessThread::processFile()
 			emit processStateFinished(m_jobId, outFileName, false);
 			return;
 		}
+	}
+
+	//Apply all filters
+	while(!filters.isEmpty())
+	{
+		QString tempFile = generateTempFileName();
+		AbstractFilter *poFilter = filters.takeFirst();
+
+		if(bSuccess)
+		{
+			connect(poFilter, SIGNAL(statusUpdated(int)), this, SLOT(handleUpdate(int)), Qt::DirectConnection);
+			connect(poFilter, SIGNAL(messageLogged(QString)), this, SLOT(handleMessage(QString)), Qt::DirectConnection);
+
+			m_currentStep = FilteringStep;
+			bSuccess = poFilter->apply(sourceFile, tempFile, &m_aborted);
+
+			if(bSuccess)
+			{
+				sourceFile = tempFile;
+				handleMessage("\n-------------------------------\n");
+			}
+		}
+
+		delete poFilter;
 	}
 
 	//Encode audio file
@@ -169,6 +204,9 @@ void ProcessThread::handleUpdate(int progress)
 	{
 	case EncodingStep:
 		emit processStateChanged(m_jobId, QString("Encoding (%1%)").arg(QString::number(progress)), ProgressModel::JobRunning);
+		break;
+	case FilteringStep:
+		emit processStateChanged(m_jobId, QString("Filtering (%1%)").arg(QString::number(progress)), ProgressModel::JobRunning);
 		break;
 	case DecodingStep:
 		emit processStateChanged(m_jobId, QString("Decoding (%1%)").arg(QString::number(progress)), ProgressModel::JobRunning);
@@ -211,6 +249,16 @@ QString ProcessThread::generateOutFileName(void)
 
 	QString baseName = sourceFile.completeBaseName();
 	QDir targetDir(m_outputDirectory.isEmpty() ? sourceFile.canonicalPath() : m_outputDirectory);
+
+	if(m_prependRelativeSourcePath && !m_outputDirectory.isEmpty())
+	{
+		QDir rootDir = sourceFile.dir();
+		while(!rootDir.isRoot())
+		{
+			if(!rootDir.cdUp()) break;
+		}
+		targetDir.setPath(QString("%1/%2").arg(targetDir.absolutePath(), QFileInfo(rootDir.relativeFilePath(sourceFile.canonicalFilePath())).path()));
+	}
 	
 	if(!targetDir.exists())
 	{
@@ -222,7 +270,7 @@ QString ProcessThread::generateOutFileName(void)
 		}
 	}
 	
-	QFile writeTest(QString("%1/%2").arg(targetDir.canonicalPath(), QUuid::createUuid().toString()));
+	QFile writeTest(QString("%1/.%2").arg(targetDir.canonicalPath(), lamexp_rand_str()));
 	if(!writeTest.open(QIODevice::ReadWrite))
 	{
 		handleMessage(QString("The target output directory is NOT writable:\n%1").arg(targetDir.absolutePath()));
@@ -252,11 +300,11 @@ QString ProcessThread::generateOutFileName(void)
 QString ProcessThread::generateTempFileName(void)
 {
 	QMutexLocker lock(m_mutex_genFileName);
-	QString tempFileName = QString("%1/%2.wav").arg(QDir::tempPath(), QUuid::createUuid().toString());
+	QString tempFileName = QString("%1/%2.wav").arg(lamexp_temp_folder(), lamexp_rand_str());
 
 	while(QFileInfo(tempFileName).exists())
 	{
-		tempFileName = QString("%1/%2.wav").arg(QDir::tempPath(), QUuid::createUuid().toString());
+		tempFileName = QString("%1/%2.wav").arg(lamexp_temp_folder(), lamexp_rand_str());
 	}
 
 	QFile file(tempFileName);

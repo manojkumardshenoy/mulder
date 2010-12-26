@@ -33,6 +33,8 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QTimer>
+#include <QFileInfo>
+#include <QDir>
 
 //Win32 includes
 #include <Windows.h>
@@ -40,6 +42,7 @@
 //Helper macros
 #define LINK(URL) QString("<a href=\"%1\">%2</a>").arg(URL).arg(URL)
 #define CONTRIBUTOR(LANG, CNTR, ICON) QString("<tr><td valign=\"middle\"><img src=\"%1\"></td><td>&nbsp;&nbsp;</td><td valign=\"middle\">%2</td><td>&nbsp;&nbsp;</td><td valign=\"middle\">%3</td></tr>").arg(ICON, LANG, CNTR);
+#define VSTR(BASE,TOOL,FORMAT) QString(BASE).arg(lamexp_version2string(FORMAT, lamexp_tool_version(TOOL)))
 
 //Constants
 const char *AboutDialog::neroAacUrl = "http://www.nero.com/eng/technologies-aac-codec.html";
@@ -58,8 +61,8 @@ AboutDialog::AboutDialog(SettingsModel *settings, QWidget *parent, bool firstSta
 	aboutText += "<h2>LameXP - Audio Encoder Front-end</h2>";
 	aboutText += QString("<b>Copyright (C) 2004-%1 LoRd_MuldeR &lt;MuldeR2@GMX.de&gt;. Some rights reserved.</b><br>").arg(max(lamexp_version_date().year(),QDate::currentDate().year()));
 	aboutText += QString().sprintf("<b>Version %d.%02d %s, Build %d [%s]</b><br><br>", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build(), lamexp_version_date().toString(Qt::ISODate).toLatin1().constData());
-	aboutText += "<nobr>Please visit the official web-site at ";
-	aboutText += LINK("http://mulder.dummwiedeutsch.de/") += " for news and updates!</nobr><br>";
+	aboutText += "<nobr>Please visit "; //the official web-site at
+	aboutText += LINK("http://forum.doom9.org/showthread.php?t=157726") += " for news and updates!</nobr><br>"; //LINK("http://mulder.dummwiedeutsch.de/")
 	aboutText += "<hr><br>";
 	aboutText += "<nobr><tt>This program is free software; you can redistribute it and/or<br>";
 	aboutText += "modify it under the terms of the GNU General Public License<br>";
@@ -72,10 +75,11 @@ AboutDialog::AboutDialog(SettingsModel *settings, QWidget *parent, bool firstSta
 	aboutText += "You should have received a copy of the GNU General Public License<br>";
 	aboutText += "along with this program; if not, write to the Free Software<br>";
 	aboutText += "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</tt></nobr><br>";
+	if(!firstStart)
+	{
+		aboutText += QString("<br>Please see %1 for details!</br><br>").arg(LINK("http://www.gnu.org/licenses/gpl-2.0.txt"));
+	}
 	aboutText += "<hr><br>";
-	aboutText += "This software uses the 'slick' icon set by Mark James &ndash; <a href=\"http://www.famfamfam.com/lab/icons/silk/\">http://www.famfamfam.com/</a>.<br>";
-	aboutText += "Released under the Creative Commons Attribution 2.5 License.<br>";
-	aboutText += "<br>";
 	aboutText += QString("Special thanks go out to \"John33\" from %1 for his continuous support.<br>").arg(LINK("http://www.rarewares.org/"));
 	
 	setText(aboutText);
@@ -85,7 +89,7 @@ AboutDialog::AboutDialog(SettingsModel *settings, QWidget *parent, bool firstSta
 	if(firstStart)
 	{
 		QPushButton *firstButton = addButton("Show License Text", QMessageBox::AcceptRole);
-		firstButton->setIcon(QIcon(":/icons/script_edit.png"));
+		firstButton->setIcon(QIcon(":/icons/script.png"));
 		firstButton->setMinimumWidth(135);
 		firstButton->disconnect();
 		connect(firstButton, SIGNAL(clicked()), this, SLOT(openLicenseText()));
@@ -139,7 +143,10 @@ int AboutDialog::exec()
 {
 	if(m_settings->soundsEnabled())
 	{
-		PlaySound(MAKEINTRESOURCE(IDR_WAVE_ABOUT), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+		if(!m_firstShow || !playResoureSound("imageres.dll", 5080, true))
+		{
+			PlaySound(MAKEINTRESOURCE(IDR_WAVE_ABOUT), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+		}
 	}
 	
 	switch(QMessageBox::exec())
@@ -214,23 +221,52 @@ void AboutDialog::showMoreAbout(void)
 {
 	QString moreAboutText;
 	moreAboutText += "<h3>The following third-party software is used in LameXP:</h3>";
-	moreAboutText += "<div  style=\"margin-left:-25px\"><ul>";
-	moreAboutText += "<li><b>LAME - OpenSource mp3 Encoder</b><br>";
+	moreAboutText += "<div style=\"margin-left:-25px;font-size:8pt\"><ul>";
+	
+	moreAboutText += VSTR( "<li><b>LAME - OpenSource mp3 Encoder (%1)</b><br>", "lame.exe", "v?.?? a??");
 	moreAboutText += "Released under the terms of the GNU Leser General Public License.<br>";
 	moreAboutText += LINK("http://lame.sourceforge.net/");
-	moreAboutText += "<br>";
-	moreAboutText += "<li><b>OggEnc - Ogg Vorbis Encoder</b>";
+	moreAboutText += "<div style=\"font-size:1pt\"><br></div>";
+	
+	moreAboutText += VSTR("<li><b>OggEnc - Ogg Vorbis Encoder (%1)</b>", "oggenc2_i386.exe", "v?.??");
 	moreAboutText += "<br>Completely open and patent-free audio encoding technology.<br>";
 	moreAboutText += LINK("http://www.vorbis.com/");
-	moreAboutText += "<br>";
-	moreAboutText += "<li><b>Nero AAC reference MPEG-4 Encoder</b><br>";
+	moreAboutText += "<div style=\"font-size:1pt\"><br></div>";
+	
+	moreAboutText += VSTR("<li><b>Nero AAC reference MPEG-4 Encoder (%1)</b><br>", "neroAacEnc.exe", "v?.?.?.?");
 	moreAboutText += "Freeware state-of-the-art HE-AAC encoder with 2-Pass support.<br>";
-	moreAboutText += "(Available from vendor web-site as free download)<br>";
+	moreAboutText += "<i>Available from vendor web-site as free download:</i><br>";
 	moreAboutText += LINK(neroAacUrl);
-	moreAboutText += "<br>";
-	moreAboutText += "<li><b>MediaInfo - Media File Analysis Tool</b><br>";
+	moreAboutText += "<div style=\"font-size:1pt\"><br></div>";
+	
+	moreAboutText += VSTR("<li><b>FLAC - Free Lossless Audio Codec (%1)</b><br>", "flac.exe", "v?.?.?");
+	moreAboutText += "Open and patent-free lossless audio compression technology.<br>";
+	moreAboutText += LINK("http://flac.sourceforge.net/");
+	moreAboutText += "<div style=\"font-size:1pt\"><br></div>";
+
+	moreAboutText += VSTR("<li><b>AC3Filter Tools - AC3/DTS Decoder (%1)</b><br>", "valdec.exe", "v?.??");
+	moreAboutText += "Released under the terms of the GNU Leser General Public License.<br>";
+	moreAboutText += LINK("http://www.ac3filter.net/projects/tools");
+	moreAboutText += "<div style=\"font-size:1pt\"><br></div>";
+
+	moreAboutText += VSTR("<li><b>MediaInfo - Media File Analysis Tool (%1)</b><br>", "mediainfo_i386.exe", "v?.?.?");
 	moreAboutText += "Released under the terms of the GNU Leser General Public License.<br>";
 	moreAboutText += LINK("http://mediainfo.sourceforge.net/");
+	moreAboutText += "<div style=\"font-size:1pt\"><br></div>";
+
+	moreAboutText += VSTR("<li><b>SoX - Sound eXchange (%1)</b><br>", "sox.exe", "v??.?.?");
+	moreAboutText += "Released under the terms of the GNU Leser General Public License.<br>";
+	moreAboutText += LINK("http://sox.sourceforge.net/");
+	moreAboutText += "<div style=\"font-size:1pt\"><br></div>";
+	
+	moreAboutText += VSTR("<li><b>GnuPG - The GNU Privacy Guard (%1)</b><br>", "gpgv.exe", "v?.?.??");
+	moreAboutText += "Released under the terms of the GNU Leser General Public License.<br>";
+	moreAboutText += LINK("http://www.gnupg.org/");
+	moreAboutText += "<div style=\"font-size:1pt\"><br></div>";
+
+	moreAboutText += "<li><b>Silk Icons - Over 700  icons in PNG format (v1.3)</b><br>";
+	moreAboutText += "<nobr>By Mark James, released under the Creative Commons 'by' License.</nobr><br>";
+	moreAboutText += LINK("http://www.famfamfam.com/lab/icons/silk/");
 	moreAboutText += "<br></ul></div>";
 
 	QMessageBox *moreAboutBox = new QMessageBox(this);
@@ -273,3 +309,42 @@ void AboutDialog::showEvent(QShowEvent *e)
 ////////////////////////////////////////////////////////////
 // Private Functions
 ////////////////////////////////////////////////////////////
+
+bool AboutDialog::playResoureSound(const QString &library, const unsigned long soundId, const bool async)
+{
+	HMODULE module = 0;
+	DWORD flags = SND_RESOURCE;
+	bool result = false;
+
+	QFileInfo libraryFile(library);
+	if(!libraryFile.isAbsolute())
+	{
+		unsigned int buffSize = GetSystemDirectoryW(NULL, NULL) + 1;
+		wchar_t *buffer = (wchar_t*) _malloca(buffSize * sizeof(wchar_t));
+		unsigned int result = GetSystemDirectory(buffer, buffSize);
+		if(result > 0 && result < buffSize)
+		{
+			libraryFile.setFile(QString("%1/%2").arg(QDir::fromNativeSeparators(QString::fromUtf16(reinterpret_cast<const unsigned short*>(buffer))), library));
+		}
+		_freea(buffer);
+	}
+
+	if(async)
+	{
+		flags |= SND_ASYNC;
+	}
+	else
+	{
+		flags |= SND_SYNC;
+	}
+
+	module = LoadLibraryW(reinterpret_cast<const wchar_t*>(QDir::toNativeSeparators(libraryFile.absoluteFilePath()).utf16()));
+
+	if(module)
+	{
+		result = PlaySound((LPCTSTR) soundId, module, flags);
+		FreeLibrary(module);
+	}
+
+	return result;
+}

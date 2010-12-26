@@ -31,6 +31,8 @@
 #include "Encoder_MP3.h"
 #include "Encoder_Vorbis.h"
 #include "Encoder_AAC.h"
+#include "Encoder_FLAC.h"
+#include "Encoder_Wave.h"
 #include "WinSevenTaskbar.h"
 
 #include <QApplication>
@@ -46,6 +48,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QMenu>
+#include <QSystemTrayIcon>
 
 #include <Windows.h>
 
@@ -56,6 +59,12 @@
 	WIDGET->setPalette(palette); \
 }
 
+#define SET_PROGRESS_TEXT(TXT) \
+{ \
+	label_progress->setText(TXT); \
+	m_systemTray->setToolTip(QString().sprintf("LameXP v%d.%02d\n%ls", lamexp_version_major(), lamexp_version_minor(), QString(TXT).utf16())); \
+}
+
 ////////////////////////////////////////////////////////////
 // Constructor
 ////////////////////////////////////////////////////////////
@@ -63,6 +72,7 @@
 ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel *metaInfo, SettingsModel *settings, QWidget *parent)
 :
 	QDialog(parent),
+	m_systemTray(new QSystemTrayIcon(QIcon(":/icons/cd_go.png"), this)),
 	m_settings(settings),
 	m_metaInfo(metaInfo)
 {
@@ -118,11 +128,15 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 		}
 	}
 
+	//Enable system tray icon
+	connect(m_systemTray, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(systemTrayActivated(QSystemTrayIcon::ActivationReason)));
+
 	//Init other vars
 	m_runningThreads = 0;
 	m_currentFile = 0;
-	m_succeededFiles = 0;
-	m_failedFiles = 0;
+	m_allJobs.clear();
+	m_succeededJobs.clear();
+	m_failedJobs.clear();
 	m_userAborted = false;
 }
 
@@ -137,6 +151,7 @@ ProcessingDialog::~ProcessingDialog(void)
 	LAMEXP_DELETE(m_progressIndicator);
 	LAMEXP_DELETE(m_progressModel);
 	LAMEXP_DELETE(m_contextMenu);
+	LAMEXP_DELETE(m_systemTray);
 
 	WinSevenTaskbar::setOverlayIcon(this, NULL);
 	WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNoState);
@@ -159,7 +174,8 @@ void ProcessingDialog::showEvent(QShowEvent *event)
 	setCloseButtonEnabled(false);
 	button_closeDialog->setEnabled(false);
 	button_AbortProcess->setEnabled(false);
-
+	m_systemTray->setVisible(true);
+	
 	if(!SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS))
 	{
 		SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
@@ -170,7 +186,14 @@ void ProcessingDialog::showEvent(QShowEvent *event)
 
 void ProcessingDialog::closeEvent(QCloseEvent *event)
 {
-	if(!button_closeDialog->isEnabled()) event->ignore();
+	if(!button_closeDialog->isEnabled())
+	{
+		event->ignore();
+	}
+	else
+	{
+		m_systemTray->setVisible(false);
+	}
 }
 
 bool ProcessingDialog::eventFilter(QObject *obj, QEvent *event)
@@ -210,13 +233,14 @@ void ProcessingDialog::initEncoding(void)
 {
 	m_runningThreads = 0;
 	m_currentFile = 0;
-	m_succeededFiles = 0;
-	m_failedFiles = 0;
+	m_allJobs.clear();
+	m_succeededJobs.clear();
+	m_failedJobs.clear();
 	m_userAborted = false;
 	m_playList.clear();
 	
 	CHANGE_BACKGROUND_COLOR(frame_header, QColor(Qt::white));
-	label_progress->setText("Encoding files, please wait...");
+	SET_PROGRESS_TEXT("Encoding files, please wait...");
 	m_progressIndicator->start();
 	
 	button_closeDialog->setEnabled(false);
@@ -241,7 +265,7 @@ void ProcessingDialog::abortEncoding(void)
 	m_userAborted = true;
 	button_AbortProcess->setEnabled(false);
 	
-	label_progress->setText("Aborted! Waiting for running jobs to terminate...");
+	SET_PROGRESS_TEXT("Aborted! Waiting for running jobs to terminate...");
 
 	for(int i = 0; i < m_threadList.count(); i++)
 	{
@@ -256,7 +280,7 @@ void ProcessingDialog::doneEncoding(void)
 	
 	if(!m_userAborted)
 	{
-		label_progress->setText(QString("Encoding: %1 files of %2 completed so far, please wait...").arg(QString::number(progressBar->value()), QString::number(progressBar->maximum())));
+		SET_PROGRESS_TEXT(QString("Encoding: %1 files of %2 completed so far, please wait...").arg(QString::number(progressBar->value()), QString::number(progressBar->maximum())));
 		WinSevenTaskbar::setTaskbarProgress(this, progressBar->value(), progressBar->maximum());
 	}
 	
@@ -284,7 +308,7 @@ void ProcessingDialog::doneEncoding(void)
 
 	if(!m_userAborted && m_settings->createPlaylist() && !m_settings->outputToSourceDir())
 	{
-		label_progress->setText("Creatig the playlist file, please wait...");
+		SET_PROGRESS_TEXT("Creatig the playlist file, please wait...");
 		QApplication::processEvents();
 		writePlayList();
 	}
@@ -294,27 +318,33 @@ void ProcessingDialog::doneEncoding(void)
 		CHANGE_BACKGROUND_COLOR(frame_header, QColor("#FFF3BA"));
 		WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarErrorState);
 		WinSevenTaskbar::setOverlayIcon(this, &QIcon(":/icons/error.png"));
-		label_progress->setText((m_succeededFiles > 0) ? QString("Process was aborted by the user after %1 file(s)!").arg(QString::number(m_succeededFiles)) : "Process was aborted prematurely by the user!");
+		SET_PROGRESS_TEXT((m_succeededJobs.count() > 0) ? QString("Process was aborted by the user after %1 file(s)!").arg(QString::number(m_succeededJobs.count())) : "Process was aborted prematurely by the user!");
+		m_systemTray->showMessage("LameXP - Aborted", "Process was aborted by the user.", QSystemTrayIcon::Warning);
+		m_systemTray->setIcon(QIcon(":/icons/cd_delete.png"));
 		QApplication::processEvents();
 		if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_ABORTED), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
 	}
 	else
 	{
-		if(m_failedFiles)
+		if(m_failedJobs.count() > 0)
 		{
 			CHANGE_BACKGROUND_COLOR(frame_header, QColor("#FFBABA"));
 			WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarErrorState);
 			WinSevenTaskbar::setOverlayIcon(this, &QIcon(":/icons/exclamation.png"));
-			label_progress->setText(QString("Error: %1 of %2 files failed. Double-click failed items for detailed information!").arg(QString::number(m_failedFiles), QString::number(m_failedFiles + m_succeededFiles)));
+			SET_PROGRESS_TEXT(QString("Error: %1 of %2 files failed. Double-click failed items for detailed information!").arg(QString::number(m_failedJobs.count()), QString::number(m_failedJobs.count() + m_succeededJobs.count())));
+			m_systemTray->showMessage("LameXP - Error", "At least one file has failed!", QSystemTrayIcon::Critical);
+			m_systemTray->setIcon(QIcon(":/icons/cd_delete.png"));
 			QApplication::processEvents();
 			if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_ERROR), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
 		}
 		else
 		{
-			CHANGE_BACKGROUND_COLOR(frame_header, QColor("#D1FFD5"));
+			CHANGE_BACKGROUND_COLOR(frame_header, QColor("#E0FFE2"));
 			WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNormalState);
 			WinSevenTaskbar::setOverlayIcon(this, &QIcon(":/icons/accept.png"));
-			label_progress->setText("Alle files completed successfully.");
+			SET_PROGRESS_TEXT("Alle files completed successfully.");
+			m_systemTray->showMessage("LameXP - Done", "All files completed successfully.", QSystemTrayIcon::Information);
+			m_systemTray->setIcon(QIcon(":/icons/cd_add.png"));
 			QApplication::processEvents();
 			if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_SUCCESS), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
 		}
@@ -336,12 +366,12 @@ void ProcessingDialog::processFinished(const QUuid &jobId, const QString &outFil
 {
 	if(success)
 	{
-		m_succeededFiles++;
-		m_playList.append(outFileName);
+		m_playList.insert(jobId, outFileName);
+		m_succeededJobs.append(jobId);
 	}
 	else
 	{
-		m_failedFiles++;
+		m_failedJobs.append(jobId);
 	}
 }
 
@@ -368,7 +398,10 @@ void ProcessingDialog::logViewDoubleClicked(const QModelIndex &index)
 
 void ProcessingDialog::contextMenuTriggered(const QPoint &pos)
 {
-	m_contextMenu->popup(view_log->mapToGlobal(pos));
+	if(pos.x() <= view_log->width() && pos.y() <= view_log->height() && pos.x() >= 0 && pos.y() >= 0)
+	{
+		m_contextMenu->popup(view_log->mapToGlobal(pos));
+	}
 }
 
 void ProcessingDialog::contextMenuActionTriggered(void)
@@ -391,7 +424,7 @@ void ProcessingDialog::startNextJob(void)
 	m_currentFile++;
 	AudioFileModel currentFile = updateMetaInfo(m_pendingJobs.takeFirst());
 	AbstractEncoder *encoder = NULL;
-	
+
 	switch(m_settings->compressionEncoder())
 	{
 	case SettingsModel::MP3Encoder:
@@ -418,12 +451,36 @@ void ProcessingDialog::startNextJob(void)
 			encoder = aacEncoder;
 		}
 		break;
+	case SettingsModel::FLACEncoder:
+		{
+			FLACEncoder *flacEncoder = new FLACEncoder();
+			flacEncoder->setBitrate(m_settings->compressionBitrate());
+			flacEncoder->setRCMode(m_settings->compressionRCMode());
+			encoder = flacEncoder;
+		}
+		break;
+	case SettingsModel::PCMEncoder:
+		{
+			WaveEncoder *waveEncoder = new WaveEncoder();
+			waveEncoder->setBitrate(m_settings->compressionBitrate());
+			waveEncoder->setRCMode(m_settings->compressionRCMode());
+			encoder = waveEncoder;
+		}
+		break;
 	default:
 		throw "Unsupported encoder!";
 	}
 
-	ProcessThread *thread = new ProcessThread(currentFile, (m_settings->outputToSourceDir() ? QFileInfo(currentFile.filePath()).absolutePath(): m_settings->outputDir()), encoder);
+	ProcessThread *thread = new ProcessThread
+	(
+		currentFile,
+		(m_settings->outputToSourceDir() ? QFileInfo(currentFile.filePath()).absolutePath(): m_settings->outputDir()),
+		encoder,
+		m_settings->prependRelativeSourcePath()
+	);
+	
 	m_threadList.append(thread);
+	m_allJobs.append(thread->getId());
 	
 	connect(thread, SIGNAL(finished()), this, SLOT(doneEncoding()), Qt::QueuedConnection);
 	connect(thread, SIGNAL(processStateInitialized(QUuid,QString,QString,int)), m_progressModel, SLOT(addJob(QUuid,QString,QString,int)), Qt::QueuedConnection);
@@ -437,6 +494,12 @@ void ProcessingDialog::startNextJob(void)
 
 void ProcessingDialog::writePlayList(void)
 {
+	if(m_succeededJobs.count() <= 0 || m_allJobs.count() <= 0)
+	{
+		qWarning("WritePlayList: Nothing to do!");
+		return;
+	}
+	
 	QString playListName = (m_metaInfo->fileAlbum().isEmpty() ? "Playlist" : m_metaInfo->fileAlbum());
 
 	const static char *invalidChars = "\\/:*?\"<>|";
@@ -453,14 +516,16 @@ void ProcessingDialog::writePlayList(void)
 	{
 		playListFile = QString("%1/%2 (%3).m3u").arg(m_settings->outputDir(), playListName, QString::number(++counter));
 	}
-	
+
 	QFile playList(playListFile);
 	if(playList.open(QIODevice::WriteOnly))
 	{
 		playList.write("#EXTM3U\r\n");
-		for(int i = 0; i < m_playList.count(); i++)
+		for(int i = 0; i < m_allJobs.count(); i++)
 		{
-			playList.write(QFileInfo(m_playList.at(i)).fileName().toUtf8().constData());
+			
+			if(!m_succeededJobs.contains(m_allJobs.at(i))) continue;
+			playList.write(QDir::toNativeSeparators(QDir(m_settings->outputDir()).relativeFilePath(m_playList.value(m_allJobs.at(i), "N/A"))).toUtf8().constData());
 			playList.write("\r\n");
 		}
 		playList.close();
@@ -484,7 +549,7 @@ AudioFileModel ProcessingDialog::updateMetaInfo(const AudioFileModel &audioFile)
 	if(!m_metaInfo->fileAlbum().isEmpty()) result.setFileAlbum(m_metaInfo->fileAlbum());
 	if(!m_metaInfo->fileGenre().isEmpty()) result.setFileGenre(m_metaInfo->fileGenre());
 	if(m_metaInfo->fileYear()) result.setFileYear(m_metaInfo->fileYear());
-	if(m_metaInfo->filePosition()) result.setFileYear(m_metaInfo->filePosition() != UINT_MAX ? m_metaInfo->filePosition() : m_currentFile);
+	if(m_metaInfo->filePosition() == UINT_MAX) result.setFilePosition(m_currentFile);
 	if(!m_metaInfo->fileComment().isEmpty()) result.setFileComment(m_metaInfo->fileComment());
 
 	return result;
@@ -494,4 +559,12 @@ void ProcessingDialog::setCloseButtonEnabled(bool enabled)
 {
 	HMENU hMenu = GetSystemMenu((HWND) winId(), FALSE);
 	EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | (enabled ? MF_ENABLED : MF_GRAYED));
+}
+
+void ProcessingDialog::systemTrayActivated(QSystemTrayIcon::ActivationReason reason)
+{
+	if(reason == QSystemTrayIcon::DoubleClick)
+	{
+		SetForegroundWindow(this->winId());
+	}
 }

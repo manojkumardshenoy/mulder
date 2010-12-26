@@ -38,11 +38,15 @@ static const char *g_settingsId_compressionRCMode = "Compression/RCMode";
 static const char *g_settingsId_compressionBitrate = "Compression/Bitrate";
 static const char *g_settingsId_outputDir = "OutputDirectory/SelectedPath";
 static const char *g_settingsId_outputToSourceDir = "OutputDirectory/OutputToSourceFolder";
+static const char *g_settingsId_prependRelativeSourcePath = "OutputDirectory/PrependRelativeSourcePath";
 static const char *g_settingsId_writeMetaTags = "Flags/WriteMetaTags";
 static const char *g_settingsId_createPlaylist = "Flags/AutoCreatePlaylist";
 static const char *g_settingsId_autoUpdateLastCheck = "AutoUpdate/LastCheck";
 static const char *g_settingsId_autoUpdateEnabled = "AutoUpdate/Enabled";
 static const char *g_settingsId_soundsEnabled = "Flags/EnableSounds";
+static const char *g_settingsId_neroAacNotificationsEnabled = "Flags/EnableNeroAacNotifications";
+static const char *g_settingsId_wmaDecoderNotificationsEnabled = "Flags/EnableWmaDecoderNotifications";
+static const char *g_settingsId_dropBoxWidgetEnabled = "Flags/EnableDropBoxWidget";
 
 //Macros
 #define MAKE_OPTION1(OPT,DEF) \
@@ -121,8 +125,12 @@ MAKE_OPTION1(compressionRCMode, 0)
 MAKE_OPTION1(compressionBitrate, 7)
 MAKE_OPTION2(outputDir, QString())
 MAKE_OPTION3(outputToSourceDir, false)
+MAKE_OPTION3(prependRelativeSourcePath, false)
 MAKE_OPTION3(writeMetaTags, true)
 MAKE_OPTION3(createPlaylist, true)
 MAKE_OPTION2(autoUpdateLastCheck, "Never")
 MAKE_OPTION3(autoUpdateEnabled, true)
 MAKE_OPTION3(soundsEnabled, true)
+MAKE_OPTION3(neroAacNotificationsEnabled, true)
+MAKE_OPTION3(wmaDecoderNotificationsEnabled, true)
+MAKE_OPTION3(dropBoxWidgetEnabled, true)

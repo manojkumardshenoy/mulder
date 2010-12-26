@@ -28,6 +28,7 @@
 #include "Dialog_MetaInfo.h"
 #include "Dialog_About.h"
 #include "Dialog_Update.h"
+#include "Dialog_DropBox.h"
 #include "Thread_FileAnalyzer.h"
 #include "Thread_MessageHandler.h"
 #include "Model_MetaInfo.h"
@@ -35,6 +36,7 @@
 #include "Model_FileList.h"
 #include "Model_FileSystem.h"
 #include "WinSevenTaskbar.h"
+#include "Registry_Decoder.h"
 
 //Qt includes
 #include <QMessageBox>
@@ -56,6 +58,7 @@
 #include <QProcess>
 #include <QUuid>
 #include <QProcessEnvironment>
+#include <QCryptographicHash>
 
 //Win32 includes
 #include <Windows.h>
@@ -64,6 +67,7 @@
 #define ABORT_IF_BUSY if(m_banner->isVisible() || m_delayedFileTimer->isActive()) { MessageBeep(MB_ICONEXCLAMATION); return; }
 #define SET_TEXT_COLOR(WIDGET,COLOR) { QPalette _palette = WIDGET->palette(); _palette.setColor(QPalette::WindowText, COLOR); WIDGET->setPalette(_palette); }
 #define SET_FONT_BOLD(WIDGET,BOLD) { QFont _font = WIDGET->font(); _font.setBold(BOLD); WIDGET->setFont(_font); }
+#define FLASH_WINDOW(WND) { FLASHWINFO flashInfo; memset(&flashInfo, 0, sizeof(FLASHWINFO)); flashInfo.cbSize = sizeof(FLASHWINFO); flashInfo.dwFlags = FLASHW_ALL; flashInfo.uCount = 12; flashInfo.dwTimeout = 125; flashInfo.hwnd = WND->winId(); FlashWindowEx(&flashInfo); }
 #define LINK(URL) QString("<a href=\"%1\">%2</a>").arg(URL).arg(URL)
 
 //Helper class
@@ -155,6 +159,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	outputFolderView->setMouseTracking(false);
 	outputFolderView->setContextMenuPolicy(Qt::CustomContextMenu);
 	while(saveToSourceFolderCheckBox->isChecked() != m_settings->outputToSourceDir()) saveToSourceFolderCheckBox->click();
+	prependRelativePathCheckBox->setChecked(m_settings->prependRelativeSourcePath());
 	connect(outputFolderView, SIGNAL(clicked(QModelIndex)), this, SLOT(outputFolderViewClicked(QModelIndex)));
 	connect(outputFolderView, SIGNAL(activated(QModelIndex)), this, SLOT(outputFolderViewClicked(QModelIndex)));
 	connect(outputFolderView, SIGNAL(entered(QModelIndex)), this, SLOT(outputFolderViewClicked(QModelIndex)));
@@ -165,6 +170,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	connect(buttonGotoDesktop, SIGNAL(clicked()), this, SLOT(gotoDesktopButtonClicked()));
 	connect(buttonGotoMusic, SIGNAL(clicked()), this, SLOT(gotoMusicFolderButtonClicked()));
 	connect(saveToSourceFolderCheckBox, SIGNAL(clicked()), this, SLOT(saveToSourceFolderChanged()));
+	connect(prependRelativePathCheckBox, SIGNAL(clicked()), this, SLOT(prependRelativePathChanged()));
 	m_outputFolderContextMenu = new QMenu();
 	QAction *showFolderContextAction = m_outputFolderContextMenu->addAction(QIcon(":/icons/zoom.png"), "Browse Selected Folder");
 	connect(outputFolderView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(outputFolderContextMenu(QPoint)));
@@ -248,8 +254,14 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	//Activate tools menu actions
 	actionDisableUpdateReminder->setChecked(!m_settings->autoUpdateEnabled());
 	actionDisableSounds->setChecked(!m_settings->soundsEnabled());
+	actionDisableNeroAacNotifications->setChecked(!m_settings->neroAacNotificationsEnabled());
+	actionDisableWmaDecoderNotifications->setChecked(!m_settings->wmaDecoderNotificationsEnabled());
 	connect(actionDisableUpdateReminder, SIGNAL(triggered(bool)), this, SLOT(disableUpdateReminderActionTriggered(bool)));
 	connect(actionDisableSounds, SIGNAL(triggered(bool)), this, SLOT(disableSoundsActionTriggered(bool)));
+	connect(actionInstallWMADecoder, SIGNAL(triggered(bool)), this, SLOT(installWMADecoderActionTriggered(bool)));
+	connect(actionDisableNeroAacNotifications, SIGNAL(triggered(bool)), this, SLOT(disableNeroAacNotificationsActionTriggered(bool)));
+	connect(actionDisableWmaDecoderNotifications, SIGNAL(triggered(bool)), this, SLOT(disableWmaDecoderNotificationsActionTriggered(bool)));
+	connect(actionShowDropBoxWidget, SIGNAL(triggered(bool)), this, SLOT(showDropBoxWidgetActionTriggered(bool)));
 		
 	//Activate help menu actions
 	connect(actionCheckUpdates, SIGNAL(triggered()), this, SLOT(checkUpdatesActionActivated()));
@@ -264,6 +276,12 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	//Create banner
 	m_banner = new WorkingBanner(this);
 
+	//Create DropBox widget
+	m_dropBox = new DropBox(this, m_fileListModel, m_settings);
+	connect(m_fileListModel, SIGNAL(modelReset()), m_dropBox, SLOT(modelChanged()));
+	connect(m_fileListModel, SIGNAL(rowsInserted(QModelIndex,int,int)), m_dropBox, SLOT(modelChanged()));
+	connect(m_fileListModel, SIGNAL(rowsRemoved(QModelIndex,int,int)), m_dropBox, SLOT(modelChanged()));
+		
 	//Create message handler thread
 	m_messageHandler = new MessageHandlerThread();
 	m_delayedFileList = new QStringList();
@@ -311,6 +329,7 @@ MainWindow::~MainWindow(void)
 	LAMEXP_DELETE(m_encoderButtonGroup);
 	LAMEXP_DELETE(m_encoderButtonGroup);
 	LAMEXP_DELETE(m_sourceFilesContextMenu);
+	LAMEXP_DELETE(m_dropBox);
 }
 
 ////////////////////////////////////////////////////////////
@@ -361,6 +380,13 @@ void MainWindow::showEvent(QShowEvent *event)
 	{
 		m_firstTimeShown = false;
 		QTimer::singleShot(0, this, SLOT(windowShown()));
+	}
+	else
+	{
+		if(m_settings->dropBoxWidgetEnabled())
+		{
+			m_dropBox->setVisible(true);
+		}
 	}
 }
 
@@ -413,6 +439,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		MessageBeep(MB_ICONEXCLAMATION);
 		event->ignore();
 	}
+	
+	if(m_dropBox)
+	{
+		m_dropBox->hide();
+	}
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
@@ -461,11 +492,14 @@ void MainWindow::windowShown(void)
 		if(iAccepted <= 0)
 		{
 			m_settings->licenseAccepted(-1);
+			QApplication::processEvents();
+			PlaySound(MAKEINTRESOURCE(IDR_WAVE_WHAMMY), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
 			QMessageBox::critical(this, "License Declined", "You have declined the license. Consequently the application will exit now!");
 			QApplication::quit();
 			return;
 		}
-
+		
+		PlaySound(MAKEINTRESOURCE(IDR_WAVE_WOOHOO), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
 		m_settings->licenseAccepted(1);
 	}
 	
@@ -476,6 +510,7 @@ void MainWindow::windowShown(void)
 		if(QDate::currentDate() >= expireDate)
 		{
 			qWarning("Binary has expired !!!");
+			PlaySound(MAKEINTRESOURCE(IDR_WAVE_WHAMMY), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
 			if(QMessageBox::warning(this, "LameXP - Expired", QString("This demo (pre-release) version of LameXP has expired at %1.\nLameXP is free software and release versions won't expire.").arg(expireDate.toString(Qt::ISODate)), "Check for Updates", "Exit Program") == 0)
 			{
 				checkUpdatesActionActivated();
@@ -512,29 +547,47 @@ void MainWindow::windowShown(void)
 	}
 
 	//Check for AAC support
-	if(lamexp_check_tool("neroAacEnc.exe") && lamexp_check_tool("neroAacDec.exe") && lamexp_check_tool("neroAacTag.exe"))
+	if(m_settings->neroAacNotificationsEnabled())
 	{
-		if(lamexp_tool_version("neroAacEnc.exe") < lamexp_toolver_neroaac())
+		if(lamexp_check_tool("neroAacEnc.exe") && lamexp_check_tool("neroAacDec.exe") && lamexp_check_tool("neroAacTag.exe"))
 		{
+			if(lamexp_tool_version("neroAacEnc.exe") < lamexp_toolver_neroaac())
+			{
+				QString messageText;
+				messageText += "<nobr>LameXP detected that your version of the Nero AAC encoder is outdated!<br>";
+				messageText += "The current version available is " + lamexp_version2string("?.?.?.?", lamexp_toolver_neroaac()) + " (or later), but you still have version " + lamexp_version2string("?.?.?.?", lamexp_tool_version("neroAacEnc.exe")) + " installed.<br><br>";
+				messageText += "You can download the latest version of the Nero AAC encoder from the Nero website at:<br>";
+				messageText += "<b>" + LINK(AboutDialog::neroAacUrl) + "</b><br></nobr>";
+				QMessageBox::information(this, "AAC Encoder Outdated", messageText);
+			}
+		}
+		else
+		{
+			radioButtonEncoderAAC->setEnabled(false);
 			QString messageText;
-			messageText += "<nobr>LameXP detected that your version of the Nero AAC encoder is outdated!<br>";
-			messageText += "The current version available is " + lamexp_version2string("?.?.?.?", lamexp_toolver_neroaac()) + " (or later), but you still have version " + lamexp_version2string("?.?.?.?", lamexp_tool_version("neroAacEnc.exe")) + " installed.<br><br>";
-			messageText += "You can download the latest version of the Nero AAC encoder from the Nero website at:<br>";
+			messageText += "<nobr>The Nero AAC encoder could not be found. AAC encoding support will be disabled.<br>";
+			messageText += "Please put 'neroAacEnc.exe', 'neroAacDec.exe' and 'neroAacTag.exe' into the LameXP directory!<br><br>";
+			messageText += "Your LameXP directory is located here:<br>";
+			messageText += QString("<i><nobr><a href=\"file:///%1\">%1</a></nobr></i><br><br>").arg(QDir::toNativeSeparators(QCoreApplication::applicationDirPath()));
+			messageText += "You can download the Nero AAC encoder for free from the official Nero website at:<br>";
 			messageText += "<b>" + LINK(AboutDialog::neroAacUrl) + "</b><br></nobr>";
-			QMessageBox::information(this, "AAC Encoder Outdated", messageText);
+			QMessageBox::information(this, "AAC Support Disabled", messageText);
 		}
 	}
-	else
-	{
-		radioButtonEncoderAAC->setEnabled(false);
-		QString messageText;
-		messageText += "<nobr>The Nero AAC encoder could not be found. AAC encoding support will be disabled.<br>";
-		messageText += "Please put 'neroAacEnc.exe', 'neroAacDec.exe' and 'neroAacTag.exe' into the LameXP directory!<br><br>";
-		messageText += "You can download the Nero AAC encoder for free from the official Nero website at:<br>";
-		messageText += "<b>" + LINK(AboutDialog::neroAacUrl) + "</b><br></nobr>";
-		QMessageBox::information(this, "AAC Support Disabled", messageText);
-	}
 	
+	//Check for WMA support
+	if(m_settings->wmaDecoderNotificationsEnabled())
+	{
+		if(!lamexp_check_tool("wmawav.exe"))
+		{
+			QString messageText;
+			messageText += "<nobr>LameXP has detected that the WMA File Decoder component is not currently installed on your system.<br>";
+			messageText += "You won't be able to process WMA files as input unless the WMA File Decoder component is installed!</nobr>";
+			QMessageBox::information(this, "WMA Decoder Missing", messageText);
+			installWMADecoderActionTriggered(rand() % 2);
+		}
+	}
+
 	//Add files from the command-line
 	for(int i = 0; i < arguments.count() - 1; i++)
 	{
@@ -546,9 +599,16 @@ void MainWindow::windowShown(void)
 		}
 	}
 
+	//Start delayed files timer
 	if(!m_delayedFileList->isEmpty() && !m_delayedFileTimer->isActive())
 	{
 		m_delayedFileTimer->start(5000);
+	}
+
+	//Make DropBox visible
+	if(m_settings->dropBoxWidgetEnabled())
+	{
+		m_dropBox->setVisible(true);
 	}
 }
 
@@ -558,9 +618,11 @@ void MainWindow::windowShown(void)
 void MainWindow::aboutButtonClicked(void)
 {
 	ABORT_IF_BUSY;
+	if(m_dropBox->isVisible()) m_dropBox->hide();
 	AboutDialog *aboutBox = new AboutDialog(m_settings, this);
 	aboutBox->exec();
 	LAMEXP_DELETE(aboutBox);
+	if(m_settings->dropBoxWidgetEnabled()) m_dropBox->show();
 }
 
 /*
@@ -568,6 +630,9 @@ void MainWindow::aboutButtonClicked(void)
  */
 void MainWindow::encodeButtonClicked(void)
 {
+	static const __int64 oneGigabyte = 1073741824; 
+	static const __int64 minimumFreeDiskspaceMultiplier = 2;
+	
 	ABORT_IF_BUSY;
 	
 	if(m_fileListModel->rowCount() < 1)
@@ -577,9 +642,36 @@ void MainWindow::encodeButtonClicked(void)
 		return;
 	}
 	
-	if(m_settings->compressionEncoder() != SettingsModel::MP3Encoder && m_settings->compressionEncoder() != SettingsModel::VorbisEncoder && m_settings->compressionEncoder() != SettingsModel::AACEncoder)
+	__int64 currentFreeDiskspace = lamexp_free_diskspace(lamexp_temp_folder());
+
+	if(currentFreeDiskspace < (oneGigabyte * minimumFreeDiskspaceMultiplier))
 	{
-		QMessageBox::warning(this, "LameXP", "Sorry, only MP3, Vorbis and AAC encoding is supported at the moment.<br>Support for more encoders to be added in later versions!");
+		QStringList tempFolderParts = lamexp_temp_folder().split("/", QString::SkipEmptyParts, Qt::CaseInsensitive);
+		tempFolderParts.takeLast();
+		if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_WHAMMY), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
+		switch(QMessageBox::warning(this, "Low Diskspace Warning", QString("<nobr>There are less than %1 GB of free diskspace available on your system's TEMP folder.</nobr><br><nobr>It is highly recommend to free up more diskspace before proceeding with the encode!.</nobr><br><br>Your TEMP folder is located at:<br><nobr><i><a href=\"file:///%3\">%3</a></i></nobr><br>").arg(QString::number(minimumFreeDiskspaceMultiplier), tempFolderParts.join("\\")), "Abort Encoding Process", "Clean Disk Now", "Ignore"))
+		{
+		case 1:
+			QProcess::startDetached(QString("%1/cleanmgr.exe").arg(lamexp_known_folder(lamexp_folder_systemfolder)), QStringList() << "/D" << tempFolderParts.first());
+		case 0:
+			return;
+			break;
+		default:
+			QMessageBox::warning(this, "Low Diskspace", "You are proceeding with low diskspace. Problems might occur!");
+			break;
+		}
+	}
+
+	switch(m_settings->compressionEncoder())
+	{
+	case SettingsModel::MP3Encoder:
+	case SettingsModel::VorbisEncoder:
+	case SettingsModel::AACEncoder:
+	case SettingsModel::FLACEncoder:
+	case SettingsModel::PCMEncoder:
+		break;
+	default:
+		QMessageBox::warning(this, "LameXP", "Sorry, an unsupported encoder has been chosen!");
 		tabWidget->setCurrentIndex(3);
 		return;
 	}
@@ -619,7 +711,8 @@ void MainWindow::closeButtonClicked(void)
 void MainWindow::addFilesButtonClicked(void)
 {
 	ABORT_IF_BUSY;
-	QStringList selectedFiles = QFileDialog::getOpenFileNames(this, "Add file(s)", QString(), "All supported files (*.*)");
+	QStringList fileTypeFilters = DecoderRegistry::getSupportedTypes();
+	QStringList selectedFiles = QFileDialog::getOpenFileNames(this, "Add file(s)", QString(), fileTypeFilters.join(";;"));
 	addFiles(selectedFiles);
 }
 
@@ -793,6 +886,10 @@ void MainWindow::styleActionActivated(QAction *action)
  */
 void MainWindow::outputFolderViewClicked(const QModelIndex &index)
 {
+	if(outputFolderView->currentIndex() != index)
+	{
+		outputFolderView->setCurrentIndex(index);
+	}
 	QString selectedDir = m_fileSystemModel->filePath(index);
 	if(selectedDir.length() < 3) selectedDir.append(QDir::separator());
 	outputFolderLabel->setText(selectedDir);
@@ -837,42 +934,91 @@ void MainWindow::makeFolderButtonClicked(void)
 	ABORT_IF_BUSY;
 
 	QDir basePath(m_fileSystemModel->fileInfo(outputFolderView->currentIndex()).absoluteFilePath());
-	
-	bool bApplied = true;
-	QString folderName = QInputDialog::getText(this, "New Folder", "Enter the name of the new folder:", QLineEdit::Normal, "New folder", &bApplied, Qt::WindowStaysOnTopHint).simplified();
+	QString suggestedName = "New Folder";
 
-	if(bApplied)
+	if(!m_metaData->fileArtist().isEmpty() && !m_metaData->fileAlbum().isEmpty())
 	{
-		folderName.remove(":", Qt::CaseInsensitive);
-		folderName.remove("/", Qt::CaseInsensitive);
-		folderName.remove("\\", Qt::CaseInsensitive);
-		folderName.remove("?", Qt::CaseInsensitive);
-		folderName.remove("*", Qt::CaseInsensitive);
-		folderName.remove("<", Qt::CaseInsensitive);
-		folderName.remove(">", Qt::CaseInsensitive);
-		
-		int i = 1;
-		QString newFolder = folderName;
-
-		while(basePath.exists(newFolder))
+		suggestedName = QString("%1 - %2").arg(m_metaData->fileArtist(), m_metaData->fileAlbum());
+	}
+	else if(!m_metaData->fileArtist().isEmpty())
+	{
+		suggestedName = m_metaData->fileArtist();
+	}
+	else if(!m_metaData->fileAlbum().isEmpty())
+	{
+		suggestedName = m_metaData->fileAlbum();
+	}
+	else
+	{
+		for(int i = 0; i < m_fileListModel->rowCount(); i++)
 		{
-			newFolder = QString(folderName).append(QString().sprintf(" (%d)", ++i));
-		}
-		
-		if(basePath.mkdir(newFolder))
-		{
-			QDir createdDir = basePath;
-			if(createdDir.cd(newFolder))
+			AudioFileModel audioFile = m_fileListModel->getFile(m_fileListModel->index(i, 0));
+			if(!audioFile.fileAlbum().isEmpty() || !audioFile.fileArtist().isEmpty())
 			{
-				outputFolderView->setCurrentIndex(m_fileSystemModel->index(createdDir.canonicalPath()));
-				outputFolderViewClicked(outputFolderView->currentIndex());
-				outputFolderView->setFocus();
+				if(!audioFile.fileArtist().isEmpty() && !audioFile.fileAlbum().isEmpty())
+				{
+					suggestedName = QString("%1 - %2").arg(audioFile.fileArtist(), audioFile.fileAlbum());
+				}
+				else if(!audioFile.fileArtist().isEmpty())
+				{
+					suggestedName = audioFile.fileArtist();
+				}
+				else if(!audioFile.fileAlbum().isEmpty())
+				{
+					suggestedName = audioFile.fileAlbum();
+				}
+				break;
 			}
 		}
-		else
+	}
+	
+	while(true)
+	{
+		bool bApplied = false;
+		QString folderName = QInputDialog::getText(this, "New Folder", QString("Enter the name of the new folder:").leftJustified(96, ' '), QLineEdit::Normal, suggestedName, &bApplied, Qt::WindowStaysOnTopHint).simplified();
+
+		if(bApplied)
 		{
-			QMessageBox::warning(this, "Failed to create folder", QString("The new folder could not be created:<br><nobr>%1</nobr><br><br>Drive is read-only or insufficient access rights!").arg(basePath.absoluteFilePath(newFolder)));
+			folderName.remove(":", Qt::CaseInsensitive);
+			folderName.remove("/", Qt::CaseInsensitive);
+			folderName.remove("\\", Qt::CaseInsensitive);
+			folderName.remove("?", Qt::CaseInsensitive);
+			folderName.remove("*", Qt::CaseInsensitive);
+			folderName.remove("<", Qt::CaseInsensitive);
+			folderName.remove(">", Qt::CaseInsensitive);
+			
+			folderName = folderName.simplified();
+
+			if(folderName.isEmpty())
+			{
+				MessageBeep(MB_ICONERROR);
+				continue;
+			}
+
+			int i = 1;
+			QString newFolder = folderName;
+
+			while(basePath.exists(newFolder))
+			{
+				newFolder = QString(folderName).append(QString().sprintf(" (%d)", ++i));
+			}
+			
+			if(basePath.mkdir(newFolder))
+			{
+				QDir createdDir = basePath;
+				if(createdDir.cd(newFolder))
+				{
+					outputFolderView->setCurrentIndex(m_fileSystemModel->index(createdDir.canonicalPath()));
+					outputFolderViewClicked(outputFolderView->currentIndex());
+					outputFolderView->setFocus();
+				}
+			}
+			else
+			{
+				QMessageBox::warning(this, "Failed to create folder", QString("The new folder could not be created:<br><nobr>%1</nobr><br><br>Drive is read-only or insufficient access rights!").arg(basePath.absoluteFilePath(newFolder)));
+			}
 		}
+		break;
 	}
 }
 
@@ -908,7 +1054,8 @@ void MainWindow::visitHomepageActionActivated(void)
 void MainWindow::checkUpdatesActionActivated(void)
 {
 	ABORT_IF_BUSY;
-
+	
+	if(m_dropBox->isVisible()) m_dropBox->hide();
 	UpdateDialog *updateDialog = new UpdateDialog(m_settings, this);
 
 	updateDialog->exec();
@@ -918,6 +1065,7 @@ void MainWindow::checkUpdatesActionActivated(void)
 	}
 
 	LAMEXP_DELETE(updateDialog);
+	if(m_settings->dropBoxWidgetEnabled()) m_dropBox->show();
 }
 
 /*
@@ -1196,6 +1344,15 @@ void MainWindow::saveToSourceFolderChanged(void)
 }
 
 /*
+ * Prepend relative source file path to output file name changed
+ */
+void MainWindow::prependRelativePathChanged(void)
+{
+	m_settings->prependRelativeSourcePath(prependRelativePathCheckBox->isChecked());
+}
+
+
+/*
  * Restore the override cursor
  */
 void MainWindow::restoreCursor(void)
@@ -1208,7 +1365,10 @@ void MainWindow::restoreCursor(void)
  */
 void MainWindow::sourceFilesContextMenu(const QPoint &pos)
 {
-	m_sourceFilesContextMenu->popup(sourceFileView->mapToGlobal(pos));
+	if(pos.x() <= sourceFileView->width() && pos.y() <= sourceFileView->height() && pos.x() >= 0 && pos.y() >= 0)
+	{
+		m_sourceFilesContextMenu->popup(sourceFileView->mapToGlobal(pos));
+	}
 }
 
 /*
@@ -1286,7 +1446,11 @@ void MainWindow::findFileContextActionTriggered(void)
  */
 void MainWindow::outputFolderContextMenu(const QPoint &pos)
 {
-	m_outputFolderContextMenu->popup(outputFolderView->mapToGlobal(pos));
+	
+	if(pos.x() <= outputFolderView->width() && pos.y() <= outputFolderView->height() && pos.x() >= 0 && pos.y() >= 0)
+	{
+		m_outputFolderContextMenu->popup(outputFolderView->mapToGlobal(pos));
+	}
 }
 
 /*
@@ -1347,4 +1511,148 @@ void MainWindow::disableSoundsActionTriggered(bool checked)
 	}
 
 	actionDisableSounds->setChecked(!m_settings->soundsEnabled());
+}
+
+/*
+ * Disable Nero AAC encoder action
+ */
+void MainWindow::disableNeroAacNotificationsActionTriggered(bool checked)
+{
+	if(checked)
+	{
+		if(QMessageBox::Yes == QMessageBox::question(this, "Nero AAC Notifications", "Do you really want to disable all Nero AAC Encoder notifications?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No))
+		{
+			QMessageBox::information(this, "Nero AAC Notifications", "All Nero AAC Encoder notifications have been disabled.");
+			m_settings->neroAacNotificationsEnabled(false);
+		}
+		else
+		{
+			m_settings->neroAacNotificationsEnabled(true);
+		}
+	}
+	else
+	{
+			QMessageBox::information(this, "Nero AAC Notifications", "The Nero AAC Encoder notifications have been re-enabled.");
+			m_settings->neroAacNotificationsEnabled(true);
+	}
+
+	actionDisableNeroAacNotifications->setChecked(!m_settings->neroAacNotificationsEnabled());
+}
+
+/*
+ * Disable WMA Decoder component action
+ */
+void MainWindow::disableWmaDecoderNotificationsActionTriggered(bool checked)
+{
+	if(checked)
+	{
+		if(QMessageBox::Yes == QMessageBox::question(this, "WMA Decoder Notifications", "Do you really want to disable all WMA Decoder notifications?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No))
+		{
+			QMessageBox::information(this, "WMA Decoder Notifications", "All WMA Decoder notifications have been disabled.");
+			m_settings->wmaDecoderNotificationsEnabled(false);
+		}
+		else
+		{
+			m_settings->wmaDecoderNotificationsEnabled(true);
+		}
+	}
+	else
+	{
+			QMessageBox::information(this, "WMA Decoder Notifications", "The WMA Decoder notifications have been re-enabled.");
+			m_settings->wmaDecoderNotificationsEnabled(true);
+	}
+
+	actionDisableWmaDecoderNotifications->setChecked(!m_settings->wmaDecoderNotificationsEnabled());
+}
+
+/*
+ * Download and install WMA Decoder component
+ */
+void MainWindow::installWMADecoderActionTriggered(bool checked)
+{
+	static const char *download_url = "http://www.nch.com.au/components/wmawav.exe";
+	static const char *download_hash = "52a3b0e6690faf3f830c336d3c0eadfb7a4e9bc6";
+	
+	if(QMessageBox::question(this, "Install WMA Decoder", "Do you want to download and install the WMA File Decoder component now?", "Download && Install", "Cancel") != 0)
+	{
+		return;
+	}
+
+	QString binaryWGet = lamexp_lookup_tool("wget.exe");
+	QString binaryElevator = lamexp_lookup_tool("elevator.exe");
+	
+	if(binaryWGet.isEmpty() || binaryElevator.isEmpty())
+	{
+		throw "Required binary is not available!";
+	}
+
+	while(true)
+	{
+		QString setupFile = QString("%1/%2.exe").arg(lamexp_temp_folder(), lamexp_rand_str());
+
+		QProcess process;
+		process.setWorkingDirectory(QFileInfo(setupFile).absolutePath());
+
+		QEventLoop loop;
+		connect(&process, SIGNAL(error(QProcess::ProcessError)), &loop, SLOT(quit()));
+		connect(&process, SIGNAL(finished(int, QProcess::ExitStatus)), &loop, SLOT(quit()));
+		
+		process.start(binaryWGet, QStringList() << "-O" << QFileInfo(setupFile).fileName() << download_url);
+		m_banner->show("Downloading WMA Decoder Setup, please wait...", &loop);
+
+		if(process.exitCode() != 0 || QFileInfo(setupFile).size() < 10240)
+		{
+			QFile::remove(setupFile);
+			if(QMessageBox::critical(this, "Download Failed", "Failed to download the WMA Decoder setup. Check your internet connection!", "Try Again", "Cancel") == 0)
+			{
+				continue;
+			}
+			return;
+		}
+
+		QFile setupFileContent(setupFile);
+		QCryptographicHash setupFileHash(QCryptographicHash::Sha1);
+		
+		setupFileContent.open(QIODevice::ReadOnly);
+		if(setupFileContent.isOpen() && setupFileContent.isReadable())
+		{
+			setupFileHash.addData(setupFileContent.readAll());
+			setupFileContent.close();
+		}
+
+		if(_stricmp(setupFileHash.result().toHex().constData(), download_hash))
+		{
+			qWarning("Hash miscompare:\n  Expected %s\n  Detected %s\n", download_hash, setupFileHash.result().toHex().constData());
+			QFile::remove(setupFile);
+			if(QMessageBox::critical(this, "Download Failed", "The download seems to be corrupted. Please try again!", "Try Again", "Cancel") == 0)
+			{
+				continue;
+			}
+			return;
+		}
+
+		QApplication::setOverrideCursor(Qt::WaitCursor);
+		process.start(binaryElevator, QStringList() << QString("/exec=%1").arg(setupFile));
+		loop.exec(QEventLoop::ExcludeUserInputEvents);
+		QFile::remove(setupFile);
+		QApplication::restoreOverrideCursor();
+
+		if(QMessageBox::information(this, "WMA Decoder", "The WMA File Decoder has been installed. Please restart LameXP now!", "Quit LameXP", "Ignore") == 0)
+		{
+			QApplication::quit();
+		}
+		break;
+	}
+}
+
+void MainWindow::showDropBoxWidgetActionTriggered(bool checked)
+{
+	m_settings->dropBoxWidgetEnabled(true);
+	
+	if(!m_dropBox->isVisible())
+	{
+		m_dropBox->show();
+	}
+	
+	FLASH_WINDOW(m_dropBox);
 }

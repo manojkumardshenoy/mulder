@@ -51,6 +51,8 @@ int lamexp_main(int argc, char* argv[])
 	//Init console
 	lamexp_init_console(argc, argv);
 
+	lamexp_rand_str();
+
 	//Print version info
 	qDebug("LameXP - Audio Encoder Front-End");
 	qDebug("Version %d.%02d %s, Build %d [%s], compiled with %s", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build(), lamexp_version_date().toString(Qt::ISODate).toLatin1().constData(), lamexp_version_compiler());
@@ -184,7 +186,7 @@ int main(int argc, char* argv[])
 	{
 		fflush(stdout);
 		fflush(stderr);
-		fprintf(stderr, "\nEXCEPTION ERROR: %s\n", error);
+		fprintf(stderr, "\nGURU MEDITATION: %s\n", error);
 		FatalAppExit(0, L"Unhandeled exception error, application will exit!");
 		TerminateProcess(GetCurrentProcess(), -1);
 	}
@@ -192,7 +194,7 @@ int main(int argc, char* argv[])
 	{
 		fflush(stdout);
 		fflush(stderr);
-		fprintf(stderr, "\nEXCEPTION ERROR: Error code 0x%X\n", error);
+		fprintf(stderr, "\nGURU MEDITATION: Error code 0x%X\n", error);
 		FatalAppExit(0, L"Unhandeled exception error, application will exit!");
 		TerminateProcess(GetCurrentProcess(), -1);
 	}
@@ -200,7 +202,7 @@ int main(int argc, char* argv[])
 	{
 		fflush(stdout);
 		fflush(stderr);
-		fprintf(stderr, "\nEXCEPTION ERROR !!!\n");
+		fprintf(stderr, "\nGURU MEDITATION !!!\n");
 		FatalAppExit(0, L"Unhandeled exception error, application will exit!");
 		TerminateProcess(GetCurrentProcess(), -1);
 	}

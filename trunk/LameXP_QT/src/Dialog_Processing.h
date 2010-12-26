@@ -24,6 +24,7 @@
 #include "../tmp/UIC_ProcessingDialog.h"
 
 #include <QUuid>
+#include <QSystemTrayIcon>
 
 class QMovie;
 class QMenu;
@@ -50,6 +51,7 @@ private slots:
 	void logViewDoubleClicked(const QModelIndex &index);
 	void contextMenuTriggered(const QPoint &pos);
 	void contextMenuActionTriggered(void);
+	void systemTrayActivated(QSystemTrayIcon::ActivationReason reason);
 
 protected:
 	void showEvent(QShowEvent *event);
@@ -68,11 +70,13 @@ private:
 	QList<ProcessThread*> m_threadList;
 	QMovie *m_progressIndicator;
 	ProgressModel *m_progressModel;
-	QStringList m_playList;
+	QMap<QUuid,QString> m_playList;
 	QMenu *m_contextMenu;
 	unsigned int m_runningThreads;
 	unsigned int m_currentFile;
-	unsigned int m_succeededFiles;
-	unsigned int m_failedFiles;
+	QList<QUuid> m_allJobs;
+	QList<QUuid> m_succeededJobs;
+	QList<QUuid> m_failedJobs;
 	bool m_userAborted;
+	QSystemTrayIcon *m_systemTray;
 };
