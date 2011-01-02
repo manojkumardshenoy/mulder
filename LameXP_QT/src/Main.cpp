@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -51,8 +51,6 @@ int lamexp_main(int argc, char* argv[])
 	//Init console
 	lamexp_init_console(argc, argv);
 
-	lamexp_rand_str();
-
 	//Print version info
 	qDebug("LameXP - Audio Encoder Front-End");
 	qDebug("Version %d.%02d %s, Build %d [%s], compiled with %s", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build(), lamexp_version_date().toString(Qt::ISODate).toLatin1().constData(), lamexp_version_compiler());
@@ -75,7 +73,10 @@ int lamexp_main(int argc, char* argv[])
 	qDebug(" Number of CPU's  :  %d\n", cpuFeatures.count);
 	
 	//Initialize Qt
-	lamexp_init_qt(argc, argv);
+	if(!lamexp_init_qt(argc, argv))
+	{
+		return -1;
+	}
 
 	//Check for expiration
 	if(lamexp_version_demo())

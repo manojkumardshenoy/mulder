@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -48,6 +48,9 @@ MetaInfoDialog::MetaInfoDialog(QWidget *parent)
 	connect(upButton, SIGNAL(clicked()), this, SLOT(upButtonClicked()));
 	connect(downButton, SIGNAL(clicked()), this, SLOT(downButtonClicked()));
 	connect(editButton, SIGNAL(clicked()), this, SLOT(editButtonClicked()));
+
+	//Translate
+	labelHeaderText->setText(QString("<b>%1</b><br>%2").arg(tr("Meta Information"), tr("The following meta information have been extracted from the original file.")));
 }
 
 MetaInfoDialog::~MetaInfoDialog(void)

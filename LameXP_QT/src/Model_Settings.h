@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -78,12 +78,15 @@ public:
 	MAKE_OPTION_DEC3(neroAacNotificationsEnabled)
 	MAKE_OPTION_DEC3(wmaDecoderNotificationsEnabled)
 	MAKE_OPTION_DEC3(dropBoxWidgetEnabled)
+	MAKE_OPTION_DEC2(currentLanguage);
 
 	//Misc
 	void validate(void);
 
 private:
 	QSettings *m_settings;
+	QString *m_defaultLanguage;
+	QString defaultLanguage(void);
 };
 
 #undef MAKE_OPTION_DEC1

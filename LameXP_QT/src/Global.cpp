@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -39,6 +39,8 @@
 #include <QTextCodec>
 #include <QLibrary>
 #include <QRegExp>
+#include <QResource>
+#include <QTranslator>
 
 //LameXP includes
 #include "Resource.h"
@@ -66,8 +68,6 @@
 #define LAMEXP_INIT_QT_STATIC_PLUGIN(X)
 #endif
 
-#define X ULONG_MAX
-
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 ///////////////////////////////////////////////////////////////////////////////
@@ -79,23 +79,6 @@ typedef struct
 	unsigned int reserved_2;
 	char parameter[4096];
 } lamexp_ipc_t;
-
-struct lamexp_oscomp_t
-{
-	DWORD verMajor;
-	DWORD verMinor;
-	char *pcExport;
-};
-
-static const struct lamexp_oscomp_t g_lamexp_oscomp[] =
-{
-	{4, X, "OpenThread"},            // Windows NT 4.0
-	{5, 0, "GetNativeSystemInfo"},   // Windows 2000
-	{5, 1, "GetLargePageMinimum"},   // Windows XP
-	{5, 2, "GetLocaleInfoEx"},       // Windows Server 2003
-	{6, 0, "CreateRemoteThreadEx"},  // Windows Vista
-	{0, 0, NULL}                     // EOL
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBAL VARS
@@ -136,6 +119,12 @@ static QString g_lamexp_temp_folder;
 //Tools
 static QMap<QString, LockedFile*> g_lamexp_tool_registry;
 static QMap<QString, unsigned int> g_lamexp_tool_versions;
+
+//Languages
+static QMap<QString, QString> g_lamexp_translation_files;
+static QMap<QString, QString> g_lamexp_translation_names;
+static QMap<QString, WORD> g_lamexp_translation_sysid;
+static QTranslator *g_lamexp_currentTranslator = NULL;
 
 //Shared memory
 static const char *g_lamexp_sharedmem_uuid = "{21A68A42-6923-43bb-9CF6-64BF151942EE}";
@@ -412,30 +401,98 @@ void WINAPI debugThreadProc(__in LPVOID lpParameter)
 /*
  * Check for compatibility mode
  */
-static bool lamexp_check_compatibility_mode(void)
+static bool lamexp_check_compatibility_mode(const char *exportName)
 {
 	QLibrary kernel32("kernel32.dll");
 
-	OSVERSIONINFOW versionInfo;
-	memset(&versionInfo, 0, sizeof(OSVERSIONINFOW));
-	versionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
-	
-	if(GetVersionEx(&versionInfo))
+	if(exportName != NULL)
 	{
-		for(int i = 0; g_lamexp_oscomp[i].pcExport; i++)
+		if(kernel32.resolve(exportName) != NULL)
 		{
-			if((g_lamexp_oscomp[i].verMajor == X || g_lamexp_oscomp[i].verMajor == versionInfo.dwMajorVersion) && (g_lamexp_oscomp[i].verMinor == X || g_lamexp_oscomp[i].verMinor == versionInfo.dwMinorVersion))
-			{
-				if(kernel32.resolve(g_lamexp_oscomp[i].pcExport) != NULL)
-				{
-					qFatal("Windows NT %u.%u compatibility mode detected. Aborting!", versionInfo.dwMajorVersion, versionInfo.dwMinorVersion);
-					return false;
-				}
-			}
+			qFatal("Windows compatibility mode detected. Program will exit!");
+			return false;
 		}
 	}
 
 	return true;
+}
+
+/*
+ * Check for process elevation
+ */
+static bool lamexp_check_elevation(void)
+{
+	typedef enum { lamexp_token_elevation_class = 20 };
+	typedef struct { DWORD TokenIsElevated; } LAMEXP_TOKEN_ELEVATION;
+
+	HANDLE hToken = NULL;
+	bool bIsProcessElevated = false;
+	
+	if(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
+	{
+		LAMEXP_TOKEN_ELEVATION tokenElevation;
+		DWORD returnLength;
+		if(GetTokenInformation(hToken, (TOKEN_INFORMATION_CLASS) lamexp_token_elevation_class, &tokenElevation, sizeof(LAMEXP_TOKEN_ELEVATION), &returnLength))
+		{
+			if(returnLength == sizeof(LAMEXP_TOKEN_ELEVATION) && tokenElevation.TokenIsElevated != 0)
+			{
+				qWarning("Process token is elevated -> potential security risk!\n");
+				bIsProcessElevated = true;
+			}
+		}
+		CloseHandle(hToken);
+	}
+	else
+	{
+		qWarning("Failed to open process token!");
+	}
+
+	return !bIsProcessElevated;
+}
+
+/*
+ * Initialize translation files
+ */
+static void lamexp_init_translations(void)
+{
+	//Add default translations
+	g_lamexp_translation_files.insert(LAMEXP_DEFAULT_LANGID, "");
+	g_lamexp_translation_names.insert(LAMEXP_DEFAULT_LANGID, "English");
+	
+	//Search for language files
+	QStringList qmFiles = QDir(":/localization").entryList(QStringList() << "LameXP_??.qm", QDir::Files, QDir::Name);
+
+	//Add all available translations
+	while(!qmFiles.isEmpty())
+	{
+		QString langId, langName;
+		WORD systemId = 0;
+		QString qmFile = qmFiles.takeFirst();
+		
+		QRegExp langIdExp("LameXP_(\\w\\w)\\.qm", Qt::CaseInsensitive);
+		if(langIdExp.indexIn(qmFile) >= 0)
+		{
+			langId = langIdExp.cap(1).toLower();
+		}
+
+		QResource langRes = (QString(":/localization/%1.txt").arg(qmFile));
+		if(langRes.isValid() && langRes.size() > 0)
+		{
+			QStringList langInfo = QString::fromUtf8(reinterpret_cast<const char*>(langRes.data()), langRes.size()).simplified().split(",", QString::SkipEmptyParts);
+			if(langInfo.count() == 2)
+			{
+				systemId = langInfo.at(0).toUInt();
+				langName = langInfo.at(1);
+			}
+		}
+		
+		if(!langId.isEmpty() && systemId > 0 && !langName.isEmpty())
+		{
+			g_lamexp_translation_files.insert(langId, qmFile);
+			g_lamexp_translation_names.insert(langId, langName);
+			g_lamexp_translation_sysid.insert(langId, systemId);
+		}
+	}
 }
 
 /*
@@ -460,26 +517,28 @@ bool lamexp_init_qt(int argc, char* argv[])
 	{
 	case QSysInfo::WV_2000:
 		qDebug("Running on Windows 2000 (not offically supported!).\n");
+		lamexp_check_compatibility_mode("GetNativeSystemInfo");
 		break;
 	case QSysInfo::WV_XP:
-		qDebug("Running on Windows XP.\n\n");
+		qDebug("Running on Windows XP.\n");
+		lamexp_check_compatibility_mode("GetLargePageMinimum");
 		break;
 	case QSysInfo::WV_2003:
-		qDebug("Running on Windows Server 2003 or Windows XP Professional x64 Edition.\n");
+		qDebug("Running on Windows Server 2003 or Windows XP x64-Edition.\n");
+		lamexp_check_compatibility_mode("GetLocaleInfoEx");
 		break;
 	case QSysInfo::WV_VISTA:
-		qDebug("Running on Windows Vista or Windows Server 200.8\n");
+		qDebug("Running on Windows Vista or Windows Server 2008.\n");
+		lamexp_check_compatibility_mode("CreateRemoteThreadEx");
 		break;
 	case QSysInfo::WV_WINDOWS7:
 		qDebug("Running on Windows 7 or Windows Server 2008 R2.\n");
+		lamexp_check_compatibility_mode(NULL);
 		break;
 	default:
 		qFatal("Unsupported OS, only Windows 2000 or later is supported!");
 		break;
 	}
-	
-	//Check if "compatibility mode" is enabled
-	lamexp_check_compatibility_mode();
 
 	//Create Qt application instance and setup version info
 	QApplication *application = new QApplication(argc, argv);
@@ -507,7 +566,19 @@ bool lamexp_init_qt(int argc, char* argv[])
 			return false;
 		}
 	}
-	
+
+	//Init language files
+	lamexp_init_translations();
+
+	//Check for process elevation
+	if(!lamexp_check_elevation())
+	{
+		if(QMessageBox::warning(NULL, "LameXP", "<nobr>LameXP was started with elevated rights. This is a potential security risk!</nobr>", "Quit Program (Recommended)", "Ignore") == 0)
+		{
+			return false;
+		}
+	}
+
 	//Done
 	qt_initialized = true;
 	return true;
@@ -658,13 +729,7 @@ QString lamexp_rand_str(void)
  */
 const QString &lamexp_temp_folder(void)
 {
-	typedef HRESULT (WINAPI *SHGetKnownFolderPathFun)(__in const GUID &rfid, __in DWORD dwFlags, __in HANDLE hToken, __out PWSTR *ppszPath);
-	typedef HRESULT (WINAPI *SHGetFolderPathFun)(__in HWND hwndOwner, __in int nFolder, __in HANDLE hToken, __in DWORD dwFlags, __out LPWSTR pszPath);
-
 	static const char *TEMP_STR = "Temp";
-	static const int CSIDL_LOCAL_APPDATA = 0x001c;
-	static const GUID LocalAppDataID={0xF1B32785,0x6FBA,0x4FCF,{0x9D,0x55,0x7B,0x8E,0x7F,0x15,0x70,0x91}};
-	static const GUID LocalAppDataLowID={0xA520A1A4,0x1780,0x4FF6,{0xBD,0x18,0x16,0x73,0x43,0xC5,0xAF,0x16}};
 
 	if(g_lamexp_temp_folder.isEmpty())
 	{
@@ -752,48 +817,6 @@ bool lamexp_clean_folder(const QString folderPath)
 }
 
 /*
- * Finalization function (final clean-up)
- */
-void lamexp_finalization(void)
-{
-	//Free all tools
-	if(!g_lamexp_tool_registry.isEmpty())
-	{
-		QStringList keys = g_lamexp_tool_registry.keys();
-		for(int i = 0; i < keys.count(); i++)
-		{
-			LAMEXP_DELETE(g_lamexp_tool_registry[keys.at(i)]);
-		}
-		g_lamexp_tool_registry.clear();
-		g_lamexp_tool_versions.clear();
-	}
-	
-	//Delete temporary files
-	if(!g_lamexp_temp_folder.isEmpty())
-	{
-		for(int i = 0; i < 100; i++)
-		{
-			if(lamexp_clean_folder(g_lamexp_temp_folder))
-			{
-				break;
-			}
-			Sleep(125);
-		}
-		g_lamexp_temp_folder.clear();
-	}
-
-	//Destroy Qt application object
-	QApplication *application = dynamic_cast<QApplication*>(QApplication::instance());
-	LAMEXP_DELETE(application);
-
-	//Detach from shared memory
-	if(g_lamexp_sharedmem_ptr) g_lamexp_sharedmem_ptr->detach();
-	LAMEXP_DELETE(g_lamexp_sharedmem_ptr);
-	LAMEXP_DELETE(g_lamexp_semaphore_read_ptr);
-	LAMEXP_DELETE(g_lamexp_semaphore_write_ptr);
-}
-
-/*
  * Register tool
  */
 void lamexp_register_tool(const QString &toolName, LockedFile *file, unsigned int version)
@@ -874,6 +897,65 @@ const QString lamexp_version2string(const QString &pattern, unsigned int version
 	}
 
 	return result;
+}
+
+/*
+ * Get list of all translations
+ */
+QStringList lamexp_query_translations(void)
+{
+	return g_lamexp_translation_files.keys();
+}
+
+/*
+ * Get translation name
+ */
+QString lamexp_translation_name(const QString &langId)
+{
+	return g_lamexp_translation_names.value(langId.toLower(), QString());
+}
+
+/*
+ * Get translation system id
+ */
+WORD lamexp_translation_sysid(const QString &langId)
+{
+	return g_lamexp_translation_sysid.value(langId.toLower(), 0);
+}
+
+/*
+ * Install a new translator
+ */
+bool lamexp_install_translator(const QString &langId)
+{
+	bool success = false;
+
+	if(!g_lamexp_currentTranslator)
+	{
+		g_lamexp_currentTranslator = new QTranslator();
+	}
+
+	if(langId.isEmpty() || langId.toLower().compare(LAMEXP_DEFAULT_LANGID) == 0)
+	{
+		QApplication::removeTranslator(g_lamexp_currentTranslator);
+		success = true;
+	}
+	else
+	{
+		QString qmFile = g_lamexp_translation_files.value(langId.toLower(), QString());
+		if(!qmFile.isEmpty())
+		{
+			QApplication::removeTranslator(g_lamexp_currentTranslator);
+			success = g_lamexp_currentTranslator->load(QString(":/localization/%1").arg(qmFile));
+			QApplication::installTranslator(g_lamexp_currentTranslator);
+		}
+		else
+		{
+			qWarning("Translation '%s' not available!", langId.toLatin1().constData());
+		}
+	}
+
+	return success;
 }
 
 /*
@@ -1000,7 +1082,7 @@ bool lamexp_remove_file(const QString &filename)
 }
 
 /*
- * Get number private bytes [debug only]
+ * Get number of free bytes on disk
  */
 __int64 lamexp_free_diskspace(const QString &path)
 {
@@ -1013,6 +1095,57 @@ __int64 lamexp_free_diskspace(const QString &path)
 	{
 		return 0;
 	}
+}
+
+/*
+ * Finalization function (final clean-up)
+ */
+void lamexp_finalization(void)
+{
+	//Free all tools
+	if(!g_lamexp_tool_registry.isEmpty())
+	{
+		QStringList keys = g_lamexp_tool_registry.keys();
+		for(int i = 0; i < keys.count(); i++)
+		{
+			LAMEXP_DELETE(g_lamexp_tool_registry[keys.at(i)]);
+		}
+		g_lamexp_tool_registry.clear();
+		g_lamexp_tool_versions.clear();
+	}
+	
+	//Delete temporary files
+	if(!g_lamexp_temp_folder.isEmpty())
+	{
+		for(int i = 0; i < 100; i++)
+		{
+			if(lamexp_clean_folder(g_lamexp_temp_folder))
+			{
+				break;
+			}
+			Sleep(125);
+		}
+		g_lamexp_temp_folder.clear();
+	}
+
+	//Clear languages
+	if(g_lamexp_currentTranslator)
+	{
+		QApplication::removeTranslator(g_lamexp_currentTranslator);
+		LAMEXP_DELETE(g_lamexp_currentTranslator);
+	}
+	g_lamexp_translation_files.clear();
+	g_lamexp_translation_names.clear();
+
+	//Destroy Qt application object
+	QApplication *application = dynamic_cast<QApplication*>(QApplication::instance());
+	LAMEXP_DELETE(application);
+
+	//Detach from shared memory
+	if(g_lamexp_sharedmem_ptr) g_lamexp_sharedmem_ptr->detach();
+	LAMEXP_DELETE(g_lamexp_sharedmem_ptr);
+	LAMEXP_DELETE(g_lamexp_semaphore_read_ptr);
+	LAMEXP_DELETE(g_lamexp_semaphore_write_ptr);
 }
 
 /*
