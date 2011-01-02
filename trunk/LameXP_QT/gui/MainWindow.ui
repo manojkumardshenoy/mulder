@@ -239,6 +239,46 @@
            <layout class="QVBoxLayout" name="verticalLayout_5">
             <item>
              <widget class="QLabel" name="outputFolderLabel">
+              <property name="palette">
+               <palette>
+                <active>
+                 <colorrole role="Link">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>200</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </active>
+                <inactive>
+                 <colorrole role="Link">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>200</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </inactive>
+                <disabled>
+                 <colorrole role="Link">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>200</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </disabled>
+               </palette>
+              </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
+              </property>
               <property name="frameShape">
                <enum>QFrame::StyledPanel</enum>
               </property>
@@ -246,7 +286,7 @@
                <enum>QFrame::Plain</enum>
               </property>
               <property name="text">
-               <string>($OUTDIR)</string>
+               <string notr="true">($OUTDIR)</string>
               </property>
              </widget>
             </item>
@@ -837,7 +877,7 @@
                     </font>
                    </property>
                    <property name="text">
-                    <string>(VALUE)</string>
+                    <string notr="true">(VALUE)</string>
                    </property>
                    <property name="textFormat">
                     <enum>Qt::RichText</enum>
@@ -1168,11 +1208,24 @@
      <property name="title">
       <string>Style</string>
      </property>
+     <property name="icon">
+      <iconset resource="../res/Icons.qrc">
+       <normaloff>:/icons/palette.png</normaloff>:/icons/palette.png</iconset>
+     </property>
      <addaction name="actionStylePlastique"/>
      <addaction name="actionStyleCleanlooks"/>
      <addaction name="actionStyleWindowsVista"/>
      <addaction name="actionStyleWindowsXP"/>
      <addaction name="actionStyleWindowsClassic"/>
+    </widget>
+    <widget class="QMenu" name="menuLanguage">
+     <property name="title">
+      <string>Language</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../res/Icons.qrc">
+       <normaloff>:/icons/font.png</normaloff>:/icons/font.png</iconset>
+     </property>
     </widget>
     <addaction name="actionSourceFiles"/>
     <addaction name="actionOutputDirectory"/>
@@ -1180,6 +1233,7 @@
     <addaction name="actionCompression"/>
     <addaction name="actionAdvancedOptions"/>
     <addaction name="separator"/>
+    <addaction name="menuLanguage"/>
     <addaction name="menuStyle"/>
    </widget>
    <widget class="QMenu" name="menuTools">
@@ -1407,106 +1461,22 @@
     <string>Show DropBox</string>
    </property>
   </action>
+  <action name="actionLanguageEnglish">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../res/Flags.qrc">
+     <normaloff>:/flags/gb.png</normaloff>:/flags/gb.png</iconset>
+   </property>
+   <property name="text">
+    <string notr="true">English</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
-  <include location="../res/Images.qrc"/>
-  <include location="../res/Icons.qrc"/>
+  <include location="../res/Flags.qrc"/>
   <include location="../res/Images.qrc"/>
   <include location="../res/Icons.qrc"/>
   <include location="../res/Images.qrc"/>

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -60,7 +60,9 @@ private slots:
 	void tabPageChanged(int idx);
 	void tabActionActivated(QAction *action);
 	void styleActionActivated(QAction *action);
+	void languageActionActivated(QAction *action);
 	void outputFolderViewClicked(const QModelIndex &index);
+	void outputFolderViewMoved(const QModelIndex &index);
 	void makeFolderButtonClicked(void);
 	void gotoHomeFolderButtonClicked(void);
 	void gotoDesktopButtonClicked(void);
@@ -101,6 +103,7 @@ protected:
 	void closeEvent(QCloseEvent *event);
 	void resizeEvent(QResizeEvent *event);
 	bool eventFilter(QObject *obj, QEvent *event);
+	void changeEvent(QEvent *e);
 
 private:
 	void addFiles(const QStringList &files);
@@ -111,8 +114,13 @@ private:
 	QFileSystemModelEx *m_fileSystemModel;
 	QActionGroup *m_tabActionGroup;
 	QActionGroup *m_styleActionGroup;
+	QActionGroup *m_languageActionGroup;
 	QButtonGroup *m_encoderButtonGroup;
 	QButtonGroup *m_modeButtonGroup;
+	QAction *m_showDetailsContextAction;
+	QAction *m_previewContextAction;
+	QAction *m_findFileContextAction;
+	QAction *m_showFolderContextAction;
 	WorkingBanner *m_banner;
 	MessageHandlerThread *m_messageHandler;
 	QStringList *m_delayedFileList;

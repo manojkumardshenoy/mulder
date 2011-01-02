@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -33,8 +33,9 @@
 
 //Declarations
 class QString;
-class LockedFile;
+class QStringList;
 class QDate;
+class LockedFile;
 enum QtMsgType;
 
 //Types definitions
@@ -90,6 +91,13 @@ const QString &lamexp_temp_folder(void);
 void lamexp_ipc_read(unsigned int *command, char* message, size_t buffSize);
 void lamexp_ipc_send(unsigned int command, const char* message);
 lamexp_cpu_t lamexp_detect_cpu_features(void);
+
+//Translation support
+QStringList lamexp_query_translations(void);
+QString lamexp_translation_name(const QString &language);
+WORD lamexp_translation_sysid(const QString &langId);
+bool lamexp_install_translator(const QString &language);
+static const char* LAMEXP_DEFAULT_LANGID = "en";
 
 //Auxiliary functions
 bool lamexp_clean_folder(const QString folderPath);

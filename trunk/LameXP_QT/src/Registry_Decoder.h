@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,12 +21,16 @@
 
 #pragma once
 
+#include <QObject>
+
 class QString;
 class QStringList;
 class AbstractDecoder;
 
-class DecoderRegistry
+class DecoderRegistry : public QObject
 {
+	Q_OBJECT
+
 public:
 	static AbstractDecoder *lookup(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion);
 	static QStringList DecoderRegistry::getSupportedTypes(void);

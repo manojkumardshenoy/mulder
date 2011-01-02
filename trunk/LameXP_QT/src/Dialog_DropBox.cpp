@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -62,6 +62,10 @@ DropBox::DropBox(QWidget *parent, QAbstractItemModel *model, SettingsModel *sett
 
 	//Make transparent
 	setWindowOpacity(0.8);
+	
+	//Translate UI
+	QEvent languageChangeEvent(QEvent::LanguageChange);
+	changeEvent(&languageChangeEvent);
 }
 
 ////////////////////////////////////////////////////////////
@@ -87,6 +91,19 @@ void DropBox::modelChanged(void)
 ////////////////////////////////////////////////////////////
 // EVENTS
 ////////////////////////////////////////////////////////////
+
+/*
+ * Re-translate the UI
+ */
+void DropBox::changeEvent(QEvent *e)
+{
+	if(e->type() == QEvent::LanguageChange)
+	{
+		Ui::DropBox::retranslateUi(this);
+		dropBoxLabel->setToolTip(QString("<b>%1</b><br><nobr>%2</nobr><br><nobr>%3</nobr>").arg(tr("LameXP DropBox"), tr("You can add files to LameXP via Drag&amp;Drop here!"), tr("(Right-click to close the DropBox)")));
+	}
+}
+
 
 void DropBox::showEvent(QShowEvent *event)
 {

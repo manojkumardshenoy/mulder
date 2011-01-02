@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -100,10 +100,10 @@ QVariant ProgressModel::headerData(int section, Qt::Orientation orientation, int
 			switch(section)
 			{
 			case 0:
-				return "Job";
+				return tr("Job");
 				break;
 			case 1:
-				return "Status";
+				return tr("Status");
 				break;
 			default:
 				return QVariant();

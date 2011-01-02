@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2010 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -75,9 +75,9 @@ QStringList DecoderRegistry::getSupportedTypes(void)
 	{
 		extensions.removeDuplicates();
 		extensions.sort();
-		types.prepend(QString("All supported types (%1)").arg(extensions.join(" ")));
+		types.prepend(QString("%1 (%2)").arg(tr("All supported types"), extensions.join(" ")));
 	}
 	
-	types << "All files (*.*)";
+	types << QString("%1 (*.*)").arg(tr("All files"));
 	return types;
 }
