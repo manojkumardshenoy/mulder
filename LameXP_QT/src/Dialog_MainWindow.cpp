@@ -71,6 +71,7 @@
 #define SET_FONT_BOLD(WIDGET,BOLD) { QFont _font = WIDGET->font(); _font.setBold(BOLD); WIDGET->setFont(_font); }
 #define FLASH_WINDOW(WND) { FLASHWINFO flashInfo; memset(&flashInfo, 0, sizeof(FLASHWINFO)); flashInfo.cbSize = sizeof(FLASHWINFO); flashInfo.dwFlags = FLASHW_ALL; flashInfo.uCount = 12; flashInfo.dwTimeout = 125; flashInfo.hwnd = WND->winId(); FlashWindowEx(&flashInfo); }
 #define LINK(URL) QString("<a href=\"%1\">%2</a>").arg(URL).arg(URL)
+#define TEMP_HIDE_DROPBOX(CMD) { bool __dropBoxVisible = m_dropBox->isVisible(); if(__dropBoxVisible) m_dropBox->hide(); CMD; if(__dropBoxVisible) m_dropBox->show(); }
 
 //Helper class
 class Index: public QObjectUserData
@@ -242,8 +243,8 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	actionStyleWindowsXP->setUserData(0, new Index(3));
 	actionStyleWindowsClassic->setUserData(0, new Index(4));
 	actionStylePlastique->setChecked(true);
-	actionStyleWindowsXP->setEnabled((QSysInfo::windowsVersion() & QSysInfo::WV_NT_based) >= QSysInfo::WV_XP);
-	actionStyleWindowsVista->setEnabled((QSysInfo::windowsVersion() & QSysInfo::WV_NT_based) >= QSysInfo::WV_VISTA);
+	actionStyleWindowsXP->setEnabled((QSysInfo::windowsVersion() & QSysInfo::WV_NT_based) >= QSysInfo::WV_XP && lamexp_themes_enabled());
+	actionStyleWindowsVista->setEnabled((QSysInfo::windowsVersion() & QSysInfo::WV_NT_based) >= QSysInfo::WV_VISTA && lamexp_themes_enabled());
 	connect(m_styleActionGroup, SIGNAL(triggered(QAction*)), this, SLOT(styleActionActivated(QAction*)));
 	styleActionActivated(NULL);
 
@@ -706,11 +707,13 @@ void MainWindow::windowShown(void)
 void MainWindow::aboutButtonClicked(void)
 {
 	ABORT_IF_BUSY;
-	if(m_dropBox->isVisible()) m_dropBox->hide();
-	AboutDialog *aboutBox = new AboutDialog(m_settings, this);
-	aboutBox->exec();
-	LAMEXP_DELETE(aboutBox);
-	if(m_settings->dropBoxWidgetEnabled()) m_dropBox->show();
+
+	TEMP_HIDE_DROPBOX
+	(
+		AboutDialog *aboutBox = new AboutDialog(m_settings, this);
+		aboutBox->exec();
+		LAMEXP_DELETE(aboutBox);
+	)
 }
 
 /*
@@ -799,9 +802,31 @@ void MainWindow::closeButtonClicked(void)
 void MainWindow::addFilesButtonClicked(void)
 {
 	ABORT_IF_BUSY;
-	QStringList fileTypeFilters = DecoderRegistry::getSupportedTypes();
-	QStringList selectedFiles = QFileDialog::getOpenFileNames(this, tr("Add file(s)"), QString(), fileTypeFilters.join(";;"));
-	addFiles(selectedFiles);
+	
+	TEMP_HIDE_DROPBOX
+	(
+		if(lamexp_themes_enabled())
+		{
+			QStringList fileTypeFilters = DecoderRegistry::getSupportedTypes();
+			QStringList selectedFiles = QFileDialog::getOpenFileNames(this, tr("Add file(s)"), QString(), fileTypeFilters.join(";;"));
+			if(!selectedFiles.isEmpty())
+			{
+				addFiles(selectedFiles);
+			}
+		}
+		else
+		{
+			QFileDialog dialog(this, tr("Add file(s)"));
+			QStringList fileTypeFilters = DecoderRegistry::getSupportedTypes();
+			dialog.setFileMode(QFileDialog::ExistingFiles);
+			dialog.setNameFilter(fileTypeFilters.join(";;"));
+			if(dialog.exec())
+			{
+				QStringList selectedFiles = dialog.selectedFiles();
+				addFiles(selectedFiles);
+			}
+		}
+	)
 }
 
 /*
@@ -810,21 +835,39 @@ void MainWindow::addFilesButtonClicked(void)
 void MainWindow::openFolderActionActivated(void)
 {
 	ABORT_IF_BUSY;
-	QString selectedFolder = QFileDialog::getExistingDirectory(this, tr("Add folder"), QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
+	QString selectedFolder;
 	
-	if(!selectedFolder.isEmpty())
-	{
-		QDir sourceDir(selectedFolder);
-		QFileInfoList fileInfoList = sourceDir.entryInfoList(QDir::Files);
-		QStringList fileList;
-
-		while(!fileInfoList.isEmpty())
+	TEMP_HIDE_DROPBOX
+	(
+		if(lamexp_themes_enabled())
 		{
-			fileList << fileInfoList.takeFirst().canonicalFilePath();
+			selectedFolder = QFileDialog::getExistingDirectory(this, tr("Add folder"), QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
 		}
+		else
+		{
+			QFileDialog dialog(this, tr("Add folder"));
+			dialog.setFileMode(QFileDialog::DirectoryOnly);
+			dialog.setDirectory(QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
+			if(dialog.exec())
+			{
+				selectedFolder = dialog.selectedFiles().first();
+			}
+		}
+		
+		if(!selectedFolder.isEmpty())
+		{
+			QDir sourceDir(selectedFolder);
+			QFileInfoList fileInfoList = sourceDir.entryInfoList(QDir::Files);
+			QStringList fileList;
 
-		addFiles(fileList);
-	}
+			while(!fileInfoList.isEmpty())
+			{
+				fileList << fileInfoList.takeFirst().canonicalFilePath();
+			}
+
+			addFiles(fileList);
+		}
+	)
 }
 
 /*
@@ -947,21 +990,33 @@ void MainWindow::styleActionActivated(QAction *action)
 	switch(m_settings->interfaceStyle())
 	{
 	case 1:
-		actionStyleCleanlooks->setChecked(true);
-		QApplication::setStyle(new QCleanlooksStyle());
-		break;
+		if(actionStyleCleanlooks->isEnabled())
+		{
+			actionStyleCleanlooks->setChecked(true);
+			QApplication::setStyle(new QCleanlooksStyle());
+			break;
+		}
 	case 2:
-		actionStyleWindowsVista->setChecked(true);
-		QApplication::setStyle(new QWindowsVistaStyle());
-		break;
+		if(actionStyleWindowsVista->isEnabled())
+		{
+			actionStyleWindowsVista->setChecked(true);
+			QApplication::setStyle(new QWindowsVistaStyle());
+			break;
+		}
 	case 3:
-		actionStyleWindowsXP->setChecked(true);
-		QApplication::setStyle(new QWindowsXPStyle());
-		break;
+		if(actionStyleWindowsXP->isEnabled())
+		{
+			actionStyleWindowsXP->setChecked(true);
+			QApplication::setStyle(new QWindowsXPStyle());
+			break;
+		}
 	case 4:
-		actionStyleWindowsClassic->setChecked(true);
-		QApplication::setStyle(new QWindowsStyle());
-		break;
+		if(actionStyleWindowsClassic->isEnabled())
+		{
+			actionStyleWindowsClassic->setChecked(true);
+			QApplication::setStyle(new QWindowsStyle());
+			break;
+		}
 	default:
 		actionStylePlastique->setChecked(true);
 		QApplication::setStyle(new QPlastiqueStyle());
@@ -1194,17 +1249,16 @@ void MainWindow::checkUpdatesActionActivated(void)
 {
 	ABORT_IF_BUSY;
 	
-	if(m_dropBox->isVisible()) m_dropBox->hide();
-	UpdateDialog *updateDialog = new UpdateDialog(m_settings, this);
-
-	updateDialog->exec();
-	if(updateDialog->getSuccess())
-	{
-		m_settings->autoUpdateLastCheck(QDate::currentDate().toString(Qt::ISODate));
-	}
-
-	LAMEXP_DELETE(updateDialog);
-	if(m_settings->dropBoxWidgetEnabled()) m_dropBox->show();
+	TEMP_HIDE_DROPBOX
+	(
+		UpdateDialog *updateDialog = new UpdateDialog(m_settings, this);
+		updateDialog->exec();
+		if(updateDialog->getSuccess())
+		{
+			m_settings->autoUpdateLastCheck(QDate::currentDate().toString(Qt::ISODate));
+		}
+		LAMEXP_DELETE(updateDialog);
+	)
 }
 
 /*
@@ -1615,7 +1669,7 @@ void MainWindow::disableUpdateReminderActionTriggered(bool checked)
 {
 	if(checked)
 	{
-		if(QMessageBox::Yes == QMessageBox::question(this, tr("Disable Update Reminder"), tr("Do you really want to disable the update reminder?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No))
+		if(0 == QMessageBox::question(this, tr("Disable Update Reminder"), tr("Do you really want to disable the update reminder?"), tr("Yes"), tr("No"), QString(), 1))
 		{
 			QMessageBox::information(this, tr("Update Reminder"), QString("%1<br>%2").arg(tr("The update reminder has been disabled."), tr("Please remember to check for updates at regular intervals!")));
 			m_settings->autoUpdateEnabled(false);
@@ -1641,7 +1695,7 @@ void MainWindow::disableSoundsActionTriggered(bool checked)
 {
 	if(checked)
 	{
-		if(QMessageBox::Yes == QMessageBox::question(this, tr("Disable Sound Effects"), tr("Do you really want to disable all sound effects?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No))
+		if(0 == QMessageBox::question(this, tr("Disable Sound Effects"), tr("Do you really want to disable all sound effects?"), tr("Yes"), tr("No"), QString(), 1))
 		{
 			QMessageBox::information(this, tr("Sound Effects"), tr("All sound effects have been disabled."));
 			m_settings->soundsEnabled(false);
@@ -1667,7 +1721,7 @@ void MainWindow::disableNeroAacNotificationsActionTriggered(bool checked)
 {
 	if(checked)
 	{
-		if(QMessageBox::Yes == QMessageBox::question(this, tr("Nero AAC Notifications"), tr("Do you really want to disable all Nero AAC Encoder notifications?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No))
+		if(0 == QMessageBox::question(this, tr("Nero AAC Notifications"), tr("Do you really want to disable all Nero AAC Encoder notifications?"), tr("Yes"), tr("No"), QString(), 1))
 		{
 			QMessageBox::information(this, tr("Nero AAC Notifications"), tr("All Nero AAC Encoder notifications have been disabled."));
 			m_settings->neroAacNotificationsEnabled(false);
@@ -1693,7 +1747,7 @@ void MainWindow::disableWmaDecoderNotificationsActionTriggered(bool checked)
 {
 	if(checked)
 	{
-		if(QMessageBox::Yes == QMessageBox::question(this, tr("WMA Decoder Notifications"), tr("Do you really want to disable all WMA Decoder notifications?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No))
+		if(0 == QMessageBox::question(this, tr("WMA Decoder Notifications"), tr("Do you really want to disable all WMA Decoder notifications?"), tr("Yes"), tr("No"), QString(), 1))
 		{
 			QMessageBox::information(this, tr("WMA Decoder Notifications"), tr("All WMA Decoder notifications have been disabled."));
 			m_settings->wmaDecoderNotificationsEnabled(false);
