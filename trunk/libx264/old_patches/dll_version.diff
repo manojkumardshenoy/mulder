@@ -1,8 +1,8 @@
 diff --git a/x264dll.c b/x264dll.c
-index 075eaba..a4de855 100644
+index 5ffd109..10e94d9 100644
 --- a/x264dll.c
 +++ b/x264dll.c
-@@ -21,8 +21,24 @@
+@@ -24,8 +24,24 @@
   *****************************************************************************/
  
  #include "common/common.h"
@@ -27,7 +27,7 @@ index 075eaba..a4de855 100644
  /* Callback for our DLL so we can initialize pthread */
  BOOL WINAPI DllMain( HANDLE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
  {
-@@ -30,7 +46,10 @@ BOOL WINAPI DllMain( HANDLE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
+@@ -33,7 +49,10 @@ BOOL WINAPI DllMain( HANDLE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
      switch( fdwReason )
      {
          case DLL_PROCESS_ATTACH:
@@ -39,7 +39,7 @@ index 075eaba..a4de855 100644
  
          case DLL_THREAD_ATTACH:
              pthread_win32_thread_attach_np();
-@@ -41,8 +60,10 @@ BOOL WINAPI DllMain( HANDLE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
+@@ -44,8 +63,10 @@ BOOL WINAPI DllMain( HANDLE hinstDLL, DWORD fdwReason, LPVOID lpvReserved )
              break;
  
          case DLL_PROCESS_DETACH:
