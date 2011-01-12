@@ -3,9 +3,9 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
-DEFAULT_PATCHES="amdfam10_fix print_params dll_version psy_trellis fast_firstpass"
-COMPILERS_CURRENT="451"
-COMPILERS_LEGACY="460 452 450 445 345"
+DEFAULT_PATCHES="x264_amdfam10_fix x264_print_params x264_dll_version"
+COMPILERS_STABLE="452 445"
+COMPILERS_OTHERS="460 451 345"
 CPU_TYPES="i686 core2 amdfam10 pentium3 noasm"
 ROOT_DRIVE="e"
 
@@ -143,7 +143,7 @@ make_x264() {
   ELFLAGS="-L../pthreads"
   ECFLAGS="-I../pthreads"
   
-  if [ -f "./libpack/lib/libavcodec.a" -a -f "./libpack/include/libavcodec/avcodec.h" -a $1 -eq 451 ]; then #TODO: Fix for other GCC versions
+  if [ -f "./libpack/lib/libavcodec.a" -a -f "./libpack/include/libavcodec/avcodec.h" -a $1 -ge 445 -a $1 -lt 460 ]; then #TODO: Fix for other GCC versions
     ELFLAGS="$ELFLAGS -L../libpack/lib"
     ECFLAGS="$ECFLAGS -I../libpack/include"
   fi
@@ -187,7 +187,7 @@ make_x264() {
     echo "LTO enabled :-)"
     ECFLAGS="$ECFLAGS -flto"
     ELFLAGS="$ELFLAGS -flto" # -fwhole-program
-    PATCHES="make_lto $PATCHES"
+    PATCHES="x264_make_lto $PATCHES"
   else
     echo "LTO disabled :-("
   fi
@@ -242,7 +242,7 @@ make_x264() {
     return
   fi
   
-  if [ "$(grep '#define HAVE_PTHREAD' < config.h | cut -f 3 -d ' ')" != "1" ]; then
+  if [ "$(grep '#define HAVE_POSIXTHREAD' < config.h | cut -f 3 -d ' ')" != "1" ]; then
     echo -e "\nError: PThread is not enabled!\nAre the PThread library and the required .h files there?"
     cd ..
     return
@@ -316,18 +316,16 @@ make_x264() {
 
 ######################################################
 
-
-for k in $COMPILERS_CURRENT
+for k in $COMPILERS_STABLE
 do
   make_pthread "$k"
   for l in $CPU_TYPES
   do
     make_x264 "$k" "$l" "" ""
-    make_x264 "$k" "$l" "AutoVAQ" "auto_vaq"
   done
 done
 
-for k in $COMPILERS_LEGACY
+for k in $COMPILERS_OTHERS
 do
   make_pthread "$k"
   make_x264 "$k" "i686" "" ""

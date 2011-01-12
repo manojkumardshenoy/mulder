@@ -1,8 +1,8 @@
 diff --git a/common/common.c b/common/common.c
-index aff5fc3..5b5689a 100644
+index 26b62a3..f2e6574 100644
 --- a/common/common.c
 +++ b/common/common.c
-@@ -1023,8 +1023,10 @@ static void x264_log_default( void *p_unused, int i_level, const char *psz_fmt,
+@@ -1034,8 +1034,10 @@ static void x264_log_default( void *p_unused, int i_level, const char *psz_fmt,
              psz_prefix = "unknown";
              break;
      }
@@ -14,10 +14,10 @@ index aff5fc3..5b5689a 100644
  
  /****************************************************************************
 diff --git a/configure b/configure
-index 1ad2b57..5002e34 100755
+index 0bab3e1..3753c60 100755
 --- a/configure
 +++ b/configure
-@@ -792,6 +792,8 @@ gpl_filters=""
+@@ -845,6 +845,8 @@ gpl_filters=""
  [ $swscale = yes ] && filters="resize $filters"
  [ $gpl = yes ] && filters="$filters $gpl_filters"
  
@@ -27,7 +27,7 @@ index 1ad2b57..5002e34 100755
  Platform:   $ARCH
  System:     $SYS
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index a47be87..3a06358 100644
+index c36ac77..6c0b14f 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
 @@ -34,6 +34,7 @@
@@ -38,7 +38,7 @@ index a47be87..3a06358 100644
  
  #if HAVE_VISUALIZE
  #include "common/visualize.h"
-@@ -1185,6 +1186,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -1191,6 +1191,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
              profile, level, BIT_DEPTH );
      }
  
