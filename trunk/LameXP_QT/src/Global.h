@@ -97,12 +97,13 @@ QStringList lamexp_query_translations(void);
 bool lamexp_translation_register(const QString &langId, const QString &qmFile, const QString &langName, unsigned int &systemId);
 QString lamexp_translation_name(const QString &language);
 unsigned int lamexp_translation_sysid(const QString &langId);
+bool lamexp_install_translator_from_file(const QString &qmFile);
 bool lamexp_install_translator(const QString &language);
 static const char* LAMEXP_DEFAULT_LANGID = "en";
 
 //Auxiliary functions
 bool lamexp_clean_folder(const QString folderPath);
-const QString lamexp_version2string(const QString &pattern, unsigned int version);
+const QString lamexp_version2string(const QString &pattern, unsigned int version, const QString &defaultText);
 QString lamexp_known_folder(lamexp_known_folder_t folder_id);
 __int64 lamexp_free_diskspace(const QString &path);
 bool lamexp_remove_file(const QString &filename);
