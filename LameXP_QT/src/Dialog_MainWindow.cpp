@@ -250,7 +250,6 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 
 	//Populate the language menu
 	m_languageActionGroup = new QActionGroup(this);
-	connect(m_languageActionGroup, SIGNAL(triggered(QAction*)), this, SLOT(languageActionActivated(QAction*)));
 	QStringList translations = lamexp_query_translations();
 	while(!translations.isEmpty())
 	{
@@ -261,8 +260,11 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 		currentLanguage->setIcon(QIcon(QString(":/flags/%1.png").arg(langId)));
 		currentLanguage->setCheckable(true);
 		m_languageActionGroup->addAction(currentLanguage);
-		menuLanguage->addAction(currentLanguage);
+		menuLanguage->insertAction(actionLoadTranslationFromFile, currentLanguage);
 	}
+	menuLanguage->insertSeparator(actionLoadTranslationFromFile);
+	connect(actionLoadTranslationFromFile, SIGNAL(triggered(bool)), this, SLOT(languageFromFileActionActivated(bool)));
+	connect(m_languageActionGroup, SIGNAL(triggered(QAction*)), this, SLOT(languageActionActivated(QAction*)));
 
 	//Activate tools menu actions
 	actionDisableUpdateReminder->setChecked(!m_settings->autoUpdateEnabled());
@@ -448,6 +450,7 @@ void MainWindow::changeEvent(QEvent *e)
 		m_showFolderContextAction->setText(tr("Browse Selected Folder"));
 
 		m_metaInfoModel->clearData();
+		updateEncoder(m_settings->compressionEncoder());
 	}
 }
 
@@ -615,7 +618,7 @@ void MainWindow::windowShown(void)
 	if(QDate::currentDate() >= lamexp_version_date().addYears(1))
 	{
 		qWarning("Binary is more than a year old, time to update!");
-		if(QMessageBox::warning(this, tr("Urgent Update"), tr("Your version of LameXP is more than a year old. Time for an update!"), tr("Check for Updates"), tr("Exit Program")) == 0)
+		if(QMessageBox::warning(this, tr("Urgent Update"), QString("<nobr>%1</nobr>").arg(tr("Your version of LameXP is more than a year old. Time for an update!")), tr("Check for Updates"), tr("Exit Program")) == 0)
 		{
 			checkUpdatesActionActivated();
 		}
@@ -630,7 +633,7 @@ void MainWindow::windowShown(void)
 		QDate lastUpdateCheck = QDate::fromString(m_settings->autoUpdateLastCheck(), Qt::ISODate);
 		if(!lastUpdateCheck.isValid() || QDate::currentDate() >= lastUpdateCheck.addDays(14))
 		{
-			if(QMessageBox::information(this, tr("Update Reminder"), (lastUpdateCheck.isValid() ? tr("Your last update check was more than 14 days ago. Check for updates now?") : tr("Your did not check for LameXP updates yet. Check for updates now?")), tr("Check for Updates"), tr("Postpone")) == 0)
+			if(QMessageBox::information(this, tr("Update Reminder"), QString("<nobr>%1</nobr>").arg(lastUpdateCheck.isValid() ? tr("Your last update check was more than 14 days ago. Check for updates now?") : tr("Your did not check for LameXP updates yet. Check for updates now?")), tr("Check for Updates"), tr("Postpone")) == 0)
 			{
 				checkUpdatesActionActivated();
 			}
@@ -646,7 +649,7 @@ void MainWindow::windowShown(void)
 			{
 				QString messageText;
 				messageText += QString("<nobr>%1<br>").arg(tr("LameXP detected that your version of the Nero AAC encoder is outdated!"));
-				messageText += QString("%1<br><br>").arg(tr("The current version available is %1 (or later), but you still have version %2 installed.").arg(lamexp_version2string("?.?.?.?", lamexp_toolver_neroaac()), lamexp_version2string("?.?.?.?", lamexp_tool_version("neroAacEnc.exe"))));
+				messageText += QString("%1<br><br>").arg(tr("The current version available is %1 (or later), but you still have version %2 installed.").arg(lamexp_version2string("?.?.?.?", lamexp_toolver_neroaac(), tr("n/a")), lamexp_version2string("?.?.?.?", lamexp_tool_version("neroAacEnc.exe"), tr("n/a"))));
 				messageText += QString("%1<br>").arg(tr("You can download the latest version of the Nero AAC encoder from the Nero website at:"));
 				messageText += "<b>" + LINK(AboutDialog::neroAacUrl) + "</b><br></nobr>";
 				QMessageBox::information(this, tr("AAC Encoder Outdated"), messageText);
@@ -1039,11 +1042,42 @@ void MainWindow::styleActionActivated(QAction *action)
  */
 void MainWindow::languageActionActivated(QAction *action)
 {
-	QString langId = action->data().toString();
-
-	if(lamexp_install_translator(langId))
+	if(action->data().type() == QVariant::String)
 	{
-		m_settings->currentLanguage(langId);
+		QString langId = action->data().toString();
+
+		if(lamexp_install_translator(langId))
+		{
+			action->setChecked(true);
+			m_settings->currentLanguage(langId);
+		}
+	}
+}
+
+/*
+ * Load language from file action triggered
+ */
+void MainWindow::languageFromFileActionActivated(bool checked)
+{
+	QFileDialog dialog(this, tr("Load Translation"));
+	dialog.setFileMode(QFileDialog::ExistingFile);
+	dialog.setNameFilter(QString("%1 (*.qm)").arg(tr("Translation Files")));
+
+	if(dialog.exec())
+	{
+		QStringList selectedFiles = dialog.selectedFiles();
+		if(lamexp_install_translator_from_file(selectedFiles.first()))
+		{
+			QList<QAction*> actions = m_languageActionGroup->actions();
+			while(!actions.isEmpty())
+			{
+				actions.takeFirst()->setChecked(false);
+			}
+		}
+		else
+		{
+			languageActionActivated(m_languageActionGroup->actions().first());
+		}
 	}
 }
 

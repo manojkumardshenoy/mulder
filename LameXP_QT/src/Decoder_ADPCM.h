@@ -21,35 +21,18 @@
 
 #pragma once
 
-#include <QMessageBox>
+#include "Decoder_Abstract.h"
 
-class SettingsModel;
-
-class AboutDialog : public QMessageBox
+class ADPCMDecoder : public AbstractDecoder
 {
-	Q_OBJECT
-
 public:
-	AboutDialog(SettingsModel *settings, QWidget *parent = 0, bool firstStart = false);
-	~AboutDialog(void);
+	ADPCMDecoder(void);
+	~ADPCMDecoder(void);
 
-	static const char *neroAacUrl;
-
-public slots:
-	int exec();
-	void enableButtons(void);
-	void openLicenseText(void);
-	void showMoreAbout(void);
-	void showAboutQt(void);
-	void showAboutContributors(void);
-
-protected:
-	void showEvent(QShowEvent *e);
+	virtual bool decode(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag);
+	static bool isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion);
+	static QStringList supportedTypes(void);
 
 private:
-	bool m_firstShow;
-	SettingsModel *m_settings;
-
-	QString makeToolText(const QString &toolName, const QString &toolBin, const QString &toolVerFmt, const QString &toolLicense, const QString &toolWebsite, const QString &extraInfo = QString());
-	bool playResoureSound(const QString &library, const unsigned long soundId, const bool async);
+	const QString m_binary;
 };
