@@ -140,6 +140,22 @@
     </message>
     <message>
         <source>n/a</source>
+        <translation>n/a</translation>
+    </message>
+    <message>
+        <source>Monkey&apos;s Audio - Lossless Audio Compressor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Freely available source code, simple SDK and non-restrictive licensing.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>WavPack - Hybrid Lossless Compression</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Completely open audio compression format.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -147,27 +163,27 @@
     <name>AudioFileModel</name>
     <message>
         <source>Profile</source>
-        <translation type="unfinished"></translation>
+        <translation>Profil</translation>
     </message>
     <message>
         <source>Channels</source>
-        <translation type="unfinished"></translation>
+        <translation>Canaux</translation>
     </message>
     <message>
         <source>Samplerate</source>
-        <translation type="unfinished"></translation>
+        <translation>Taux d&apos; échantillonnage</translation>
     </message>
     <message>
         <source>Bitdepth</source>
-        <translation type="unfinished"></translation>
+        <translation>Profondeur de bit</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Type</translation>
     </message>
     <message>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Version</translation>
     </message>
 </context>
 <context>
@@ -880,7 +896,7 @@ Votre dossier TEMP est situé ici:</translation>
     </message>
     <message>
         <source>n/a</source>
-        <translation type="unfinished"></translation>
+        <translation>n/a</translation>
     </message>
 </context>
 <context>
@@ -1053,19 +1069,19 @@ Votre dossier TEMP est situé ici:</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>OK</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished">Annuler</translation>
+        <translation>Annuler</translation>
     </message>
     <message>
         <source>Not Specified</source>
-        <translation type="unfinished"></translation>
+        <translation>Non spécifié</translation>
     </message>
     <message>
         <source>Unknown</source>
-        <translation type="unfinished">Inconnu</translation>
+        <translation>Inconnu</translation>
     </message>
 </context>
 <context>
@@ -1227,7 +1243,7 @@ Votre dossier TEMP est situé ici:</translation>
     </message>
     <message>
         <source>Process was aborted prematurely by the user!</source>
-        <translation type="unfinished"></translation>
+        <translation>Le processus a été abandonné prématurément par l&apos;utilisateur !</translation>
     </message>
 </context>
 <context>

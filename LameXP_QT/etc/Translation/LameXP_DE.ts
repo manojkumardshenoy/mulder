@@ -139,6 +139,22 @@
         <source>n/a</source>
         <translation>n/v</translation>
     </message>
+    <message>
+        <source>Monkey&apos;s Audio - Lossless Audio Compressor</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Freely available source code, simple SDK and non-restrictive licensing.</source>
+        <translation>Frei verfügbarer Quellcode, einfaches SDK und nicht-restriktive Lizenz.</translation>
+    </message>
+    <message>
+        <source>WavPack - Hybrid Lossless Compression</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Completely open audio compression format.</source>
+        <translation>Komplett offenes Audio Kompressionsformat.</translation>
+    </message>
 </context>
 <context>
     <name>AudioFileModel</name>

@@ -282,6 +282,20 @@ void AboutDialog::showMoreAbout(void)
 		"http://www.ac3filter.net/projects/tools"
 	);
 	moreAboutText += makeToolText
+		(
+		tr("WavPack - Hybrid Lossless Compression"),
+		"wvunpack.exe", "v?.??.?",
+		tr("Completely open audio compression format."),
+		"http://www.wavpack.com/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("Monkey's Audio - Lossless Audio Compressor"),
+		"mac.exe", "v?.??",
+		tr("Freely available source code, simple SDK and non-restrictive licensing."),
+		"http://www.monkeysaudio.com/"
+	);
+	moreAboutText += makeToolText
 	(
 		tr("MediaInfo - Media File Analysis Tool"),
 		"mediainfo_i386.exe", "v?.?.??",
