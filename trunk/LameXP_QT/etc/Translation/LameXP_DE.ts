@@ -155,6 +155,10 @@
         <source>Completely open audio compression format.</source>
         <translation>Komplett offenes Audio Kompressionsformat.</translation>
     </message>
+    <message>
+        <source>The True Audio - Lossless Audio Codec</source>
+        <translation></translation>
+    </message>
 </context>
 <context>
     <name>AudioFileModel</name>
@@ -397,10 +401,6 @@
     <message>
         <source>Advanced Options</source>
         <translation>Erweiterte Optionen</translation>
-    </message>
-    <message>
-        <source>More options will be added in a later version, stay tuned!</source>
-        <translation>Weitere Optionen werden in einer späteren Version zur Verfügung stehen!</translation>
     </message>
     <message>
         <source> Encode Now!</source>
@@ -893,6 +893,54 @@
     <message>
         <source>n/a</source>
         <translation>n/v</translation>
+    </message>
+    <message>
+        <source> LAME Algorithm Quality </source>
+        <translation>LAME Algorithmus Qualität</translation>
+    </message>
+    <message>
+        <source>Faster Processing</source>
+        <translation>Schnellere Verarbeitung</translation>
+    </message>
+    <message>
+        <source>Better quality</source>
+        <translation>Bessere Qualität</translation>
+    </message>
+    <message>
+        <source>Best Quality (Very Slow)</source>
+        <translation>Beste Qualität (Sehr Langsam)</translation>
+    </message>
+    <message>
+        <source>High Quality (Recommended)</source>
+        <translation>Höhere Qualität (Empfohlen)</translation>
+    </message>
+    <message>
+        <source>Average Quality (Default)</source>
+        <translation>Mittlere Qualität (Standard)</translation>
+    </message>
+    <message>
+        <source>Low Quality (Fast)</source>
+        <translation>Niedrige Qualität (Schnell)</translation>
+    </message>
+    <message>
+        <source>Poor Quality (Very Fast)</source>
+        <translation>Miese Qualität (Sehr Schnell)</translation>
+    </message>
+    <message>
+        <source> Bitrate Management (LAME and OggEnc2) </source>
+        <translation>Bitraten Verwaltung (LAME und OggEnc2)</translation>
+    </message>
+    <message>
+        <source>Enable Bitrate Management</source>
+        <translation>Bitraten Verwaltung Aktivieren</translation>
+    </message>
+    <message>
+        <source>Minimum (kbps):</source>
+        <translation>Minimum (kbps):</translation>
+    </message>
+    <message>
+        <source>Maximum (kbps):</source>
+        <translation>Maximum (kbps):</translation>
     </message>
 </context>
 <context>

@@ -21,28 +21,18 @@
 
 #pragma once
 
-#include "Encoder_Abstract.h"
+#include "Decoder_Abstract.h"
 
-#include <QObject>
-
-class VorbisEncoder : public AbstractEncoder
+class ALACDecoder : public AbstractDecoder
 {
-	Q_OBJECT
-
 public:
-	VorbisEncoder(void);
-	~VorbisEncoder(void);
+	ALACDecoder(void);
+	~ALACDecoder(void);
 
-	virtual bool encode(const QString &sourceFile, const AudioFileModel &metaInfo, const QString &outputFile, volatile bool *abortFlag);
-	virtual bool isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion);
-	virtual QString extension(void);
-	virtual void setBitrateLimits(int minimumBitrate, int maximumBitrate);
+	virtual bool decode(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag);
+	static bool isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion);
+	static QStringList supportedTypes(void);
 
 private:
-	const QString m_binary_i386;
-	const QString m_binary_sse2;
-	const QString m_binary_x64;
-	int m_configBitrateMaximum;
-	int m_configBitrateMinimum;
-
+	const QString m_binary;
 };

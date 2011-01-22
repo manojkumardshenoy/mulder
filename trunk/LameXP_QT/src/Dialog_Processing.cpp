@@ -435,6 +435,11 @@ void ProcessingDialog::startNextJob(void)
 			MP3Encoder *mp3Encoder = new MP3Encoder();
 			mp3Encoder->setBitrate(m_settings->compressionBitrate());
 			mp3Encoder->setRCMode(m_settings->compressionRCMode());
+			mp3Encoder->setAlgoQuality(m_settings->lameAlgoQuality());
+			if(m_settings->bitrateManagementEnabled())
+			{
+				mp3Encoder->setBitrateLimits(m_settings->bitrateManagementMinRate(), m_settings->bitrateManagementMaxRate());
+			}
 			encoder = mp3Encoder;
 		}
 		break;
@@ -443,6 +448,10 @@ void ProcessingDialog::startNextJob(void)
 			VorbisEncoder *vorbisEncoder = new VorbisEncoder();
 			vorbisEncoder->setBitrate(m_settings->compressionBitrate());
 			vorbisEncoder->setRCMode(m_settings->compressionRCMode());
+			if(m_settings->bitrateManagementEnabled())
+			{
+				vorbisEncoder->setBitrateLimits(m_settings->bitrateManagementMinRate(), m_settings->bitrateManagementMaxRate());
+			}
 			encoder = vorbisEncoder;
 		}
 		break;

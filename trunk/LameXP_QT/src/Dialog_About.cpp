@@ -45,17 +45,15 @@
 //Constants
 const char *AboutDialog::neroAacUrl = "http://www.nero.com/eng/technologies-aac-codec.html";
 
-//Typedef
-struct lamexp_contrib_t
+//Contributors
+static const struct 
 {
 	char *pcFlag;
 	char *pcLanguage;
 	char *pcName;
 	char *pcMail;
-};
-
-//Contributors
-static const struct lamexp_contrib_t g_lamexp_contributors[] =
+}
+g_lamexp_contributors[] =
 {
 	{"en", "Englisch",  "LoRd_MuldeR",         "MuldeR2@GMX.de"       },
 	{"de", "Deutsch",   "LoRd_MuldeR",         "MuldeR2@GMX.de"       },
@@ -294,6 +292,13 @@ void AboutDialog::showMoreAbout(void)
 		"mac.exe", "v?.??",
 		tr("Freely available source code, simple SDK and non-restrictive licensing."),
 		"http://www.monkeysaudio.com/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("The True Audio - Lossless Audio Codec"),
+		"ttaenc.exe", "v?.?.?",
+		tr("Released under the terms of the GNU Lesser General Public License."),
+		"http://tta.sourceforge.net/"
 	);
 	moreAboutText += makeToolText
 	(

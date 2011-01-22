@@ -38,20 +38,19 @@
 // TOOLS
 ////////////////////////////////////////////////////////////
 
-struct lamexp_tool_t
+static const struct
 {
 	char *pcHash;
 	char *pcName;
 	unsigned int uiVersion;
-};
-
-static const struct lamexp_tool_t g_lamexp_tools[] =
+}
+g_lamexp_tools[] =
 {
-	{"153f4274702f3629093b561a31dbf50e2c146305", "alac.exe", UINT_MAX},
-	{"4ecc017a66fe43092110f11494f384e57d99280d", "elevator.exe", UINT_MAX},
+	{"3b41f85dde8d4a5a0f4cd5f461099d0db24610ba", "alac.exe", UINT_MAX},
+	{"fb74ac8b73ad8cba2c3b4e6e61f23401d630dc22", "elevator.exe", UINT_MAX},
 	{"3c647950bccfcc75d0746c0772e7115684be4dc5", "faad.exe", UINT_MAX},
 	{"d33cd86f04bd4067e244d2804466583c7b90a4e2", "flac.exe", 121},
-	{"cf379081035ae6bfb6f7bc22f13bfb7ac6302ac5", "gpgv.exe", 1410},
+	{"9328a50e89b54ec065637496d9681a7e3eebf915", "gpgv.exe", 1411},
 	{"d837bf6ee4dab557d8b02d46c75a24e58980fffa", "gpgv.gpg", UINT_MAX},
 	{"143fc001a2f6c56fe1b9e6f8a2eb2b53b9e1e504", "lame.exe", 39910},
 	{"a4e929cfaa42fa2e61a3d0c6434c77a06d45aef3", "mac.exe", 406},
@@ -68,11 +67,11 @@ static const struct lamexp_tool_t g_lamexp_tools[] =
 	{"2d08c3586f9cf99f2e4c89ac54eeb595f63aef61", "sox.exe", 1431},
 	{"346ce516281c97e92e1b8957ddeca52edcf2d056", "speexdec.exe", UINT_MAX},
 	{"8a74b767cfe88bf88c068fdae0de02d65589d25e", "takc.exe", UINT_MAX},
-	{"1c5cedb56358a0e8c4590a863a97c94d7d7e98b2", "ttaenc.exe", UINT_MAX},
+	{"d6e0de1e7a2d9dee10d06ae0b6b4f93b63205920", "ttaenc.exe", 341},
 	{"8c842eef65248b46fa6cb9a9e5714f575672d999", "valdec.exe", 31},
 	{"8159f4e824b3e343ece95ba6dbb5e16da9c4866e", "volumax.exe", UINT_MAX},
 	{"62e2805d1b2eb2a4d86a5ca6e6ea58010d05d2a7", "wget.exe", UINT_MAX},
-	{"a17011961aa8696bc935e097b3242d33c38a9842", "wupdate.exe", UINT_MAX},
+	{"7380cb661ae7fbda82f3e8ecea6a2776101c9444", "wupdate.exe", UINT_MAX},
 	{"b7d14b3540d24df13119a55d97623a61412de6e3", "wvunpack.exe", 4601},
 	{NULL, NULL, NULL}
 };
