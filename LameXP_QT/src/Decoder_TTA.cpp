@@ -19,35 +19,37 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "Decoder_AC3.h"
+#include "Decoder_TTA.h"
 
 #include "Global.h"
 
 #include <QDir>
 #include <QProcess>
 #include <QRegExp>
+#include <QUuid>
 
-AC3Decoder::AC3Decoder(void)
+TTADecoder::TTADecoder(void)
 :
-	m_binary(lamexp_lookup_tool("valdec.exe"))
+	m_binary(lamexp_lookup_tool("ttaenc.exe"))
 {
 	if(m_binary.isEmpty())
 	{
-		throw "Error initializing Valib decoder. Tool 'valdec.exe' is not registred!";
+		throw "Error initializing TTA decoder. Tool 'ttaenc.exe' is not registred!";
 	}
 }
 
-AC3Decoder::~AC3Decoder(void)
+TTADecoder::~TTADecoder(void)
 {
 }
 
-bool AC3Decoder::decode(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag)
+bool TTADecoder::decode(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag)
 {
 	QProcess process;
 	QStringList args;
 
+	args << "-d";
+	args << "-o" << QDir::toNativeSeparators(outputFile);
 	args << QDir::toNativeSeparators(sourceFile);
-	args << "-w" << QDir::toNativeSeparators(outputFile);
 
 	if(!startProcess(process, m_binary, args))
 	{
@@ -57,7 +59,8 @@ bool AC3Decoder::decode(const QString &sourceFile, const QString &outputFile, vo
 	bool bTimeout = false;
 	bool bAborted = false;
 
-	QRegExp regExp("\\[(\\d+)\\.(\\d+)%\\]");
+	//The TTA Decoder doesn't actually send any status updates :-[
+	emit statusUpdated(20 + (QUuid::createUuid().data1 % 80));
 
 	while(process.state() != QProcess::NotRunning)
 	{
@@ -68,11 +71,11 @@ bool AC3Decoder::decode(const QString &sourceFile, const QString &outputFile, vo
 			emit messageLogged("\nABORTED BY USER !!!");
 			break;
 		}
-		process.waitForReadyRead();
+		process.waitForReadyRead(180000);
 		if(!process.bytesAvailable() && process.state() == QProcess::Running)
 		{
 			process.kill();
-			qWarning("Valdec process timed out <-- killing!");
+			qWarning("TTAEnc process timed out <-- killing!");
 			bTimeout = true;
 			break;
 		}
@@ -80,13 +83,7 @@ bool AC3Decoder::decode(const QString &sourceFile, const QString &outputFile, vo
 		{
 			QByteArray line = process.readLine();
 			QString text = QString::fromUtf8(line.constData()).simplified();
-			if(regExp.lastIndexIn(text) >= 0)
-			{
-				bool ok = false;
-				int progress = regExp.cap(1).toInt(&ok);
-				if(ok) emit statusUpdated(progress);
-			}
-			else if(!text.isEmpty())
+			if(!text.isEmpty())
 			{
 				emit messageLogged(text);
 			}
@@ -111,25 +108,11 @@ bool AC3Decoder::decode(const QString &sourceFile, const QString &outputFile, vo
 	return true;
 }
 
-bool AC3Decoder::isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion)
+bool TTADecoder::isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion)
 {
-	if(containerType.compare("AC-3", Qt::CaseInsensitive) == 0)
+	if(containerType.compare("TTA", Qt::CaseInsensitive) == 0)
 	{
-		if(formatType.compare("AC-3", Qt::CaseInsensitive) == 0)
-		{
-			return true;
-		}
-	}
-	else if(containerType.compare("DTS", Qt::CaseInsensitive) == 0)
-	{
-		if(formatType.compare("DTS", Qt::CaseInsensitive) == 0)
-		{
-			return true;
-		}
-	}
-	else if(containerType.compare("Wave", Qt::CaseInsensitive) == 0)
-	{
-		if(formatType.compare("AC-3", Qt::CaseInsensitive) == 0 || formatType.compare("DTS", Qt::CaseInsensitive) == 0)
+		if(formatType.compare("TTA", Qt::CaseInsensitive) == 0)
 		{
 			return true;
 		}
@@ -138,8 +121,7 @@ bool AC3Decoder::isFormatSupported(const QString &containerType, const QString &
 	return false;
 }
 
-QStringList AC3Decoder::supportedTypes(void)
+QStringList TTADecoder::supportedTypes(void)
 {
-	return QStringList() << "AC-3 / ATSC A/52 (*.ac3 *.wav)" << "Digital Theater System (*.dts)";
+	return QStringList() << "The True Audio (*.tta)";
 }
-

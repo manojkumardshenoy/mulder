@@ -142,18 +142,22 @@
     </message>
     <message>
         <source>Monkey&apos;s Audio - Lossless Audio Compressor</source>
-        <translation type="unfinished"></translation>
+        <translation>Monkey&apos;s Audio - Compresor de audio sin pérdida</translation>
     </message>
     <message>
         <source>Freely available source code, simple SDK and non-restrictive licensing.</source>
-        <translation type="unfinished"></translation>
+        <translation>Código fuente disponible, SDK simple y licencias no restrictivas.</translation>
     </message>
     <message>
         <source>WavPack - Hybrid Lossless Compression</source>
-        <translation type="unfinished"></translation>
+        <translation>WavPack - Compresión híbrida sin pérdida</translation>
     </message>
     <message>
         <source>Completely open audio compression format.</source>
+        <translation>Formato de comresión de audio completamente abierto.</translation>
+    </message>
+    <message>
+        <source>The True Audio - Lossless Audio Codec</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -397,10 +401,6 @@
     <message>
         <source>Advanced Options</source>
         <translation>Opciones avanzadas</translation>
-    </message>
-    <message>
-        <source>More options will be added in a later version, stay tuned!</source>
-        <translation>¡Permanezcan atentos, se añadirán más opciones en las próximas versiones!</translation>
     </message>
     <message>
         <source> Encode Now!</source>
@@ -893,6 +893,54 @@
     <message>
         <source>n/a</source>
         <translation>n/d</translation>
+    </message>
+    <message>
+        <source> LAME Algorithm Quality </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Faster Processing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Better quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Best Quality (Very Slow)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>High Quality (Recommended)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Average Quality (Default)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Low Quality (Fast)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poor Quality (Very Fast)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Bitrate Management (LAME and OggEnc2) </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable Bitrate Management</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum (kbps):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum (kbps):</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

@@ -79,6 +79,11 @@ public:
 	MAKE_OPTION_DEC3(wmaDecoderNotificationsEnabled)
 	MAKE_OPTION_DEC3(dropBoxWidgetEnabled)
 	MAKE_OPTION_DEC2(currentLanguage);
+	MAKE_OPTION_DEC1(lameAlgoQuality);
+	MAKE_OPTION_DEC3(bitrateManagementEnabled);
+	MAKE_OPTION_DEC1(bitrateManagementMinRate);
+	MAKE_OPTION_DEC1(bitrateManagementMaxRate);
+
 
 	//Misc
 	void validate(void);

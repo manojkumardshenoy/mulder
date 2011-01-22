@@ -212,6 +212,17 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	connect(sliderBitrate, SIGNAL(valueChanged(int)), this, SLOT(updateBitrate(int)));
 	updateEncoder(m_encoderButtonGroup->checkedId());
 
+	//Setup "Advanced Options" tab
+	sliderLameAlgoQuality->setValue(m_settings->lameAlgoQuality());
+	spinBoxBitrateManagementMin->setValue(m_settings->bitrateManagementMinRate());
+	spinBoxBitrateManagementMax->setValue(m_settings->bitrateManagementMaxRate());
+	while(checkBoxBitrateManagement->isChecked() != m_settings->bitrateManagementEnabled()) checkBoxBitrateManagement->click();
+	connect(sliderLameAlgoQuality, SIGNAL(valueChanged(int)), this, SLOT(updateLameAlgoQuality(int)));
+	connect(checkBoxBitrateManagement, SIGNAL(clicked(bool)), this, SLOT(bitrateManagementEnabledChanged(bool)));
+	connect(spinBoxBitrateManagementMin, SIGNAL(valueChanged(int)), this, SLOT(bitrateManagementMinChanged(int)));
+	connect(spinBoxBitrateManagementMax, SIGNAL(valueChanged(int)), this, SLOT(bitrateManagementMaxChanged(int)));
+	updateLameAlgoQuality(sliderLameAlgoQuality->value());
+	
 	//Activate file menu actions
 	connect(actionOpenFolder, SIGNAL(triggered()), this, SLOT(openFolderActionActivated()));
 
@@ -451,6 +462,7 @@ void MainWindow::changeEvent(QEvent *e)
 
 		m_metaInfoModel->clearData();
 		updateEncoder(m_settings->compressionEncoder());
+		updateLameAlgoQuality(sliderLameAlgoQuality->value());
 	}
 }
 
@@ -600,12 +612,11 @@ void MainWindow::windowShown(void)
 	//Check for expiration
 	if(lamexp_version_demo())
 	{
-		QDate expireDate = lamexp_version_date().addDays(14);
-		if(QDate::currentDate() >= expireDate)
+		if(QDate::currentDate() >= lamexp_version_expires())
 		{
 			qWarning("Binary has expired !!!");
 			PlaySound(MAKEINTRESOURCE(IDR_WAVE_WHAMMY), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
-			if(QMessageBox::warning(this, tr("LameXP - Expired"), QString("<nobr>%1<br>%2</nobr>").arg(tr("This demo (pre-release) version of LameXP has expired at %1.").arg(expireDate.toString(Qt::ISODate)), tr("LameXP is free software and release versions won't expire.")), tr("Check for Updates"), tr("Exit Program")) == 0)
+			if(QMessageBox::warning(this, tr("LameXP - Expired"), QString("<nobr>%1<br>%2</nobr>").arg(tr("This demo (pre-release) version of LameXP has expired at %1.").arg(lamexp_version_expires().toString(Qt::ISODate)), tr("LameXP is free software and release versions won't expire.")), tr("Check for Updates"), tr("Exit Program")) == 0)
 			{
 				checkUpdatesActionActivated();
 			}
@@ -1547,6 +1558,81 @@ void MainWindow::updateBitrate(int value)
 		break;
 	}
 }
+
+
+/*
+ * Lame algorithm quality changed
+ */
+void MainWindow::updateLameAlgoQuality(int value)
+{
+	QString text;
+
+	switch(value)
+	{
+	case 4:
+		text = tr("Best Quality (Very Slow)");
+		break;
+	case 3:
+		text = tr("High Quality (Recommended)");
+		break;
+	case 2:
+		text = tr("Average Quality (Default)");
+		break;
+	case 1:
+		text = tr("Low Quality (Fast)");
+		break;
+	case 0:
+		text = tr("Poor Quality (Very Fast)");
+		break;
+	}
+
+	if(!text.isEmpty())
+	{
+		m_settings->lameAlgoQuality(value);
+		labelLameAlgoQuality->setText(text);
+	}
+}
+
+/*
+ * Bitrate management endabled/disabled
+ */
+void MainWindow::bitrateManagementEnabledChanged(bool checked)
+{
+	m_settings->bitrateManagementEnabled(checked);
+}
+
+/*
+ * Minimum bitrate has changed
+ */
+void MainWindow::bitrateManagementMinChanged(int value)
+{
+	if(value > spinBoxBitrateManagementMax->value())
+	{
+		spinBoxBitrateManagementMin->setValue(spinBoxBitrateManagementMax->value());
+		m_settings->bitrateManagementMinRate(spinBoxBitrateManagementMax->value());
+	}
+	else
+	{
+		m_settings->bitrateManagementMinRate(value);
+	}
+}
+
+/*
+ * Maximum bitrate has changed
+ */
+void MainWindow::bitrateManagementMaxChanged(int value)
+{
+	if(value < spinBoxBitrateManagementMin->value())
+	{
+		spinBoxBitrateManagementMax->setValue(spinBoxBitrateManagementMin->value());
+		m_settings->bitrateManagementMaxRate(spinBoxBitrateManagementMin->value());
+	}
+	else
+	{
+		m_settings->bitrateManagementMaxRate(value);
+	}
+}
+
 
 /*
  * Model reset

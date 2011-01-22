@@ -37,7 +37,17 @@ public:
 	virtual bool isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion);
 	virtual QString extension(void);
 	virtual bool requiresDownmix(void);
+	
+	//Advanced options
+	virtual void setAlgoQuality(int value);
+	virtual void setBitrateLimits(int minimumBitrate, int maximumBitrate);
+
 
 private:
 	const QString m_binary;
+	int m_algorithmQuality;
+	int m_configBitrateMaximum;
+	int m_configBitrateMinimum;
+
+	int clipBitrate(int bitrate);
 };

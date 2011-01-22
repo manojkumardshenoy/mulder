@@ -26,8 +26,11 @@
 
 #include <QProcess>
 #include <QDir>
+#include <limits.h>
 
 #define IS_UNICODE(STR) (qstricmp(STR.toUtf8().constData(), QString::fromLocal8Bit(STR.toLocal8Bit()).toUtf8().constData()))
+
+static const int g_lameAgorithmQualityLUT[] = {9, 7, 5, 2, 0, INT_MAX};
 
 MP3Encoder::MP3Encoder(void)
 :
@@ -37,6 +40,10 @@ MP3Encoder::MP3Encoder(void)
 	{
 		throw "Error initializing MP3 encoder. Tool 'lame.exe' is not registred!";
 	}
+	
+	m_algorithmQuality = 3;
+	m_configBitrateMaximum = 0;
+	m_configBitrateMinimum = 0;
 }
 
 MP3Encoder::~MP3Encoder(void)
@@ -49,7 +56,7 @@ bool MP3Encoder::encode(const QString &sourceFile, const AudioFileModel &metaInf
 	QStringList args;
 
 	args << "--nohist";
-	args << "-h";
+	args << "-q" << QString::number(g_lameAgorithmQualityLUT[m_algorithmQuality]);
 		
 	switch(m_configRCMode)
 	{
@@ -66,6 +73,15 @@ bool MP3Encoder::encode(const QString &sourceFile, const AudioFileModel &metaInf
 	default:
 		throw "Bad rate-control mode!";
 		break;
+	}
+
+	if((m_configBitrateMaximum > 0) && (m_configBitrateMinimum > 0) && (m_configBitrateMinimum <= m_configBitrateMaximum))
+	{
+		if(m_configRCMode != SettingsModel::CBRMode)
+		{
+			args << "-b" << QString::number(clipBitrate(m_configBitrateMinimum));
+			args << "-B" << QString::number(clipBitrate(m_configBitrateMaximum));
+		}
 	}
 
 	if(!metaInfo.fileName().isEmpty()) args << (IS_UNICODE(metaInfo.fileName()) ? "--uTitle" : "--lTitle") << metaInfo.fileName();
@@ -178,3 +194,40 @@ bool MP3Encoder::requiresDownmix(void)
 {
 	return true;
 }
+
+void MP3Encoder::setAlgoQuality(int value)
+{
+	m_algorithmQuality = value;
+}
+
+void MP3Encoder::setBitrateLimits(int minimumBitrate, int maximumBitrate)
+{
+	m_configBitrateMinimum = minimumBitrate;
+	m_configBitrateMaximum = maximumBitrate;
+}
+
+int MP3Encoder::clipBitrate(int bitrate)
+{
+	int targetBitrate = min(max(bitrate, 32), 320);
+	
+	int minDiff = INT_MAX;
+	int minIndx = -1;
+
+	for(int i = 0; SettingsModel::mp3Bitrates[i] > 0; i++)
+	{
+		int currentDiff = abs(targetBitrate - SettingsModel::mp3Bitrates[i]);
+		if(currentDiff < minDiff)
+		{
+			minDiff = currentDiff;
+			minIndx = i;
+		}
+	}
+
+	if(minIndx >= 0)
+	{
+		return SettingsModel::mp3Bitrates[minIndx];
+	}
+
+	return targetBitrate;
+}
+

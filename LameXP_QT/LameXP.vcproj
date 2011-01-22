@@ -307,6 +307,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\Decoder_ALAC.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\Decoder_FLAC.cpp"
 				>
 			</File>
@@ -316,6 +320,10 @@
 			</File>
 			<File
 				RelativePath=".\src\Decoder_MP3.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Decoder_TTA.cpp"
 				>
 			</File>
 			<File
@@ -531,6 +539,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\Decoder_ALAC.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\Decoder_FLAC.h"
 				>
 			</File>
@@ -540,6 +552,10 @@
 			</File>
 			<File
 				RelativePath=".\src\Decoder_MP3.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Decoder_TTA.h"
 				>
 			</File>
 			<File
