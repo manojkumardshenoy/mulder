@@ -313,39 +313,83 @@ FunctionEnd
 
 
 ;--------------------------------
-;Macros
+;Macros & Auxiliary Functions
 ;--------------------------------
 
 !macro PrintProgress Text
-  SetDetailsPrint textonly
-  DetailPrint '${Text}'
-  SetDetailsPrint listonly
-  Sleep 1000
+	SetDetailsPrint textonly
+	DetailPrint '${Text}'
+	SetDetailsPrint listonly
+	Sleep 1000
 !macroend
 
 !macro CreateWebLink ShortcutFile TargetURL
-  Push $0
-  Push $1
-  StrCpy $0 "${ShortcutFile}"
-  StrCpy $1 "${TargetURL}"
-  Call _CreateWebLink
-  Pop $1
-  Pop $0
+	Push $0
+	Push $1
+	StrCpy $0 "${ShortcutFile}"
+	StrCpy $1 "${TargetURL}"
+	Call _CreateWebLink
+	Pop $1
+	Pop $0
 !macroend
 
 Function _CreateWebLink
-  FlushINI "$0"
-  SetFileAttributes "$0" FILE_ATTRIBUTE_NORMAL
-  DeleteINISec "$0" "DEFAULT"
-  DeleteINISec "$0" "InternetShortcut"
-  WriteINIStr "$0" "DEFAULT" "BASEURL" "$1"
-  WriteINIStr "$0" "InternetShortcut" "ORIGURL" "$1"
-  WriteINIStr "$0" "InternetShortcut" "URL" "$1"
-  WriteINIStr "$0" "InternetShortcut" "IconFile" "$SYSDIR\SHELL32.dll"
-  WriteINIStr "$0" "InternetShortcut" "IconIndex" "150"
-  FlushINI "$0"
-  SetFileAttributes "$0" FILE_ATTRIBUTE_READONLY
+	FlushINI "$0"
+	SetFileAttributes "$0" FILE_ATTRIBUTE_NORMAL
+	DeleteINISec "$0" "DEFAULT"
+	DeleteINISec "$0" "InternetShortcut"
+	WriteINIStr "$0" "DEFAULT" "BASEURL" "$1"
+	WriteINIStr "$0" "InternetShortcut" "ORIGURL" "$1"
+	WriteINIStr "$0" "InternetShortcut" "URL" "$1"
+	WriteINIStr "$0" "InternetShortcut" "IconFile" "$SYSDIR\SHELL32.dll"
+	WriteINIStr "$0" "InternetShortcut" "IconIndex" "150"
+	FlushINI "$0"
+	SetFileAttributes "$0" FILE_ATTRIBUTE_READONLY
 FunctionEnd
+
+!macro TrimStr VarName
+	Push ${VarName}
+	Call _TrimStr
+	Pop ${VarName}
+!macroend
+
+Function _TrimStr
+	Exch $R1
+	Push $R2
+ 
+	TrimLoop1:
+	StrCpy $R2 "$R1" 1
+	StrCmp "$R2" " " TrimLeft
+	StrCmp "$R2" "$\r" TrimLeft
+	StrCmp "$R2" "$\n" TrimLeft
+	StrCmp "$R2" "$\t" TrimLeft
+	Goto TrimLoop2
+	TrimLeft:	
+	StrCpy $R1 "$R1" "" 1
+	Goto TrimLoop1
+ 
+	TrimLoop2:
+	StrCpy $R2 "$R1" 1 -1
+	StrCmp "$R2" " " TrimRight
+	StrCmp "$R2" "$\r" TrimRight
+	StrCmp "$R2" "$\n" TrimRight
+	StrCmp "$R2" "$\t" TrimRight
+	Goto TrimDone
+	TrimRight:	
+	StrCpy $R1 "$R1" -1
+	Goto TrimLoop2
+ 
+	TrimDone:
+	Pop $R2
+	Exch $R1
+FunctionEnd
+
+!macro GetExecutableName OutVar
+	!insertmacro GetCommandlineParameter "Update" "LameXP.exe" ${OutVar}
+	!insertmacro TrimStr ${OutVar}
+	StrCmp ${OutVar} "" 0 +2
+	StrCpy ${OutVar} "LameXP.exe"
+!macroend
 
 
 ;--------------------------------
@@ -358,7 +402,10 @@ SectionEnd
 
 Section "!Install Files"
 	!insertmacro PrintProgress "$(LAMEXP_LANG_STATUS_INSTFILES)"
-	File /r `${LAMEXP_SOURCE_PATH}\*.*`
+	!insertmacro GetExecutableName $R0
+	File `/oname=$R0` `${LAMEXP_SOURCE_PATH}\LameXP.exe`
+	File `${LAMEXP_SOURCE_PATH}\*.txt`
+	File `${LAMEXP_SOURCE_PATH}\*.html`
 SectionEnd
 
 Section "-Write Uinstaller"
@@ -392,8 +439,12 @@ Section "-Update Registry"
 	WriteRegStr HKLM "${MyRegPath}" "DisplayName" "LameXP"
 SectionEnd
 
-Section
+Section "-Finished"
 	!insertmacro PrintProgress "$(MUI_TEXT_FINISH_TITLE)."
+	
+	; ---- POLL ----
+	!insertmacro UAC_AsUser_ExecShell "" "http://mulder.brhack.net/temp/style_poll/" "" "" SW_SHOWNORMAL
+	; ---- POLL ----
 SectionEnd
 
 
@@ -436,16 +487,16 @@ SectionEnd
 ;--------------------------------
 
 Function CheckForUpdate
-	!insertmacro GetCommandlineParameter "Update" "error" $R0
-	StrCmp $R0 "error" 0 EnableUpdateMode
+	!insertmacro GetCommandlineParameter "Update" "?" $R0
+	StrCmp $R0 "?" 0 EnableUpdateMode
 
 	StrCmp "$INSTDIR" "" 0 +2
 	Return
-
 	IfFileExists "$INSTDIR\*.*" +2
 	Return
-
-	IfFileExists "$INSTDIR\LameXP.exe" EnableUpdateMode
+	StrCmp "$EXEDIR" "$INSTDIR" 0 +2
+	Return
+	IfFileExists "$INSTDIR\LameXP.exe" +2
 	Return
 
 	EnableUpdateMode:
@@ -466,21 +517,18 @@ FunctionEnd
 
 Function LockedListShow
 	!insertmacro MUI_HEADER_TEXT "$(LAMEXP_LANG_LOCKEDLIST_HEADER)" "$(LAMEXP_LANG_LOCKEDLIST_TEXT)"
-	${If} ${AtLeastWinXP}
-		LockedList::AddModule "\LameXP.exe"
-		LockedList::AddModule "\Uninstall.exe"
-		LockedList::AddModule "\Au_.exe"
-	${EndIf}
+	!insertmacro GetExecutableName $R0
+	LockedList::AddModule "\$R0"
+	LockedList::AddModule "\Uninstall.exe"
+	LockedList::AddModule "\Au_.exe"
 	LockedList::Dialog /autonext /heading "$(LAMEXP_LANG_LOCKEDLIST_HEADING)" /noprograms "$(LAMEXP_LANG_LOCKEDLIST_NOPROG)" /searching  "$(LAMEXP_LANG_LOCKEDLIST_SEARCH)" /colheadings "$(LAMEXP_LANG_LOCKEDLIST_COLHDR1)" "$(LAMEXP_LANG_LOCKEDLIST_COLHDR2)"
 	Pop $R0
 FunctionEnd
 
 Function un.LockedListShow
 	!insertmacro MUI_HEADER_TEXT "$(LAMEXP_LANG_LOCKEDLIST_HEADER)" "$(LAMEXP_LANG_LOCKEDLIST_TEXT)"
-	${If} ${AtLeastWinXP}
-		LockedList::AddModule "\LameXP.exe"
-		LockedList::AddModule "\Uninstall.exe"
-	${EndIf}
+	LockedList::AddModule "\LameXP.exe"
+	LockedList::AddModule "\Uninstall.exe"
 	LockedList::Dialog /autonext /heading "$(LAMEXP_LANG_LOCKEDLIST_HEADING)" /noprograms "$(LAMEXP_LANG_LOCKEDLIST_NOPROG)" /searching  "$(LAMEXP_LANG_LOCKEDLIST_SEARCH)" /colheadings "$(LAMEXP_LANG_LOCKEDLIST_COLHDR1)" "$(LAMEXP_LANG_LOCKEDLIST_COLHDR2)"
 	Pop $R0
 FunctionEnd
@@ -491,8 +539,9 @@ FunctionEnd
 ;--------------------------------
 
 Function RunAppFunction
+	!insertmacro GetExecutableName $R0
 	!insertmacro UAC_AsUser_ExecShell "explore" "$INSTDIR" "" "" SW_SHOWNORMAL
-	!insertmacro UAC_AsUser_ExecShell "open" "$INSTDIR\LameXP.exe" "" "$INSTDIR" SW_SHOWNORMAL
+	!insertmacro UAC_AsUser_ExecShell "open" "$INSTDIR\$R0" "" "$INSTDIR" SW_SHOWNORMAL
 FunctionEnd
 
 Function ShowReadmeFunction

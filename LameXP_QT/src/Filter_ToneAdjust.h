@@ -21,36 +21,18 @@
 
 #pragma once
 
-#include "Encoder_Abstract.h"
+#include "Filter_Abstract.h"
 
-#include <QObject>
-
-class MP3Encoder : public AbstractEncoder
+class ToneAdjustFilter : public AbstractFilter
 {
-	Q_OBJECT
-
 public:
-	MP3Encoder(void);
-	~MP3Encoder(void);
+	ToneAdjustFilter(int bass = 0, int treble = 0);
+	~ToneAdjustFilter(void);
 
-	virtual bool encode(const QString &sourceFile, const AudioFileModel &metaInfo, const QString &outputFile, volatile bool *abortFlag);
-	virtual bool isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion);
-	virtual QString extension(void);
-	virtual bool requiresDownmix(void);
-	
-	//Advanced options
-	virtual void setAlgoQuality(int value);
-	virtual void setBitrateLimits(int minimumBitrate, int maximumBitrate);
-	virtual void setSamplingRate(int value);
-	virtual void setChannelMode(int value);
+	virtual bool apply(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag);
 
 private:
 	const QString m_binary;
-	int m_algorithmQuality;
-	int m_configBitrateMaximum;
-	int m_configBitrateMinimum;
-	int m_configSamplingRate;
-	int m_configChannelMode;
-
-	int clipBitrate(int bitrate);
+	int m_bass;
+	int m_treble;
 };

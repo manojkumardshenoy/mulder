@@ -27,6 +27,9 @@
 #include <QStringList>
 
 class AudioFileModel;
+class QFile;
+class QDir;
+class QFileInfo;
 
 ////////////////////////////////////////////////////////////
 // Splash Thread

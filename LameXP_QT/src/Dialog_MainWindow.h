@@ -83,6 +83,16 @@ private slots:
 	void bitrateManagementEnabledChanged(bool checked);
 	void bitrateManagementMinChanged(int value);
 	void bitrateManagementMaxChanged(int value);
+	void samplingRateChanged(int value);
+	void channelModeChanged(int value);
+	void neroAACProfileChanged(int value);
+	void neroAAC2PassChanged(bool checked);
+	void normalizationEnabledChanged(bool checked);
+	void normalizationMaxVolumeChanged(double volume);
+	void toneAdjustBassChanged(double value);
+	void toneAdjustTrebleChanged(double value);
+	void toneAdjustTrebleReset();
+	void resetAdvancedOptionsButtonClicked();
 	void sourceModelChanged(void);
 	void metaTagsEnabledChanged(void);
 	void playlistEnabledChanged(void);
@@ -100,6 +110,7 @@ private slots:
 	void disableNeroAacNotificationsActionTriggered(bool checked);
 	void disableWmaDecoderNotificationsActionTriggered(bool checked);
 	void showDropBoxWidgetActionTriggered(bool checked);
+	void disableShellIntegrationActionTriggered(bool);
 
 protected:
 	void showEvent(QShowEvent *event);
@@ -112,6 +123,7 @@ protected:
 
 private:
 	void addFiles(const QStringList &files);
+	void installWMADecoder(void);
 
 	bool m_accepted;
 	bool m_firstTimeShown;

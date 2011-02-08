@@ -4,10 +4,6 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <source>LameXP - Audio Encoder Front-end</source>
-        <translation>LameXP - Interfaccia per Encoder Audio</translation>
-    </message>
-    <message>
         <source>Please visit %1 for news and updates!</source>
         <translation>Per favore visita %1 per novità ed aggiornamenti!</translation>
     </message>
@@ -72,24 +68,12 @@
         <translation>Il seguente software di terze parti è usato in LameXP:</translation>
     </message>
     <message>
-        <source>LAME - OpenSource mp3 Encoder</source>
-        <translation>LAME - Encoder mp3 OpenSource</translation>
-    </message>
-    <message>
         <source>Released under the terms of the GNU Lesser General Public License.</source>
         <translation>Rilasciato sotto i termini della GNU Leser General Public License.</translation>
     </message>
     <message>
-        <source>OggEnc - Ogg Vorbis Encoder</source>
-        <translation>OggEnc - Encoder Ogg Vorbis</translation>
-    </message>
-    <message>
         <source>Completely open and patent-free audio encoding technology.</source>
         <translation>Tecnologia di codifica audio completamente libera e non vincolata da brevetti.</translation>
-    </message>
-    <message>
-        <source>Nero AAC reference MPEG-4 Encoder</source>
-        <translation>Encoder Nero AAC reference MPEG-4</translation>
     </message>
     <message>
         <source>Freeware state-of-the-art HE-AAC encoder with 2-Pass support.</source>
@@ -100,28 +84,8 @@
         <translation>Disponibile dal sito web fornitore come download libero:</translation>
     </message>
     <message>
-        <source>FLAC - Free Lossless Audio Codec</source>
-        <translation>FLAC - Codificatore Audio Libero Senza Perdite</translation>
-    </message>
-    <message>
         <source>Open and patent-free lossless audio compression technology.</source>
         <translation>Tecnologia di compressione audio libera e non vincolata da brevetti.</translation>
-    </message>
-    <message>
-        <source>AC3Filter Tools - AC3/DTS Decoder</source>
-        <translation>AC3Filter Tools - Decoder AC3/DTS</translation>
-    </message>
-    <message>
-        <source>MediaInfo - Media File Analysis Tool</source>
-        <translation>MediaInfo - Utilità per Analisi di File Multimediali</translation>
-    </message>
-    <message>
-        <source>SoX - Sound eXchange</source>
-        <translation>SoX - Sound eXchange</translation>
-    </message>
-    <message>
-        <source>GnuPG - The GNU Privacy Guard</source>
-        <translation>GnuPG - The GNU Privacy Guard</translation>
     </message>
     <message>
         <source>By Mark James, released under the Creative Commons &apos;by&apos; License.</source>
@@ -132,15 +96,7 @@
         <translation>Riguardo Software Terze Parti</translation>
     </message>
     <message>
-        <source>Silk Icons - Over 700  icons in PNG format</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>n/a</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Monkey&apos;s Audio - Lossless Audio Compressor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -148,15 +104,95 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>WavPack - Hybrid Lossless Compression</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Completely open audio compression format.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The True Audio - Lossless Audio Codec</source>
+        <source>Released under the terms of the GNU General Public License.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of thrird-party software used in LameXP belongs to the individual authors.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LameXP &amp;minus; Audio Encoder Front-end</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LAME &amp;minus; OpenSource mp3 Encoder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OggEnc &amp;minus; Ogg Vorbis Encoder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FLAC &amp;minus; Free Lossless Audio Codec</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>mpg123 &amp;minus; Fast Console MPEG Audio Player/Decoder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FAAD &amp;minus; OpenSource MPEG-4 and MPEG-2 AAC Decoder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AC3Filter Tools &amp;minus; AC3/DTS Decoder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>WavPack &amp;minus; Hybrid Lossless Compression</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Monkey&apos;s Audio &amp;minus; Lossless Audio Compressor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The True Audio &amp;minus; Lossless Audio Codec</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MediaInfo &amp;minus; Media File Analysis Tool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SoX &amp;minus; Sound eXchange</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GnuPG &amp;minus; The GNU Privacy Guard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Silk Icons &amp;minus; Over 700  icons in PNG format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nero AAC Reference MPEG-4 Encoder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Musepack &amp;minus; Living Audio Compression</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Shorten &amp;minus; Lossless Audio Compressor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Speex &amp;minus; Free Codec For Free Speech</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open Source patent-free audio format designed for speech.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GNU Wget &amp;minus; Software for retrieving files using HTTP</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -196,6 +232,10 @@
     <message>
         <source>All files</source>
         <translation>Tutti i files</translation>
+    </message>
+    <message>
+        <source>Playlists</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -942,6 +982,146 @@
         <source>Maximum (kbps):</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Channel Mode / Sampling Rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto Select (Default)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Joint Stereo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forced Joint Stereo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simple</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dual Mono</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mono</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MP3 Channel Mode:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>16.000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>22.050</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>24.000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>32.000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>44.100</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>48.000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sampling Rate (Hz):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nero AAC Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable 2-Pass Processing (ABR Mode)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select AAC Profile:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enforce LC-AAC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enforce HE-AAC (AAC + SBR)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto Select (Recommended)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enforce HE-AAC v2 (AAC + SBR + PS)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Volume Normalization </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable Normalization Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Peak Volume (dB):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reset Advanced Options </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Encode!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Tone Adjustment </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adjust Treble (dB):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adjust Bass (dB):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disable Shell Integration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Shell Integration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do you really want to disable the LameXP shell integration?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The LameXP shell integration has been disabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The LameXP shell integration has been re-enabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -1289,6 +1469,10 @@
         <source>Process was aborted prematurely by the user!</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Multi-threading enabled: Running %1 instances in parallel!</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ProgressModel</name>
@@ -1299,6 +1483,17 @@
     <message>
         <source>Status</source>
         <translation>Stato</translation>
+    </message>
+</context>
+<context>
+    <name>ShellIntegration</name>
+    <message>
+        <source>Audio File supported by LameXP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Convert this file with LameXP v%1</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

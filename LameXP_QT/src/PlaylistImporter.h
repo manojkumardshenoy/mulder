@@ -21,36 +21,35 @@
 
 #pragma once
 
-#include "Encoder_Abstract.h"
+class QFile;
+class QDir;
+class QFileInfo;
+class QStringList;
+class QString;
 
-#include <QObject>
-
-class MP3Encoder : public AbstractEncoder
+class PlaylistImporter
 {
-	Q_OBJECT
-
 public:
-	MP3Encoder(void);
-	~MP3Encoder(void);
+	enum playlist_t
+	{
+		notPlaylist,
+		m3uPlaylist,
+		plsPlaylist,
+		wplPlaylist
+	};
 
-	virtual bool encode(const QString &sourceFile, const AudioFileModel &metaInfo, const QString &outputFile, volatile bool *abortFlag);
-	virtual bool isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion);
-	virtual QString extension(void);
-	virtual bool requiresDownmix(void);
-	
-	//Advanced options
-	virtual void setAlgoQuality(int value);
-	virtual void setBitrateLimits(int minimumBitrate, int maximumBitrate);
-	virtual void setSamplingRate(int value);
-	virtual void setChannelMode(int value);
+	static const char *supportedExtensions;
+	static bool importPlaylist(QStringList &fileList, const QString &playlistFile);
 
 private:
-	const QString m_binary;
-	int m_algorithmQuality;
-	int m_configBitrateMaximum;
-	int m_configBitrateMinimum;
-	int m_configSamplingRate;
-	int m_configChannelMode;
+	PlaylistImporter(void) {}
+	~PlaylistImporter(void) {}
 
-	int clipBitrate(int bitrate);
+	static bool parsePlaylist_m3u(QFile &data, QStringList &fileList, const QDir &baseDir, const QDir &rootDir);
+	static bool parsePlaylist_pls(QFile &data, QStringList &fileList, const QDir &baseDir, const QDir &rootDir);
+	static bool parsePlaylist_wpl(QFile &data, QStringList &fileList, const QDir &baseDir, const QDir &rootDir);
+
+	static playlist_t isPlaylist(const QString &fileName);
+	static void fixFilePath(QFileInfo &filename, const QDir &baseDir, const QDir &rootDir);
+	static QString &PlaylistImporter::unescapeXml(QString &str);
 };

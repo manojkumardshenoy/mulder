@@ -30,28 +30,17 @@
 
 AudioFileModel::AudioFileModel(const QString &path, const QString &name)
 {
+	resetAll();
+
 	m_filePath = path;
 	m_fileName = name;
-	m_fileYear = 0;
-	m_filePosition = 0;
-	m_fileDuration = 0;
-	m_formatAudioSamplerate = 0;
-	m_formatAudioChannels = 0;
-	m_formatAudioBitdepth = 0;
 }
 
-AudioFileModel::AudioFileModel(const AudioFileModel &model)
+AudioFileModel::AudioFileModel(const AudioFileModel &model, bool copyMetaInfo)
 {
-	setFilePath(model.m_filePath);
-	setFileName(model.m_fileName);
-	setFileArtist(model.m_fileArtist);
-	setFileAlbum(model.m_fileAlbum);
-	setFileGenre(model.m_fileGenre);
-	setFileComment(model.m_fileComment);
-	setFileYear(model.m_fileYear);
-	setFilePosition(model.m_filePosition);
-	setFileDuration(model.m_fileDuration);
+	resetAll();
 
+	setFilePath(model.m_filePath);
 	setFormatContainerType(model.m_formatContainerType);
 	setFormatContainerProfile(model.m_formatContainerProfile);
 	setFormatAudioType(model.m_formatAudioType);
@@ -60,6 +49,18 @@ AudioFileModel::AudioFileModel(const AudioFileModel &model)
 	setFormatAudioSamplerate(model.m_formatAudioSamplerate);
 	setFormatAudioChannels(model.m_formatAudioChannels);
 	setFormatAudioBitdepth(model.m_formatAudioBitdepth);
+	setFileDuration(model.m_fileDuration);
+
+	if(copyMetaInfo)
+	{
+		setFileName(model.m_fileName);
+		setFileArtist(model.m_fileArtist);
+		setFileAlbum(model.m_fileAlbum);
+		setFileGenre(model.m_fileGenre);
+		setFileComment(model.m_fileComment);
+		setFileYear(model.m_fileYear);
+		setFilePosition(model.m_filePosition);
+	}
 }
 
 AudioFileModel &AudioFileModel::operator=(const AudioFileModel &model)
@@ -88,6 +89,34 @@ AudioFileModel &AudioFileModel::operator=(const AudioFileModel &model)
 
 AudioFileModel::~AudioFileModel(void)
 {
+}
+
+////////////////////////////////////////////////////////////
+// Private Functions
+////////////////////////////////////////////////////////////
+
+void AudioFileModel::resetAll(void)
+{
+	m_filePath.clear();
+	m_fileName.clear();
+	m_fileArtist.clear();
+	m_fileAlbum.clear();
+	m_fileGenre.clear();
+	m_fileComment.clear();
+	
+	m_fileYear = 0;
+	m_filePosition = 0;
+	m_fileDuration = 0;
+
+	m_formatContainerType.clear();
+	m_formatContainerProfile.clear();
+	m_formatAudioType.clear();
+	m_formatAudioProfile.clear();
+	m_formatAudioVersion.clear();
+	
+	m_formatAudioSamplerate = 0;
+	m_formatAudioChannels = 0;
+	m_formatAudioBitdepth = 0;
 }
 
 ////////////////////////////////////////////////////////////
@@ -351,4 +380,13 @@ void AudioFileModel::setFormatAudioChannels(unsigned int channels)
 void AudioFileModel::setFormatAudioBitdepth(unsigned int bitdepth)
 {
 	m_formatAudioBitdepth = bitdepth;
+}
+
+void AudioFileModel::updateMetaInfo(const AudioFileModel &model)
+{
+	if(!model.fileArtist().isEmpty()) setFileArtist(model.fileArtist());
+	if(!model.fileAlbum().isEmpty()) setFileAlbum(model.fileAlbum());
+	if(!model.fileGenre().isEmpty()) setFileGenre(model.fileGenre());
+	if(!model.fileComment().isEmpty()) setFileComment(model.fileComment());
+	if(model.fileYear()) setFileYear(model.fileYear());
 }

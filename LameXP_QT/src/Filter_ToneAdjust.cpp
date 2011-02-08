@@ -19,7 +19,7 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "Filter_Downmix.h"
+#include "Filter_ToneAdjust.h"
 
 #include "Global.h"
 
@@ -27,7 +27,7 @@
 #include <QProcess>
 #include <QRegExp>
 
-DownmixFilter::DownmixFilter(void)
+ToneAdjustFilter::ToneAdjustFilter(int bass, int treble)
 :
 	m_binary(lamexp_lookup_tool("sox.exe"))
 {
@@ -35,13 +35,16 @@ DownmixFilter::DownmixFilter(void)
 	{
 		throw "Error initializing SoX filter. Tool 'sox.exe' is not registred!";
 	}
+
+	m_bass = max(-2000, min(2000, bass));
+	m_treble = max(-2000, min(2000, treble));
 }
 
-DownmixFilter::~DownmixFilter(void)
+ToneAdjustFilter::~ToneAdjustFilter(void)
 {
 }
 
-bool DownmixFilter::apply(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag)
+bool ToneAdjustFilter::apply(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag)
 {
 	QProcess process;
 	QStringList args;
@@ -51,8 +54,16 @@ bool DownmixFilter::apply(const QString &sourceFile, const QString &outputFile, 
 	args << "-V3";
 	args << "--guard" << "--temp" << ".";
 	args << QDir::toNativeSeparators(sourceFile);
-	args << "-c2";
 	args << QDir::toNativeSeparators(outputFile);
+
+	if(m_bass != 0)
+	{
+		args << "bass" << QString().sprintf("%s%.2f", ((m_bass < 0) ? "-" : "+"), static_cast<double>(abs(m_bass)) / 100.0);
+	}
+	if(m_treble != 0)
+	{
+		args << "treble" << QString().sprintf("%s%.2f", ((m_treble < 0) ? "-" : "+"), static_cast<double>(abs(m_treble)) / 100.0);
+	}
 
 	if(!startProcess(process, m_binary, args))
 	{

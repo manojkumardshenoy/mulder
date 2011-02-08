@@ -28,6 +28,7 @@
 #include <QApplication>
 #include <QString>
 #include <QFileInfo>
+#include <QDir>
 #include <QStringList>
 #include <QLocale>
 
@@ -49,27 +50,40 @@ static const char *g_settingsId_soundsEnabled = "Flags/EnableSounds";
 static const char *g_settingsId_neroAacNotificationsEnabled = "Flags/EnableNeroAacNotifications";
 static const char *g_settingsId_wmaDecoderNotificationsEnabled = "Flags/EnableWmaDecoderNotifications";
 static const char *g_settingsId_dropBoxWidgetEnabled = "Flags/EnableDropBoxWidget";
+static const char *g_settingsId_shellIntegrationEnabled = "Flags/EnableShellIntegration";
 static const char *g_settingsId_currentLanguage = "Localization/Language";
 static const char *g_settingsId_lameAlgoQuality = "AdvancedOptions/LAME/AlgorithmQuality";
+static const char *g_settingsId_lameChannelMode = "AdvancedOptions/LAME/ChannelMode";
 static const char *g_settingsId_bitrateManagementEnabled = "AdvancedOptions/BitrateManagement/Enabled";
 static const char *g_settingsId_bitrateManagementMinRate = "AdvancedOptions/BitrateManagement/MinRate";
 static const char *g_settingsId_bitrateManagementMaxRate = "AdvancedOptions/BitrateManagement/MaxRate";
+static const char *g_settingsId_samplingRate = "AdvancedOptions/Common/Resampling";
+static const char *g_settingsId_neroAACEnable2Pass = "AdvancedOptions/NeroAAC/Enable2Pass";
+static const char *g_settingsId_neroAACProfile = "AdvancedOptions/NeroAAC/ForceProfile";
+static const char *g_settingsId_normalizationFilterEnabled = "AdvancedOptions/VolumeNormalization/Enabled";
+static const char *g_settingsId_normalizationFilterMaxVolume = "AdvancedOptions/VolumeNormalization/MaxVolume";
+static const char *g_settingsId_toneAdjustBass = "AdvancedOptions/ToneAdjustment/Bass";
+static const char *g_settingsId_toneAdjustTreble = "AdvancedOptions/ToneAdjustment/Treble";
 
 //Macros
 #define MAKE_OPTION1(OPT,DEF) \
 int SettingsModel::OPT(void) { return m_settings->value(g_settingsId_##OPT, DEF).toInt(); } \
-void SettingsModel::OPT(int value) { m_settings->setValue(g_settingsId_##OPT, value); }
+void SettingsModel::OPT(int value) { m_settings->setValue(g_settingsId_##OPT, value); } \
+int SettingsModel::OPT##Default(void) { return DEF; }
 
 #define MAKE_OPTION2(OPT,DEF) \
 QString SettingsModel::OPT(void) { return m_settings->value(g_settingsId_##OPT, DEF).toString().trimmed(); } \
-void SettingsModel::OPT(const QString &value) { m_settings->setValue(g_settingsId_##OPT, value); }
+void SettingsModel::OPT(const QString &value) { m_settings->setValue(g_settingsId_##OPT, value); } \
+QString SettingsModel::OPT##Default(void) { return DEF; }
 
 #define MAKE_OPTION3(OPT,DEF) \
 bool SettingsModel::OPT(void) { return m_settings->value(g_settingsId_##OPT, DEF).toBool(); } \
-void SettingsModel::OPT(bool value) { m_settings->setValue(g_settingsId_##OPT, value); }
+void SettingsModel::OPT(bool value) { m_settings->setValue(g_settingsId_##OPT, value); } \
+bool SettingsModel::OPT##Default(void) { return DEF; }
 
 //LUT
 const int SettingsModel::mp3Bitrates[15] = {32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, -1};
+const int SettingsModel::samplingRates[8] = {0, 16000, 22050, 24000, 32000, 44100, 48000, -1};
 
 ////////////////////////////////////////////////////////////
 // Constructor
@@ -79,8 +93,24 @@ SettingsModel::SettingsModel(void)
 :
 	m_defaultLanguage(NULL)
 {
-	QString appPath = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
-	m_settings = new QSettings(appPath.append("/config.ini"), QSettings::IniFormat);
+	QString configPath;
+	
+	if(!lamexp_portable_mode())
+	{
+		QString dataPath = QDir(QDesktopServices::storageLocation(QDesktopServices::DataLocation)).canonicalPath();
+		if(dataPath.isEmpty()) dataPath = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
+		QDir(dataPath).mkpath(".");
+		configPath = QString("%1/config.ini").arg(dataPath);
+	}
+	else
+	{
+		qDebug("LameXP is running in \"portable\" mode -> config in application dir!\n");
+		QString appPath = QFileInfo(QApplication::applicationFilePath()).canonicalFilePath();
+		if(appPath.isEmpty()) appPath = QApplication::applicationFilePath();
+		configPath = QString("%1/%2.ini").arg(QFileInfo(appPath).absolutePath(), QFileInfo(appPath).completeBaseName());
+	}
+
+	m_settings = new QSettings(configPath, QSettings::IniFormat);
 	m_settings->beginGroup(QString().sprintf("LameXP_%u%02u%05u", lamexp_version_major(), lamexp_version_minor(), lamexp_version_build()));
 	m_settings->setValue(g_settingsId_versionNumber, QApplication::applicationVersion());
 	m_settings->sync();
@@ -189,8 +219,17 @@ MAKE_OPTION3(soundsEnabled, true)
 MAKE_OPTION3(neroAacNotificationsEnabled, true)
 MAKE_OPTION3(wmaDecoderNotificationsEnabled, true)
 MAKE_OPTION3(dropBoxWidgetEnabled, true)
-MAKE_OPTION2(currentLanguage, defaultLanguage());
+MAKE_OPTION3(shellIntegrationEnabled, !lamexp_portable_mode())
+MAKE_OPTION2(currentLanguage, defaultLanguage())
 MAKE_OPTION1(lameAlgoQuality, 3)
+MAKE_OPTION1(lameChannelMode, 0);
 MAKE_OPTION3(bitrateManagementEnabled, false)
 MAKE_OPTION1(bitrateManagementMinRate, 32)
 MAKE_OPTION1(bitrateManagementMaxRate, 500)
+MAKE_OPTION1(samplingRate, 0)
+MAKE_OPTION3(neroAACEnable2Pass, true)
+MAKE_OPTION1(neroAACProfile, 0)
+MAKE_OPTION3(normalizationFilterEnabled, false)
+MAKE_OPTION1(normalizationFilterMaxVolume, -50)
+MAKE_OPTION1(toneAdjustBass, 0)
+MAKE_OPTION1(toneAdjustTreble, 0)

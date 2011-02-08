@@ -19,7 +19,7 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "Filter_Downmix.h"
+#include "Decoder_Speex.h"
 
 #include "Global.h"
 
@@ -27,31 +27,27 @@
 #include <QProcess>
 #include <QRegExp>
 
-DownmixFilter::DownmixFilter(void)
+SpeexDecoder::SpeexDecoder(void)
 :
-	m_binary(lamexp_lookup_tool("sox.exe"))
+	m_binary(lamexp_lookup_tool("speexdec.exe"))
 {
 	if(m_binary.isEmpty())
 	{
-		throw "Error initializing SoX filter. Tool 'sox.exe' is not registred!";
+		throw "Error initializing Speex decoder. Tool 'speexdec.exe' is not registred!";
 	}
 }
 
-DownmixFilter::~DownmixFilter(void)
+SpeexDecoder::~SpeexDecoder(void)
 {
 }
 
-bool DownmixFilter::apply(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag)
+bool SpeexDecoder::decode(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag)
 {
 	QProcess process;
 	QStringList args;
 
-	process.setWorkingDirectory(lamexp_temp_folder());
-
-	args << "-V3";
-	args << "--guard" << "--temp" << ".";
+	args << "-V";
 	args << QDir::toNativeSeparators(sourceFile);
-	args << "-c2";
 	args << QDir::toNativeSeparators(outputFile);
 
 	if(!startProcess(process, m_binary, args))
@@ -61,6 +57,8 @@ bool DownmixFilter::apply(const QString &sourceFile, const QString &outputFile, 
 
 	bool bTimeout = false;
 	bool bAborted = false;
+
+	QRegExp regExp("Working\\.\\.\\. (.)");
 
 	while(process.state() != QProcess::NotRunning)
 	{
@@ -75,7 +73,7 @@ bool DownmixFilter::apply(const QString &sourceFile, const QString &outputFile, 
 		if(!process.bytesAvailable() && process.state() == QProcess::Running)
 		{
 			process.kill();
-			qWarning("SoX process timed out <-- killing!");
+			qWarning("SpeexDec process timed out <-- killing!");
 			bTimeout = true;
 			break;
 		}
@@ -83,7 +81,11 @@ bool DownmixFilter::apply(const QString &sourceFile, const QString &outputFile, 
 		{
 			QByteArray line = process.readLine();
 			QString text = QString::fromUtf8(line.constData()).simplified();
-			if(!text.isEmpty())
+			if(regExp.lastIndexIn(text) >= 0)
+			{
+				/* qDebug("Status: %s", regExp.cap(1).toLatin1().constData()); */
+			}
+			else if(!text.isEmpty())
 			{
 				emit messageLogged(text);
 			}
@@ -106,4 +108,22 @@ bool DownmixFilter::apply(const QString &sourceFile, const QString &outputFile, 
 	}
 	
 	return true;
+}
+
+bool SpeexDecoder::isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion)
+{
+	if(containerType.compare("Speex", Qt::CaseInsensitive) == 0 || containerType.compare("OGG", Qt::CaseInsensitive) == 0)
+	{
+		if(formatType.compare("Speex", Qt::CaseInsensitive) == 0)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+QStringList SpeexDecoder::supportedTypes(void)
+{
+	return QStringList() << "Speex (*.spx *.ogg)";
 }
