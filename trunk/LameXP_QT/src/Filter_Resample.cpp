@@ -19,7 +19,7 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "Filter_Downmix.h"
+#include "Filter_Resample.h"
 
 #include "Global.h"
 
@@ -27,7 +27,7 @@
 #include <QProcess>
 #include <QRegExp>
 
-DownmixFilter::DownmixFilter(void)
+ResampleFilter::ResampleFilter(int samplingRate)
 :
 	m_binary(lamexp_lookup_tool("sox.exe"))
 {
@@ -35,13 +35,15 @@ DownmixFilter::DownmixFilter(void)
 	{
 		throw "Error initializing SoX filter. Tool 'sox.exe' is not registred!";
 	}
+
+	m_samplingRate = min(192000, max(8000, samplingRate));
 }
 
-DownmixFilter::~DownmixFilter(void)
+ResampleFilter::~ResampleFilter(void)
 {
 }
 
-bool DownmixFilter::apply(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag)
+bool ResampleFilter::apply(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag)
 {
 	QProcess process;
 	QStringList args;
@@ -51,8 +53,9 @@ bool DownmixFilter::apply(const QString &sourceFile, const QString &outputFile, 
 	args << "-V3";
 	args << "--guard" << "--temp" << ".";
 	args << QDir::toNativeSeparators(sourceFile);
-	args << "-c2";
 	args << QDir::toNativeSeparators(outputFile);
+	args << "rate";
+	args << "-h" << QString::number(m_samplingRate);
 
 	if(!startProcess(process, m_binary, args))
 	{

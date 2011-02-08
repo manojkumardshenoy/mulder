@@ -4,7 +4,7 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <source>LameXP - Audio Encoder Front-end</source>
+        <source>LameXP &amp;minus; Audio Encoder Front-end</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -72,7 +72,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>LAME - OpenSource mp3 Encoder</source>
+        <source>LAME &amp;minus; OpenSource mp3 Encoder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -80,7 +80,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>OggEnc - Ogg Vorbis Encoder</source>
+        <source>OggEnc &amp;minus; Ogg Vorbis Encoder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -88,7 +88,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Nero AAC reference MPEG-4 Encoder</source>
+        <source>Nero AAC Reference MPEG-4 Encoder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -100,7 +100,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>FLAC - Free Lossless Audio Codec</source>
+        <source>FLAC &amp;minus; Free Lossless Audio Codec</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -108,11 +108,23 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>AC3Filter Tools - AC3/DTS Decoder</source>
+        <source>mpg123 &amp;minus; Fast Console MPEG Audio Player/Decoder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>WavPack - Hybrid Lossless Compression</source>
+        <source>FAAD &amp;minus; OpenSource MPEG-4 and MPEG-2 AAC Decoder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Released under the terms of the GNU General Public License.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AC3Filter Tools &amp;minus; AC3/DTS Decoder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>WavPack &amp;minus; Hybrid Lossless Compression</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -120,7 +132,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Monkey&apos;s Audio - Lossless Audio Compressor</source>
+        <source>Musepack &amp;minus; Living Audio Compression</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Monkey&apos;s Audio &amp;minus; Lossless Audio Compressor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -128,27 +144,47 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The True Audio - Lossless Audio Codec</source>
+        <source>Shorten &amp;minus; Lossless Audio Compressor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>MediaInfo - Media File Analysis Tool</source>
+        <source>Speex &amp;minus; Free Codec For Free Speech</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>SoX - Sound eXchange</source>
+        <source>Open Source patent-free audio format designed for speech.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>GnuPG - The GNU Privacy Guard</source>
+        <source>The True Audio &amp;minus; Lossless Audio Codec</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Silk Icons - Over 700  icons in PNG format</source>
+        <source>MediaInfo &amp;minus; Media File Analysis Tool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SoX &amp;minus; Sound eXchange</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GnuPG &amp;minus; The GNU Privacy Guard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GNU Wget &amp;minus; Software for retrieving files using HTTP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Silk Icons &amp;minus; Over 700  icons in PNG format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>By Mark James, released under the Creative Commons &apos;by&apos; License.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of thrird-party software used in LameXP belongs to the individual authors.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -191,6 +227,10 @@
     <name>DecoderRegistry</name>
     <message>
         <source>All supported types</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Playlists</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -402,18 +442,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source> LAME Algorithm Quality </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Faster Processing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Better quality</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source> Bitrate Management (LAME and OggEnc2) </source>
         <translation type="unfinished"></translation>
     </message>
@@ -427,6 +455,134 @@
     </message>
     <message>
         <source>Maximum (kbps):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> LAME Algorithm Quality </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Faster Processing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Better quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Channel Mode / Sampling Rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto Select (Default)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Joint Stereo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forced Joint Stereo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simple</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dual Mono</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mono</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MP3 Channel Mode:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sampling Rate (Hz):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>16.000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>22.050</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>24.000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>32.000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>44.100</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>48.000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nero AAC Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable 2-Pass Processing (ABR Mode)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select AAC Profile:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto Select (Recommended)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enforce LC-AAC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enforce HE-AAC (AAC + SBR)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enforce HE-AAC v2 (AAC + SBR + PS)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Volume Normalization </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable Normalization Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Peak Volume (dB):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Tone Adjustment </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adjust Treble (dB):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adjust Bass (dB):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reset Advanced Options </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -542,6 +698,14 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Encode!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disable Shell Integration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Adding file(s), please wait...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -567,6 +731,46 @@
     </message>
     <message>
         <source>This usually means the file is damaged or the file format is not supported.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Downloading WMA Decoder Setup, please wait...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Download Failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to download the WMA Decoder setup. Check your internet connection!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Try Again</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The download seems to be corrupted. Please try again!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>WMA Decoder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The WMA File Decoder has been installed. Please restart LameXP now!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quit LameXP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Postpone</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -638,10 +842,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Postpone</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>LameXP detected that your version of the Nero AAC encoder is outdated!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -690,7 +890,15 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Do you want to download and install the WMA File Decoder component now?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>WMA Decoder Missing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Download &amp;&amp; Install</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -898,47 +1106,19 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Do you want to download and install the WMA File Decoder component now?</source>
+        <source>Shell Integration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Download &amp;&amp; Install</source>
+        <source>Do you really want to disable the LameXP shell integration?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Cancel</source>
+        <source>The LameXP shell integration has been disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Downloading WMA Decoder Setup, please wait...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Download Failed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to download the WMA Decoder setup. Check your internet connection!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Try Again</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The download seems to be corrupted. Please try again!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>WMA Decoder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The WMA File Decoder has been installed. Please restart LameXP now!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quit LameXP</source>
+        <source>The LameXP shell integration has been re-enabled.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1229,6 +1409,10 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Multi-threading enabled: Running %1 instances in parallel!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Aborted! Waiting for running jobs to terminate...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1297,6 +1481,17 @@
     </message>
     <message>
         <source>Status</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ShellIntegration</name>
+    <message>
+        <source>Audio File supported by LameXP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Convert this file with LameXP v%1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

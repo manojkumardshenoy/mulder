@@ -33,6 +33,9 @@
 #include "Encoder_AAC.h"
 #include "Encoder_FLAC.h"
 #include "Encoder_Wave.h"
+#include "Filter_Normalize.h"
+#include "Filter_Resample.h"
+#include "Filter_ToneAdjust.h"
 #include "WinSevenTaskbar.h"
 
 #include <QApplication>
@@ -256,8 +259,14 @@ void ProcessingDialog::initEncoding(void)
 	WinSevenTaskbar::setOverlayIcon(this, &QIcon(":/icons/control_play_blue.png"));
 
 	lamexp_cpu_t cpuFeatures = lamexp_detect_cpu_features();
+	int parallelThreadCount = max(min(min(cpuFeatures.count, m_pendingJobs.count()), 4), 1);
 
-	for(int i = 0; i < min(max(cpuFeatures.count, 1), 4); i++)
+	if(parallelThreadCount > 1)
+	{
+		m_progressModel->addSystemMessage(tr("Multi-threading enabled: Running %1 instances in parallel!").arg(QString::number(parallelThreadCount)));
+	}
+
+	for(int i = 0; i < parallelThreadCount; i++)
 	{
 		startNextJob();
 	}
@@ -388,10 +397,18 @@ void ProcessingDialog::logViewDoubleClicked(const QModelIndex &index)
 	if(m_runningThreads == 0)
 	{
 		const QStringList &logFile = m_progressModel->getLogFile(index);
-		LogViewDialog *logView = new LogViewDialog(this);
-		logView->setWindowTitle(QString("LameXP - [%1]").arg(m_progressModel->data(index, Qt::DisplayRole).toString()));
-		logView->exec(logFile);
-		LAMEXP_DELETE(logView);
+		
+		if(!logFile.isEmpty())
+		{
+			LogViewDialog *logView = new LogViewDialog(this);
+			logView->setWindowTitle(QString("LameXP - [%1]").arg(m_progressModel->data(index, Qt::DisplayRole).toString()));
+			logView->exec(logFile);
+			LAMEXP_DELETE(logView);
+		}
+		else
+		{
+			MessageBeep(MB_ICONWARNING);
+		}
 	}
 	else
 	{
@@ -427,6 +444,7 @@ void ProcessingDialog::startNextJob(void)
 	m_currentFile++;
 	AudioFileModel currentFile = updateMetaInfo(m_pendingJobs.takeFirst());
 	AbstractEncoder *encoder = NULL;
+	bool nativeResampling = false;
 
 	switch(m_settings->compressionEncoder())
 	{
@@ -440,6 +458,12 @@ void ProcessingDialog::startNextJob(void)
 			{
 				mp3Encoder->setBitrateLimits(m_settings->bitrateManagementMinRate(), m_settings->bitrateManagementMaxRate());
 			}
+			if(m_settings->samplingRate() > 0)
+			{
+				mp3Encoder->setSamplingRate(SettingsModel::samplingRates[m_settings->samplingRate()]);
+				nativeResampling = true;
+			}
+			mp3Encoder->setChannelMode(m_settings->lameChannelMode());
 			encoder = mp3Encoder;
 		}
 		break;
@@ -452,6 +476,11 @@ void ProcessingDialog::startNextJob(void)
 			{
 				vorbisEncoder->setBitrateLimits(m_settings->bitrateManagementMinRate(), m_settings->bitrateManagementMaxRate());
 			}
+			if(m_settings->samplingRate() > 0)
+			{
+				vorbisEncoder->setSamplingRate(SettingsModel::samplingRates[m_settings->samplingRate()]);
+				nativeResampling = true;
+			}
 			encoder = vorbisEncoder;
 		}
 		break;
@@ -460,6 +489,8 @@ void ProcessingDialog::startNextJob(void)
 			AACEncoder *aacEncoder = new AACEncoder();
 			aacEncoder->setBitrate(m_settings->compressionBitrate());
 			aacEncoder->setRCMode(m_settings->compressionRCMode());
+			aacEncoder->setEnable2Pass(m_settings->neroAACEnable2Pass());
+			aacEncoder->setProfile(m_settings->neroAACProfile());
 			encoder = aacEncoder;
 		}
 		break;
@@ -490,7 +521,20 @@ void ProcessingDialog::startNextJob(void)
 		encoder,
 		m_settings->prependRelativeSourcePath()
 	);
-	
+
+	if((m_settings->samplingRate() > 0) && !nativeResampling)
+	{
+		thread->addFilter(new ResampleFilter(SettingsModel::samplingRates[m_settings->samplingRate()]));
+	}
+	if((m_settings->toneAdjustBass() != 0) || (m_settings->toneAdjustTreble() != 0))
+	{
+		thread->addFilter(new ToneAdjustFilter(m_settings->toneAdjustBass(), m_settings->toneAdjustTreble()));
+	}
+	if(m_settings->normalizationFilterEnabled())
+	{
+		thread->addFilter(new NormalizeFilter(m_settings->normalizationFilterMaxVolume()));
+	}
+
 	m_threadList.append(thread);
 	m_allJobs.append(thread->getId());
 	
@@ -552,17 +596,16 @@ AudioFileModel ProcessingDialog::updateMetaInfo(const AudioFileModel &audioFile)
 {
 	if(!m_settings->writeMetaTags())
 	{
-		return AudioFileModel(audioFile.filePath());
+		return AudioFileModel(audioFile, false);
 	}
 	
 	AudioFileModel result = audioFile;
-
-	if(!m_metaInfo->fileArtist().isEmpty()) result.setFileArtist(m_metaInfo->fileArtist());
-	if(!m_metaInfo->fileAlbum().isEmpty()) result.setFileAlbum(m_metaInfo->fileAlbum());
-	if(!m_metaInfo->fileGenre().isEmpty()) result.setFileGenre(m_metaInfo->fileGenre());
-	if(m_metaInfo->fileYear()) result.setFileYear(m_metaInfo->fileYear());
-	if(m_metaInfo->filePosition() == UINT_MAX) result.setFilePosition(m_currentFile);
-	if(!m_metaInfo->fileComment().isEmpty()) result.setFileComment(m_metaInfo->fileComment());
+	result.updateMetaInfo(*m_metaInfo);
+	
+	if(m_metaInfo->filePosition() == UINT_MAX)
+	{
+		result.setFilePosition(m_currentFile);
+	}
 
 	return result;
 }

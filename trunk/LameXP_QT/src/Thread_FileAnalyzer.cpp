@@ -24,6 +24,7 @@
 #include "Global.h"
 #include "LockedFile.h"
 #include "Model_AudioFile.h"
+#include "PlaylistImporter.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -78,8 +79,11 @@ void FileAnalyzer::run()
 		AudioFileModel file = analyzeFile(currentFile);
 		if(file.fileName().isEmpty() || file.formatContainerType().isEmpty() || file.formatAudioType().isEmpty())
 		{
-			m_filesRejected++;
-			qDebug("Skipped: %s", file.filePath().toUtf8().constData());
+			if(!PlaylistImporter::importPlaylist(m_inputFiles, currentFile))
+			{
+				m_filesRejected++;
+				qDebug("Skipped: %s", file.filePath().toUtf8().constData());
+			}
 			continue;
 		}
 		m_filesAccepted++;
@@ -91,7 +95,7 @@ void FileAnalyzer::run()
 }
 
 ////////////////////////////////////////////////////////////
-// Public Functions
+// Privtae Functions
 ////////////////////////////////////////////////////////////
 
 const AudioFileModel FileAnalyzer::analyzeFile(const QString &filePath)
@@ -354,6 +358,10 @@ unsigned int FileAnalyzer::parseDuration(const QString &str)
 
 	return 0;
 }
+
+////////////////////////////////////////////////////////////
+// Public Functions
+////////////////////////////////////////////////////////////
 
 unsigned int FileAnalyzer::filesAccepted(void)
 {

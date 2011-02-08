@@ -31,6 +31,7 @@
 #include <QDir>
 #include <QLibrary>
 #include <QResource>
+#include <QTime>
 
 #include <Windows.h>
 
@@ -48,30 +49,27 @@ g_lamexp_tools[] =
 {
 	{"3b41f85dde8d4a5a0f4cd5f461099d0db24610ba", "alac.exe", UINT_MAX},
 	{"fb74ac8b73ad8cba2c3b4e6e61f23401d630dc22", "elevator.exe", UINT_MAX},
-	{"3c647950bccfcc75d0746c0772e7115684be4dc5", "faad.exe", UINT_MAX},
+	{"3c647950bccfcc75d0746c0772e7115684be4dc5", "faad.exe", 27},
 	{"d33cd86f04bd4067e244d2804466583c7b90a4e2", "flac.exe", 121},
 	{"9328a50e89b54ec065637496d9681a7e3eebf915", "gpgv.exe", 1411},
 	{"d837bf6ee4dab557d8b02d46c75a24e58980fffa", "gpgv.gpg", UINT_MAX},
 	{"143fc001a2f6c56fe1b9e6f8a2eb2b53b9e1e504", "lame.exe", 39910},
 	{"a4e929cfaa42fa2e61a3d0c6434c77a06d45aef3", "mac.exe", 406},
-	{"61d584ffaf428e9afb0ed9bd32706a954af492b0", "mediainfo_i386.exe", 739},
-	{"81fb728cbc6057906fa1b637738e6aefe5dccf54", "mediainfo_x64.exe", 739},
-	{"55c293a80475f7aeccf449ac9487a4626e5139cb", "mpcdec.exe", UINT_MAX},
-	{"8bbf4a3fffe2ff143eb5ba2cf82ca16d676e865d", "mpg123.exe", UINT_MAX},
+	{"ec235c6404caa31e7975e9bbf9ba59599258ae1d", "mediainfo_i386.exe", 741},
+	{"72d7efdcafc2dee3b534f27ab6e01916d02ba470", "mediainfo_x64.exe", 741},
+	{"aa89763a5ba4d1a5986549b9ee53e005c51940c1", "mpcdec.exe", 435},
+	{"6b6913a54cac08b22d5b468aaed83550fc9ae5b4", "mpg123.exe", 1131},
 	{"8dd7138714c3bcb39f5a3213413addba13d06f1e", "oggdec.exe", UINT_MAX},
 	{"ecd15abe103184aca96e406f5f1c82c6fb2e665d", "oggenc2_i386.exe", 287},
 	{"ffe0fbd73352396dc3752ac9d484dbfc754a226d", "oggenc2_sse2.exe", 287},
 	{"a8c50872e544a55495a824426e9378984f2ae01d", "oggenc2_x64.exe", 287},
-	{"cd95369051f96b9ca3a997658771c5ea52bc874d", "selfdelete.exe", UINT_MAX},
-	{"ffeaa70bd6321185eafcb067ab2dc441650038bf", "shorten.exe", UINT_MAX},
+	{"0d9035bb62bdf46a2785261f8be5a4a0972abd15", "shorten.exe", 361},
 	{"2d08c3586f9cf99f2e4c89ac54eeb595f63aef61", "sox.exe", 1431},
-	{"346ce516281c97e92e1b8957ddeca52edcf2d056", "speexdec.exe", UINT_MAX},
-	{"8a74b767cfe88bf88c068fdae0de02d65589d25e", "takc.exe", UINT_MAX},
+	{"8671e16497a2d217d3707d4aa418678d02b16bcc", "speexdec.exe", 12},
 	{"d6e0de1e7a2d9dee10d06ae0b6b4f93b63205920", "ttaenc.exe", 341},
 	{"8c842eef65248b46fa6cb9a9e5714f575672d999", "valdec.exe", 31},
-	{"8159f4e824b3e343ece95ba6dbb5e16da9c4866e", "volumax.exe", UINT_MAX},
-	{"62e2805d1b2eb2a4d86a5ca6e6ea58010d05d2a7", "wget.exe", UINT_MAX},
-	{"7380cb661ae7fbda82f3e8ecea6a2776101c9444", "wupdate.exe", UINT_MAX},
+	{"62e2805d1b2eb2a4d86a5ca6e6ea58010d05d2a7", "wget.exe", 1114},
+	{"a7e8aad52213e339ad985829722f35eab62be182", "wupdate.exe", UINT_MAX},
 	{"b7d14b3540d24df13119a55d97623a61412de6e3", "wvunpack.exe", 4601},
 	{NULL, NULL, NULL}
 };
@@ -118,6 +116,9 @@ void InitializationThread::run()
 
 	QDir toolsDir(":/tools/");
 	QList<QFileInfo> toolsList = toolsDir.entryInfoList(QStringList("*.*"), QDir::Files, QDir::Name);
+	
+	QTime timer;
+	timer.start();
 
 	//Extract all files
 	for(int i = 0; i < toolsList.count(); i++)
@@ -150,6 +151,14 @@ void InitializationThread::run()
 	
 	qDebug("All extracted.\n");
 
+	//Check delay
+	double delayExtract = static_cast<double>(timer.elapsed()) / 1000.0;
+	if(delayExtract > 8.0)
+	{
+		qWarning("Extracting tools took %.3f seconds -> probably slow realtime virus scanner.", delayExtract);
+		qWarning("Please report performance problems to your anti-virus developer !!!\n");
+	}
+
 	//Register all translations
 	initTranslations();
 
@@ -175,7 +184,7 @@ void InitializationThread::delay(void)
 	for(int i = 0; i < 20; i++)
 	{
 		printf("%c\b", temp[i%4]);
-		msleep(100);
+		msleep(25);
 	}
 
 	printf("Done\n\n");

@@ -26,15 +26,18 @@ class QString;
 
 #define MAKE_OPTION_DEC1(OPT) \
 int OPT(void); \
-void OPT(int value);
+void OPT(int value); \
+int OPT##Default(void);
 
 #define MAKE_OPTION_DEC2(OPT) \
 QString OPT(void); \
-void OPT(const QString &value);
+void OPT(const QString &value); \
+QString OPT##Default(void);
 
 #define MAKE_OPTION_DEC3(OPT) \
 bool OPT(void); \
-void OPT(bool value);
+void OPT(bool value); \
+bool OPT##Default(void);
 
 class SettingsModel
 {
@@ -60,6 +63,7 @@ public:
 	
 	//Consts
 	static const int mp3Bitrates[15];
+	static const int samplingRates[8];
 
 	//Getters & setters
 	MAKE_OPTION_DEC1(licenseAccepted);
@@ -75,15 +79,23 @@ public:
 	MAKE_OPTION_DEC2(autoUpdateLastCheck);
 	MAKE_OPTION_DEC3(autoUpdateEnabled);
 	MAKE_OPTION_DEC3(soundsEnabled);
-	MAKE_OPTION_DEC3(neroAacNotificationsEnabled)
-	MAKE_OPTION_DEC3(wmaDecoderNotificationsEnabled)
-	MAKE_OPTION_DEC3(dropBoxWidgetEnabled)
+	MAKE_OPTION_DEC3(neroAacNotificationsEnabled);
+	MAKE_OPTION_DEC3(wmaDecoderNotificationsEnabled);
+	MAKE_OPTION_DEC3(dropBoxWidgetEnabled);
+	MAKE_OPTION_DEC3(shellIntegrationEnabled);
 	MAKE_OPTION_DEC2(currentLanguage);
 	MAKE_OPTION_DEC1(lameAlgoQuality);
+	MAKE_OPTION_DEC1(lameChannelMode);
 	MAKE_OPTION_DEC3(bitrateManagementEnabled);
 	MAKE_OPTION_DEC1(bitrateManagementMinRate);
 	MAKE_OPTION_DEC1(bitrateManagementMaxRate);
-
+	MAKE_OPTION_DEC1(samplingRate);
+	MAKE_OPTION_DEC3(neroAACEnable2Pass);
+	MAKE_OPTION_DEC1(neroAACProfile);
+	MAKE_OPTION_DEC3(normalizationFilterEnabled);
+	MAKE_OPTION_DEC1(normalizationFilterMaxVolume);
+	MAKE_OPTION_DEC1(toneAdjustBass);
+	MAKE_OPTION_DEC1(toneAdjustTreble);
 
 	//Misc
 	void validate(void);

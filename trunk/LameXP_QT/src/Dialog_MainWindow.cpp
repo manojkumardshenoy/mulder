@@ -37,6 +37,7 @@
 #include "Model_FileSystem.h"
 #include "WinSevenTaskbar.h"
 #include "Registry_Decoder.h"
+#include "ShellIntegration.h"
 
 //Qt includes
 #include <QMessageBox>
@@ -61,6 +62,7 @@
 #include <QCryptographicHash>
 #include <QTranslator>
 #include <QResource>
+#include <QScrollBar>
 
 //Win32 includes
 #include <Windows.h>
@@ -72,16 +74,6 @@
 #define FLASH_WINDOW(WND) { FLASHWINFO flashInfo; memset(&flashInfo, 0, sizeof(FLASHWINFO)); flashInfo.cbSize = sizeof(FLASHWINFO); flashInfo.dwFlags = FLASHW_ALL; flashInfo.uCount = 12; flashInfo.dwTimeout = 125; flashInfo.hwnd = WND->winId(); FlashWindowEx(&flashInfo); }
 #define LINK(URL) QString("<a href=\"%1\">%2</a>").arg(URL).arg(URL)
 #define TEMP_HIDE_DROPBOX(CMD) { bool __dropBoxVisible = m_dropBox->isVisible(); if(__dropBoxVisible) m_dropBox->hide(); CMD; if(__dropBoxVisible) m_dropBox->show(); }
-
-//Helper class
-//class Index: public QObjectUserData
-//{
-//public:
-//	Index(int index) { m_index = index; }
-//	int value(void) { return m_index; }
-//private:
-//	int m_index;
-//};
 
 ////////////////////////////////////////////////////////////
 // Constructor
@@ -216,12 +208,32 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	sliderLameAlgoQuality->setValue(m_settings->lameAlgoQuality());
 	spinBoxBitrateManagementMin->setValue(m_settings->bitrateManagementMinRate());
 	spinBoxBitrateManagementMax->setValue(m_settings->bitrateManagementMaxRate());
+	spinBoxNormalizationFilter->setValue(static_cast<double>(m_settings->normalizationFilterMaxVolume()) / 100.0);
+	spinBoxToneAdjustBass->setValue(static_cast<double>(m_settings->toneAdjustBass()) / 100.0);
+	spinBoxToneAdjustTreble->setValue(static_cast<double>(m_settings->toneAdjustTreble()) / 100.0);
+	comboBoxMP3ChannelMode->setCurrentIndex(m_settings->lameChannelMode());
+	comboBoxSamplingRate->setCurrentIndex(m_settings->samplingRate());
+	comboBoxNeroAACProfile->setCurrentIndex(m_settings->neroAACProfile());
 	while(checkBoxBitrateManagement->isChecked() != m_settings->bitrateManagementEnabled()) checkBoxBitrateManagement->click();
+	while(checkBoxNeroAAC2PassMode->isChecked() != m_settings->neroAACEnable2Pass()) checkBoxNeroAAC2PassMode->click();
+	while(checkBoxNormalizationFilter->isChecked() != m_settings->normalizationFilterEnabled()) checkBoxNormalizationFilter->click();
 	connect(sliderLameAlgoQuality, SIGNAL(valueChanged(int)), this, SLOT(updateLameAlgoQuality(int)));
 	connect(checkBoxBitrateManagement, SIGNAL(clicked(bool)), this, SLOT(bitrateManagementEnabledChanged(bool)));
 	connect(spinBoxBitrateManagementMin, SIGNAL(valueChanged(int)), this, SLOT(bitrateManagementMinChanged(int)));
 	connect(spinBoxBitrateManagementMax, SIGNAL(valueChanged(int)), this, SLOT(bitrateManagementMaxChanged(int)));
+	connect(comboBoxMP3ChannelMode, SIGNAL(currentIndexChanged(int)), this, SLOT(channelModeChanged(int)));
+	connect(comboBoxSamplingRate, SIGNAL(currentIndexChanged(int)), this, SLOT(samplingRateChanged(int)));
+	connect(checkBoxNeroAAC2PassMode, SIGNAL(clicked(bool)), this, SLOT(neroAAC2PassChanged(bool)));
+	connect(comboBoxNeroAACProfile, SIGNAL(currentIndexChanged(int)), this, SLOT(neroAACProfileChanged(int)));
+	connect(checkBoxNormalizationFilter, SIGNAL(clicked(bool)), this, SLOT(normalizationEnabledChanged(bool)));
+	connect(spinBoxNormalizationFilter, SIGNAL(valueChanged(double)), this, SLOT(normalizationMaxVolumeChanged(double)));
+	connect(spinBoxToneAdjustBass, SIGNAL(valueChanged(double)), this, SLOT(toneAdjustBassChanged(double)));
+	connect(spinBoxToneAdjustTreble, SIGNAL(valueChanged(double)), this, SLOT(toneAdjustTrebleChanged(double)));
+	connect(buttonToneAdjustReset, SIGNAL(clicked()), this, SLOT(toneAdjustTrebleReset()));
+	connect(buttonResetAdvancedOptions, SIGNAL(clicked()), this, SLOT(resetAdvancedOptionsButtonClicked()));
 	updateLameAlgoQuality(sliderLameAlgoQuality->value());
+	toneAdjustTrebleChanged(spinBoxToneAdjustTreble->value());
+	toneAdjustBassChanged(spinBoxToneAdjustBass->value());
 	
 	//Activate file menu actions
 	connect(actionOpenFolder, SIGNAL(triggered()), this, SLOT(openFolderActionActivated()));
@@ -282,11 +294,14 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	actionDisableSounds->setChecked(!m_settings->soundsEnabled());
 	actionDisableNeroAacNotifications->setChecked(!m_settings->neroAacNotificationsEnabled());
 	actionDisableWmaDecoderNotifications->setChecked(!m_settings->wmaDecoderNotificationsEnabled());
+	actionDisableShellIntegration->setChecked(!m_settings->shellIntegrationEnabled());
+	actionDisableShellIntegration->setDisabled(lamexp_portable_mode() && actionDisableShellIntegration->isChecked());
 	connect(actionDisableUpdateReminder, SIGNAL(triggered(bool)), this, SLOT(disableUpdateReminderActionTriggered(bool)));
 	connect(actionDisableSounds, SIGNAL(triggered(bool)), this, SLOT(disableSoundsActionTriggered(bool)));
 	connect(actionInstallWMADecoder, SIGNAL(triggered(bool)), this, SLOT(installWMADecoderActionTriggered(bool)));
 	connect(actionDisableNeroAacNotifications, SIGNAL(triggered(bool)), this, SLOT(disableNeroAacNotificationsActionTriggered(bool)));
 	connect(actionDisableWmaDecoderNotifications, SIGNAL(triggered(bool)), this, SLOT(disableWmaDecoderNotificationsActionTriggered(bool)));
+	connect(actionDisableShellIntegration, SIGNAL(triggered(bool)), this, SLOT(disableShellIntegrationActionTriggered(bool)));
 	connect(actionShowDropBoxWidget, SIGNAL(triggered(bool)), this, SLOT(showDropBoxWidgetActionTriggered(bool)));
 		
 	//Activate help menu actions
@@ -373,7 +388,6 @@ MainWindow::~MainWindow(void)
 	LAMEXP_DELETE(m_encoderButtonGroup);
 	LAMEXP_DELETE(m_sourceFilesContextMenu);
 	LAMEXP_DELETE(m_dropBox);
-
 }
 
 ////////////////////////////////////////////////////////////
@@ -412,6 +426,81 @@ void MainWindow::addFiles(const QStringList &files)
 	m_banner->close();
 }
 
+/*
+ * Download and install WMA Decoder component
+ */
+void MainWindow::installWMADecoder(void)
+{
+	static const char *download_url = "http://www.nch.com.au/components/wmawav.exe";
+	static const char *download_hash = "52a3b0e6690faf3f830c336d3c0eadfb7a4e9bc6";
+	
+	QString binaryWGet = lamexp_lookup_tool("wget.exe");
+	QString binaryElevator = lamexp_lookup_tool("elevator.exe");
+	
+	if(binaryWGet.isEmpty() || binaryElevator.isEmpty())
+	{
+		throw "Required binary is not available!";
+	}
+
+	while(true)
+	{
+		QString setupFile = QString("%1/%2.exe").arg(lamexp_temp_folder(), lamexp_rand_str());
+
+		QProcess process;
+		process.setWorkingDirectory(QFileInfo(setupFile).absolutePath());
+
+		QEventLoop loop;
+		connect(&process, SIGNAL(error(QProcess::ProcessError)), &loop, SLOT(quit()));
+		connect(&process, SIGNAL(finished(int, QProcess::ExitStatus)), &loop, SLOT(quit()));
+		
+		process.start(binaryWGet, QStringList() << "-O" << QFileInfo(setupFile).fileName() << download_url);
+		m_banner->show(tr("Downloading WMA Decoder Setup, please wait..."), &loop);
+
+		if(process.exitCode() != 0 || QFileInfo(setupFile).size() < 10240)
+		{
+			QFile::remove(setupFile);
+			if(QMessageBox::critical(this, tr("Download Failed"), tr("Failed to download the WMA Decoder setup. Check your internet connection!"), tr("Try Again"), tr("Cancel")) == 0)
+			{
+				continue;
+			}
+			return;
+		}
+
+		QFile setupFileContent(setupFile);
+		QCryptographicHash setupFileHash(QCryptographicHash::Sha1);
+		
+		setupFileContent.open(QIODevice::ReadOnly);
+		if(setupFileContent.isOpen() && setupFileContent.isReadable())
+		{
+			setupFileHash.addData(setupFileContent.readAll());
+			setupFileContent.close();
+		}
+
+		if(_stricmp(setupFileHash.result().toHex().constData(), download_hash))
+		{
+			qWarning("Hash miscompare:\n  Expected %s\n  Detected %s\n", download_hash, setupFileHash.result().toHex().constData());
+			QFile::remove(setupFile);
+			if(QMessageBox::critical(this, tr("Download Failed"), tr("The download seems to be corrupted. Please try again!"), tr("Try Again"), tr("Cancel")) == 0)
+			{
+				continue;
+			}
+			return;
+		}
+
+		QApplication::setOverrideCursor(Qt::WaitCursor);
+		process.start(binaryElevator, QStringList() << QString("/exec=%1").arg(setupFile));
+		loop.exec(QEventLoop::ExcludeUserInputEvents);
+		QFile::remove(setupFile);
+		QApplication::restoreOverrideCursor();
+
+		if(QMessageBox::information(this, tr("WMA Decoder"), tr("The WMA File Decoder has been installed. Please restart LameXP now!"), tr("Quit LameXP"), tr("Postpone")) == 0)
+		{
+			QApplication::quit();
+		}
+		break;
+	}
+}
+
 ////////////////////////////////////////////////////////////
 // EVENTS
 ////////////////////////////////////////////////////////////
@@ -447,22 +536,42 @@ void MainWindow::changeEvent(QEvent *e)
 {
 	if(e->type() == QEvent::LanguageChange)
 	{
+		int comboBoxIndex[3];
+		
+		//Backup combobox indices
+		comboBoxIndex[0] = comboBoxMP3ChannelMode->currentIndex();
+		comboBoxIndex[1] = comboBoxSamplingRate->currentIndex();
+		comboBoxIndex[2] = comboBoxNeroAACProfile->currentIndex();
+		
+		//Re.translate from UIC
 		Ui::MainWindow::retranslateUi(this);
+
+		//Restore combobox indices
+		comboBoxMP3ChannelMode->setCurrentIndex(comboBoxIndex[0]);
+		comboBoxSamplingRate->setCurrentIndex(comboBoxIndex[1]);
+		comboBoxNeroAACProfile->setCurrentIndex(comboBoxIndex[2]);
 
 		if(lamexp_version_demo())
 		{
 			setWindowTitle(QString("%1 [%2]").arg(windowTitle(), tr("DEMO VERSION")));
 		}
 	
+		//Manual re-translate
 		m_dropNoteLabel->setText(QString("» %1 «").arg(tr("You can drop in audio files here!")));
 		m_showDetailsContextAction->setText(tr("Show Details"));
 		m_previewContextAction->setText(tr("Open File in External Application"));
 		m_findFileContextAction->setText(tr("Browse File Location"));
 		m_showFolderContextAction->setText(tr("Browse Selected Folder"));
 
+		//Force GUI update
 		m_metaInfoModel->clearData();
 		updateEncoder(m_settings->compressionEncoder());
 		updateLameAlgoQuality(sliderLameAlgoQuality->value());
+
+		if(m_settings->shellIntegrationEnabled())
+		{
+			ShellIntegration::install();
+		}
 	}
 }
 
@@ -662,20 +771,22 @@ void MainWindow::windowShown(void)
 				messageText += QString("<nobr>%1<br>").arg(tr("LameXP detected that your version of the Nero AAC encoder is outdated!"));
 				messageText += QString("%1<br><br>").arg(tr("The current version available is %1 (or later), but you still have version %2 installed.").arg(lamexp_version2string("?.?.?.?", lamexp_toolver_neroaac(), tr("n/a")), lamexp_version2string("?.?.?.?", lamexp_tool_version("neroAacEnc.exe"), tr("n/a"))));
 				messageText += QString("%1<br>").arg(tr("You can download the latest version of the Nero AAC encoder from the Nero website at:"));
-				messageText += "<b>" + LINK(AboutDialog::neroAacUrl) + "</b><br></nobr>";
+				messageText += "<tt>" + LINK(AboutDialog::neroAacUrl) + "</tt><br></nobr>";
 				QMessageBox::information(this, tr("AAC Encoder Outdated"), messageText);
 			}
 		}
 		else
 		{
 			radioButtonEncoderAAC->setEnabled(false);
+			QString appPath = QDir(QCoreApplication::applicationDirPath()).canonicalPath();
+			if(appPath.isEmpty()) appPath = QCoreApplication::applicationDirPath();
 			QString messageText;
 			messageText += QString("<nobr>%1<br>").arg(tr("The Nero AAC encoder could not be found. AAC encoding support will be disabled."));
 			messageText += QString("%1<br><br>").arg(tr("Please put 'neroAacEnc.exe', 'neroAacDec.exe' and 'neroAacTag.exe' into the LameXP directory!"));
 			messageText += QString("%1<br>").arg(tr("Your LameXP directory is located here:"));
-			messageText += QString("<i><nobr><a href=\"file:///%1\">%1</a></nobr></i><br><br>").arg(QDir::toNativeSeparators(QCoreApplication::applicationDirPath()));
+			messageText += QString("<i><nobr><a href=\"file:///%1\">%1</a></nobr></i><br><br>").arg(QDir::toNativeSeparators(appPath));
 			messageText += QString("%1<br>").arg(tr("You can download the Nero AAC encoder for free from the official Nero website at:"));
-			messageText += "<b>" + LINK(AboutDialog::neroAacUrl) + "</b><br></nobr>";
+			messageText += "<tt>" + LINK(AboutDialog::neroAacUrl) + "</tt><br></nobr>";
 			QMessageBox::information(this, tr("AAC Support Disabled"), messageText);
 		}
 	}
@@ -687,9 +798,12 @@ void MainWindow::windowShown(void)
 		{
 			QString messageText;
 			messageText += QString("<nobr>%1<br>").arg(tr("LameXP has detected that the WMA File Decoder component is not currently installed on your system."));
-			messageText += QString("%1</nobr>").arg(tr("You won't be able to process WMA files as input unless the WMA File Decoder component is installed!"));
-			QMessageBox::information(this, tr("WMA Decoder Missing"), messageText);
-			installWMADecoderActionTriggered(rand() % 2);
+			messageText += QString("%1<br><br>").arg(tr("You won't be able to process WMA files as input unless the WMA File Decoder component is installed!"));
+			messageText += QString("%1</nobr>").arg(tr("Do you want to download and install the WMA File Decoder component now?"));
+			if(QMessageBox::information(this, tr("WMA Decoder Missing"), messageText, tr("Download && Install"), tr("Postpone")) == 0)
+			{
+				installWMADecoder();
+			}
 		}
 	}
 
@@ -708,6 +822,12 @@ void MainWindow::windowShown(void)
 	if(!m_delayedFileList->isEmpty() && !m_delayedFileTimer->isActive())
 	{
 		m_delayedFileTimer->start(5000);
+	}
+
+	//Enable shell integration
+	if(m_settings->shellIntegrationEnabled())
+	{
+		ShellIntegration::install();
 	}
 
 	//Make DropBox visible
@@ -1633,6 +1753,102 @@ void MainWindow::bitrateManagementMaxChanged(int value)
 	}
 }
 
+/*
+ * Channel mode has changed
+ */
+void MainWindow::channelModeChanged(int value)
+{
+	if(value >= 0) m_settings->lameChannelMode(value);
+}
+
+/*
+ * Sampling rate has changed
+ */
+void MainWindow::samplingRateChanged(int value)
+{
+	if(value >= 0) m_settings->samplingRate(value);
+}
+
+/*
+ * Nero AAC 2-Pass mode changed
+ */
+void MainWindow::neroAAC2PassChanged(bool checked)
+{
+	m_settings->neroAACEnable2Pass(checked);
+}
+
+/*
+ * Nero AAC profile mode changed
+ */
+void MainWindow::neroAACProfileChanged(int value)
+{
+	if(value >= 0) m_settings->neroAACProfile(value);
+}
+
+/*
+ * Normalization filter enabled changed
+ */
+void MainWindow::normalizationEnabledChanged(bool checked)
+{
+	m_settings->normalizationFilterEnabled(checked);
+}
+
+/*
+ * Normalization max. volume changed
+ */
+void MainWindow::normalizationMaxVolumeChanged(double value)
+{
+	m_settings->normalizationFilterMaxVolume(static_cast<int>(value * 100.0));
+}
+
+/*
+ * Tone adjustment has changed (Bass)
+ */
+void MainWindow::toneAdjustBassChanged(double value)
+{
+	m_settings->toneAdjustBass(static_cast<int>(value * 100.0));
+	spinBoxToneAdjustBass->setPrefix((value > 0) ? "+" : QString());
+}
+
+/*
+ * Tone adjustment has changed (Treble)
+ */
+void MainWindow::toneAdjustTrebleChanged(double value)
+{
+	m_settings->toneAdjustTreble(static_cast<int>(value * 100.0));
+	spinBoxToneAdjustTreble->setPrefix((value > 0) ? "+" : QString());
+}
+
+/*
+ * Tone adjustment has been reset
+ */
+void MainWindow::toneAdjustTrebleReset()
+{
+	spinBoxToneAdjustBass->setValue(m_settings->toneAdjustBassDefault());
+	spinBoxToneAdjustTreble->setValue(m_settings->toneAdjustTrebleDefault());
+	toneAdjustBassChanged(spinBoxToneAdjustBass->value());
+	toneAdjustTrebleChanged(spinBoxToneAdjustTreble->value());
+}
+
+/*
+ * Reset all advanced options to their defaults
+ */
+void MainWindow::resetAdvancedOptionsButtonClicked()
+{
+	sliderLameAlgoQuality->setValue(m_settings->lameAlgoQualityDefault());
+	spinBoxBitrateManagementMin->setValue(m_settings->bitrateManagementMinRateDefault());
+	spinBoxBitrateManagementMax->setValue(m_settings->bitrateManagementMaxRateDefault());
+	spinBoxNormalizationFilter->setValue(static_cast<double>(m_settings->normalizationFilterMaxVolumeDefault()) / 100.0);
+	spinBoxToneAdjustBass->setValue(static_cast<double>(m_settings->toneAdjustBassDefault()) / 100.0);
+	spinBoxToneAdjustTreble->setValue(static_cast<double>(m_settings->toneAdjustTrebleDefault()) / 100.0);
+	comboBoxMP3ChannelMode->setCurrentIndex(m_settings->lameChannelModeDefault());
+	comboBoxSamplingRate->setCurrentIndex(m_settings->samplingRateDefault());
+	comboBoxNeroAACProfile->setCurrentIndex(m_settings->neroAACProfileDefault());
+	while(checkBoxBitrateManagement->isChecked() != m_settings->bitrateManagementEnabledDefault()) checkBoxBitrateManagement->click();
+	while(checkBoxNeroAAC2PassMode->isChecked() != m_settings->neroAACEnable2PassDefault()) checkBoxNeroAAC2PassMode->click();
+	while(checkBoxNormalizationFilter->isChecked() != m_settings->normalizationFilterEnabledDefault()) checkBoxNormalizationFilter->click();
+	scrollArea->verticalScrollBar()->setValue(0);
+}
 
 /*
  * Model reset
@@ -1901,81 +2117,15 @@ void MainWindow::disableWmaDecoderNotificationsActionTriggered(bool checked)
  */
 void MainWindow::installWMADecoderActionTriggered(bool checked)
 {
-	static const char *download_url = "http://www.nch.com.au/components/wmawav.exe";
-	static const char *download_hash = "52a3b0e6690faf3f830c336d3c0eadfb7a4e9bc6";
-	
-	if(QMessageBox::question(this, tr("Install WMA Decoder"), tr("Do you want to download and install the WMA File Decoder component now?"), tr("Download && Install"), tr("Cancel")) != 0)
+	if(QMessageBox::question(this, tr("Install WMA Decoder"), tr("Do you want to download and install the WMA File Decoder component now?"), tr("Download && Install"), tr("Cancel")) == 0)
 	{
-		return;
-	}
-
-	QString binaryWGet = lamexp_lookup_tool("wget.exe");
-	QString binaryElevator = lamexp_lookup_tool("elevator.exe");
-	
-	if(binaryWGet.isEmpty() || binaryElevator.isEmpty())
-	{
-		throw "Required binary is not available!";
-	}
-
-	while(true)
-	{
-		QString setupFile = QString("%1/%2.exe").arg(lamexp_temp_folder(), lamexp_rand_str());
-
-		QProcess process;
-		process.setWorkingDirectory(QFileInfo(setupFile).absolutePath());
-
-		QEventLoop loop;
-		connect(&process, SIGNAL(error(QProcess::ProcessError)), &loop, SLOT(quit()));
-		connect(&process, SIGNAL(finished(int, QProcess::ExitStatus)), &loop, SLOT(quit()));
-		
-		process.start(binaryWGet, QStringList() << "-O" << QFileInfo(setupFile).fileName() << download_url);
-		m_banner->show(tr("Downloading WMA Decoder Setup, please wait..."), &loop);
-
-		if(process.exitCode() != 0 || QFileInfo(setupFile).size() < 10240)
-		{
-			QFile::remove(setupFile);
-			if(QMessageBox::critical(this, tr("Download Failed"), tr("Failed to download the WMA Decoder setup. Check your internet connection!"), tr("Try Again"), tr("Cancel")) == 0)
-			{
-				continue;
-			}
-			return;
-		}
-
-		QFile setupFileContent(setupFile);
-		QCryptographicHash setupFileHash(QCryptographicHash::Sha1);
-		
-		setupFileContent.open(QIODevice::ReadOnly);
-		if(setupFileContent.isOpen() && setupFileContent.isReadable())
-		{
-			setupFileHash.addData(setupFileContent.readAll());
-			setupFileContent.close();
-		}
-
-		if(_stricmp(setupFileHash.result().toHex().constData(), download_hash))
-		{
-			qWarning("Hash miscompare:\n  Expected %s\n  Detected %s\n", download_hash, setupFileHash.result().toHex().constData());
-			QFile::remove(setupFile);
-			if(QMessageBox::critical(this, tr("Download Failed"), tr("The download seems to be corrupted. Please try again!"), tr("Try Again"), tr("Cancel")) == 0)
-			{
-				continue;
-			}
-			return;
-		}
-
-		QApplication::setOverrideCursor(Qt::WaitCursor);
-		process.start(binaryElevator, QStringList() << QString("/exec=%1").arg(setupFile));
-		loop.exec(QEventLoop::ExcludeUserInputEvents);
-		QFile::remove(setupFile);
-		QApplication::restoreOverrideCursor();
-
-		if(QMessageBox::information(this, tr("WMA Decoder"), tr("The WMA File Decoder has been installed. Please restart LameXP now!"), tr("Quit LameXP"), tr("Postpone")) == 0)
-		{
-			QApplication::quit();
-		}
-		break;
+		installWMADecoder();
 	}
 }
 
+/*
+ * Show the "drop box" widget
+ */
 void MainWindow::showDropBoxWidgetActionTriggered(bool checked)
 {
 	m_settings->dropBoxWidgetEnabled(true);
@@ -1986,4 +2136,37 @@ void MainWindow::showDropBoxWidgetActionTriggered(bool checked)
 	}
 	
 	FLASH_WINDOW(m_dropBox);
+}
+
+/*
+ * Disable shell integration action
+ */
+void MainWindow::disableShellIntegrationActionTriggered(bool checked)
+{
+	if(checked)
+	{
+		if(0 == QMessageBox::question(this, tr("Shell Integration"), tr("Do you really want to disable the LameXP shell integration?"), tr("Yes"), tr("No"), QString(), 1))
+		{
+			ShellIntegration::remove();
+			QMessageBox::information(this, tr("Shell Integration"), tr("The LameXP shell integration has been disabled."));
+			m_settings->shellIntegrationEnabled(false);
+		}
+		else
+		{
+			m_settings->shellIntegrationEnabled(true);
+		}
+	}
+	else
+	{
+			ShellIntegration::install();
+			QMessageBox::information(this, tr("Shell Integration"), tr("The LameXP shell integration has been re-enabled."));
+			m_settings->shellIntegrationEnabled(true);
+	}
+
+	actionDisableShellIntegration->setChecked(!m_settings->shellIntegrationEnabled());
+	
+	if(lamexp_portable_mode() && actionDisableShellIntegration->isChecked())
+	{
+		actionDisableShellIntegration->setEnabled(false);
+	}
 }

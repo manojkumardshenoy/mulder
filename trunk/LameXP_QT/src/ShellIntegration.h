@@ -21,36 +21,32 @@
 
 #pragma once
 
-#include "Encoder_Abstract.h"
+#include <QThread>
+#include <QMutex>
 
-#include <QObject>
+class QString;
+class QStringList;
 
-class MP3Encoder : public AbstractEncoder
+class ShellIntegration : public QThread
 {
 	Q_OBJECT
 
 public:
-	MP3Encoder(void);
-	~MP3Encoder(void);
+	static void install(bool async = true);
+	static void remove(bool async = true);
 
-	virtual bool encode(const QString &sourceFile, const AudioFileModel &metaInfo, const QString &outputFile, volatile bool *abortFlag);
-	virtual bool isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion);
-	virtual QString extension(void);
-	virtual bool requiresDownmix(void);
-	
-	//Advanced options
-	virtual void setAlgoQuality(int value);
-	virtual void setBitrateLimits(int minimumBitrate, int maximumBitrate);
-	virtual void setSamplingRate(int value);
-	virtual void setChannelMode(int value);
+protected:
+	void run()
+	{
+		if(m_install) install(false); else remove(false);
+	}
 
 private:
-	const QString m_binary;
-	int m_algorithmQuality;
-	int m_configBitrateMaximum;
-	int m_configBitrateMinimum;
-	int m_configSamplingRate;
-	int m_configChannelMode;
+	ShellIntegration(bool install = true);
+	 ~ShellIntegration(void);
 
-	int clipBitrate(int bitrate);
+	static QStringList *detectTypes(const QString &lamexpFileType, const QString &lamexpShellAction);
+	static QMutex m_mutex;
+
+	bool m_install;
 };

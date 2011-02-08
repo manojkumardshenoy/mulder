@@ -14,6 +14,9 @@
 ..\..\src\Decoder_FLAC.cpp 
 ..\..\src\Decoder_MAC.cpp 
 ..\..\src\Decoder_MP3.cpp 
+..\..\src\Decoder_Musepack.cpp 
+..\..\src\Decoder_Shorten.cpp 
+..\..\src\Decoder_Speex.cpp 
 ..\..\src\Decoder_TTA.cpp 
 ..\..\src\Decoder_Vorbis.cpp 
 ..\..\src\Decoder_Wave.cpp 
@@ -36,6 +39,9 @@
 ..\..\src\Encoder_Wave.cpp 
 ..\..\src\Filter_Abstract.cpp 
 ..\..\src\Filter_Downmix.cpp 
+..\..\src\Filter_Normalize.cpp 
+..\..\src\Filter_Resample.cpp 
+..\..\src\Filter_ToneAdjust.cpp 
 ..\..\src\Genres.cpp 
 ..\..\src\Global.cpp 
 ..\..\src\LockedFile.cpp 
@@ -46,7 +52,9 @@
 ..\..\src\Model_MetaInfo.cpp 
 ..\..\src\Model_Progress.cpp 
 ..\..\src\Model_Settings.cpp 
+..\..\src\PlaylistImporter.cpp 
 ..\..\src\Registry_Decoder.cpp 
+..\..\src\ShellIntegration.cpp 
 ..\..\src\Thread_FileAnalyzer.cpp 
 ..\..\src\Thread_Initialization.cpp 
 ..\..\src\Thread_MessageHandler.cpp 
@@ -63,6 +71,9 @@
 ..\..\src\Decoder_FLAC.h 
 ..\..\src\Decoder_MAC.h 
 ..\..\src\Decoder_MP3.h 
+..\..\src\Decoder_Musepack.h 
+..\..\src\Decoder_Shorten.h 
+..\..\src\Decoder_Speex.h 
 ..\..\src\Decoder_TTA.h 
 ..\..\src\Decoder_Vorbis.h 
 ..\..\src\Decoder_Wave.h 
@@ -85,6 +96,9 @@
 ..\..\src\Encoder_Wave.h 
 ..\..\src\Filter_Abstract.h 
 ..\..\src\Filter_Downmix.h 
+..\..\src\Filter_Normalize.h 
+..\..\src\Filter_Resample.h 
+..\..\src\Filter_ToneAdjust.h 
 ..\..\src\Genres.h 
 ..\..\src\Global.h 
 ..\..\src\LockedFile.h 
@@ -94,8 +108,10 @@
 ..\..\src\Model_MetaInfo.h 
 ..\..\src\Model_Progress.h 
 ..\..\src\Model_Settings.h 
+..\..\src\PlaylistImporter.h 
 ..\..\src\Registry_Decoder.h 
 ..\..\src\Resource.h 
+..\..\src\ShellIntegration.h 
 ..\..\src\Targetver.h 
 ..\..\src\Thread_FileAnalyzer.h 
 ..\..\src\Thread_Initialization.h 

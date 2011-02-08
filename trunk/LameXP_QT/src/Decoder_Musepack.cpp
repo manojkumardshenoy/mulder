@@ -19,39 +19,35 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "Filter_Downmix.h"
+#include "Decoder_Musepack.h"
 
 #include "Global.h"
 
 #include <QDir>
 #include <QProcess>
 #include <QRegExp>
+#include <QUuid>
 
-DownmixFilter::DownmixFilter(void)
+MusepackDecoder::MusepackDecoder(void)
 :
-	m_binary(lamexp_lookup_tool("sox.exe"))
+	m_binary(lamexp_lookup_tool("mpcdec.exe"))
 {
 	if(m_binary.isEmpty())
 	{
-		throw "Error initializing SoX filter. Tool 'sox.exe' is not registred!";
+		throw "Error initializing Musepack decoder. Tool 'mpcdec.exe' is not registred!";
 	}
 }
 
-DownmixFilter::~DownmixFilter(void)
+MusepackDecoder::~MusepackDecoder(void)
 {
 }
 
-bool DownmixFilter::apply(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag)
+bool MusepackDecoder::decode(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag)
 {
 	QProcess process;
 	QStringList args;
 
-	process.setWorkingDirectory(lamexp_temp_folder());
-
-	args << "-V3";
-	args << "--guard" << "--temp" << ".";
 	args << QDir::toNativeSeparators(sourceFile);
-	args << "-c2";
 	args << QDir::toNativeSeparators(outputFile);
 
 	if(!startProcess(process, m_binary, args))
@@ -62,6 +58,9 @@ bool DownmixFilter::apply(const QString &sourceFile, const QString &outputFile, 
 	bool bTimeout = false;
 	bool bAborted = false;
 
+	//The Musepack Decoder doesn't actually send any status updates :-[
+	emit statusUpdated(20 + (QUuid::createUuid().data1 % 80));
+
 	while(process.state() != QProcess::NotRunning)
 	{
 		if(*abortFlag)
@@ -71,11 +70,11 @@ bool DownmixFilter::apply(const QString &sourceFile, const QString &outputFile, 
 			emit messageLogged("\nABORTED BY USER !!!");
 			break;
 		}
-		process.waitForReadyRead();
+		process.waitForReadyRead(180000);
 		if(!process.bytesAvailable() && process.state() == QProcess::Running)
 		{
 			process.kill();
-			qWarning("SoX process timed out <-- killing!");
+			qWarning("MpcDec process timed out <-- killing!");
 			bTimeout = true;
 			break;
 		}
@@ -106,4 +105,22 @@ bool DownmixFilter::apply(const QString &sourceFile, const QString &outputFile, 
 	}
 	
 	return true;
+}
+
+bool MusepackDecoder::isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion)
+{
+	if(containerType.compare("Musepack SV8", Qt::CaseInsensitive) == 0 || containerType.compare("Musepack SV7", Qt::CaseInsensitive) == 0)
+	{
+		if(formatType.compare("Musepack SV8", Qt::CaseInsensitive) == 0 || formatType.compare("Musepack SV7", Qt::CaseInsensitive) == 0)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+QStringList MusepackDecoder::supportedTypes(void)
+{
+	return QStringList() << "Musepack (*.mpc *.mpp *.mp+)";
 }

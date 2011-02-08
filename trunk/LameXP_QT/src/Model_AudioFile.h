@@ -30,7 +30,7 @@ class AudioFileModel : public QObject
 
 public:
 	AudioFileModel(const QString &path = QString(), const QString &name = QString());
-	AudioFileModel(const AudioFileModel &model);
+	AudioFileModel(const AudioFileModel &model, bool copyMetaInfo = true);
 	AudioFileModel &operator=(const AudioFileModel &model);
 	~AudioFileModel(void);
 
@@ -85,6 +85,8 @@ public:
 	void setFormatAudioChannels(unsigned int channels);
 	void setFormatAudioBitdepth(unsigned int bitdepth);
 
+	void updateMetaInfo(const AudioFileModel &model);
+
 private:
 	QString m_filePath;
 	QString m_fileName;
@@ -104,4 +106,6 @@ private:
 	unsigned int m_formatAudioSamplerate;
 	unsigned int m_formatAudioChannels;
 	unsigned int m_formatAudioBitdepth;
+
+	void resetAll(void);
 };
