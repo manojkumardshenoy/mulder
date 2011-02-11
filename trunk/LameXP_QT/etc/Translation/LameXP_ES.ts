@@ -77,8 +77,7 @@
     </message>
     <message>
         <source>Freeware state-of-the-art HE-AAC encoder with 2-Pass support.</source>
-        <translatorcomment>No se traducirlo mejor/Don&apos;t know how to translate better</translatorcomment>
-        <translation>Codificador estado del arte-HE-AAC con soporte de 2 pases.</translation>
+        <translation>Codificador puntero HE-AAC con soporte de 2 pases.</translation>
     </message>
     <message>
         <source>Available from vendor web-site as free download:</source>
@@ -1112,7 +1111,7 @@
     </message>
     <message>
         <source>Do you really want to disable the LameXP shell integration?</source>
-        <translation>¿Seguroque desea deshabilitar el menú contextual de LameXP?</translation>
+        <translation>¿Seguro que desea deshabilitar el menú contextual de LameXP?</translation>
     </message>
     <message>
         <source>The LameXP shell integration has been disabled.</source>
@@ -1121,6 +1120,30 @@
     <message>
         <source>The LameXP shell integration has been re-enabled.</source>
         <translation>Menú contextual de LameXP habilitado.</translation>
+    </message>
+    <message>
+        <source> Custom Encoder Parameters </source>
+        <translation>Personalizar parámetros de codificación</translation>
+    </message>
+    <message>
+        <source>LAME:</source>
+        <translation>LAME:</translation>
+    </message>
+    <message>
+        <source>OggEnc2:</source>
+        <translation>QggEnc2:</translation>
+    </message>
+    <message>
+        <source>Nero AAC:</source>
+        <translation>Nero AAC:</translation>
+    </message>
+    <message>
+        <source>FLAC:</source>
+        <translation>FLAC:</translation>
+    </message>
+    <message>
+        <source>Warning: Custom parameters won&apos;t be checked at all. Use them at your own risk !!!</source>
+        <translation>Aviso: Los parámetros personalizados no se comprobarán en absoluto. ¡¡¡ Úselos bajo su propio riesgo !!!</translation>
     </message>
 </context>
 <context>
@@ -1471,7 +1494,7 @@
     </message>
     <message>
         <source>Multi-threading enabled: Running %1 instances in parallel!</source>
-        <translation type="unfinished"></translation>
+        <translation>Ejecución multi-hilo habilitada: ¡Ejecutando %1 instancias en paralelo!</translation>
     </message>
 </context>
 <context>
