@@ -113,7 +113,7 @@
     </message>
     <message>
         <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of thrird-party software used in LameXP belongs to the individual authors.</source>
-        <translation>Das Urheberrecht an LameXP liegt bei LoRd_MuldeR. Das Urheberrecht an der eingesetzten Drittsoftware liegt bei den jeweiligen Authoren.</translation>
+        <translation>Das Urheberrecht an LameXP liegt bei LoRd_MuldeR. Das Urheberrecht an der eingesetzten Drittsoftware liegt bei den jeweiligen Autoren.</translation>
     </message>
     <message>
         <source>LameXP &amp;minus; Audio Encoder Front-end</source>
@@ -1470,16 +1470,12 @@
         <translation>Mindestens eine Datei ist fehlgeschlagen!</translation>
     </message>
     <message>
-        <source>Alle files completed successfully.</source>
+        <source>All files completed successfully.</source>
         <translation>Alle Dateien wurden erfolgreich abgeschlossen.</translation>
     </message>
     <message>
         <source>LameXP - Done</source>
         <translation>LameXP - Fertig</translation>
-    </message>
-    <message>
-        <source>All files completed successfully.</source>
-        <translation>Alle Dateien wurden erfolgreich abgeschlossen.</translation>
     </message>
     <message>
         <source>Playlist creation failed</source>
@@ -1496,6 +1492,10 @@
     <message>
         <source>Multi-threading enabled: Running %1 instances in parallel!</source>
         <translation>Multithreading aktiviert: Führe %1 Instanzen parallel aus!</translation>
+    </message>
+    <message>
+        <source>Browse Output File Location</source>
+        <translation>Ausgabe-Datei Suchen</translation>
     </message>
 </context>
 <context>
@@ -1551,7 +1551,7 @@
     </message>
     <message>
         <source>Show Log</source>
-        <translation>Lag Anzeigen</translation>
+        <translation>Log Anzeigen</translation>
     </message>
     <message>
         <source>Download &amp;&amp; Install</source>
@@ -1587,7 +1587,7 @@
     </message>
     <message>
         <source>Sorry, the update server might be busy at this time. Plase try again later.</source>
-        <translation>Der Update Server ist möglicherweise überlastet. Versuchen Sie es später noch einmal.</translation>
+        <translation>Der Server ist möglicherweise überlastet. Versuchen Sie es später noch einmal.</translation>
     </message>
     <message>
         <source>More information available at:</source>

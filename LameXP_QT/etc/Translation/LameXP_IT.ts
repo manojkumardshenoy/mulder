@@ -1486,15 +1486,15 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Alle files completed successfully.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Process was aborted prematurely by the user!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Multi-threading enabled: Running %1 instances in parallel!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Browse Output File Location</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
