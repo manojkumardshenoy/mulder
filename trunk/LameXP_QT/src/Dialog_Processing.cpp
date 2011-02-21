@@ -52,8 +52,11 @@
 #include <QDir>
 #include <QMenu>
 #include <QSystemTrayIcon>
+#include <QProcess>
 
 #include <Windows.h>
+
+////////////////////////////////////////////////////////////
 
 #define CHANGE_BACKGROUND_COLOR(WIDGET, COLOR) \
 { \
@@ -67,6 +70,8 @@
 	label_progress->setText(TXT); \
 	m_systemTray->setToolTip(QString().sprintf("LameXP v%d.%02d\n%ls", lamexp_version_major(), lamexp_version_minor(), QString(TXT).utf16())); \
 }
+
+#define SET_FONT_BOLD(WIDGET,BOLD) { QFont _font = WIDGET->font(); _font.setBold(BOLD); WIDGET->setFont(_font); }
 
 ////////////////////////////////////////////////////////////
 // Constructor
@@ -117,11 +122,15 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 
 	//Create context menu
 	m_contextMenu = new QMenu();
-	QAction *contextMenuAction = m_contextMenu->addAction(QIcon(":/icons/zoom.png"), tr("Show details for selected job"));
+	QAction *contextMenuDetailsAction = m_contextMenu->addAction(QIcon(":/icons/zoom.png"), tr("Show details for selected job"));
+	QAction *contextMenuShowFileAction = m_contextMenu->addAction(QIcon(":/icons/folder_go.png"), tr("Browse Output File Location"));
+
 	view_log->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(view_log, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuTriggered(QPoint)));
-	connect(contextMenuAction, SIGNAL(triggered(bool)), this, SLOT(contextMenuActionTriggered()));
-	
+	connect(contextMenuDetailsAction, SIGNAL(triggered(bool)), this, SLOT(contextMenuDetailsActionTriggered()));
+	connect(contextMenuShowFileAction, SIGNAL(triggered(bool)), this, SLOT(contextMenuShowFileActionTriggered()));
+	SET_FONT_BOLD(contextMenuDetailsAction, true);
+
 	//Enque jobs
 	if(fileListModel)
 	{
@@ -354,7 +363,7 @@ void ProcessingDialog::doneEncoding(void)
 			CHANGE_BACKGROUND_COLOR(frame_header, QColor("#E0FFE2"));
 			WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNormalState);
 			WinSevenTaskbar::setOverlayIcon(this, &QIcon(":/icons/accept.png"));
-			SET_PROGRESS_TEXT(tr("Alle files completed successfully."));
+			SET_PROGRESS_TEXT(tr("All files completed successfully."));
 			m_systemTray->showMessage(tr("LameXP - Done"), tr("All files completed successfully."), QSystemTrayIcon::Information);
 			m_systemTray->setIcon(QIcon(":/icons/cd_add.png"));
 			QApplication::processEvents();
@@ -418,16 +427,62 @@ void ProcessingDialog::logViewDoubleClicked(const QModelIndex &index)
 
 void ProcessingDialog::contextMenuTriggered(const QPoint &pos)
 {
-	if(pos.x() <= view_log->width() && pos.y() <= view_log->height() && pos.x() >= 0 && pos.y() >= 0)
+	QAbstractScrollArea *scrollArea = dynamic_cast<QAbstractScrollArea*>(QObject::sender());
+	QWidget *sender = scrollArea ? scrollArea->viewport() : dynamic_cast<QWidget*>(QObject::sender());	
+
+	if(pos.x() <= sender->width() && pos.y() <= sender->height() && pos.x() >= 0 && pos.y() >= 0)
 	{
-		m_contextMenu->popup(view_log->mapToGlobal(pos));
+		m_contextMenu->popup(sender->mapToGlobal(pos));
 	}
 }
 
-void ProcessingDialog::contextMenuActionTriggered(void)
+void ProcessingDialog::contextMenuDetailsActionTriggered(void)
 {
 	QModelIndex index = view_log->indexAt(view_log->mapFromGlobal(m_contextMenu->pos()));
 	logViewDoubleClicked(index.isValid() ? index : view_log->currentIndex());
+}
+
+void ProcessingDialog::contextMenuShowFileActionTriggered(void)
+{
+	QModelIndex index = view_log->indexAt(view_log->mapFromGlobal(m_contextMenu->pos()));
+	const QUuid &jobId = m_progressModel->getJobId(index.isValid() ? index : view_log->currentIndex());
+	QString filePath = m_playList.value(jobId, QString());
+
+	if(filePath.isEmpty())
+	{
+		MessageBeep(MB_ICONWARNING);
+		return;
+	}
+
+	if(QFileInfo(filePath).exists())
+	{
+		QString systemRootPath;
+
+		QDir systemRoot(lamexp_known_folder(lamexp_folder_systemfolder));
+		if(systemRoot.exists() && systemRoot.cdUp())
+		{
+			systemRootPath = systemRoot.canonicalPath();
+		}
+
+		if(!systemRootPath.isEmpty())
+		{
+			QFileInfo explorer(QString("%1/explorer.exe").arg(systemRootPath));
+			if(explorer.exists() && explorer.isFile())
+			{
+				QProcess::execute(explorer.canonicalFilePath(), QStringList() << "/select," << QDir::toNativeSeparators(QFileInfo(filePath).canonicalFilePath()));
+				return;
+			}
+		}
+		else
+		{
+			qWarning("SystemRoot directory could not be detected!");
+		}
+	}
+	else
+	{
+		qWarning("File not found: %s", filePath.toLatin1().constData());
+		MessageBeep(MB_ICONERROR);
+	}
 }
 
 ////////////////////////////////////////////////////////////
@@ -528,7 +583,10 @@ void ProcessingDialog::startNextJob(void)
 
 	if((m_settings->samplingRate() > 0) && !nativeResampling)
 	{
-		thread->addFilter(new ResampleFilter(SettingsModel::samplingRates[m_settings->samplingRate()]));
+		if(SettingsModel::samplingRates[m_settings->samplingRate()] != currentFile.formatAudioSamplerate() || currentFile.formatAudioSamplerate() == 0)
+		{
+			thread->addFilter(new ResampleFilter(SettingsModel::samplingRates[m_settings->samplingRate()]));
+		}
 	}
 	if((m_settings->toneAdjustBass() != 0) || (m_settings->toneAdjustTreble() != 0))
 	{

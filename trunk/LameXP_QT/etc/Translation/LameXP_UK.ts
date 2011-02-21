@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" sourcelanguage="en">
+<TS version="2.0" language="uk_UA" sourcelanguage="en">
 <context>
     <name>AboutDialog</name>
     <message>
@@ -49,7 +49,7 @@
     </message>
     <message>
         <source>Discard</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Відмінити</translation>
     </message>
     <message>
         <source>The following people have contributed to LameXP:</source>
@@ -200,150 +200,150 @@
     <name>AudioFileModel</name>
     <message>
         <source>Profile</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Профіль</translation>
     </message>
     <message>
         <source>Channels</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Канали</translation>
     </message>
     <message>
         <source>Samplerate</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Частота дискретизації</translation>
     </message>
     <message>
         <source>Bitdepth</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Бітова глибина</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Тип</translation>
     </message>
     <message>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Версія</translation>
     </message>
 </context>
 <context>
     <name>DecoderRegistry</name>
     <message>
         <source>All supported types</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Всі підтримувані типи</translation>
     </message>
     <message>
         <source>Playlists</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Списки відтворення</translation>
     </message>
     <message>
         <source>All files</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Всі файли</translation>
     </message>
 </context>
 <context>
     <name>DropBox</name>
     <message>
         <source>LameXP - DropBox</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">LameXP - DropBox</translation>
     </message>
     <message>
         <source>LameXP DropBox</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">LameXP DropBox</translation>
     </message>
     <message>
         <source>You can add files to LameXP via Drag&amp;amp;Drop here!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ви можете додавати файли до LameXP за допомогою Drag&amp;amp;Drop, перетягнувши їх сюди!</translation>
     </message>
     <message>
         <source>(Right-click to close the DropBox)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">(Клік правою клавішею миші для закриття DropBox)</translation>
     </message>
 </context>
 <context>
     <name>FileListModel</name>
     <message>
         <source>Title</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Назва</translation>
     </message>
     <message>
         <source>Full Path</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Повний шлях</translation>
     </message>
 </context>
 <context>
     <name>LogViewDialog</name>
     <message>
         <source>Log View</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Лог</translation>
     </message>
     <message>
         <source>Discard</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Відмінити</translation>
     </message>
     <message>
         <source>Save to File...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Зберегти до файлу...</translation>
     </message>
     <message>
         <source>Copy to Clipboard</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Копіювати до буфера обміну</translation>
     </message>
     <message>
         <source>Log File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Файл логу</translation>
     </message>
     <message>
         <source>The log file shows detailed information about the selected job.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Файл логу відображає детальну інформацію про вибрані завдання.</translation>
     </message>
 </context>
 <context>
     <name>MainWindow</name>
     <message>
         <source>LameXP - Audio Encoder Front-end</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">LameXP - Audio Encoder Front-end</translation>
     </message>
     <message>
         <source>Source Files</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Вхідні файли</translation>
     </message>
     <message>
         <source>Add File(s)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Додати файл(и)</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Видалити</translation>
     </message>
     <message>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Очистити</translation>
     </message>
     <message>
         <source>Show Details</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Показати деталі</translation>
     </message>
     <message>
         <source>Output Directory</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Тека вихідних файлів</translation>
     </message>
     <message>
         <source>Goto Home Folder</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Домашня тека</translation>
     </message>
     <message>
         <source>Goto Music Folder</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Тека  &quot;Моя музика&quot;</translation>
     </message>
     <message>
         <source>Goto Desktop Folder</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Робочий стіл</translation>
     </message>
     <message>
         <source>Make New Folder</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Створити нову теку</translation>
     </message>
     <message>
         <source>Save output files to the same location where the input file is located</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Зберігати вихідні файли в ту ж саму теку, де знаходяться вхідні</translation>
     </message>
     <message>
         <source>Prepend relative source file path to output file</source>
@@ -351,15 +351,15 @@
     </message>
     <message>
         <source>Meta Data</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Метадані</translation>
     </message>
     <message>
         <source> Meta Information </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Метаінформація</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Редагувати</translation>
     </message>
     <message>
         <source>Note: Meta information you enter here will &lt;u&gt;supersede&lt;/u&gt; data from the source!</source>
@@ -367,11 +367,11 @@
     </message>
     <message>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Скинути</translation>
     </message>
     <message>
         <source> Options </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Налаштування</translation>
     </message>
     <message>
         <source>Automatically generate playlist file (.m3u)</source>
@@ -383,31 +383,31 @@
     </message>
     <message>
         <source>Compression</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Стиснення</translation>
     </message>
     <message>
         <source> Encoder / Format </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished"> Кодер / Формат </translation>
     </message>
     <message>
         <source>Lame MP3</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Lame MP3</translation>
     </message>
     <message>
         <source>Ogg Vorbis</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ogg Vorbis</translation>
     </message>
     <message>
         <source>Nero AAC</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nero AAC</translation>
     </message>
     <message>
         <source>Wave (PCM)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Wave (PCM)</translation>
     </message>
     <message>
         <source>FLAC</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">FLAC</translation>
     </message>
     <message>
         <source> Rate Control Method </source>
@@ -427,19 +427,19 @@
     </message>
     <message>
         <source> Quality / Bitrate </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished"> Якість / Бітрейт </translation>
     </message>
     <message>
         <source>Minimum</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Мінімум</translation>
     </message>
     <message>
         <source>Maximum</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Максимум</translation>
     </message>
     <message>
         <source>Advanced Options</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Розширені налаштування</translation>
     </message>
     <message>
         <source> Bitrate Management (LAME and OggEnc2) </source>
@@ -451,11 +451,11 @@
     </message>
     <message>
         <source>Minimum (kbps):</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Мінімум (кб/с):</translation>
     </message>
     <message>
         <source>Maximum (kbps):</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Максимум (кб/с):</translation>
     </message>
     <message>
         <source> LAME Algorithm Quality </source>
@@ -495,7 +495,7 @@
     </message>
     <message>
         <source>Mono</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Моно</translation>
     </message>
     <message>
         <source>MP3 Channel Mode:</source>
@@ -503,35 +503,35 @@
     </message>
     <message>
         <source>Sampling Rate (Hz):</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Частота дискретизації (Гц):</translation>
     </message>
     <message>
         <source>16.000</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">16.000</translation>
     </message>
     <message>
         <source>22.050</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">22.050</translation>
     </message>
     <message>
         <source>24.000</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">24.000</translation>
     </message>
     <message>
         <source>32.000</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">32.000</translation>
     </message>
     <message>
         <source>44.100</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">44.100</translation>
     </message>
     <message>
         <source>48.000</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">48.000</translation>
     </message>
     <message>
         <source>Nero AAC Options</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Опції Nero AAC</translation>
     </message>
     <message>
         <source>Enable 2-Pass Processing (ABR Mode)</source>
@@ -582,30 +582,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source> Custom Encoder Parameters </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LAME:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OggEnc2:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Nero AAC:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>FLAC:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Warning: Custom parameters won&apos;t be checked at all. Use them at your own risk !!!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Reset Advanced Options </source>
         <translation type="unfinished"></translation>
     </message>
@@ -615,31 +591,31 @@
     </message>
     <message>
         <source>About...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Про...</translation>
     </message>
     <message>
         <source> Exit Program</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Вийти з програми</translation>
     </message>
     <message>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Файл</translation>
     </message>
     <message>
         <source>?</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">?</translation>
     </message>
     <message>
         <source>View</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Вигляд</translation>
     </message>
     <message>
         <source>Style</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Стиль</translation>
     </message>
     <message>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Мова</translation>
     </message>
     <message>
         <source>Tools</source>
@@ -651,47 +627,47 @@
     </message>
     <message>
         <source>Quit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Вихід</translation>
     </message>
     <message>
         <source>Open File(s)...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Відкрити файл(и)...</translation>
     </message>
     <message>
         <source>Visit Official Web-Site</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Відвідати офіційну веб-сторінку</translation>
     </message>
     <message>
         <source>Check for Updates</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Перевірити на наявність оновлень</translation>
     </message>
     <message>
         <source>Open Folder...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Відкрити теку...</translation>
     </message>
     <message>
         <source>Clear All</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Очистити всі</translation>
     </message>
     <message>
         <source>Plastique</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Plastique</translation>
     </message>
     <message>
         <source>Cleanlooks</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cleanlooks</translation>
     </message>
     <message>
         <source>Windows Vista (&quot;Aero&quot;)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Windows Vista (&quot;Aero&quot;)</translation>
     </message>
     <message>
         <source>Windows Classic</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Windows Classic</translation>
     </message>
     <message>
         <source>Windows XP (&quot;Luna&quot;)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Windows XP (&quot;Luna&quot;)</translation>
     </message>
     <message>
         <source>Disable Update Reminder</source>
@@ -719,11 +695,11 @@
     </message>
     <message>
         <source>From File...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">З файлу...</translation>
     </message>
     <message>
         <source>Encode!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Кодувати!</translation>
     </message>
     <message>
         <source>Disable Shell Integration</source>
@@ -731,11 +707,11 @@
     </message>
     <message>
         <source>Adding file(s), please wait...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Додавання файла(ів), будь ласка, зачекайте...</translation>
     </message>
     <message>
         <source>Access Denied</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Доступ заборонено</translation>
     </message>
     <message>
         <source>%1 file(s) have been rejected, because read access was not granted!</source>
@@ -771,7 +747,7 @@
     </message>
     <message>
         <source>Try Again</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Спробуйте ще раз</translation>
     </message>
     <message>
         <source>Cancel</source>
@@ -783,7 +759,7 @@
     </message>
     <message>
         <source>WMA Decoder</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">декодер WMA</translation>
     </message>
     <message>
         <source>The WMA File Decoder has been installed. Please restart LameXP now!</source>
@@ -791,7 +767,7 @@
     </message>
     <message>
         <source>Quit LameXP</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Вийти з LameXP</translation>
     </message>
     <message>
         <source>Postpone</source>
@@ -799,7 +775,7 @@
     </message>
     <message>
         <source>DEMO VERSION</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ДЕМО ВЕРСІЯ</translation>
     </message>
     <message>
         <source>You can drop in audio files here!</source>
@@ -843,7 +819,7 @@
     </message>
     <message>
         <source>Exit Program</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Вийти з програми</translation>
     </message>
     <message>
         <source>Urgent Update</source>
@@ -927,7 +903,7 @@
     </message>
     <message>
         <source>LameXP</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">LameXP</translation>
     </message>
     <message>
         <source>You must add at least one file to the list before proceeding!</source>
@@ -959,7 +935,7 @@
     </message>
     <message>
         <source>Ignore</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ігнорувати</translation>
     </message>
     <message>
         <source>Low Diskspace</source>
@@ -983,31 +959,31 @@
     </message>
     <message>
         <source>Add file(s)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Додати файл(и)</translation>
     </message>
     <message>
         <source>Add folder</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Додати теку</translation>
     </message>
     <message>
         <source>Load Translation</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Завантажити переклад</translation>
     </message>
     <message>
         <source>Translation Files</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Файли перекладу</translation>
     </message>
     <message>
         <source>New Folder</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Нова тека</translation>
     </message>
     <message>
         <source>Enter the name of the new folder:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Введіть назву нової теки:</translation>
     </message>
     <message>
         <source>Failed to create folder</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Збій при створенні теки</translation>
     </message>
     <message>
         <source>The new folder could not be created:</source>
@@ -1019,7 +995,7 @@
     </message>
     <message>
         <source>Already Running</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Вже запущено</translation>
     </message>
     <message>
         <source>LameXP is already running, please use the running instance!</source>
@@ -1027,35 +1003,35 @@
     </message>
     <message>
         <source>Quality Level %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Рівень якості %1</translation>
     </message>
     <message>
         <source>Compression %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Стиснення %1</translation>
     </message>
     <message>
         <source>Uncompressed</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Нестиснутий</translation>
     </message>
     <message>
         <source>Best Quality (Very Slow)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Найкраща якість (Дуже повільно)</translation>
     </message>
     <message>
         <source>High Quality (Recommended)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Висока якість (Рекомендовано)</translation>
     </message>
     <message>
         <source>Average Quality (Default)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Середня якість (Типово)</translation>
     </message>
     <message>
         <source>Low Quality (Fast)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Низька якість (Швидко)</translation>
     </message>
     <message>
         <source>Poor Quality (Very Fast)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Дуже низька якість (Дуже швидко)</translation>
     </message>
     <message>
         <source>Do you really want to disable the update reminder?</source>
@@ -1063,11 +1039,11 @@
     </message>
     <message>
         <source>Yes</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Так</translation>
     </message>
     <message>
         <source>No</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ні</translation>
     </message>
     <message>
         <source>The update reminder has been disabled.</source>
@@ -1087,7 +1063,7 @@
     </message>
     <message>
         <source>Sound Effects</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Звуковий супровід</translation>
     </message>
     <message>
         <source>All sound effects have been disabled.</source>
@@ -1145,31 +1121,55 @@
         <source>The LameXP shell integration has been re-enabled.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source> Custom Encoder Parameters </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LAME:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OggEnc2:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nero AAC:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FLAC:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warning: Custom parameters won&apos;t be checked at all. Use them at your own risk !!!</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
     <message>
         <source>Meta Information</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Метадані</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Редагувати</translation>
     </message>
     <message>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Вийти</translation>
     </message>
 </context>
 <context>
     <name>MetaInfoDialog</name>
     <message>
         <source>Meta Information</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Метаінформація</translation>
     </message>
     <message>
         <source>The following meta information have been extracted from the original file.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Дана метаінформація була витягнута з оригінального файла.</translation>
     </message>
 </context>
 <context>
@@ -1184,7 +1184,7 @@
     </message>
     <message>
         <source>Full Path</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Повний шлях</translation>
     </message>
     <message>
         <source>Format</source>
@@ -1196,7 +1196,7 @@
     </message>
     <message>
         <source>Compression</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Стиснення</translation>
     </message>
     <message>
         <source>Duration</source>
@@ -1204,7 +1204,7 @@
     </message>
     <message>
         <source>Title</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Назва</translation>
     </message>
     <message>
         <source>Artist</source>
@@ -1414,14 +1414,10 @@
     </message>
     <message>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Вийти</translation>
     </message>
     <message>
         <source>Show details for selected job</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Browse Output File Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1481,11 +1477,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>All files completed successfully.</source>
+        <source>LameXP - Done</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>LameXP - Done</source>
+        <source>All files completed successfully.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1496,16 +1492,20 @@
         <source>The playlist file could not be created:</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Browse Output File Location</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ProgressModel</name>
     <message>
         <source>Job</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Завдання</translation>
     </message>
     <message>
         <source>Status</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Статус</translation>
     </message>
 </context>
 <context>
@@ -1523,7 +1523,7 @@
     <name>SplashScreen</name>
     <message>
         <source>LameXP is launching...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">LameXP в процесі запуску...</translation>
     </message>
 </context>
 <context>
@@ -1558,7 +1558,7 @@
     </message>
     <message>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Вийти</translation>
     </message>
     <message>
         <source>Build</source>

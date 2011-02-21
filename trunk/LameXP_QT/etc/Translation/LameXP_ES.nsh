@@ -33,3 +33,8 @@ LangString LAMEXP_LANG_LOCKEDLIST_SEARCH   ${LANG_SPANISH} "Buscando, espere por
 LangString LAMEXP_LANG_LOCKEDLIST_COLHDR1  ${LANG_SPANISH} "Aplicación"
 LangString LAMEXP_LANG_LOCKEDLIST_COLHDR2  ${LANG_SPANISH} "Proceso"
 LangString LAMEXP_LANG_UNINST_PERSONAL     ${LANG_SPANISH} "¿Desea que se borren también sus ajustes personales?"
+LangString LAMEXP_LANG_LINK_LICENSE        ${LANG_SPANISH} "Licencia"
+LangString LAMEXP_LANG_LINK_CHANGELOG      ${LANG_SPANISH} "Historial de versiones"
+LangString LAMEXP_LANG_LINK_TRANSLATE      ${LANG_SPANISH} "Guía de traducción"
+LangString LAMEXP_LANG_LINK_UNINSTALL      ${LANG_SPANISH} "Desinstalar"
+LangString LAMEXP_LANG_LINK_FAQ            ${LANG_SPANISH} "Preguntas frecuentes"

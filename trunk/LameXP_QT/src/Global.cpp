@@ -57,6 +57,13 @@
 
 //Debug only includes
 #ifdef _DEBUG
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0501
+#endif
+#if(_WIN32_WINNT < 0x0501)
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0501
+#endif
 #include <Psapi.h>
 #endif //_DEBUG
 
@@ -187,8 +194,7 @@ const char *lamexp_version_compiler(void) {return g_lamexp_version_compiler; }
 unsigned int lamexp_toolver_neroaac(void) { return g_lamexp_toolver_neroaac; }
 
 bool lamexp_version_demo(void)
-{ 
-
+{
 	return LAMEXP_DEBUG || !(strstr(g_lamexp_version.ver_release_name, "Final") || strstr(g_lamexp_version.ver_release_name, "Hotfix"));
 }
 
@@ -299,33 +305,44 @@ void lamexp_message_handler(QtMsgType type, const char *msg)
  */
 void lamexp_init_console(int argc, char* argv[])
 {
+	bool enableConsole = lamexp_version_demo();
+	
 	for(int i = 0; i < argc; i++)
 	{
-		if(lamexp_version_demo() || !_stricmp(argv[i], "--console"))
+		if(!_stricmp(argv[i], "--console"))
 		{
-			if(AllocConsole())
-			{
-				//See: http://support.microsoft.com/default.aspx?scid=kb;en-us;105305
-				int hCrtStdOut = _open_osfhandle((long) GetStdHandle(STD_OUTPUT_HANDLE), _O_TEXT);
-				int hCrtStdErr = _open_osfhandle((long) GetStdHandle(STD_ERROR_HANDLE), _O_TEXT);
-				FILE *hfStdOut = _fdopen(hCrtStdOut, "w");
-				FILE *hfStderr = _fdopen(hCrtStdErr, "w");
-				*stdout = *hfStdOut;
-				*stderr = *hfStderr;
-				setvbuf(stdout, NULL, _IONBF, 0);
-				setvbuf(stderr, NULL, _IONBF, 0);
-			}
-
-			HMENU hMenu = GetSystemMenu(GetConsoleWindow(), 0);
-			EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
-			RemoveMenu(hMenu, SC_CLOSE, MF_BYCOMMAND);
-
-			SetConsoleCtrlHandler(NULL, TRUE);
-			SetConsoleTitle(L"LameXP - Audio Encoder Front-End | Debug Console");
-			SetConsoleOutputCP(CP_UTF8);
-			
-			break;
+			enableConsole = true;
 		}
+		else if(!_stricmp(argv[i], "--no-console"))
+		{
+			enableConsole = false;
+		}
+	}
+
+	if(enableConsole)
+	{
+		if(AllocConsole())
+		{
+			//-------------------------------------------------------------------
+			//See: http://support.microsoft.com/default.aspx?scid=kb;en-us;105305
+			//-------------------------------------------------------------------
+			int hCrtStdOut = _open_osfhandle((long) GetStdHandle(STD_OUTPUT_HANDLE), _O_TEXT);
+			int hCrtStdErr = _open_osfhandle((long) GetStdHandle(STD_ERROR_HANDLE), _O_TEXT);
+			FILE *hfStdOut = _fdopen(hCrtStdOut, "w");
+			FILE *hfStderr = _fdopen(hCrtStdErr, "w");
+			*stdout = *hfStdOut;
+			*stderr = *hfStderr;
+			setvbuf(stdout, NULL, _IONBF, 0);
+			setvbuf(stderr, NULL, _IONBF, 0);
+		}
+
+		HMENU hMenu = GetSystemMenu(GetConsoleWindow(), 0);
+		EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
+		RemoveMenu(hMenu, SC_CLOSE, MF_BYCOMMAND);
+
+		SetConsoleCtrlHandler(NULL, TRUE);
+		SetConsoleTitle(L"LameXP - Audio Encoder Front-End | Debug Console");
+		SetConsoleOutputCP(CP_UTF8);
 	}
 }
 
@@ -433,19 +450,26 @@ lamexp_cpu_t lamexp_detect_cpu_features(void)
 /*
  * Check for debugger
  */
-void WINAPI debugThreadProc(__in LPVOID lpParameter)
+#if !defined(_DEBUG) || defined(NDEBUG)
+void WINAPI lamexp_debug_thread_proc(__in LPVOID lpParameter)
 {
-	BOOL remoteDebuggerPresent = FALSE;
-	//CheckRemoteDebuggerPresent(GetCurrentProcess, &remoteDebuggerPresent);
-
-	while(!IsDebuggerPresent() && !remoteDebuggerPresent)
+	while(!IsDebuggerPresent())
 	{
 		Sleep(333);
-		//CheckRemoteDebuggerPresent(GetCurrentProcess, &remoteDebuggerPresent);
 	}
-	
 	TerminateProcess(GetCurrentProcess(), -1);
 }
+HANDLE lamexp_debug_thread_init(void)
+{
+	if(IsDebuggerPresent())
+	{
+		FatalAppExit(0, L"Not a debug build. Please unload debugger and try again!");
+		TerminateProcess(GetCurrentProcess(), -1);
+	}
+	return CreateThread(NULL, NULL, reinterpret_cast<LPTHREAD_START_ROUTINE>(&lamexp_debug_thread_proc), NULL, NULL, NULL);
+}
+static const HANDLE g_debug_thread = lamexp_debug_thread_init();
+#endif
 
 /*
  * Check for compatibility mode

@@ -68,7 +68,7 @@ ShowInstDetails show
 ShowUninstDetails show
 Name "LameXP v${LAMEXP_VERSION} ${LAMEXP_SUFFIX} [Build #${LAMEXP_BUILD}]"
 OutFile "${LAMEXP_OUTPUT_FILE}"
-BrandingText "Date created: ${LAMEXP_DATE}"
+BrandingText "Date created: ${LAMEXP_DATE} [Build #${LAMEXP_BUILD}]"
 InstallDir "$PROGRAMFILES\MuldeR\LameXP v${LAMEXP_VERSION}"
 InstallDirRegKey HKLM "${MyRegPath}" "InstallLocation"
 
@@ -113,7 +113,7 @@ VIAddVersionKey "Comments" "This program is free software; you can redistribute 
 VIAddVersionKey "CompanyName" "Free Software Foundation"
 VIAddVersionKey "FileDescription" "LameXP v${LAMEXP_VERSION} ${LAMEXP_SUFFIX} [Build #${LAMEXP_BUILD}]"
 VIAddVersionKey "FileVersion" "${PRODUCT_VERSION_DATE}.${LAMEXP_BUILD} (${LAMEXP_VERSION})"
-VIAddVersionKey "LegalCopyright" "Copyright 2004-2010 LoRd_MuldeR"
+VIAddVersionKey "LegalCopyright" "Copyright 2004-2011 LoRd_MuldeR"
 VIAddVersionKey "LegalTrademarks" "GNU"
 VIAddVersionKey "OriginalFilename" "LameXP.${LAMEXP_DATE}.exe"
 VIAddVersionKey "ProductName" "LameXP - Audio Encoder Frontend"
@@ -184,6 +184,7 @@ UninstPage Custom un.LockedListShow
 !insertmacro MUI_LANGUAGE "English" ;first language is the default language
 !insertmacro MUI_LANGUAGE "German"
 !insertmacro MUI_LANGUAGE "Spanish"
+!insertmacro MUI_LANGUAGE "Russian"
 
 ; !insertmacro MUI_LANGUAGE "French"
 ; !insertmacro MUI_LANGUAGE "SpanishInternational"
@@ -193,7 +194,6 @@ UninstPage Custom un.LockedListShow
 ; !insertmacro MUI_LANGUAGE "Italian"
 ; !insertmacro MUI_LANGUAGE "Dutch"
 ; !insertmacro MUI_LANGUAGE "Greek"
-; !insertmacro MUI_LANGUAGE "Russian"
 ; !insertmacro MUI_LANGUAGE "Polish"
 ; !insertmacro MUI_LANGUAGE "Ukrainian"
 ; !insertmacro MUI_LANGUAGE "Hungarian"
@@ -220,6 +220,8 @@ UninstPage Custom un.LockedListShow
 ;Spanish
 !include "..\Translation\LameXP_ES.nsh"
 
+;Russian
+!include "..\Translation\LameXP_RU.nsh"
 
 ;--------------------------------
 ;Installer initialization
@@ -396,12 +398,25 @@ FunctionEnd
 ;Install Files
 ;--------------------------------
 
-Section "-Prepare"
+Section "-PreInit"
 	SetOutPath "$INSTDIR"
 SectionEnd
 
 Section "!Install Files"
 	!insertmacro PrintProgress "$(LAMEXP_LANG_STATUS_INSTFILES)"
+
+	Delete "$INSTDIR\Changelog.htm"
+	Delete "$INSTDIR\Changelog.html"
+	Delete "$INSTDIR\Contributors.txt"
+	Delete "$INSTDIR\FAQ.html"
+	Delete "$INSTDIR\Howto.html"
+	Delete "$INSTDIR\LameXP.exe"
+	Delete "$INSTDIR\LameXP.exe.sig"
+	Delete "$INSTDIR\License.txt"
+	Delete "$INSTDIR\ReadMe.txt"
+	Delete "$INSTDIR\Translate.html"
+	Delete "$INSTDIR\Uninstall.exe"
+
 	!insertmacro GetExecutableName $R0
 	File `/oname=$R0` `${LAMEXP_SOURCE_PATH}\LameXP.exe`
 	File `${LAMEXP_SOURCE_PATH}\*.txt`
@@ -423,10 +438,14 @@ Section "-Create Shortcuts"
 		Delete "$SMPROGRAMS\$StartMenuFolder\*.url"
 		
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk" "$INSTDIR\LameXP.exe" "" "$INSTDIR\LameXP.exe" 0
-		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\License.lnk" "$INSTDIR\License.txt"
-		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(LAMEXP_LANG_LINK_LICENSE).lnk" "$INSTDIR\License.txt"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(LAMEXP_LANG_LINK_CHANGELOG).lnk" "$INSTDIR\Changelog.html"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(LAMEXP_LANG_LINK_TRANSLATE).lnk" "$INSTDIR\Translate.html"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(LAMEXP_LANG_LINK_FAQ).lnk" "$INSTDIR\FAQ.html"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(LAMEXP_LANG_LINK_UNINSTALL).lnk" "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
 		
 		!insertmacro CreateWebLink "$SMPROGRAMS\$StartMenuFolder\Official LameXP Homepage.url" "http://mulder.dummwiedeutsch.de/"
+		!insertmacro CreateWebLink "$SMPROGRAMS\$StartMenuFolder\Doom9's Forum.url" "http://forum.doom9.org/"
 		!insertmacro CreateWebLink "$SMPROGRAMS\$StartMenuFolder\RareWares.org.url" "http://rarewares.org/"
 		!insertmacro CreateWebLink "$SMPROGRAMS\$StartMenuFolder\Hydrogenaudio Forums.url" "http://www.hydrogenaudio.org/"
 	!insertmacro MUI_STARTMENU_WRITE_END
@@ -443,7 +462,7 @@ Section "-Finished"
 	!insertmacro PrintProgress "$(MUI_TEXT_FINISH_TITLE)."
 	
 	; ---- POLL ----
-	!insertmacro UAC_AsUser_ExecShell "" "http://mulder.brhack.net/temp/style_poll/" "" "" SW_SHOWNORMAL
+	; !insertmacro UAC_AsUser_ExecShell "" "http://mulder.brhack.net/temp/style_poll/" "" "" SW_SHOWNORMAL
 	; ---- POLL ----
 SectionEnd
 
@@ -456,8 +475,19 @@ Section "Uninstall"
 	SetOutPath "$INSTDIR"
 	!insertmacro PrintProgress "$(LAMEXP_LANG_STATUS_UNINSTALL)"
 
-	Delete /REBOOTOK "$INSTDIR\*.exe"
-	Delete /REBOOTOK "$INSTDIR\*.txt"
+	Delete /REBOOTOK "$INSTDIR\LameXP.exe
+	Delete /REBOOTOK "$INSTDIR\LameXP-Portable.exe
+	Delete /REBOOTOK "$INSTDIR\LameXP.exe.sig"
+	Delete /REBOOTOK "$INSTDIR\Uninstall.exe
+	Delete /REBOOTOK "$INSTDIR\Changelog.htm"
+	Delete /REBOOTOK "$INSTDIR\Changelog.html
+	Delete /REBOOTOK "$INSTDIR\Translate.html
+	Delete /REBOOTOK "$INSTDIR\FAQ.html
+	Delete /REBOOTOK "$INSTDIR\Howto.html"
+	Delete /REBOOTOK "$INSTDIR\License.txt
+	Delete /REBOOTOK "$INSTDIR\Contributors.txt"
+	Delete /REBOOTOK "$INSTDIR\ReadMe.txt
+
 	RMDir "$INSTDIR"
 
 	!insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder
@@ -475,8 +505,9 @@ Section "Uninstall"
 	DeleteRegValue HKLM "${MyRegPath}" "StartmenuFolder"
 	DeleteRegValue HKLM "${MyRegPath}" "SetupLanguage"
 	
-	MessageBox MB_YESNO|MB_TOPMOST "$(LAMEXP_LANG_UNINST_PERSONAL)" IDNO +2
+	MessageBox MB_YESNO|MB_TOPMOST "$(LAMEXP_LANG_UNINST_PERSONAL)" IDNO +3
 	Delete "$LOCALAPPDATA\LoRd_MuldeR\LameXP - Audio Encoder Front-End\config.ini"
+	Delete "$INSTDIR\*.ini"
 
 	!insertmacro PrintProgress "$(MUI_UNTEXT_FINISH_TITLE)."
 SectionEnd
@@ -545,6 +576,8 @@ Function RunAppFunction
 FunctionEnd
 
 Function ShowReadmeFunction
-	!insertmacro UAC_AsUser_ExecShell "open" "$INSTDIR\License.txt" "" "" SW_SHOWNORMAL
+	!insertmacro UAC_AsUser_ExecShell "open" "$INSTDIR\Changelog.html" "" "" SW_SHOWNORMAL
+	!insertmacro UAC_AsUser_ExecShell "open" "$INSTDIR\FAQ.html" "" "" SW_SHOWNORMAL
+	!insertmacro UAC_AsUser_ExecShell "open" "$INSTDIR\Translate.html" "" "" SW_SHOWNORMAL
 FunctionEnd
 

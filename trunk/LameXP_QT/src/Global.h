@@ -118,6 +118,7 @@ SIZE_T lamexp_dbg_private_bytes(void);
 #define LAMEXP_DELETE(PTR) if(PTR) { delete PTR; PTR = NULL; }
 #define LAMEXP_CLOSE(HANDLE) if(HANDLE != NULL && HANDLE != INVALID_HANDLE_VALUE) { CloseHandle(HANDLE); HANDLE = NULL; }
 #define QWCHAR(STR) reinterpret_cast<const wchar_t*>(STR.utf16())
+#define WCHAR2QSTR(STR) QString::fromUtf16(reinterpret_cast<const unsigned short*>(STR))
 #define	LAMEXP_DYNCAST(OUT,CLASS,SRC) try { OUT = dynamic_cast<CLASS>(SRC); } catch(std::bad_cast) { OUT = NULL; }
 #define LAMEXP_BOOL(X) (X ? "1" : "0")
 
@@ -130,12 +131,7 @@ SIZE_T lamexp_dbg_private_bytes(void);
 	qWarning("---------------------------------------------------------\n"); 
 #else
 #define LAMEXP_DEBUG 0
-#define LAMEXP_CHECK_DEBUG_BUILD \
-	if(IsDebuggerPresent())	{ \
-	FatalAppExit(0, L"Not a debug build. Please unload debugger and try again!"); \
-	TerminateProcess(GetCurrentProcess, -1); } \
-	CreateThread(NULL, NULL, reinterpret_cast<LPTHREAD_START_ROUTINE>(&debugThreadProc), NULL, NULL, NULL);
-	void WINAPI debugThreadProc(__in  LPVOID lpParameter);
+#define LAMEXP_CHECK_DEBUG_BUILD
 #endif
 
 //Memory check
