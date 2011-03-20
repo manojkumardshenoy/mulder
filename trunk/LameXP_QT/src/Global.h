@@ -76,6 +76,7 @@ bool lamexp_version_demo(void);
 const char *lamexp_version_compiler(void);
 QDate lamexp_version_expires(void);
 unsigned int lamexp_toolver_neroaac(void);
+const char *lamexp_website_url(void);
 
 //Public functions
 void lamexp_init_console(int argc, char* argv[]);
@@ -88,11 +89,12 @@ const QString lamexp_lookup_tool(const QString &toolName);
 unsigned int lamexp_tool_version(const QString &toolName);
 void lamexp_finalization(void);
 QString lamexp_rand_str(void);
-const QString &lamexp_temp_folder(void);
+const QString &lamexp_temp_folder2(void);
 void lamexp_ipc_read(unsigned int *command, char* message, size_t buffSize);
 void lamexp_ipc_send(unsigned int command, const char* message);
 lamexp_cpu_t lamexp_detect_cpu_features(void);
 bool lamexp_portable_mode(void);
+bool lamexp_shutdown_computer(const QString &message, const unsigned long timeout = 30, const bool forceShutdown = true);
 
 //Translation support
 QStringList lamexp_query_translations(void);
@@ -121,6 +123,11 @@ SIZE_T lamexp_dbg_private_bytes(void);
 #define WCHAR2QSTR(STR) QString::fromUtf16(reinterpret_cast<const unsigned short*>(STR))
 #define	LAMEXP_DYNCAST(OUT,CLASS,SRC) try { OUT = dynamic_cast<CLASS>(SRC); } catch(std::bad_cast) { OUT = NULL; }
 #define LAMEXP_BOOL(X) (X ? "1" : "0")
+
+//Output Qt debug message (Unicode-safe versions)
+#define qDebug64(FORMAT, ...) qDebug("@BASE64@%s", QString(FORMAT).arg(__VA_ARGS__).toUtf8().toBase64().constData());
+#define qWarning64(FORMAT, ...) qWarning("@BASE64@%s", QString(FORMAT).arg(__VA_ARGS__).toUtf8().toBase64().constData());
+#define qFatal64(FORMAT, ...) qFatal("@BASE64@%s", QString(FORMAT).arg(__VA_ARGS__).toUtf8().toBase64().constData());
 
 //Check for debug build
 #if defined(_DEBUG) || defined(QT_DEBUG) || !defined(NDEBUG) || !defined(QT_NO_DEBUG)

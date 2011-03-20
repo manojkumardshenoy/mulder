@@ -70,6 +70,7 @@ private slots:
 	void gotoMusicFolderButtonClicked(void);
 	void checkUpdatesActionActivated(void);
 	void visitHomepageActionActivated(void);
+	void documentActionActivated(void);
 	void openFolderActionActivated(void);
 	void notifyOtherInstance(void);
 	void addFileDelayed(const QString &filePath);
@@ -93,6 +94,11 @@ private slots:
 	void toneAdjustTrebleChanged(double value);
 	void toneAdjustTrebleReset(void);
 	void customParamsChanged(void);
+	void updateMaximumInstances(int value);
+	void autoDetectInstancesChanged(bool checked);
+	void browseCustomTempFolderButtonClicked(void);
+	void customTempFolderChanged(const QString &text);
+	void useCustomTempFolderChanged(bool checked);
 	void resetAdvancedOptionsButtonClicked(void);
 	void sourceModelChanged(void);
 	void metaTagsEnabledChanged(void);

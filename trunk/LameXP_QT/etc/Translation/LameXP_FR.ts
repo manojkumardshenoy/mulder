@@ -1154,6 +1154,82 @@ Sélection automatique (par défaut)</translation>
         <source>Warning: Custom parameters won&apos;t be checked at all. Use them at your own risk !!!</source>
         <translation>Avertissement : Les paramètres personnalisés ne peuvent pas être entièrement vérifiés. Vous les utilisez à votre propre risque !!!</translation>
     </message>
+    <message>
+        <source> Multi-Threading </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose the number of parallel instances based on the number of CPU cores (Recommended)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fewer Instances</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>More Instances</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 Instance(s)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Temp Directory </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Store temporary files in your system&apos;s default TEMP directory (Recommended)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not Found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Your currently selected TEMP folder does not exist anymore:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Restore Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot write to the selected directory. Please choose another directory!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CDA Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 file(s) have been rejected, because they are dummy CDDA files!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>We recommend using %1 for that purpose.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sorry, LameXP cannot extract audio tracks from an Audio&amp;minus;CD at present.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Frequently Asked Questions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Changelog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Translator&apos;s Guide</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -1505,6 +1581,18 @@ Sélection automatique (par défaut)</translation>
         <source>Browse Output File Location</source>
         <translation>Rechercher l&apos;emplacement du fichier de sortie</translation>
     </message>
+    <message>
+        <source>Shutdown the computer as soon as all files have been converted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warning: Computer will shutdown in %1 seconds...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel Shutdown</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ProgressModel</name>
@@ -1515,6 +1603,21 @@ Sélection automatique (par défaut)</translation>
     <message>
         <source>Status</source>
         <translation>Statut</translation>
+    </message>
+</context>
+<context>
+    <name>QApplication</name>
+    <message>
+        <source>Executable &apos;%1&apos; doesn&apos;t support Windows compatibility mode.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Executable &apos;%1&apos; requires Qt v%2, but found Qt v%3.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Executable &apos;%1&apos; requires Windows 2000 or later.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

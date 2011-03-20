@@ -57,11 +57,12 @@ g_lamexp_contributors[] =
 {
 	{"en", L"Englisch",   L"LoRd_MuldeR",         "MuldeR2@GMX.de"       },
 	{"de", L"Deutsch",    L"LoRd_MuldeR",         "MuldeR2@GMX.de"       },
+	{"",   L"",           L"Bodo Thevissen",      "Bodo@thevissen.de"    },
 	{"fr", L"Française",  L"Dodich Informatique", "Dodich@live.fr"       },
 	{"it", L"Italiano",   L"Roberto",             "Gulliver_69@libero.it"},
 	{"es", L"Español",    L"Rub3nCT",             "Rub3nCT@gmail.com"    },
 	{"ru", L"Русский",    L"Neonailol",           "Neonailol@gmail.com"  },
-	{"uk", L"Українська", L"Arestarh",            "arestarh@ukr.net"     },
+	{"uk", L"Українська", L"Arestarh",            "Arestarh@ukr.net"     },
 	{NULL, NULL, NULL, NULL}
 };
 
@@ -79,7 +80,7 @@ AboutDialog::AboutDialog(SettingsModel *settings, QWidget *parent, bool firstSta
 	aboutText += QString("<h2>%1</h2>").arg(tr("LameXP &minus; Audio Encoder Front-end"));
 	aboutText += QString("<b>Copyright (C) 2004-%1 LoRd_MuldeR &lt;MuldeR2@GMX.de&gt;. Some rights reserved.</b><br>").arg(max(lamexp_version_date().year(),QDate::currentDate().year()));
 	aboutText += QString().sprintf("<b>Version %d.%02d %s, Build %d [%s]</b><br><br>", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build(), lamexp_version_date().toString(Qt::ISODate).toLatin1().constData());
-	aboutText += QString("<nobr>%1</nobr><br>").arg(tr("Please visit %1 for news and updates!").arg(LINK("http://forum.doom9.org/showthread.php?t=157726")));
+	aboutText += QString("<nobr>%1</nobr><br>").arg(tr("Please visit %1 for news and updates!").arg(LINK(lamexp_website_url())));
 	aboutText += "<hr><br>";
 	aboutText += "<nobr><tt>This program is free software; you can redistribute it and/or<br>";
 	aboutText += "modify it under the terms of the GNU General Public License<br>";
@@ -228,7 +229,8 @@ void AboutDialog::showAboutContributors(void)
 	contributorsAboutText += "<table style=\"margin-top:5px\">";
 	for(int i = 0; g_lamexp_contributors[i].pcName; i++)
 	{
-		contributorsAboutText += QString("<tr><td valign=\"middle\"><img src=\":/flags/%1.png\"></td><td>&nbsp;&nbsp;</td>").arg(g_lamexp_contributors[i].pcFlag);
+		QString flagIcon = (strlen(g_lamexp_contributors[i].pcFlag) > 0) ? QString("<img src=\":/flags/%1.png\">").arg(g_lamexp_contributors[i].pcFlag) : QString();
+		contributorsAboutText += QString("<tr><td valign=\"middle\">%1</td><td>&nbsp;&nbsp;</td>").arg(flagIcon);
 		contributorsAboutText += QString("<td valign=\"middle\">%2</td><td>&nbsp;&nbsp;</td>").arg(WCHAR2QSTR(g_lamexp_contributors[i].pcLanguage));
 		contributorsAboutText += QString("<td valign=\"middle\">%3</td><td>&nbsp;&nbsp;</td><td>&lt;%4&gt;</td></tr>").arg(WCHAR2QSTR(g_lamexp_contributors[i].pcName), g_lamexp_contributors[i].pcMail);
 	}
@@ -262,14 +264,14 @@ void AboutDialog::showMoreAbout(void)
 	moreAboutText += makeToolText
 	(
 		tr("LAME &minus; OpenSource mp3 Encoder"),
-		"lame.exe", "v?.?? a??",
+		"lame.exe", "v?.??, Alpha-??",
 		tr("Released under the terms of the GNU Lesser General Public License."),
 		"http://lame.sourceforge.net/"
 	);
 	moreAboutText += makeToolText
 	(
 		tr("OggEnc &minus; Ogg Vorbis Encoder"),
-		"oggenc2_i386.exe", "v?.??",
+		"oggenc2_i386.exe", "v?.??, aoTuV Beta-?.??",
 		tr("Completely open and patent-free audio encoding technology."),
 		"http://www.vorbis.com/"
 	);
@@ -351,7 +353,7 @@ void AboutDialog::showMoreAbout(void)
 	moreAboutText += makeToolText
 	(
 		tr("The True Audio &minus; Lossless Audio Codec"),
-		"ttaenc.exe", "v?.?.?",
+		"tta.exe", "v?.?",
 		tr("Released under the terms of the GNU Lesser General Public License."),
 		"http://tta.sourceforge.net/"
 	);

@@ -47,6 +47,7 @@ int lamexp_main(int argc, char* argv[])
 {
 	int iResult = -1;
 	bool bAccepted = true;
+	bool bShutdown = false;
 	
 	//Init console
 	lamexp_init_console(argc, argv);
@@ -132,7 +133,7 @@ int lamexp_main(int argc, char* argv[])
 	MainWindow *poMainWindow = new MainWindow(fileListModel, metaInfo, settingsModel);
 	
 	//Main application loop
-	while(bAccepted)
+	while(bAccepted && !bShutdown)
 	{
 		//Show main window
 		poMainWindow->show();
@@ -144,6 +145,7 @@ int lamexp_main(int argc, char* argv[])
 		{
 			ProcessingDialog *processingDialog = new ProcessingDialog(fileListModel, metaInfo, settingsModel);
 			processingDialog->exec();
+			bShutdown = processingDialog->getShutdownFlag();
 			LAMEXP_DELETE(processingDialog);
 		}
 	}
@@ -157,6 +159,15 @@ int lamexp_main(int argc, char* argv[])
 	//Final clean-up
 	qDebug("Shutting down, please wait...\n");
 
+	//Shotdown computer
+	if(bShutdown)
+	{
+		if(!lamexp_shutdown_computer(QApplication::applicationFilePath(), 12))
+		{
+			QMessageBox messageBox(QMessageBox::Critical, "LameXP", "Sorry, LameXP was unable to shutdown your computer!", QMessageBox::NoButton, NULL, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+		}
+	}
+
 	//Terminate
 	return iResult;
 }
@@ -168,7 +179,7 @@ int lamexp_main(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
 #ifdef _DEBUG
-	int iResult;
+	int iResult = -1;
 	qInstallMsgHandler(lamexp_message_handler);
 	LAMEXP_MEMORY_CHECK(iResult = lamexp_main(argc, argv));
 	lamexp_finalization();
@@ -176,7 +187,7 @@ int main(int argc, char* argv[])
 #else
 	try
 	{
-		int iResult;
+		int iResult = -1;
 		qInstallMsgHandler(lamexp_message_handler);
 		iResult = lamexp_main(argc, argv);
 		lamexp_finalization();
@@ -207,4 +218,13 @@ int main(int argc, char* argv[])
 		TerminateProcess(GetCurrentProcess(), -1);
 	}
 #endif
+}
+
+extern "C"
+{
+	void __declspec(dllexport) __stdcall Test(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
+	{
+		OutputDebugStringA(lpszCmdLine);
+		MessageBoxA(0, lpszCmdLine, "LameXP is here!", MB_ICONINFORMATION);
+	}
 }

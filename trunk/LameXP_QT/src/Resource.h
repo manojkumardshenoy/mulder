@@ -25,12 +25,16 @@
  * Resource ID's
  */
 #define IDI_ICON1                       106
+#define IDI_ICON2                       107
 #define IDR_WAVE_ABOUT                  666
 #define IDR_WAVE_SUCCESS                667
 #define IDR_WAVE_ERROR                  668
 #define IDR_WAVE_ABORTED                669
 #define IDR_WAVE_WHAMMY                 670
 #define IDR_WAVE_WOOHOO                 671
+#define IDR_WAVE_SHUTDOWN               672
+#define IDR_WAVE_BEEP                   673
+#define IDR_WAVE_BEEP_LONG              674
 
 /*
  * Next default values for new objects

@@ -53,8 +53,17 @@
 #include <QMenu>
 #include <QSystemTrayIcon>
 #include <QProcess>
+#include <QProgressDialog>
 
 #include <Windows.h>
+
+////////////////////////////////////////////////////////////
+
+//Maximum number of parallel instances
+#define MAX_INSTANCES 16
+
+//Maximum number of CPU cores for auto-detection
+#define MAX_CPU_COUNT 4
 
 ////////////////////////////////////////////////////////////
 
@@ -82,7 +91,8 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 	QDialog(parent),
 	m_systemTray(new QSystemTrayIcon(QIcon(":/icons/cd_go.png"), this)),
 	m_settings(settings),
-	m_metaInfo(metaInfo)
+	m_metaInfo(metaInfo),
+	m_shutdownFlag(false)
 {
 	//Init the dialog, from the .ui file
 	setupUi(this);
@@ -232,7 +242,7 @@ bool ProcessingDialog::eventFilter(QObject *obj, QEvent *event)
 		}
 		else if(event->type() == QEvent::MouseButtonPress)
 		{
-			QUrl url("http://mulder.dummwiedeutsch.de/");
+			QUrl url(lamexp_website_url());
 			QDesktopServices::openUrl(url);
 		}
 	}
@@ -261,15 +271,22 @@ void ProcessingDialog::initEncoding(void)
 	button_closeDialog->setEnabled(false);
 	button_AbortProcess->setEnabled(true);
 	progressBar->setRange(0, m_pendingJobs.count());
+	checkBox_shutdownComputer->setEnabled(true);
+	checkBox_shutdownComputer->setChecked(false);
 
 	WinSevenTaskbar::initTaskbar();
 	WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNormalState);
 	WinSevenTaskbar::setTaskbarProgress(this, 0, m_pendingJobs.count());
 	WinSevenTaskbar::setOverlayIcon(this, &QIcon(":/icons/control_play_blue.png"));
 
-	lamexp_cpu_t cpuFeatures = lamexp_detect_cpu_features();
-	int parallelThreadCount = max(min(min(cpuFeatures.count, m_pendingJobs.count()), 4), 1);
+	int maximumInstances = max(min(m_settings->maximumInstances(), MAX_INSTANCES), 0);
+	if(maximumInstances < 1)
+	{
+		lamexp_cpu_t cpuFeatures = lamexp_detect_cpu_features();
+		maximumInstances = max(min(cpuFeatures.count, MAX_CPU_COUNT), 1);
+	}
 
+	int parallelThreadCount = max(min(maximumInstances, m_pendingJobs.count()), 1);
 	if(parallelThreadCount > 1)
 	{
 		m_progressModel->addSystemMessage(tr("Multi-threading enabled: Running %1 instances in parallel!").arg(QString::number(parallelThreadCount)));
@@ -374,6 +391,7 @@ void ProcessingDialog::doneEncoding(void)
 	setCloseButtonEnabled(true);
 	button_closeDialog->setEnabled(true);
 	button_AbortProcess->setEnabled(false);
+	checkBox_shutdownComputer->setEnabled(false);
 
 	view_log->scrollToBottom();
 	m_progressIndicator->stop();
@@ -381,6 +399,15 @@ void ProcessingDialog::doneEncoding(void)
 	WinSevenTaskbar::setTaskbarProgress(this, progressBar->value(), progressBar->maximum());
 
 	QApplication::restoreOverrideCursor();
+
+	if(!m_userAborted && checkBox_shutdownComputer->isChecked())
+	{
+		if(shutdownComputer())
+		{
+			m_shutdownFlag = true;
+			accept();
+		}
+	}
 }
 
 void ProcessingDialog::processFinished(const QUuid &jobId, const QString &outFileName, bool success)
@@ -576,7 +603,8 @@ void ProcessingDialog::startNextJob(void)
 	ProcessThread *thread = new ProcessThread
 	(
 		currentFile,
-		(m_settings->outputToSourceDir() ? QFileInfo(currentFile.filePath()).absolutePath(): m_settings->outputDir()),
+		(m_settings->outputToSourceDir() ? QFileInfo(currentFile.filePath()).absolutePath() : m_settings->outputDir()),
+		(m_settings->customTempPathEnabled() ? m_settings->customTempPath() : lamexp_temp_folder2()),
 		encoder,
 		m_settings->prependRelativeSourcePath()
 	);
@@ -684,4 +712,55 @@ void ProcessingDialog::systemTrayActivated(QSystemTrayIcon::ActivationReason rea
 	{
 		SetForegroundWindow(this->winId());
 	}
+}
+
+bool ProcessingDialog::shutdownComputer(void)
+{
+	const int iTimeout = 30;
+	const Qt::WindowFlags flags = Qt::WindowStaysOnTopHint | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowSystemMenuHint;
+	const QString text = QString("%1%2%1").arg(QString().fill(' ', 18), tr("Warning: Computer will shutdown in %1 seconds..."));
+	
+	qWarning("Initiating shutdown sequence!");
+	
+	QProgressDialog progressDialog(text.arg(iTimeout), tr("Cancel Shutdown"), 0, iTimeout + 1, this, flags);
+	progressDialog.setModal(true);
+	progressDialog.setAutoClose(false);
+	progressDialog.setAutoReset(false);
+	progressDialog.setWindowIcon(QIcon(":/icons/lightning.png"));
+	progressDialog.show();
+	
+	QApplication::processEvents();
+
+	if(m_settings->soundsEnabled())
+	{
+		QApplication::setOverrideCursor(Qt::WaitCursor);
+		PlaySound(MAKEINTRESOURCE(IDR_WAVE_SHUTDOWN), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
+		QApplication::restoreOverrideCursor();
+	}
+
+	QTimer timer;
+	timer.setInterval(1000);
+	timer.start();
+
+	QEventLoop eventLoop(this);
+	connect(&timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
+	connect(&progressDialog, SIGNAL(canceled()), &eventLoop, SLOT(quit()));
+
+	for(int i = 1; i <= iTimeout; i++)
+	{
+		eventLoop.exec();
+		if(progressDialog.wasCanceled())
+		{
+			progressDialog.close();
+			return false;
+		}
+		progressDialog.setValue(i+1);
+		progressDialog.setLabelText(text.arg(iTimeout-i));
+		if(iTimeout-i == 3) progressDialog.setCancelButtonText(QString());
+		QApplication::processEvents();
+		PlaySound(MAKEINTRESOURCE((i < iTimeout) ? IDR_WAVE_BEEP : IDR_WAVE_BEEP_LONG), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
+	}
+	
+	progressDialog.close();
+	return true;
 }

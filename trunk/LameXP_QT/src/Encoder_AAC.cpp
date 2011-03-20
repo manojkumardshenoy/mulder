@@ -63,7 +63,7 @@ bool AACEncoder::encode(const QString &sourceFile, const AudioFileModel &metaInf
 		args << "-br" << QString::number(max(32, min(500, (m_configBitrate * 8))) * 1000);
 		break;
 	case SettingsModel::CBRMode:
-		args << "-cbr" << QString::number(max(32, min(500, (m_configBitrate * 8))) * 1000) << "-2pass";
+		args << "-cbr" << QString::number(max(32, min(500, (m_configBitrate * 8))) * 1000);
 		break;
 	default:
 		throw "Bad rate-control mode!";
@@ -119,6 +119,7 @@ bool AACEncoder::encode(const QString &sourceFile, const AudioFileModel &metaInf
 		{
 			process.kill();
 			qWarning("NeroAacEnc process timed out <-- killing!");
+			emit messageLogged("\nPROCESS TIMEOUT !!!");
 			bTimeout = true;
 			break;
 		}
@@ -209,6 +210,7 @@ bool AACEncoder::encode(const QString &sourceFile, const AudioFileModel &metaInf
 		{
 			process.kill();
 			qWarning("NeroAacTag process timed out <-- killing!");
+			emit messageLogged("\nPROCESS TIMEOUT !!!");
 			bTimeout = true;
 			break;
 		}
