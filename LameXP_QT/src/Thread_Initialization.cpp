@@ -53,20 +53,20 @@ g_lamexp_tools[] =
 	{"d33cd86f04bd4067e244d2804466583c7b90a4e2", "flac.exe", 121},
 	{"9328a50e89b54ec065637496d9681a7e3eebf915", "gpgv.exe", 1411},
 	{"d837bf6ee4dab557d8b02d46c75a24e58980fffa", "gpgv.gpg", UINT_MAX},
-	{"fc6f06fba1d4c52a0d7ebaa553677e1238f9a9df", "lame.exe", 39911},
+	{"62e301a56be4b56fc053710042d58992f25b1773", "lame.exe", 39914},
 	{"a4e929cfaa42fa2e61a3d0c6434c77a06d45aef3", "mac.exe", 406},
-	{"ec235c6404caa31e7975e9bbf9ba59599258ae1d", "mediainfo_i386.exe", 741},
-	{"72d7efdcafc2dee3b534f27ab6e01916d02ba470", "mediainfo_x64.exe", 741},
+	{"e83cad851d1f0d13057736d9133767960b5ca514", "mediainfo_i386.exe", 742},
+	{"6fb20ea7492fcf984e99957b7a3c5fe4fb06cca2", "mediainfo_x64.exe", 742},
 	{"aa89763a5ba4d1a5986549b9ee53e005c51940c1", "mpcdec.exe", 435},
 	{"38f81efca6c1eeab0b9dc39d06c2ac750267217f", "mpg123.exe", 1132},
 	{"8dd7138714c3bcb39f5a3213413addba13d06f1e", "oggdec.exe", UINT_MAX},
-	{"ecd15abe103184aca96e406f5f1c82c6fb2e665d", "oggenc2_i386.exe", 287},
-	{"ffe0fbd73352396dc3752ac9d484dbfc754a226d", "oggenc2_sse2.exe", 287},
-	{"a8c50872e544a55495a824426e9378984f2ae01d", "oggenc2_x64.exe", 287},
+	{"14a99d3b1f0b166dbd68db45196da871e58e14ec", "oggenc2_i386.exe", 287602},
+	{"36f8d93ef3df6a420a73a9b5cf02dafdaf4321f0", "oggenc2_sse2.exe", 287602},
+	{"87ad1af73e9b9db3da3db645e5c2253cb0c2a2ea", "oggenc2_x64.exe", 287602},
 	{"0d9035bb62bdf46a2785261f8be5a4a0972abd15", "shorten.exe", 361},
-	{"2d08c3586f9cf99f2e4c89ac54eeb595f63aef61", "sox.exe", 1431},
+	{"50ead3b852cbfc067a402e6c2d0d0d8879663dec", "sox.exe", 1432},
 	{"8671e16497a2d217d3707d4aa418678d02b16bcc", "speexdec.exe", 12},
-	{"d6e0de1e7a2d9dee10d06ae0b6b4f93b63205920", "ttaenc.exe", 341},
+	{"093bfdec22872ca99e40183937c88785468be989", "tta.exe", 21},
 	{"8c842eef65248b46fa6cb9a9e5714f575672d999", "valdec.exe", 31},
 	{"62e2805d1b2eb2a4d86a5ca6e6ea58010d05d2a7", "wget.exe", 1114},
 	{"a7e8aad52213e339ad985829722f35eab62be182", "wupdate.exe", UINT_MAX},
@@ -133,12 +133,12 @@ void InitializationThread::run()
 			{
 				throw "The required checksum is missing, take care!";
 			}
-			LockedFile *lockedFile = new LockedFile(QString(":/tools/%1").arg(toolName), QString(lamexp_temp_folder()).append(QString("/tool_%1").arg(toolName)), toolHash);
+			LockedFile *lockedFile = new LockedFile(QString(":/tools/%1").arg(toolName), QString(lamexp_temp_folder2()).append(QString("/tool_%1").arg(toolName)), toolHash);
 			lamexp_register_tool(toolName, lockedFile, toolVersion);
 		}
 		catch(char *errorMsg)
 		{
-			qFatal("At least one required tool could not be extracted:\n%s", errorMsg);
+			qFatal("At least one of the required tools could not be extracted:\n%s", errorMsg);
 			return;
 		}
 	}
@@ -228,7 +228,7 @@ void InitializationThread::initTranslations(void)
 		
 		if(lamexp_translation_register(langId, qmFile, langName, systemId))
 		{
-			qDebug("Registering translation: %s = %s (%u)", qmFile.toLatin1().constData(), langName.toLatin1().constData(), systemId);
+			qDebug64("Registering translation: %1 = %2 (%3)", qmFile, langName, QString::number(systemId));
 		}
 		else
 		{

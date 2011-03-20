@@ -48,6 +48,24 @@
 ;UUID
 !define MyRegPath "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{FBD7A67D-D700-4043-B54F-DD106D00F308}"
 
+;Web-Site
+!define MyWebSite "http://mulder.dummwiedeutsch.de/"
+
+
+;--------------------------------
+;Check for Pre-Release
+;--------------------------------
+
+!define LAMEXP_IS_PRERELEASE
+!searchparse '${LAMEXP_SUFFIX}' '' LAMEXP_INSTTYPE '-' LAMEXP_IGNORE
+
+!if '${LAMEXP_INSTTYPE}' == 'Final'
+  !undef LAMEXP_IS_PRERELEASE
+!endif
+!if '${LAMEXP_INSTTYPE}' == 'Hotfix'
+  !undef LAMEXP_IS_PRERELEASE
+!endif
+
 
 ;--------------------------------
 ;Includes
@@ -139,6 +157,8 @@ VIAddVersionKey "Website" "http://mulder.at.gg/"
 !define MUI_FINISHPAGE_RUN_FUNCTION RunAppFunction
 !define MUI_FINISHPAGE_SHOWREADME
 !define MUI_FINISHPAGE_SHOWREADME_FUNCTION ShowReadmeFunction
+!define MUI_FINISHPAGE_LINK ${MyWebSite}
+!define MUI_FINISHPAGE_LINK_LOCATION ${MyWebSite}
 !define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\orange-install.ico"
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\orange-uninstall.ico"
 !define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\orange.bmp"
@@ -160,6 +180,7 @@ VIAddVersionKey "Website" "http://mulder.at.gg/"
 !define MUI_WELCOMEPAGE_TITLE_3LINES
 !define MUI_FINISHPAGE_TITLE_3LINES
 !insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_LICENSE "license.rtf"
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW CheckForUpdate
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder
@@ -289,6 +310,13 @@ Function MyUacInit
 		MessageBox MB_ICONSTOP|MB_TOPMOST|MB_SETFOREGROUND "Unable to elevate installer! (Error code: $0)"
 		Quit
 	${EndSwitch}
+	
+	!ifdef LAMEXP_IS_PRERELEASE
+		!insertmacro GetCommandlineParameter "Update" "?" $R0
+		StrCmp $R0 "?" 0 +3
+		MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_OKCANCEL "$(LAMEXP_LANG_PRERELEASE_WARNING)" /SD IDOK IDOK +2
+		Abort
+	!endif
 FunctionEnd
 
 Function un.MyUacInit
@@ -475,18 +503,18 @@ Section "Uninstall"
 	SetOutPath "$INSTDIR"
 	!insertmacro PrintProgress "$(LAMEXP_LANG_STATUS_UNINSTALL)"
 
-	Delete /REBOOTOK "$INSTDIR\LameXP.exe
-	Delete /REBOOTOK "$INSTDIR\LameXP-Portable.exe
+	Delete /REBOOTOK "$INSTDIR\LameXP.exe"
+	Delete /REBOOTOK "$INSTDIR\LameXP-Portable.exe"
 	Delete /REBOOTOK "$INSTDIR\LameXP.exe.sig"
-	Delete /REBOOTOK "$INSTDIR\Uninstall.exe
+	Delete /REBOOTOK "$INSTDIR\Uninstall.exe"
 	Delete /REBOOTOK "$INSTDIR\Changelog.htm"
-	Delete /REBOOTOK "$INSTDIR\Changelog.html
-	Delete /REBOOTOK "$INSTDIR\Translate.html
-	Delete /REBOOTOK "$INSTDIR\FAQ.html
+	Delete /REBOOTOK "$INSTDIR\Changelog.html"
+	Delete /REBOOTOK "$INSTDIR\Translate.html"
+	Delete /REBOOTOK "$INSTDIR\FAQ.html"
 	Delete /REBOOTOK "$INSTDIR\Howto.html"
-	Delete /REBOOTOK "$INSTDIR\License.txt
+	Delete /REBOOTOK "$INSTDIR\License.txt"
 	Delete /REBOOTOK "$INSTDIR\Contributors.txt"
-	Delete /REBOOTOK "$INSTDIR\ReadMe.txt
+	Delete /REBOOTOK "$INSTDIR\ReadMe.txt"
 
 	RMDir "$INSTDIR"
 
@@ -576,8 +604,6 @@ Function RunAppFunction
 FunctionEnd
 
 Function ShowReadmeFunction
-	!insertmacro UAC_AsUser_ExecShell "open" "$INSTDIR\Changelog.html" "" "" SW_SHOWNORMAL
 	!insertmacro UAC_AsUser_ExecShell "open" "$INSTDIR\FAQ.html" "" "" SW_SHOWNORMAL
-	!insertmacro UAC_AsUser_ExecShell "open" "$INSTDIR\Translate.html" "" "" SW_SHOWNORMAL
 FunctionEnd
 

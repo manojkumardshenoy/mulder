@@ -46,7 +46,7 @@ bool ADPCMDecoder::decode(const QString &sourceFile, const QString &outputFile, 
 	QProcess process;
 	QStringList args;
 
-	process.setWorkingDirectory(lamexp_temp_folder());
+	process.setWorkingDirectory(QFileInfo(outputFile).canonicalPath());
 
 	args << "-V3" << "-S" << "--temp" << ".";
 	args << QDir::toNativeSeparators(sourceFile);
@@ -77,6 +77,7 @@ bool ADPCMDecoder::decode(const QString &sourceFile, const QString &outputFile, 
 		{
 			process.kill();
 			qWarning("Sox process timed out <-- killing!");
+			emit messageLogged("\nPROCESS TIMEOUT !!!");
 			bTimeout = true;
 			break;
 		}

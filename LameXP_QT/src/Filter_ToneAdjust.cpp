@@ -26,6 +26,7 @@
 #include <QDir>
 #include <QProcess>
 #include <QRegExp>
+#include <QFileInfo>
 
 ToneAdjustFilter::ToneAdjustFilter(int bass, int treble)
 :
@@ -49,9 +50,9 @@ bool ToneAdjustFilter::apply(const QString &sourceFile, const QString &outputFil
 	QProcess process;
 	QStringList args;
 
-	process.setWorkingDirectory(lamexp_temp_folder());
+	process.setWorkingDirectory(QFileInfo(outputFile).canonicalPath());
 
-	args << "-V3";
+	args << "-V3" << "-S";
 	args << "--guard" << "--temp" << ".";
 	args << QDir::toNativeSeparators(sourceFile);
 	args << QDir::toNativeSeparators(outputFile);
@@ -73,6 +74,8 @@ bool ToneAdjustFilter::apply(const QString &sourceFile, const QString &outputFil
 	bool bTimeout = false;
 	bool bAborted = false;
 
+	QRegExp regExp("In:(\\d+)(\\.\\d+)*%");
+
 	while(process.state() != QProcess::NotRunning)
 	{
 		if(*abortFlag)
@@ -87,6 +90,7 @@ bool ToneAdjustFilter::apply(const QString &sourceFile, const QString &outputFil
 		{
 			process.kill();
 			qWarning("SoX process timed out <-- killing!");
+			emit messageLogged("\nPROCESS TIMEOUT !!!");
 			bTimeout = true;
 			break;
 		}
@@ -94,7 +98,13 @@ bool ToneAdjustFilter::apply(const QString &sourceFile, const QString &outputFil
 		{
 			QByteArray line = process.readLine();
 			QString text = QString::fromUtf8(line.constData()).simplified();
-			if(!text.isEmpty())
+			if(regExp.lastIndexIn(text) >= 0)
+			{
+				bool ok = false;
+				int progress = regExp.cap(1).toInt(&ok);
+				if(ok) emit statusUpdated(progress);
+			}
+			else if(!text.isEmpty())
 			{
 				emit messageLogged(text);
 			}
