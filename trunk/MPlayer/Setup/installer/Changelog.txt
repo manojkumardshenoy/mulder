@@ -1,3 +1,10 @@
+[2011-03-26]
+* MPlayer binaries updated to SVN-r33107
+* No "MT" builds anymore, as the MT-branch has been merged into FFmpeg
+* UAC Plugin for NSIS updated to Version 0.2.2d
+* QT Runtime Libs updated to Version 4.7.2
+* Updated binary Codecs to the package released on 2011-01-31
+
 [2010-10-17]
 * MPlayer binaries updated to SVN-r32492
 * QT Runtime Libs updated to Version 4.7.0

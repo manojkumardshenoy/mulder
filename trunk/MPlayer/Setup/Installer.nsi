@@ -27,6 +27,7 @@ SetCompressorDictSize 144
 
 ; UAC Support
 RequestExecutionLevel user
+!include UAC.nsh
 
 ; UltraModernUI
 !include UMUI.nsh
@@ -71,6 +72,7 @@ InstallDirRegKey HKLM "${MPlayer_RegPath}" "InstallLocation"
 ; Reserve Files
 ReserveFile "${NSISDIR}\Plugins\UAC.DLL"
 ReserveFile "${NSISDIR}\Plugins\System.dll"
+ReserveFile "${NSISDIR}\Plugins\LangDLL.dll"
 ReserveFile "${NSISDIR}\Plugins\NewAdvSplash.dll"
 ReserveFile "${NSISDIR}\Plugins\SelfDel.dll"
 ReserveFile "${NSISDIR}\Plugins\Banner.dll"
@@ -108,6 +110,8 @@ ReserveFile "installer\upx.exe"
 !define UMUI_USE_ALTERNATE_PAGE
 !define UMUI_USE_UNALTERNATE_PAGE
 !define UMUI_USE_INSTALLOPTIONSEX
+!define MUI_CUSTOMFUNCTION_GUIINIT MyGuiInit
+!define MUI_CUSTOMFUNCTION_UNGUIINIT un.MyGuiInit
 
 ;!define UMUI_WELCOMEFINISHABORT_TITLE_FONTSIZE 15
 ;!define UMUI_CUSTOMFUNCTION_GUIINIT GUI_InitFunction
@@ -158,7 +162,11 @@ ReserveFile "installer\upx.exe"
 ; Installer Pages
 ; ---------------------------------------
 
-!insertmacro UMUI_PAGE_MULTILANGUAGE
+; <FIXME>
+;   TODO: Multi-language currently disabled, because it fails with the new UAC plugin :-(
+;   !insertmacro UMUI_PAGE_MULTILANGUAGE
+; </FIXME>
+
 !insertmacro MUI_PAGE_WELCOME
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW InitialSMPlayerClose
 !insertmacro MUI_PAGE_LICENSE "installer\License.txt"
@@ -617,25 +625,45 @@ FunctionEnd
 !macro INIT_UAC prefix
   !define ID ${__LINE__}
   
-UAC_Elevate_${ID}:
-  UAC::RunElevated 
-  StrCmp 1223 $0 UAC_ElevationAborted_${ID} ; UAC dialog aborted by user?
-  StrCmp 0 $0 0 UAC_Err_${ID} ; Error?
-  StrCmp 1 $1 0 UAC_Success_${ID} ; Are we the real deal or just the wrapper?
-  Quit
+; UAC_Elevate_${ID}:
+  ; UAC::RunElevated 
+  ; StrCmp 1223 $0 UAC_ElevationAborted_${ID} ; UAC dialog aborted by user?
+  ; StrCmp 0 $0 0 UAC_Err_${ID} ; Error?
+  ; StrCmp 1 $1 0 UAC_Success_${ID} ; Are we the real deal or just the wrapper?
+  ; Quit
 
-UAC_Err_${ID}:
-  MessageBox MB_ICONEXCLAMATION|MB_TOPMOST "Unable to elevate ${prefix}installer executaion level (Error #$0)."
+; UAC_Err_${ID}:
+  ; MessageBox MB_ICONEXCLAMATION|MB_TOPMOST "Unable to elevate ${prefix}installer executaion level (Error #$0)."
 
-UAC_ElevationAborted_${ID}:
-  MessageBox MB_ICONSTOP|MB_TOPMOST "$(NotAllowedToInstall)"
-  Abort
+; UAC_ElevationAborted_${ID}:
+  ; MessageBox MB_ICONSTOP|MB_TOPMOST "$(NotAllowedToInstall)"
+  ; Abort
 
-UAC_Success_${ID}:
-  StrCmp 1 $3 +4 ;Admin?
-  StrCmp 3 $1 0 UAC_ElevationAborted_${ID} ;Try again?
-  MessageBox MB_ICONEXCLAMATION|MB_TOPMOST "$(NotAllowedToInstall)"
-  Goto UAC_Elevate_${ID}
+; UAC_Success_${ID}:
+  ; StrCmp 1 $3 +4 ;Admin?
+  ; StrCmp 3 $1 0 UAC_ElevationAborted_${ID} ;Try again?
+  ; MessageBox MB_ICONEXCLAMATION|MB_TOPMOST "$(NotAllowedToInstall)"
+  ; Goto UAC_Elevate_${ID}
+  
+  UAC_TryAgain_${ID}:
+  !insertmacro UAC_RunElevated
+  ${Switch} $0
+  ${Case} 0
+    ${IfThen} $1 = 1 ${|} Quit ${|}
+    ${IfThen} $3 <> 0 ${|} ${Break} ${|}
+    ${If} $1 = 3
+      MessageBox MB_ICONEXCLAMATION|MB_TOPMOST|MB_SETFOREGROUND|MB_OKCANCEL "This installer requires admin access, please try again!" /SD IDCANCEL IDOK UAC_TryAgain_${ID}
+    ${EndIf}
+  ${Case} 1223
+    MessageBox MB_ICONEXCLAMATION|MB_TOPMOST|MB_SETFOREGROUND|MB_OKCANCEL "This installer requires admin privileges, please try again!" /SD IDCANCEL IDOK UAC_TryAgain_${ID}
+    Quit
+  ${Case} 1062
+    MessageBox MB_ICONSTOP|MB_TOPMOST|MB_SETFOREGROUND "Logon service not running, aborting!"
+    Quit
+  ${Default}
+    MessageBox MB_ICONSTOP|MB_TOPMOST|MB_SETFOREGROUND "Unable to elevate installer! (Error code: $0)"
+    Quit
+  ${EndSwitch}
 
   !undef ID
 !macroend
@@ -1449,7 +1477,9 @@ Section "$(Section_Optimize_Caption)" SectionOptimize
     !insertmacro PackAll "$INSTDIR\codecs" "drv"
     !insertmacro PackAll "$INSTDIR\codecs" "qts"
     !insertmacro PackAll "$INSTDIR\codecs" "qtx"
+    !insertmacro PackAll "$INSTDIR\codecs" "vcm"
     !insertmacro PackAll "$INSTDIR\codecs" "vwp"
+    !insertmacro PackAll "$INSTDIR\codecs" "xa"
   !endif
 
   ; ---------------------------------------
@@ -1782,49 +1812,60 @@ SectionEnd
 ; ---------------------------------------
 
 Function .onInit
-  !insertmacro INIT_UAC ""
-
-  StrCpy $CPU_TYPE ""
-  StrCpy $CLOSE_SMPLAYER ""
-  StrCpy $SETUP_COMPLETED ""
-  
   InitPluginsDir
   !insertmacro UMUI_MULTILANG_GET
 
-  !insertmacro MUI_INSTALLOPTIONS_EXTRACT_AS "installer\page_cpu.ini" "page_cpu.ini"
-  !insertmacro MUI_INSTALLOPTIONS_EXTRACT_AS "installer\page_tweak.ini" "page_tweak.ini"
-  
-  !insertmacro GetCommandlineParameter "L" "error" $0
-  StrCmp $0 "error" 0 SkipSplashScreen
-  !insertmacro CheckInstances "false"
-  IfSilent SkipSplashScreen
+  ;${If} ${UAC_IsInnerInstance}
+  ${If} ${UAC_IsAdmin}
+    StrCpy $CPU_TYPE ""
+    StrCpy $CLOSE_SMPLAYER ""
+    StrCpy $SETUP_COMPLETED ""
 
-  File /oname=$PLUGINSDIR\splash.gif "installer\splash.gif"
-  newadvsplash::show 3000 1000 500 -1 /NOCANCEL "$PLUGINSDIR\splash.gif"
-  Delete /REBOOTOK "$PLUGINSDIR\splash.gif"
+    !insertmacro MUI_INSTALLOPTIONS_EXTRACT_AS "installer\page_cpu.ini" "page_cpu.ini"
+    !insertmacro MUI_INSTALLOPTIONS_EXTRACT_AS "installer\page_tweak.ini" "page_tweak.ini"
 
-  SkipSplashScreen:
-  !insertmacro CheckInstances "true"
+    ; Language selection
+    !insertmacro MUI_LANGDLL_DISPLAY
+
+    !insertmacro GetCommandlineParameter "L" "error" $0
+    StrCmp $0 "error" 0 SkipSplashScreen
+    IfSilent SkipSplashScreen
+
+    File /oname=$PLUGINSDIR\splash.gif "installer\splash.gif"
+    newadvsplash::show 3000 1000 500 -1 /NOCANCEL "$PLUGINSDIR\splash.gif"
+    Delete /REBOOTOK "$PLUGINSDIR\splash.gif"
+
+    SkipSplashScreen:
   
-  ; If running in update mode, self-delete installer
-  !insertmacro GetCommandlineParameter "UPDATE" "error" $0
-  StrCmp $0 "error" +2
-  SelfDel::del
+    ; If running in update mode, self-delete installer
+    !insertmacro GetCommandlineParameter "UPDATE" "error" $0
+    StrCmp $0 "error" +2
+    SelfDel::del
   
-  ; make sure we aren't blockey by buggy A/V software
-  File /oname=$PLUGINSDIR\check.exe "installer\check.exe"
-  nsExec::Exec /TIMEOUT=2500 "$PLUGINSDIR\check.exe"
-  Pop $0
-  StrCmp $0 42 ExecIsNotBlocked
-  MessageBox MB_ICONSTOP|MB_TOPMOST|MB_OK "$(ExecBlockedAbort)$\n$\nCode: $0"
-  Quit
-  ExecIsNotBlocked:
+    ; make sure we aren't blockey by buggy A/V software
+    File /oname=$PLUGINSDIR\check.exe "installer\check.exe"
+    nsExec::Exec /TIMEOUT=2500 "$PLUGINSDIR\check.exe"
+    Pop $0
+    StrCmp $0 42 ExecIsNotBlocked
+    MessageBox MB_ICONSTOP|MB_TOPMOST|MB_OK "$(ExecBlockedAbort)$\n$\nCode: $0"
+    Quit
+    ExecIsNotBlocked:
+  ${Else}
+    !insertmacro CheckInstances "false"
+  ${EndIf}
 FunctionEnd
 
 Function un.onInit
-  !insertmacro INIT_UAC "un"
   InitPluginsDir
   !insertmacro UMUI_MULTILANG_GET
+FunctionEnd
+
+Function MyGuiInit
+  !insertmacro INIT_UAC ""
+FunctionEnd
+
+Function un.MyGuiInit
+  !insertmacro INIT_UAC "un"
 FunctionEnd
 
 ; ---------------------------------------
@@ -2052,14 +2093,14 @@ FunctionEnd
 
 Function RunOnFinish
   IfFileExists "$INSTDIR\smplayer_portable.exe" 0 +3
-  UAC::Exec '' '"$INSTDIR\smplayer_portable.exe" -actions pl_repeat "${Play_URL}"' '' ''
+  !insertmacro UAC_AsUser_ExecShell 'open' '$INSTDIR\smplayer_portable.exe' `'-actions pl_repeat "${Play_URL}"'` '$INSTDIR' SW_SHOWNORMAL
   Goto DoNotRunMPlayer
 
   IfFileExists "$INSTDIR\MPUI.exe" 0 +3
-  UAC::Exec '' '"$INSTDIR\MPUI.exe" "${Play_URL}"' '' ''
+  !insertmacro UAC_AsUser_ExecShell 'open' '$INSTDIR\MPUI.exe' '"${Play_URL}"' '$INSTDIR' SW_SHOWNORMAL
   Goto DoNotRunMPlayer
 
-  UAC::Exec '' '"$INSTDIR\MPlayer.exe" "${Play_URL}"' '' ''
+  !insertmacro UAC_AsUser_ExecShell 'open' '$INSTDIR\MPlayer.exe' '"${Play_URL}"' '$INSTDIR' SW_SHOWNORMAL
   DoNotRunMPlayer:
 FunctionEnd
 
@@ -2076,19 +2117,19 @@ FunctionEnd
 
 Function .onInstSuccess
   Call OnSuccessFunc
-  UAC::Unload ;Must call unload!
+  ;UAC::Unload ;Must call unload!
 FunctionEnd
 
 Function .onInstFailed
-  UAC::Unload ;Must call unload!
+  ;UAC::Unload ;Must call unload!
 FunctionEnd
 
 Function un.onUninstSuccess
-  UAC::Unload ;Must call unload!
+  ;UAC::Unload ;Must call unload!
 FunctionEnd
 
 Function un.onUninstFailed
-  UAC::Unload ;Must call unload!
+  ;UAC::Unload ;Must call unload!
 FunctionEnd
 
 
