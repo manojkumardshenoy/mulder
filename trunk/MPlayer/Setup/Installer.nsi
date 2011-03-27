@@ -112,6 +112,8 @@ ReserveFile "installer\upx.exe"
 !define UMUI_USE_INSTALLOPTIONSEX
 !define MUI_CUSTOMFUNCTION_GUIINIT MyGuiInit
 !define MUI_CUSTOMFUNCTION_UNGUIINIT un.MyGuiInit
+!define MUI_LANGDLL_ALWAYSSHOW
+!define UMUI_MULTILANGUAGEPAGE
 
 ;!define UMUI_WELCOMEFINISHABORT_TITLE_FONTSIZE 15
 ;!define UMUI_CUSTOMFUNCTION_GUIINIT GUI_InitFunction
@@ -193,8 +195,12 @@ Page custom SetCustom_Tweaks ValidateCustom_Tweaks ""
 !define MUI_WELCOMEPAGE_TITLE_3LINES
 !define MUI_FINISHPAGE_TITLE_3LINES
 
+; <FIXME>
+;   TODO: Multi-language currently disabled, because it fails with the new UAC plugin :-(
+;   !insertmacro UMUI_UNPAGE_MULTILANGUAGE
+; </FIXME>
+
 ; Uninstaller Pages
-!insertmacro UMUI_UNPAGE_MULTILANGUAGE
 !insertmacro MUI_UNPAGE_WELCOME
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
@@ -625,25 +631,25 @@ FunctionEnd
 !macro INIT_UAC prefix
   !define ID ${__LINE__}
   
-; UAC_Elevate_${ID}:
-  ; UAC::RunElevated 
-  ; StrCmp 1223 $0 UAC_ElevationAborted_${ID} ; UAC dialog aborted by user?
-  ; StrCmp 0 $0 0 UAC_Err_${ID} ; Error?
-  ; StrCmp 1 $1 0 UAC_Success_${ID} ; Are we the real deal or just the wrapper?
-  ; Quit
-
-; UAC_Err_${ID}:
-  ; MessageBox MB_ICONEXCLAMATION|MB_TOPMOST "Unable to elevate ${prefix}installer executaion level (Error #$0)."
-
-; UAC_ElevationAborted_${ID}:
-  ; MessageBox MB_ICONSTOP|MB_TOPMOST "$(NotAllowedToInstall)"
-  ; Abort
-
-; UAC_Success_${ID}:
-  ; StrCmp 1 $3 +4 ;Admin?
-  ; StrCmp 3 $1 0 UAC_ElevationAborted_${ID} ;Try again?
-  ; MessageBox MB_ICONEXCLAMATION|MB_TOPMOST "$(NotAllowedToInstall)"
-  ; Goto UAC_Elevate_${ID}
+  ; UAC_Elevate_${ID}:
+  ;   UAC::RunElevated 
+  ;   StrCmp 1223 $0 UAC_ElevationAborted_${ID} ; UAC dialog aborted by user?
+  ;   StrCmp 0 $0 0 UAC_Err_${ID} ; Error?
+  ;   StrCmp 1 $1 0 UAC_Success_${ID} ; Are we the real deal or just the wrapper?
+  ;   Quit
+  ;
+  ; UAC_Err_${ID}:
+  ;   MessageBox MB_ICONEXCLAMATION|MB_TOPMOST "Unable to elevate ${prefix}installer executaion level (Error #$0)."
+  ;
+  ; UAC_ElevationAborted_${ID}:
+  ;   MessageBox MB_ICONSTOP|MB_TOPMOST "$(NotAllowedToInstall)"
+  ;   Abort
+  ;
+  ; UAC_Success_${ID}:
+  ;   StrCmp 1 $3 +4 ;Admin?
+  ;   StrCmp 3 $1 0 UAC_ElevationAborted_${ID} ;Try again?
+  ;   MessageBox MB_ICONEXCLAMATION|MB_TOPMOST "$(NotAllowedToInstall)"
+  ;   Goto UAC_Elevate_${ID}
   
   UAC_TryAgain_${ID}:
   !insertmacro UAC_RunElevated
@@ -1376,6 +1382,7 @@ SectionEnd
 
     DetailPrint "Modifying: $INSTDIR\smplayer.ini"
     WriteINIStr "$INSTDIR\smplayer.ini" "%General" "mplayer_bin" "MPlayer.exe"
+    WriteINIStr "$INSTDIR\smplayer.ini" "%General" "use_slices" "false"
     StrCpy $R0 "${Version_MPlayer}" 5 5
     WriteINIStr "$INSTDIR\smplayer.ini" "mplayer_info" "mplayer_detected_version" "$R0"
     WriteINIStr "$INSTDIR\smplayer.ini" "mplayer_info" "mplayer_user_supplied_version" "$R0"
@@ -1479,7 +1486,6 @@ Section "$(Section_Optimize_Caption)" SectionOptimize
     !insertmacro PackAll "$INSTDIR\codecs" "qtx"
     !insertmacro PackAll "$INSTDIR\codecs" "vcm"
     !insertmacro PackAll "$INSTDIR\codecs" "vwp"
-    !insertmacro PackAll "$INSTDIR\codecs" "xa"
   !endif
 
   ; ---------------------------------------
@@ -1813,9 +1819,8 @@ SectionEnd
 
 Function .onInit
   InitPluginsDir
-  !insertmacro UMUI_MULTILANG_GET
+  ; <FIXME> !insertmacro UMUI_MULTILANG_GET </FIXME>
 
-  ;${If} ${UAC_IsInnerInstance}
   ${If} ${UAC_IsAdmin}
     StrCpy $CPU_TYPE ""
     StrCpy $CLOSE_SMPLAYER ""
@@ -1857,7 +1862,13 @@ FunctionEnd
 
 Function un.onInit
   InitPluginsDir
-  !insertmacro UMUI_MULTILANG_GET
+  ; <FIXME> !insertmacro UMUI_MULTILANG_GET </FIXME>
+
+  ${If} ${UAC_IsAdmin}
+    !insertmacro MUI_LANGDLL_DISPLAY
+  ${Else}
+    !insertmacro CheckInstances "false"
+  ${EndIf}
 FunctionEnd
 
 Function MyGuiInit

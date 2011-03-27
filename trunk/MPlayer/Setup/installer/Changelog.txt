@@ -1,3 +1,9 @@
+[2011-03-27]
+* MPlayer binaries updated to SVN-r33124
+* Fixed multi-threading (was broken with MPlayer SVN-r33107)
+* WARNING: Option "Draw video using slices" causes video distortions or crash!
+* Various installer bugfixes
+
 [2011-03-26]
 * MPlayer binaries updated to SVN-r33107
 * No "MT" builds anymore, as the MT-branch has been merged into FFmpeg
