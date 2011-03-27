@@ -227,6 +227,7 @@ Section
   ; -------------------------------------------------------------------
 
   !insertmacro SetPreference "mplayer_bin" "MPlayer.exe"
+  !insertmacro SetPreference "use_slices" "false"
   !insertmacro SetPreference "dont_remember_time_pos" "true"
   !insertmacro SetPreference "dont_remember_media_settings" "true"
   !insertmacro SetPreference "use_volume_option" "1"
