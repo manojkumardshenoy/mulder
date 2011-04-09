@@ -161,11 +161,11 @@ VIAddVersionKey "Website" "http://mulder.at.gg/"
 !define MUI_FINISHPAGE_LINK_LOCATION ${MyWebSite}
 !define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\orange-install.ico"
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\orange-uninstall.ico"
-!define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\orange.bmp"
-!define MUI_UNWELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\orange-uninstall.bmp"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "wizard.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "wizard-un.bmp"
 !define MUI_HEADERIMAGE
-!define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\orange.bmp"
-!define MUI_HEADERIMAGE_UNBITMAP "${NSISDIR}\Contrib\Graphics\Header\orange-uninstall.bmp"
+!define MUI_HEADERIMAGE_BITMAP "header.bmp"
+!define MUI_HEADERIMAGE_UNBITMAP "header-un.bmp"
 !define MUI_LANGDLL_ALLLANGUAGES
 !define MUI_CUSTOMFUNCTION_GUIINIT MyUacInit
 !define MUI_CUSTOMFUNCTION_UNGUIINIT un.MyUacInit
@@ -251,6 +251,8 @@ UninstPage Custom un.LockedListShow
 Function .onInit
 	${If} ${UAC_IsInnerInstance}
 		!insertmacro MUI_LANGDLL_DISPLAY
+	${ElseIf} ${UAC_IsAdmin}
+		!insertmacro MUI_LANGDLL_DISPLAY
 	${Else}
 		System::Call 'kernel32::CreateMutexA(i 0, i 0, t "{2B3D1EBF-B3B6-4E93-92B9-6853029A7162}") i .r1 ?e'
 		Pop $0
@@ -265,16 +267,26 @@ Function .onInit
 		MessageBox MB_TOPMOST|MB_ICONSTOP "Sorry, the Windows 9x series (including ME) is not supported by this application!"
 		Quit
 	${EndIf}
-  
+
 	OS_Windows_NT:
-	${If} ${AtMostWinNT4}
-		MessageBox MB_TOPMOST|MB_ICONSTOP "Sorry, Windows NT 4.0 (and older) is not supported by this application!"
+	${If} ${AtMostWin2000}
+		MessageBox MB_TOPMOST|MB_ICONSTOP "Sorry, Windows 2000 (and older) is not supported by this application!"
+		Quit
+	${EndIf}
+
+	${If} ${IsWinXP}
+	${AndIf} ${AtMostServicePack} 1
+		MessageBox MB_TOPMOST|MB_ICONSTOP "Sorry, this application requires Windows XP with Service Pack 2 or newer!"
+		MessageBox MB_TOPMOST|MB_ICONINFORMATION|MB_YESNO "Do you want to download Service Pack 3 for Windows XP now?" IDNO +2
+		ExecShell "open" "http://www.microsoft.com/downloads/en/details.aspx?FamilyID=5b33b5a8-5e76-401f-be08-1e1555d4f3d4"
 		Quit
 	${EndIf}
 FunctionEnd
 
 Function un.onInit
 	${If} ${UAC_IsInnerInstance}
+		!insertmacro MUI_LANGDLL_DISPLAY
+	${ElseIf} ${UAC_IsAdmin}
 		!insertmacro MUI_LANGDLL_DISPLAY
 	${Else}
 		System::Call 'kernel32::CreateMutexA(i 0, i 0, t "{2B3D1EBF-B3B6-4E93-92B9-6853029A7162}") i .r1 ?e'
@@ -313,9 +325,10 @@ Function MyUacInit
 	
 	!ifdef LAMEXP_IS_PRERELEASE
 		!insertmacro GetCommandlineParameter "Update" "?" $R0
-		StrCmp $R0 "?" 0 +3
+		StrCmp $R0 "?" 0 SkipPrereleaseWarning
 		MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_OKCANCEL "$(LAMEXP_LANG_PRERELEASE_WARNING)" /SD IDOK IDOK +2
 		Abort
+		SkipPrereleaseWarning:
 	!endif
 FunctionEnd
 

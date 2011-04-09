@@ -21,8 +21,12 @@
 
 #pragma once
 
+#include "Model_Artwork.h"
+
 #include <QObject>
 #include <QString>
+#include <QMap>
+#include <QMutex>
 
 class AudioFileModel : public QObject
 {
@@ -44,6 +48,7 @@ public:
 	const QString &fileAlbum(void) const;
 	const QString &fileGenre(void) const;
 	const QString &fileComment(void) const;
+	const QString &fileCover(void) const;
 	unsigned int fileYear(void) const;
 	unsigned int filePosition(void) const;
 	unsigned int fileDuration(void) const;
@@ -72,6 +77,8 @@ public:
 	void setFileAlbum(const QString &album);
 	void setFileGenre(const QString &genre);
 	void setFileComment(const QString &comment);
+	void setFileCover(const QString &coverFile, bool owner);
+	void setFileCover(const ArtworkModel &model);
 	void setFileYear(unsigned int year);
 	void setFilePosition(unsigned int position);
 	void setFileDuration(unsigned int duration);
@@ -94,6 +101,7 @@ private:
 	QString m_fileAlbum;
 	QString m_fileGenre;
 	QString m_fileComment;
+	ArtworkModel m_fileCover;
 	unsigned int m_fileYear;
 	unsigned int m_filePosition;
 	unsigned int m_fileDuration;

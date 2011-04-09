@@ -32,6 +32,9 @@
         <property name="currentIndex">
          <number>0</number>
         </property>
+        <property name="usesScrollButtons">
+         <bool>false</bool>
+        </property>
         <widget class="QWidget" name="tabSourceFiles">
          <property name="font">
           <font>
@@ -1057,8 +1060,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>604</width>
-               <height>1091</height>
+               <width>602</width>
+               <height>1088</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_22">
@@ -2716,6 +2719,7 @@
     <addaction name="separator"/>
     <addaction name="actionOpen"/>
     <addaction name="actionOpenFolder"/>
+    <addaction name="actionOpenFolderRecursively"/>
     <addaction name="actionClearAll"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
@@ -2726,6 +2730,7 @@
      <string>?</string>
     </property>
     <addaction name="actionCheckUpdates"/>
+    <addaction name="actionVisitSupport"/>
     <addaction name="actionVisitHomepage"/>
     <addaction name="separator"/>
     <addaction name="actionDocumentFAQ"/>
@@ -3062,6 +3067,24 @@
     <string>Translator's Guide</string>
    </property>
   </action>
+  <action name="actionVisitSupport">
+   <property name="icon">
+    <iconset resource="../res/Icons.qrc">
+     <normaloff>:/icons/group.png</normaloff>:/icons/group.png</iconset>
+   </property>
+   <property name="text">
+    <string>Help &amp;&amp; Support</string>
+   </property>
+  </action>
+  <action name="actionOpenFolderRecursively">
+   <property name="icon">
+    <iconset resource="../res/Icons.qrc">
+     <normaloff>:/icons/folder_explore.png</normaloff>:/icons/folder_explore.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open Folder Recursively...</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../res/Icons.qrc"/>
@@ -3083,6 +3106,9 @@
   <include location="../res/Images.qrc"/>
   <include location="../res/Icons.qrc"/>
   <include location="../res/Images.qrc"/>
+  <include location="../res/Icons.qrc"/>
+  <include location="../res/Icons.qrc"/>
+  <include location="../res/Icons.qrc"/>
   <include location="../res/Icons.qrc"/>
   <include location="../res/Icons.qrc"/>
   <include location="../res/Icons.qrc"/>

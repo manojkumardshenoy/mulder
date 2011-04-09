@@ -256,7 +256,10 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	customParamsChanged();
 	
 	//Activate file menu actions
+	actionOpenFolder->setData(QVariant::fromValue<bool>(false));
+	actionOpenFolderRecursively->setData(QVariant::fromValue<bool>(true));
 	connect(actionOpenFolder, SIGNAL(triggered()), this, SLOT(openFolderActionActivated()));
+	connect(actionOpenFolderRecursively, SIGNAL(triggered()), this, SLOT(openFolderActionActivated()));
 
 	//Activate view menu actions
 	m_tabActionGroup = new QActionGroup(this);
@@ -325,11 +328,14 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	connect(actionShowDropBoxWidget, SIGNAL(triggered(bool)), this, SLOT(showDropBoxWidgetActionTriggered(bool)));
 		
 	//Activate help menu actions
+	actionVisitHomepage->setData(QString::fromLatin1(lamexp_website_url()));
+	actionVisitSupport->setData(QString::fromLatin1(lamexp_support_url()));
 	actionDocumentFAQ->setData(QString("%1/FAQ.html").arg(QApplication::applicationDirPath()));
 	actionDocumentChangelog->setData(QString("%1/Changelog.html").arg(QApplication::applicationDirPath()));
 	actionDocumentTranslate->setData(QString("%1/Translate.html").arg(QApplication::applicationDirPath()));
 	connect(actionCheckUpdates, SIGNAL(triggered()), this, SLOT(checkUpdatesActionActivated()));
 	connect(actionVisitHomepage, SIGNAL(triggered()), this, SLOT(visitHomepageActionActivated()));
+	connect(actionVisitSupport, SIGNAL(triggered()), this, SLOT(visitHomepageActionActivated()));
 	connect(actionDocumentFAQ, SIGNAL(triggered()), this, SLOT(documentActionActivated()));
 	connect(actionDocumentChangelog, SIGNAL(triggered()), this, SLOT(documentActionActivated()));
 	connect(actionDocumentTranslate, SIGNAL(triggered()), this, SLOT(documentActionActivated()));
@@ -454,6 +460,46 @@ void MainWindow::addFiles(const QStringList &files)
 	LAMEXP_DELETE(analyzer);
 	sourceFileView->scrollToBottom();
 	m_banner->close();
+}
+
+/*
+ * Add folder to source list
+ */
+void MainWindow::addFolder(const QString &path, bool recursive)
+{
+	QFileInfoList folderInfoList;
+	folderInfoList << QFileInfo(path);
+	QStringList fileList;
+	
+	m_banner->show(tr("Scanning folder(s) for files, please wait..."));
+	QApplication::processEvents();
+
+	while(!folderInfoList.isEmpty())
+	{
+		QDir currentDir(folderInfoList.takeFirst().canonicalFilePath());
+		QFileInfoList fileInfoList = currentDir.entryInfoList(QDir::Files);
+
+		while(!fileInfoList.isEmpty())
+		{
+			fileList << fileInfoList.takeFirst().canonicalFilePath();
+		}
+
+		QApplication::processEvents();
+
+		if(recursive)
+		{
+			folderInfoList.append(currentDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks));
+			QApplication::processEvents();
+		}
+	}
+	
+	m_banner->close();
+	QApplication::processEvents();
+
+	if(!fileList.isEmpty())
+	{
+		addFiles(fileList);
+	}
 }
 
 /*
@@ -634,6 +680,9 @@ void MainWindow::changeEvent(QEvent *e)
 		{
 			ShellIntegration::install();
 		}
+
+		//Force resize, if needed
+		tabPageChanged(tabWidget->currentIndex());
 	}
 }
 
@@ -1059,37 +1108,31 @@ void MainWindow::openFolderActionActivated(void)
 	ABORT_IF_BUSY;
 	QString selectedFolder;
 	
-	TEMP_HIDE_DROPBOX
-	(
-		if(lamexp_themes_enabled())
-		{
-			selectedFolder = QFileDialog::getExistingDirectory(this, tr("Add folder"), QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
-		}
-		else
-		{
-			QFileDialog dialog(this, tr("Add folder"));
-			dialog.setFileMode(QFileDialog::DirectoryOnly);
-			dialog.setDirectory(QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
-			if(dialog.exec())
+	if(QAction *action = dynamic_cast<QAction*>(QObject::sender()))
+	{
+		TEMP_HIDE_DROPBOX
+		(
+			if(lamexp_themes_enabled())
 			{
-				selectedFolder = dialog.selectedFiles().first();
+				selectedFolder = QFileDialog::getExistingDirectory(this, tr("Add Folder"), QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
 			}
-		}
-		
-		if(!selectedFolder.isEmpty())
-		{
-			QDir sourceDir(selectedFolder);
-			QFileInfoList fileInfoList = sourceDir.entryInfoList(QDir::Files);
-			QStringList fileList;
-
-			while(!fileInfoList.isEmpty())
+			else
 			{
-				fileList << fileInfoList.takeFirst().canonicalFilePath();
+				QFileDialog dialog(this, tr("Add Folder"));
+				dialog.setFileMode(QFileDialog::DirectoryOnly);
+				dialog.setDirectory(QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
+				if(dialog.exec())
+				{
+					selectedFolder = dialog.selectedFiles().first();
+				}
 			}
-
-			addFiles(fileList);
-		}
-	)
+			
+			if(!selectedFolder.isEmpty())
+			{
+				addFolder(selectedFolder, action->data().toBool());
+			}
+		)
+	}
 }
 
 /*
@@ -1164,7 +1207,10 @@ void MainWindow::showDetailsButtonClicked(void)
 		}
 
 		AudioFileModel &file = (*m_fileListModel)[index];
-		iResult = metaInfoDialog->exec(file, index.row() > 0, index.row() < m_fileListModel->rowCount() - 1);
+		TEMP_HIDE_DROPBOX
+		(
+			iResult = metaInfoDialog->exec(file, index.row() > 0, index.row() < m_fileListModel->rowCount() - 1);
+		)
 
 		if(!iResult) break;
 	}
@@ -1186,6 +1232,46 @@ void MainWindow::tabPageChanged(int idx)
 		{
 			actions.at(i)->setChecked(true);
 		}
+	}
+
+	int initialWidth = this->width();
+	int maximumWidth = QApplication::desktop()->width();
+
+	if(this->isVisible())
+	{
+		while(tabWidget->width() < tabWidget->sizeHint().width())
+		{
+			int previousWidth = this->width();
+			this->resize(this->width() + 1, this->height());
+			if(this->frameGeometry().width() >= maximumWidth) break;
+			if(this->width() <= previousWidth) break;
+		}
+	}
+
+	if(idx == tabWidget->indexOf(tabOptions) && scrollArea->widget() && this->isVisible())
+	{
+		for(int i = 0; i < 2; i++)
+		{
+			QApplication::processEvents();
+			while(scrollArea->viewport()->width() < scrollArea->widget()->width())
+			{
+				int previousWidth = this->width();
+				this->resize(this->width() + 1, this->height());
+				if(this->frameGeometry().width() >= maximumWidth) break;
+				if(this->width() <= previousWidth) break;
+			}
+		}
+	}
+	else if(idx == tabWidget->indexOf(tabSourceFiles))
+	{
+		m_dropNoteLabel->setGeometry(0, 0, sourceFileView->width(), sourceFileView->height());
+	}
+
+	if(initialWidth < this->width())
+	{
+		QPoint prevPos = this->pos();
+		int delta = (this->width() - initialWidth) >> 2;
+		move(prevPos.x() - delta, prevPos.y());
 	}
 }
 
@@ -1515,7 +1601,13 @@ void MainWindow::clearMetaButtonClicked(void)
  */
 void MainWindow::visitHomepageActionActivated(void)
 {
-	QDesktopServices::openUrl(QUrl(lamexp_website_url()));
+	if(QAction *action = dynamic_cast<QAction*>(QObject::sender()))
+	{
+		if(action->data().isValid() && (action->data().type() == QVariant::String))
+		{
+			QDesktopServices::openUrl(QUrl(action->data().toString()));
+		}
+	}
 }
 
 /*
@@ -1531,7 +1623,7 @@ void MainWindow::documentActionActivated(void)
 			QFileInfo resource(QString(":/doc/%1.html").arg(document.baseName()));
 			if(document.exists() && document.isFile() && (document.size() == resource.size()))
 			{
-				QDesktopServices::openUrl(QUrl(QString("file:///%1").arg(document.canonicalFilePath())));
+				QDesktopServices::openUrl(QUrl::fromLocalFile(document.canonicalFilePath()));
 			}
 			else
 			{
@@ -1543,7 +1635,7 @@ void MainWindow::documentActionActivated(void)
 					action->setData(output.fileName());
 					source.close();
 					output.close();
-					QDesktopServices::openUrl(QUrl(QString("file:///%1").arg(output.fileName())));
+					QDesktopServices::openUrl(QUrl::fromLocalFile(output.fileName()));
 				}
 			}
 		}
@@ -2127,7 +2219,7 @@ void MainWindow::restoreCursor(void)
 void MainWindow::sourceFilesContextMenu(const QPoint &pos)
 {
 	QAbstractScrollArea *scrollArea = dynamic_cast<QAbstractScrollArea*>(QObject::sender());
-	QWidget *sender = scrollArea ? scrollArea->viewport() : dynamic_cast<QWidget*>(QObject::sender());	
+	QWidget *sender = scrollArea ? scrollArea->viewport() : dynamic_cast<QWidget*>(QObject::sender());
 
 	if(sender)
 	{

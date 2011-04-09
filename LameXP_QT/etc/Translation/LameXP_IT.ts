@@ -195,6 +195,10 @@
         <source>GNU Wget &amp;minus; Software for retrieving files using HTTP</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AudioFileModel</name>
@@ -235,6 +239,13 @@
     </message>
     <message>
         <source>Playlists</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DiskObserverThread</name>
+    <message>
+        <source>Low diskspace on drive &apos;%1&apos; detected (only %2 MB are free), problems can occur!</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -661,10 +672,6 @@
     <message>
         <source>Add file(s)</source>
         <translation>Aggiungi file(s)</translation>
-    </message>
-    <message>
-        <source>Add folder</source>
-        <translation>Aggiungi cartella</translation>
     </message>
     <message>
         <source>New Folder</source>
@@ -1222,6 +1229,22 @@
         <source>Translator&apos;s Guide</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Help &amp;&amp; Support</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open Folder Recursively...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scanning folder(s) for files, please wait...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Folder</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -1237,6 +1260,10 @@
         <source>Close</source>
         <translation>Chiudi</translation>
     </message>
+    <message>
+        <source>Artwork</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfoDialog</name>
@@ -1247,6 +1274,26 @@
     <message>
         <source>The following meta information have been extracted from the original file.</source>
         <translation>Le seguenti meta informazioni sono state estratte dal file originale.</translation>
+    </message>
+    <message>
+        <source>Load Artwork From File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clear Artwork</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load Artwork</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Artwork Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sorry, failed to load artwork from selected file!</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1608,7 +1655,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Executable &apos;%1&apos; requires Windows 2000 or later.</source>
+        <source>Executable &apos;%1&apos; requires Windows XP or later.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

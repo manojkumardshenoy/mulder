@@ -46,6 +46,7 @@
 ..\..\src\Global.cpp 
 ..\..\src\LockedFile.cpp 
 ..\..\src\Main.cpp 
+..\..\src\Model_Artwork.cpp 
 ..\..\src\Model_AudioFile.cpp 
 ..\..\src\Model_FileList.cpp 
 ..\..\src\Model_FileSystem.cpp 
@@ -55,6 +56,7 @@
 ..\..\src\PlaylistImporter.cpp 
 ..\..\src\Registry_Decoder.cpp 
 ..\..\src\ShellIntegration.cpp 
+..\..\src\Thread_DiskObserver.cpp 
 ..\..\src\Thread_FileAnalyzer.cpp 
 ..\..\src\Thread_Initialization.cpp 
 ..\..\src\Thread_MessageHandler.cpp 
@@ -102,6 +104,7 @@
 ..\..\src\Genres.h 
 ..\..\src\Global.h 
 ..\..\src\LockedFile.h 
+..\..\src\Model_Artwork.h 
 ..\..\src\Model_AudioFile.h 
 ..\..\src\Model_FileList.h 
 ..\..\src\Model_FileSystem.h 
@@ -113,6 +116,7 @@
 ..\..\src\Resource.h 
 ..\..\src\ShellIntegration.h 
 ..\..\src\Targetver.h 
+..\..\src\Thread_DiskObserver.h 
 ..\..\src\Thread_FileAnalyzer.h 
 ..\..\src\Thread_Initialization.h 
 ..\..\src\Thread_MessageHandler.h 

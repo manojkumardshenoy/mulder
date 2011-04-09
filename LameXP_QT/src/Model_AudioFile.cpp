@@ -23,6 +23,8 @@
 
 #include <QTime>
 #include <QObject>
+#include <QMutexLocker>
+#include <QFile>
 
 ////////////////////////////////////////////////////////////
 // Constructor & Destructor
@@ -58,6 +60,7 @@ AudioFileModel::AudioFileModel(const AudioFileModel &model, bool copyMetaInfo)
 		setFileAlbum(model.m_fileAlbum);
 		setFileGenre(model.m_fileGenre);
 		setFileComment(model.m_fileComment);
+		setFileCover(model.m_fileCover);
 		setFileYear(model.m_fileYear);
 		setFilePosition(model.m_filePosition);
 	}
@@ -71,6 +74,7 @@ AudioFileModel &AudioFileModel::operator=(const AudioFileModel &model)
 	setFileAlbum(model.m_fileAlbum);
 	setFileGenre(model.m_fileGenre);
 	setFileComment(model.m_fileComment);
+	setFileCover(model.m_fileCover);
 	setFileYear(model.m_fileYear);
 	setFilePosition(model.m_filePosition);
 	setFileDuration(model.m_fileDuration);
@@ -103,6 +107,7 @@ void AudioFileModel::resetAll(void)
 	m_fileAlbum.clear();
 	m_fileGenre.clear();
 	m_fileComment.clear();
+	m_fileCover.clear();
 	
 	m_fileYear = 0;
 	m_filePosition = 0;
@@ -155,6 +160,11 @@ const QString &AudioFileModel::fileGenre(void) const
 const QString &AudioFileModel::fileComment(void) const
 {
 	return m_fileComment;
+}
+
+const QString &AudioFileModel::fileCover(void) const
+{
+	return m_fileCover.filePath();
 }
 
 unsigned int AudioFileModel::fileYear(void) const
@@ -325,6 +335,16 @@ void AudioFileModel::setFileGenre(const QString &genre)
 void AudioFileModel::setFileComment(const QString &comment)
 {
 	m_fileComment = comment;
+}
+
+void AudioFileModel::setFileCover(const QString &coverFile, bool owner)
+{
+	m_fileCover.setFilePath(coverFile, owner);
+}
+
+void AudioFileModel::setFileCover(const ArtworkModel &model)
+{
+	m_fileCover = model;
 }
 
 void AudioFileModel::setFileYear(unsigned int year)

@@ -17,7 +17,7 @@
     </message>
     <message>
         <source>Special thanks go out to &quot;John33&quot; from %1 for his continuous support.</source>
-        <translation type="unfinished">Специальная благодарность &quot;John33&quot; from %1 за его непрерывную поддержку.</translation>
+        <translation type="unfinished">Специальная благодарность &quot;John33&quot; с %1 за его непрерывную поддержку.</translation>
     </message>
     <message>
         <source>About LameXP</source>
@@ -29,11 +29,11 @@
     </message>
     <message>
         <source>Accept License</source>
-        <translation>Принять лицензию</translation>
+        <translation type="unfinished">Принять лицензию</translation>
     </message>
     <message>
         <source>Decline License</source>
-        <translation type="unfinished">Отменить лицензию</translation>
+        <translation type="unfinished">Отклонить лицензию</translation>
     </message>
     <message>
         <source>3rd Party S/W</source>
@@ -41,7 +41,7 @@
     </message>
     <message>
         <source>Contributors</source>
-        <translation type="unfinished">Вкладчики</translation>
+        <translation type="unfinished">Участники</translation>
     </message>
     <message>
         <source>About Qt4</source>
@@ -65,7 +65,7 @@
     </message>
     <message>
         <source>About Contributors</source>
-        <translation type="unfinished">О Вкладчиках</translation>
+        <translation type="unfinished">О Участниках</translation>
     </message>
     <message>
         <source>The following third-party software is used in LameXP:</source>
@@ -185,7 +185,7 @@
     </message>
     <message>
         <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of thrird-party software used in LameXP belongs to the individual authors.</source>
-        <translation type="unfinished">LameXP полностью защищается авторским правом LoRd_MuldeR. Авторское право программного обеспечения третьих сторон, используемого в LameXP, принадлежит индивидуальным авторам.</translation>
+        <translation type="unfinished">LameXP защищена авторским правом LoRd_MuldeR. Авторское право на  программное обеспечение третьих сторон, используемое в LameXP, принадлежит индивидуальным авторам.</translation>
     </message>
     <message>
         <source>About Third-party Software</source>
@@ -194,6 +194,10 @@
     <message>
         <source>n/a</source>
         <translation>н/д</translation>
+    </message>
+    <message>
+        <source>Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -208,12 +212,11 @@
     </message>
     <message>
         <source>Samplerate</source>
-        <translation type="unfinished">Частота выборки</translation>
+        <translation type="unfinished">Частота дискретизации</translation>
     </message>
     <message>
         <source>Bitdepth</source>
-        <translatorcomment>втф</translatorcomment>
-        <translation type="unfinished">Глубина битов</translation>
+        <translation type="unfinished">Битовая глубина</translation>
     </message>
     <message>
         <source>Type</source>
@@ -237,6 +240,13 @@
     <message>
         <source>All files</source>
         <translation>Все файлы</translation>
+    </message>
+</context>
+<context>
+    <name>DiskObserverThread</name>
+    <message>
+        <source>Low diskspace on drive &apos;%1&apos; detected (only %2 MB are free), problems can occur!</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -532,7 +542,7 @@
     </message>
     <message>
         <source>Nero AAC Options</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Опции Nero AAC</translation>
     </message>
     <message>
         <source>Enable 2-Pass Processing (ABR Mode)</source>
@@ -731,6 +741,10 @@
         <translation type="unfinished">Отключить интеграцию в контекстное меню</translation>
     </message>
     <message>
+        <source>Open Folder Recursively...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Adding file(s), please wait...</source>
         <translation type="unfinished">Добавляю файлы, пожалуйста ожидайте...</translation>
     </message>
@@ -757,6 +771,10 @@
     <message>
         <source>This usually means the file is damaged or the file format is not supported.</source>
         <translation type="unfinished">Это обычно означает, что файл поврежден, или формат файла не поддерживается.</translation>
+    </message>
+    <message>
+        <source>Scanning folder(s) for files, please wait...</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Downloading WMA Decoder Setup, please wait...</source>
@@ -929,7 +947,7 @@
     </message>
     <message>
         <source>LameXP</source>
-        <translation type="unfinished"></translation>
+        <translation>LameXP</translation>
     </message>
     <message>
         <source>You must add at least one file to the list before proceeding!</source>
@@ -987,10 +1005,6 @@
     <message>
         <source>Add file(s)</source>
         <translation type="unfinished">Добавить файлы</translation>
-    </message>
-    <message>
-        <source>Add folder</source>
-        <translation type="unfinished">Добавить папки</translation>
     </message>
     <message>
         <source>Load Translation</source>
@@ -1150,79 +1164,87 @@
     </message>
     <message>
         <source> Multi-Threading </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Многопоточность</translation>
     </message>
     <message>
         <source>Choose the number of parallel instances based on the number of CPU cores (Recommended)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Определять число паралельных потоков по числу ядер процессора (Рекомендуется)</translation>
     </message>
     <message>
         <source>Fewer Instances</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Меньше потоков</translation>
     </message>
     <message>
         <source>More Instances</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Больше потоков</translation>
     </message>
     <message>
         <source>%1 Instance(s)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">%1 Поток(ов)</translation>
     </message>
     <message>
         <source> Temp Directory </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Временная папка</translation>
     </message>
     <message>
         <source>Browse...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Выбрать...</translation>
     </message>
     <message>
         <source>Store temporary files in your system&apos;s default TEMP directory (Recommended)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Хранить временные файлы в системной директории по умолчанию (Рекомендуется)</translation>
     </message>
     <message>
         <source>Not Found</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Не найдено</translation>
     </message>
     <message>
         <source>Your currently selected TEMP folder does not exist anymore:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Выбранная директория для хранения временных файлов больше не существует:</translation>
     </message>
     <message>
         <source>Restore Default</source>
+        <translation type="unfinished">Востановить умолчания</translation>
+    </message>
+    <message>
+        <source>Add Folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Cannot write to the selected directory. Please choose another directory!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Директория недоступна для записи. Пожалуйса, выберите другую директорию!</translation>
     </message>
     <message>
         <source>CDA Files</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Файлы CDA</translation>
     </message>
     <message>
         <source>%1 file(s) have been rejected, because they are dummy CDDA files!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">%1 файла(ов) было отменено, изза пустых CDDA файлов!</translation>
     </message>
     <message>
         <source>We recommend using %1 for that purpose.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Рекомендуем исползовать %1 для этих целей.</translation>
     </message>
     <message>
         <source>Sorry, LameXP cannot extract audio tracks from an Audio&amp;minus;CD at present.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Извините, LameXP неможет извлечь аудио из Audio&amp;minus;CD сейчас.</translation>
     </message>
     <message>
         <source>Frequently Asked Questions</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Часто Задаваемые Вопросы</translation>
     </message>
     <message>
         <source>Changelog</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Список изменений</translation>
     </message>
     <message>
         <source>Translator&apos;s Guide</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Руководство перевдчика</translation>
+    </message>
+    <message>
+        <source>Help &amp;&amp; Support</source>
+        <translation type="unfinished">Помощиь и поддержка</translation>
     </message>
 </context>
 <context>
@@ -1239,9 +1261,21 @@
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
+    <message>
+        <source>Artwork</source>
+        <translation type="unfinished">Рисунок</translation>
+    </message>
 </context>
 <context>
     <name>MetaInfoDialog</name>
+    <message>
+        <source>Load Artwork From File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clear Artwork</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message>
         <source>Meta Information</source>
         <translation>Метаинформация</translation>
@@ -1249,6 +1283,18 @@
     <message>
         <source>The following meta information have been extracted from the original file.</source>
         <translation>Эта метаинформация была получена из исходного файла.</translation>
+    </message>
+    <message>
+        <source>Load Artwork</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Artwork Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sorry, failed to load artwork from selected file!</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1578,15 +1624,15 @@
     </message>
     <message>
         <source>Shutdown the computer as soon as all files have been converted</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Выключить компьютер после завершения преобразования всех файлов</translation>
     </message>
     <message>
         <source>Warning: Computer will shutdown in %1 seconds...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Внимание: Компьютер выключится через %1 секунд...</translation>
     </message>
     <message>
         <source>Cancel Shutdown</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Отменить выключение</translation>
     </message>
 </context>
 <context>
@@ -1604,14 +1650,14 @@
     <name>QApplication</name>
     <message>
         <source>Executable &apos;%1&apos; doesn&apos;t support Windows compatibility mode.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Исполняемый файл  &apos;%1&apos; не поддерживает режим совместимости Windows.</translation>
     </message>
     <message>
         <source>Executable &apos;%1&apos; requires Qt v%2, but found Qt v%3.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Исполняемому файлу  &apos;%1&apos; требуется версия Qt  v%2, но найдена версия  v%3.</translation>
     </message>
     <message>
-        <source>Executable &apos;%1&apos; requires Windows 2000 or later.</source>
+        <source>Executable &apos;%1&apos; requires Windows XP or later.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -58,9 +58,10 @@ g_lamexp_contributors[] =
 	{"en", L"Englisch",   L"LoRd_MuldeR",         "MuldeR2@GMX.de"       },
 	{"de", L"Deutsch",    L"LoRd_MuldeR",         "MuldeR2@GMX.de"       },
 	{"",   L"",           L"Bodo Thevissen",      "Bodo@thevissen.de"    },
+	{"es", L"Español",    L"Rub3nCT",             "Rub3nCT@gmail.com"    },
 	{"fr", L"Française",  L"Dodich Informatique", "Dodich@live.fr"       },
 	{"it", L"Italiano",   L"Roberto",             "Gulliver_69@libero.it"},
-	{"es", L"Español",    L"Rub3nCT",             "Rub3nCT@gmail.com"    },
+	{"kr", L"한국어",    L"JaeHyung Lee",        "Kolanp@gmail.com"     },
 	{"ru", L"Русский",    L"Neonailol",           "Neonailol@gmail.com"  },
 	{"uk", L"Українська", L"Arestarh",            "Arestarh@ukr.net"     },
 	{NULL, NULL, NULL, NULL}
@@ -75,12 +76,31 @@ AboutDialog::AboutDialog(SettingsModel *settings, QWidget *parent, bool firstSta
 	QMessageBox(parent),
 	m_settings(settings)
 {
+	const QString versionStr = QString().sprintf
+	(
+		"Version %d.%02d %s, Build %d [%s], %s, Qt v%s",
+		lamexp_version_major(),
+		lamexp_version_minor(),
+		lamexp_version_release(),
+		lamexp_version_build(),
+		lamexp_version_date().toString(Qt::ISODate).toLatin1().constData(),
+		lamexp_version_compiler(),
+		qVersion()
+	);
+
 	QString aboutText;
 
 	aboutText += QString("<h2>%1</h2>").arg(tr("LameXP &minus; Audio Encoder Front-end"));
-	aboutText += QString("<b>Copyright (C) 2004-%1 LoRd_MuldeR &lt;MuldeR2@GMX.de&gt;. Some rights reserved.</b><br>").arg(max(lamexp_version_date().year(),QDate::currentDate().year()));
-	aboutText += QString().sprintf("<b>Version %d.%02d %s, Build %d [%s]</b><br><br>", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build(), lamexp_version_date().toString(Qt::ISODate).toLatin1().constData());
+	aboutText += QString("<b>Copyright (C) 2004-%1 LoRd_MuldeR &lt;MuldeR2@GMX.de&gt;. Some rights reserved.</b><br>").arg(max(lamexp_version_date().year(), QDate::currentDate().year()));
+	aboutText += QString("<b>%1</b><br><br>").arg(versionStr);
 	aboutText += QString("<nobr>%1</nobr><br>").arg(tr("Please visit %1 for news and updates!").arg(LINK(lamexp_website_url())));
+	
+	if(lamexp_version_demo())
+	{
+		int daysLeft = max(QDate::currentDate().daysTo(lamexp_version_expires()), 0);
+		aboutText += QString("<hr><nobr><font color=\"crimson\">%1</font></nobr>").arg(tr("Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.").arg(lamexp_version_expires().toString(Qt::ISODate), QString::number(daysLeft)));
+	}
+	
 	aboutText += "<hr><br>";
 	aboutText += "<nobr><tt>This program is free software; you can redistribute it and/or<br>";
 	aboutText += "modify it under the terms of the GNU General Public License<br>";
@@ -98,11 +118,11 @@ AboutDialog::AboutDialog(SettingsModel *settings, QWidget *parent, bool firstSta
 	aboutText += QString("<td><font color=\"darkred\">%1</font></td>").arg(tr("Note: LameXP is free software. Do <b>not</b> pay money to obtain or use LameXP! If some third-party website tries to make you pay for downloading LameXP, you should <b>not</b> respond to the offer !!!"));
 	aboutText += "</tr></table><hr><br>";
 	aboutText += QString("%1<br>").arg(tr("Special thanks go out to \"John33\" from %1 for his continuous support.").arg(LINK("http://www.rarewares.org/")));
-	
+
 	setText(aboutText);
 	setIconPixmap(dynamic_cast<QApplication*>(QApplication::instance())->windowIcon().pixmap(QSize(64,64)));
 	setWindowTitle(tr("About LameXP"));
-	
+
 	if(firstStart)
 	{
 		QPushButton *firstButton = addButton(tr("Show License Text"), QMessageBox::AcceptRole);

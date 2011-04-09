@@ -195,6 +195,10 @@
         <source>n/a</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AudioFileModel</name>
@@ -236,6 +240,13 @@
     <message>
         <source>All files</source>
         <translation type="unfinished">Всі файли</translation>
+    </message>
+</context>
+<context>
+    <name>DiskObserverThread</name>
+    <message>
+        <source>Low diskspace on drive &apos;%1&apos; detected (only %2 MB are free), problems can occur!</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -962,10 +973,6 @@
         <translation type="unfinished">Додати файл(и)</translation>
     </message>
     <message>
-        <source>Add folder</source>
-        <translation type="unfinished">Додати теку</translation>
-    </message>
-    <message>
         <source>Load Translation</source>
         <translation type="unfinished">Завантажити переклад</translation>
     </message>
@@ -1221,6 +1228,22 @@
         <source>Translator&apos;s Guide</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Help &amp;&amp; Support</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open Folder Recursively...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scanning folder(s) for files, please wait...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Folder</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -1236,6 +1259,10 @@
         <source>Close</source>
         <translation type="unfinished">Вийти</translation>
     </message>
+    <message>
+        <source>Artwork</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfoDialog</name>
@@ -1246,6 +1273,26 @@
     <message>
         <source>The following meta information have been extracted from the original file.</source>
         <translation type="unfinished">Дана метаінформація була витягнута з оригінального файла.</translation>
+    </message>
+    <message>
+        <source>Load Artwork From File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clear Artwork</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load Artwork</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Artwork Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sorry, failed to load artwork from selected file!</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1607,7 +1654,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Executable &apos;%1&apos; requires Windows 2000 or later.</source>
+        <source>Executable &apos;%1&apos; requires Windows XP or later.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
