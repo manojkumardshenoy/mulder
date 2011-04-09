@@ -115,23 +115,50 @@ static const char *g_lamexp_version_raw_date = __DATE__;
 //Console attached flag
 static bool g_lamexp_console_attached = false;
 
-//Compiler version
-#if _MSC_VER == 1400
-	static const char *g_lamexp_version_compiler = "MSVC 8.0";
-#else
-	#if _MSC_VER == 1500
-		static const char *g_lamexp_version_compiler = "MSVC 9.0";
+//Compiler detection
+//The following code was borrowed from MPC-HC project: http://mpc-hc.sf.net/
+#if defined(__INTEL_COMPILER)
+	#if (__INTEL_COMPILER >= 1200)
+		static const char *g_lamexp_version_compiler = "ICL 12.x";
+	#elif (__INTEL_COMPILER >= 1100)
+		static const char *g_lamexp_version_compiler = = "ICL 11.x";
+	#elif (__INTEL_COMPILER >= 1000)
+		static const char *g_lamexp_version_compiler = = "ICL 10.x";
 	#else
-		#if _MSC_VER == 1600
-			static const char *g_lamexp_version_compiler = "MSVC 10.0";
+		#error Compiler is not supported!
+	#endif
+#elif defined(_MSC_VER)
+	#if (_MSC_VER == 1600)
+		#if (_MSC_FULL_VER >= 160040219)
+			static const char *g_lamexp_version_compiler = "MSVC 2010-SP1";
 		#else
-			static const char *g_lamexp_version_compiler = "UNKNOWN";
+			static const char *g_lamexp_version_compiler = "MSVC 2010";
+		#endif
+	#elif (_MSC_VER == 1500)
+		#if (_MSC_FULL_VER >= 150030729)
+			static const char *g_lamexp_version_compiler = "MSVC 2008-SP1";
+		#else
+			static const char *g_lamexp_version_compiler = "MSVC 2008";
+		#endif
+	#else
+		#error Compiler is not supported!
+	#endif
+
+	// Note: /arch:SSE and /arch:SSE2 are only available for the x86 platform
+	#if !defined(_M_X64) && defined(_M_IX86_FP)
+		#if (_M_IX86_FP == 1)
+			LAMEXP_COMPILER_WARNING("SSE instruction set is enabled!")
+		#elif (_M_IX86_FP == 2)
+			LAMEXP_COMPILER_WARNING("SSE2 instruction set is enabled!")
 		#endif
 	#endif
+#else
+	#error Compiler is not supported!
 #endif
 
 //Official web-site URL
 static const char *g_lamexp_website_url = "http://mulder.dummwiedeutsch.de/";
+static const char *g_lamexp_support_url = "http://forum.doom9.org/showthread.php?t=157726";
 
 //Tool versions (expected)
 static const unsigned int g_lamexp_toolver_neroaac = VER_LAMEXP_TOOL_NEROAAC;
@@ -180,7 +207,7 @@ g_lamexp_ipc_ptr =
 };
 
 //Image formats
-static const char *g_lamexp_imageformats[] = {"png", "gif", "ico", "svg", NULL};
+static const char *g_lamexp_imageformats[] = {"png", "jpg", "gif", "ico", "svg", NULL};
 
 //Global locks
 static QMutex g_lamexp_message_mutex;
@@ -198,13 +225,24 @@ unsigned int lamexp_version_build(void) { return g_lamexp_version.ver_build; }
 const char *lamexp_version_release(void) { return g_lamexp_version.ver_release_name; }
 const char *lamexp_version_compiler(void) {return g_lamexp_version_compiler; }
 unsigned int lamexp_toolver_neroaac(void) { return g_lamexp_toolver_neroaac; }
-const char *lamexp_website_url(void) { return g_lamexp_website_url; }
 
+/*
+ * URL getters
+ */
+const char *lamexp_website_url(void) { return g_lamexp_website_url; }
+const char *lamexp_support_url(void) { return g_lamexp_support_url; }
+
+/*
+ * Check for Demo (pre-release) version
+ */
 bool lamexp_version_demo(void)
 {
 	return LAMEXP_DEBUG || !(strstr(g_lamexp_version.ver_release_name, "Final") || strstr(g_lamexp_version.ver_release_name, "Hotfix"));
 }
 
+/*
+ * Calculate expiration date
+ */
 QDate lamexp_version_expires(void)
 {
 	return lamexp_version_date().addDays(LAMEXP_DEBUG ? 2 : 30);
@@ -355,15 +393,18 @@ void lamexp_init_console(int argc, char* argv[])
 {
 	bool enableConsole = lamexp_version_demo();
 
-	for(int i = 0; i < argc; i++)
+	if(!LAMEXP_DEBUG)
 	{
-		if(!_stricmp(argv[i], "--console"))
+		for(int i = 0; i < argc; i++)
 		{
-			enableConsole = true;
-		}
-		else if(!_stricmp(argv[i], "--no-console"))
-		{
-			enableConsole = false;
+			if(!_stricmp(argv[i], "--console"))
+			{
+				enableConsole = true;
+			}
+			else if(!_stricmp(argv[i], "--no-console"))
+			{
+				enableConsole = false;
+			}
 		}
 	}
 
@@ -625,10 +666,6 @@ bool lamexp_init_qt(int argc, char* argv[])
 	//Check the Windows version
 	switch(QSysInfo::windowsVersion() & QSysInfo::WV_NT_based)
 	{
-	case QSysInfo::WV_2000:
-		qDebug("Running on Windows 2000 (not offically supported!).\n");
-		lamexp_check_compatibility_mode("GetNativeSystemInfo", executableName);
-		break;
 	case QSysInfo::WV_XP:
 		qDebug("Running on Windows XP.\n");
 		lamexp_check_compatibility_mode("GetLargePageMinimum", executableName);
@@ -646,17 +683,18 @@ bool lamexp_init_qt(int argc, char* argv[])
 		lamexp_check_compatibility_mode(NULL, executableName);
 		break;
 	default:
-		qFatal("%s", QApplication::tr("Executable '%1' requires Windows 2000 or later.").arg(QString::fromLatin1(executableName)).toLatin1().constData());
+		qFatal("%s", QApplication::tr("Executable '%1' requires Windows XP or later.").arg(QString::fromLatin1(executableName)).toLatin1().constData());
 		break;
 	}
 
 	//Create Qt application instance and setup version info
+	QDate date = QDate::currentDate();
 	QApplication *application = new QApplication(argc, argv);
 	application->setApplicationName("LameXP - Audio Encoder Front-End");
 	application->setApplicationVersion(QString().sprintf("%d.%02d.%04d", lamexp_version_major(), lamexp_version_minor(), lamexp_version_build())); 
 	application->setOrganizationName("LoRd_MuldeR");
 	application->setOrganizationDomain("mulder.dummwiedeutsch.de");
-	application->setWindowIcon(QIcon(":/MainIcon.png"));
+	application->setWindowIcon((date.month() == 12 && date.day() >= 24 && date.day() <= 26) ? QIcon(":/MainIcon2.png") : QIcon(":/MainIcon.png"));
 	
 	//Load plugins from application directory
 	QCoreApplication::setLibraryPaths(QStringList() << QApplication::applicationDirPath());
@@ -946,7 +984,7 @@ const QString &lamexp_temp_folder2(void)
 /*
  * Clean folder
  */
-bool lamexp_clean_folder(const QString folderPath)
+bool lamexp_clean_folder(const QString &folderPath)
 {
 	QDir tempFolder(folderPath);
 	QFileInfoList entryList = tempFolder.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);

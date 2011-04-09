@@ -195,6 +195,10 @@
         <source>Silk Icons &amp;minus; Over 700  icons in PNG format</source>
         <translation>Silk Icons &amp;minus; Über 700 Symbole im PNG Format</translation>
     </message>
+    <message>
+        <source>Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.</source>
+        <translation>Hinweise: Diese Demo (Test) Version von LameXP läuft am %1 ab. Noch %2 Tage übrig.</translation>
+    </message>
 </context>
 <context>
     <name>AudioFileModel</name>
@@ -236,6 +240,13 @@
     <message>
         <source>Playlists</source>
         <translation>Wiedergabelisten</translation>
+    </message>
+</context>
+<context>
+    <name>DiskObserverThread</name>
+    <message>
+        <source>Low diskspace on drive &apos;%1&apos; detected (only %2 MB are free), problems can occur!</source>
+        <translation>Wenig freier Speicher auf Laufwerk &apos;%1&apos; (nur noch %2 MB frei), Probleme können auftreten!</translation>
     </message>
 </context>
 <context>
@@ -661,10 +672,6 @@
     <message>
         <source>Add file(s)</source>
         <translation>Datei(en) hinzufügen</translation>
-    </message>
-    <message>
-        <source>Add folder</source>
-        <translation>Ordner hinzufügen</translation>
     </message>
     <message>
         <source>New Folder</source>
@@ -1212,15 +1219,31 @@
     </message>
     <message>
         <source>Frequently Asked Questions</source>
-        <translation type="unfinished"></translation>
+        <translation>Häufig gestellte Fragen</translation>
     </message>
     <message>
         <source>Changelog</source>
-        <translation type="unfinished"></translation>
+        <translation>Versionshistorie</translation>
     </message>
     <message>
         <source>Translator&apos;s Guide</source>
-        <translation type="unfinished"></translation>
+        <translation>Leitfaden für Übersetzer</translation>
+    </message>
+    <message>
+        <source>Help &amp;&amp; Support</source>
+        <translation>Hilfe und Support</translation>
+    </message>
+    <message>
+        <source>Open Folder Recursively...</source>
+        <translation>Verzeichnis rekursiv öffnen...</translation>
+    </message>
+    <message>
+        <source>Scanning folder(s) for files, please wait...</source>
+        <translation>Durchsuche Verzeichnis(se) nach Dateien, bitte warten...</translation>
+    </message>
+    <message>
+        <source>Add Folder</source>
+        <translation>Verzeichnis hinzufügen</translation>
     </message>
 </context>
 <context>
@@ -1237,6 +1260,10 @@
         <source>Close</source>
         <translation>Schießen</translation>
     </message>
+    <message>
+        <source>Artwork</source>
+        <translation></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfoDialog</name>
@@ -1247,6 +1274,26 @@
     <message>
         <source>The following meta information have been extracted from the original file.</source>
         <translation>Die folgenden Meta-Informationen wurden aus der Originaldatei extrahiert.</translation>
+    </message>
+    <message>
+        <source>Load Artwork From File</source>
+        <translation>Artwork aus Datei laden</translation>
+    </message>
+    <message>
+        <source>Clear Artwork</source>
+        <translation>Artwork löschen</translation>
+    </message>
+    <message>
+        <source>Load Artwork</source>
+        <translation>Artwork laden</translation>
+    </message>
+    <message>
+        <source>Artwork Error</source>
+        <translation>Artwork Fehler</translation>
+    </message>
+    <message>
+        <source>Sorry, failed to load artwork from selected file!</source>
+        <translation>Artwork konnte nicht aus der Ausgewählten Datei geladen werden!</translation>
     </message>
 </context>
 <context>
@@ -1491,7 +1538,7 @@
     </message>
     <message>
         <source>Close</source>
-        <translation>Schießen</translation>
+        <translation>Schließen</translation>
     </message>
     <message>
         <source>Encoding Files</source>
@@ -1608,8 +1655,8 @@
         <translation>Programm &apos;%1&apos; benötigt Qt v%2, aber Qt v%3 wurde gefunden.</translation>
     </message>
     <message>
-        <source>Executable &apos;%1&apos; requires Windows 2000 or later.</source>
-        <translation>Programm &apos;%1&apos; benötigt Windows 2000 oder neuer.</translation>
+        <source>Executable &apos;%1&apos; requires Windows XP or later.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1678,7 +1725,7 @@
     </message>
     <message>
         <source>Please make sure your internet connection is working properly and try again.</source>
-        <translation>Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es dann noch einmal.</translation>
+        <translation>Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es dann noch einmal.</translation>
     </message>
     <message>
         <source>Checking for new updates online, please wait...</source>
@@ -1706,7 +1753,7 @@
     </message>
     <message>
         <source>No new updates available at this time.</source>
-        <translation>Zu diesem Zeitpunkt sind keine Updates verfügabr.</translation>
+        <translation>Zu diesem Zeitpunkt sind keine Updates verfügbar.</translation>
     </message>
     <message>
         <source>Your version of LameXP is still up-to-date. Please check for updates regularly!</source>

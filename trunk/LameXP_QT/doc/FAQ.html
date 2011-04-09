@@ -3,11 +3,20 @@
 <head>
 <title>LameXP - Frequently Asked Questions (FAQ)</title>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<style type="text/css">
+<!--
+body { font-family:Monospace; font-size:10pt; }
+a { text-decoration:none; color:#0000EE; transition:color 0.5s ease; -moz-transition:background-color 0.5s ease; -o-transition:background-color 0.5s ease; -webkit-transition:background-color 0.5s ease; }
+a:hover { background-color: #CCCCCC; }
+a:active { color: #551A8B; }
+a:visited { color: #0000EE; }
+-->
+</style>
 </head>
-<body style="font-family:Monospace;font-size:10pt;">
+<body>
 <h3>LameXP - Frequently Asked Questions (FAQ)</h3><br>
 
-<a name="6a0b023d"><b>Table of contents:</b></a><br>
+<a name="6a0b023d"></a><b>Table of contents:</b><br>
 <ul>
 <li><a href="#6a0b023d">What is LameXP ???</a>
 <li><a href="#be0a8459">What platforms does LameXP run on?</a>
@@ -17,6 +26,8 @@
 <li><a href="#fd53d98a">Who created LameXP?</a>
 <li><a href="#de1c5e44">What license is LameXP released under?</a>
 <li><a href="#303e5fa7">Do I have to pay for LameXP? / How can I donate to the authors of LameXP?</a>
+<li><a href="#054010d9">MP3, AAC or Vorbis - What is the best compressed audio format?</a>
+<li><a href="#411d1257">What is the difference between the CBR, VBR and ABR rate control modes?</a>
 <li><a href="#71a113b0">How do I enable AAC/MP4/M4A output (encoding) in LameXP?</a>
 <li><a href="#126abc5a">Is there a way to output ".m4a" or ".aac" files with LameXP?</a>
 <li><a href="#ebf016ab">How do I enable WMA input (decoding) in LameXP?</a>
@@ -25,9 +36,12 @@
 <li><a href="#9b0a5c32">Why does application 'xyz' not open the Wave files created by LameXP?</a>
 <li><a href="#89cbd3d0">Why does LameXP run only 'n' parallel instances/threads on my computer?</a>
 <li><a href="#12d077d5">How can I force LameXP to create ID3 version 2 (ID3v2) tags?</a>
+<li><a href="#d83ab3c6">Why does LameXP use LAME v3.99 rather than v3.98?</a><br>
 <li><a href="#4213adbc">Can LameXP be used to convert/extract tracks from an Audio CD?</a>
 <li><a href="#e7c9ae2b">Why do I get the error 'Executable doesn't support Windows compatibility mode' on startup?</a>
-<li><a href="#328b0a18">Why do I get the error 'Executable requires Windows 2000 or later' on startup?</a>
+<li><a href="#328b0a18">Why do I get the error 'Executable requires Windows XP or later' on startup?</a>
+<li><a href="#3ffe490e">Why do I get the error 'The procedure entry point De/EncodePointer could not be located' on startup?</a>
+<li><a href="#01922741">Why do I get the error 'LameXP.exe is not a valid Win32 application' on startup?</a>
 <li><a href="#491aaad9">Why do I get the error 'A device attached to the system is not functioning' on startup?</a>
 <li><a href="#f35cfa24">How can I translate LameXP to my language or improve an existing translation?</a>
 <li><a href="#8dba381f">Where can I download the latest version of LameXP?</a>
@@ -37,7 +51,7 @@
 
 <br><br>
 
-<a name="6a0b023d"><b>What is LameXP ???</b></a><br>
+<a name="6a0b023d"></a><b>What is LameXP ???</b><br>
 <br>
 LameXP is a graphical user-interface for a number of audio encoders. It was developed to support a huge<br>
 number of input formats. File formats are detected reliably using MediaInfo. Compressed audio formats are<br>
@@ -50,28 +64,31 @@ any ACM Codecs or DirectShow/DMO filters! And it will NOT install anything of th
 
 <br><br>
 
-<a name="be0a8459"><b>What platforms does LameXP run on?</b></a><br>
+<a name="be0a8459"></a><b>What platforms does LameXP run on?</b><br>
 <br>
 LameXP is currently being developed and tested on the following platforms:<br><ul>
 <li>Microsoft Windows XP, Service Pack 3
-<li>Microsoft Windows 7, 32-Bit and 64-Bit editions
-<li>Microsoft Windows 2000, Service Pack 4</ul>
+<li>Microsoft Windows 7, 32-Bit and 64-Bit editions</ul>
 <br>
 The following platforms should work as well, but aren't tested extensively:<br><ul>
+<li>Microsoft Windows XP, Service Pack 2
 <li>Microsoft Windows Vista, 32-Bit and 64-Bit editions
 <li>Microsoft Windows Server 2008
 <li>Microsoft Windows Server 2008 R2
 <li>GNU/Linux using Wine (native Linux version planned)</ul>
 <br>
 The following platforms are NOT supported any longer:<br><ul>
-<li>Microsoft Windows 95
-<li>Microsoft Windows 98
+<li>Microsoft Windows XP, Service Pack 1
+<li>Microsoft Windows XP, RTM (i.e. without Service Pack)
+<li>Microsoft Windows 2000
+<li>Microsoft Windows NT 4.0
 <li>Microsoft Windows Millennium Edition
-<li>Microsoft Windows NT 4.0</ul>
+<li>Microsoft Windows 98
+<li>Microsoft Windows 95</ul>
 
 <br><br>
 
-<a name="29065b86"><b>What output formats (encoders) does LameXP support?</b></a><br>
+<a name="29065b86"></a><b>What output formats (encoders) does LameXP support?</b><br>
 <br>
 Currently the following output formats are supported by LameXP:<br><ul>
 <li>MPEG Audio-Layer III (MP3), using the LAME encoder [built-in]
@@ -82,7 +99,7 @@ Currently the following output formats are supported by LameXP:<br><ul>
 
 <br><br>
 
-<a name="4e398a46"><b>What input formats (decoders) does LameXP support?</b></a><br>
+<a name="4e398a46"></a><b>What input formats (decoders) does LameXP support?</b><br>
 <br>
 Currently the following input formats are supported by LameXP:<br><ul>
 <li>AC-3 (ATSC A/52), using Valib decoder [built-in]
@@ -107,7 +124,7 @@ Currently the following input formats are supported by LameXP:<br><ul>
 
 <br><br>
 
-<a name="96205e91"><b>My anti-virus program raises an alarm when I try to download/install/launch LameXP. Why is that?</b></a><br>
+<a name="96205e91"></a><b>My anti-virus program raises an alarm when I try to download/install/launch LameXP. Why is that?</b><br>
 <br>
 Occasionally your anti-virus program may mistakenly(!) detect "malware" (e.g. virus, trojan horse or worm) in<br>
 LameXP. This is called a "false positive" and the file is actually innocent/clean. It's an error in your<br>
@@ -129,7 +146,7 @@ Conclusion:<ul>
 
 <br><br>
 
-<a name="fd53d98a"><b>Who created LameXP?</b></a><br>
+<a name="fd53d98a"></a><b>Who created LameXP?</b><br>
 <br>
 LameXP was written from the scratch by LoRd_MuldeR &lt;MuldeR2@GMX.de&gt;. However it has to be noted that LameXP<br>
 uses a number of third-party tools, which have been created by the individual authors. Moreover various<br>
@@ -137,37 +154,124 @@ people have contributed LameXP translations. Please see the "About" dialog for d
 
 <br><br>
 
-<a name="de1c5e44"><b>What license is LameXP released under?</b></a><br>
+<a name="de1c5e44"></a><b>What license is LameXP released under?</b><br>
 <br>
 LameXP is free software. You can redistribute it and/or modify it under the terms of the GNU General Public<br>
 License (GPL) as published by the Free Software Foundation; either version 2 of the License, or (at your<br>
 option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY<br>
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.<br>
 <br>
+The licenses for most software and other practical works are designed to take away your freedom to share and<br>
+change the works. By contrast, the GNU General Public License is intended to guarantee your freedom to share<br>
+and change all versions of a program &#45; to make sure it remains free software for all its users.<br>
+<br>
 Please see the <a href="http://www.gnu.org/licenses/gpl-2.0.html" target="_blank">GNU General Public License</a> for more details!<br><br>
 
 <br><br>
 
-<a name="303e5fa7"><b>Do I have to pay for LameXP? / How can I donate to the authors of LameXP?</b></a><br>
+<a name="303e5fa7"></a><b>Do I have to pay for LameXP? / How can I donate to the authors of LameXP?</b><br>
 <br>
 LameXP is <a href="http://en.wikipedia.org/wiki/Free_software" target="_blank">free software</a>, so you may use it for free and for any purpose. Moreover the authors of LameXP<br>
 currently do NOT accept any donations. Therefore you should NOT pay or donate any money in order to obtain<br>
 LameXP! However it was brought to our attention that some dubious third-party web-sites offer "payed"<br>
 downloads of LameXP and/or include Adware into the LameXP download. We do NOT cooperate with any of these<br>
 sites. So if you pay for the LameXP download, the authors of LameXP will not get a single cent! Instead you<br>
-should save your money and download LameXP from one of the official mirrors (see below), which is 100% free.<br>
+should save your money and download LameXP from the official mirrors (<a href="#8dba381f">see below</a>), which is 100% free.<br>
 <br>
-If you want to support the development of LameXP, you can do so by contributing translations and/or code :-)<br><br>
+If you want to support the development of LameXP, you can do so by contributing translations or code :-)<br><br>
 
 <br><br>
 
-<a name="71a113b0"><b>How do I enable AAC/MP4/M4A output (encoding) in LameXP?</b></a><br>
+<a name="054010d9"></a><b>MP3, AAC or Vorbis - What is the best compressed audio format?</b><br>
+<br>
+This question can NOT be answered in general. The best audio format is the format that works best for you!<br>
+<br>
+Having said that, there are a few things to consider. First of all: All output formats supported by LameXP,<br>
+except for FLAC and PCM/Wave, use a lossy(!) kind of compression. That applies to MP3 and AAC as well as<br>
+Vorbis. Consequently with these formats a certain quality loss is unavoidable when re-encoding/converting, no<br>
+matter what. This is called "generation loss". Nonetheless all three formats (MP3, AAC and Vorbis) are able<br>
+to retain an EXCELLENT audio quality, given that the chosen bitrate (quality level) is sufficient/reasonable.<br>
+<br>
+Secondly, the audio quality does not depend on the audio format and the chosen bitrate only. It also depends<br>
+greatly on the encoder software that is being used. LameXP uses the LAME MP3 encoder, probably the most<br>
+sophisticated MP3 encoder out there, the Nero AAC encoder, one of the best AAC encoders available, and the<br>
+aoTuV Vorbis encoder, an improved/tuned version of the reference Vorbis encoder. Consequently LameXP provides<br>
+you with state-of-the-art encoders, which ensures maximum encoding quality for ALL supported output formats.<br>
+<br>
+Another thing to consider is hardware support, i.e. support on stand-alone and portable players. The MP3<br>
+format still has the best support on hardware players, but support for AAC/MP4 has become widespread too -<br>
+especially on portable devices. Hardware support for Vorbis is more limited, but growing. So if portability<br>
+is a priority, then MP3 is a good choice. However the MP3 format does NOT support multi-channel audio, which<br>
+means that you will have to use AAC or Vorbis for multi-channel files. Last but not least, if you prefer a<br>
+truly "open" and patent-free audio format, then Vorbis will be the format of your choice!<br>
+<br>
+Another resource you might find interesting are Sebastian's Public Listening Tests:<br><ul>
+<li><a href="http://listening-tests.hydrogenaudio.org/sebastian/mp3-128-1/results.htm" target="_blank">MP3 listening test @ 128 kbps, includes MP3 encoders (like LAME) only</a>
+<li><a href="http://listening-tests.hydrogenaudio.org/sebastian/mf-128-1/results.htm" target="_blank">Multiformat listening test @ 128 kbps, includes LAME MP3, Vorbis AoTuV and others</a>
+<li><a href="http://listening-tests.hydrogenaudio.org/sebastian/mf-64-1/results.htm" target="_blank">Multiformat listening test @ 64 kbps, includes Vorbis AoTuV, Nero AAC and others</a>
+</ul>
+(However be aware that some of the results from these listening tests are not up-to-date anymore)<br><br>
+
+<br><br>
+
+<a name="411d1257"></a><b>What is the difference between the CBR, VBR and ABR rate control modes?</b><br>
+<br>
+CBR means "constant bitrate" and, as the name implies, CBR mode allocates the bits at a constant rate. This<br>
+means that each part of the audio will get the same amount of bits, regardless of its content. Obviously this<br>
+will waste bits in parts of the audio that are easy to compress. At the same time the quality of parts of the<br>
+audio that are hard to compress will be degraded. Consequently using CBR mode is NOT a very good idea, unless<br>
+you really have to for some reason. However CBR mode has the advantage that the final size of the compressed<br>
+file is perfectly predictable. The resulting file size is defined simply as "duration &times; fixed bitrate".<br>
+<br>
+VBR means "variable bitrate" and, in contrast to CBR mode, VBR mode allows the bitrate to vary/fluctuate.<br>
+Thus the VBR mode enables the encoder to adapt the bitrate with respect to the content of the audio. Parts of<br>
+the audio that are easy to compress will get a lower bitrate in order to safe bits. Parts of the audio that<br>
+are hard to compress will get a higher bitrate in order to avoid quality degradation. Or in other words: VBR<br>
+mode "moves" the bits to the locations where they are actually needed. Therefore the VBR mode achieves a much<br>
+better compression efficiency than the CBR mode, i.e. with VBR mode you can get a better quality at the same<br>
+file size, or the same quality at a smaller file size (compared to CBR mode). One disadvantage of the VBR<br>
+mode is, however, that the final size of the compressed file can NOT be predicted. The resulting file size is<br>
+defined as "duration &times; average bitrate", but the average bitrate can NOT be known beforehand. That's<br>
+because the average bitrate for a specific VBR quality level can vary greatly, depending solely on the<br>
+complexity of the individual audio. Nonetheless VBR mode generally should be the preferred encoding mode.<br>
+<br>
+ABR means "average bitrate". You can think of ABR mode as a compromise between the CBR and VBR mode. With ABR<br>
+mode the bitrate is allowed to vary/fluctuate, similar to VBR mode. However the ABR mode doesn't work with a<br>
+predefined/fixed quality level, as VBR mode does. Instead in ABR mode the encoder will continuously re-adjust<br>
+the quality level in order to hit the target average(!) bitrate. You can also think of ABR mode as a mode<br>
+that pre-allocates the bits in a CBR-like fashion and then redistributes the bits within a local neighborhood<br>
+as needed. Thus the ABR mode combines advantages of CBR mode (predictability) and VBR mode (good quality).<br>
+The final size of the encoded file is still defined as "duration &times; average bitrate", but with ABR mode the<br>
+average bitrate *is* known beforehand. So if you need to hit a specific file size, ABR mode is the solution.<br>
+<br>
+Hint: The Nero AAC encoder supports a variant of the ABR mode, the so-called "2-Pass" mode. That mode scans<br>
+through the entire file once (first pass) before the actual encoding is performed (second pass). This way the<br>
+encoder is able to distribute the bits over the entire file and still hit the desired target average bitrate.<br>
+It should be obvious that the advantages of the "2-Pass" mode come at the cost of increased encoding time.<br>
+<br>
+Hint: A common mistake done by people comparing rate control modes is choosing a bitrate that is too high. Of<br>
+course only files of an identical (average) bitrate can be compared by quality. But if that bitrate is chosen<br>
+too high, you won't be able to draw any conclusions from the test. That's because at a certain bitrate even<br>
+the CBR mode will retain excellent quality. In that situation VBR mode or ABR mode can't give an even better<br>
+quality for obvious reasons. But drawing the conclusion that there is no difference between CBR mode and the<br>
+VBR/ABR modes would be very wrong! The differences will become significant when using a reasonable bitrate.<br>
+Another mistake is starting with a low-quality source file and concluding that all modes perform equally bad.<br>
+<br>
+Summary of rate control modes:<br><ul>
+<li>Need to hit a specific fixed file size and still want to retain decent quality? &rArr; ABR mode
+<li>Want to retain a certain level of quality and the file size doesn't matter that much? &rArr; VBR mode
+<li>Avoid CBR mode by all means, unless there are crude restrictions that force you to use it!</ul>
+
+<br><br>
+
+<a name="71a113b0"></a><b>How do I enable AAC/MP4/M4A output (encoding) in LameXP?</b><br>
 <br>
 LameXP uses the Nero AAC Encoder for creating AAC/MP4/M4A files. The Nero AAC Encoder is available as a free<br>
 download. However the license doesn't allow redistribution! Therefore we can NOT ship the Nero encoder along<br>
 with LameXP. Instead you will have to obtain the Nero encoder as a separate download from the official "Nero<br>
 Digital" web-site. Currently you'll find the latest Nero AAC Encoder version at this location:<br><ul>
-<li><a href="http://www.nero.com/deu/downloads-nerodigital-nero-aac-codec.php" target="_blank">http://www.nero.com/deu/downloads-nerodigital-nero-aac-codec.php</a></ul>
+<li><a href="http://www.nero.com/deu/downloads-nerodigital-nero-aac-codec.php" target="_blank">http://www.nero.com/deu/downloads-nerodigital-nero-aac-codec.php</a>
+<li><a href="http://ftp6.nero.com/tools/" target="_blank">http://ftp6.nero.com/tools/</a></ul>
 <br>
 After you have downloaded the Nero AAC Encoder as a ZIP file, you must "install" the encoder binaries, so<br>
 LameXP can use them. Simply unzip the files 'neroAacEnc.exe', 'neroAacDec.exe' as well as 'neroAacTag.exe' to<br>
@@ -177,7 +281,7 @@ the LameXP directory, the AAC encoding option should be "enabled" on the next st
 
 <br><br>
 
-<a name="126abc5a"><b>Is there a way to output ".m4a" or ".aac" files with LameXP?</b></a><br>
+<a name="126abc5a"></a><b>Is there a way to output ".m4a" or ".aac" files with LameXP?</b><br>
 <br>
 LameXP uses the Nero AAC Encoder for AAC encoding. And the Nero encoder always puts the AAC streams into an<br>
 MP4 (MPEG-4 Part 14) container - in almost any case that is exactly what you want/need! The one and only<br>
@@ -194,7 +298,7 @@ such streams. Still, if you want to extract the "raw" AAC stream from an MP4 fil
 
 <br><br>
 
-<a name="ebf016ab"><b>How do I enable WMA input (decoding) in LameXP?</b></a><br>
+<a name="ebf016ab"></a><b>How do I enable WMA input (decoding) in LameXP?</b><br>
 <br>
 WMA input requires the WMA decoder component to be installed on your local computer. Usually LameXP will show<br>
 a warning on startup, if the WMA decoder component could not be found. In that case you can simply choose<br>
@@ -209,7 +313,7 @@ the <a href="http://www.free-codecs.com/download/Windows_Media_Format_11.htm" ta
 
 <br><br>
 
-<a name="9fd53558"><b>How can I use LameXP as a "portable" application?</b></a><br>
+<a name="9fd53558"></a><b>How can I use LameXP as a "portable" application?</b><br>
 <br>
 LameXP always is "portable", in the sense that the application works out of the box: LameXP does NOT require<br>
 any additional software, such as codecs, encoders, decoders or runtime libraries, and it will NOT install<br>
@@ -231,7 +335,7 @@ write-access is granted to the directory where the LameXP executable is located.
 
 <br><br>
 
-<a name="df406578"><b>The LameXP startup (splash screen) takes very long on my system. What can I do?</b></a><br>
+<a name="df406578"></a><b>The LameXP startup (splash screen) takes very long on my system. What can I do?</b><br>
 <br>
 Starting up LameXP shouldn't take longer than approximately 10 seconds. However it was brought to our<br>
 attention that badly optimized anti-virus software can slow down the startup procedure a lot! On our test<br>
@@ -247,7 +351,7 @@ the developer of the anti-virus software. And, if they don't fix the problem, sw
 
 <br><br>
 
-<a name="9b0a5c32"><b>Why does application 'xyz' not open the Wave files created by LameXP?</b></a><br>
+<a name="9b0a5c32"></a><b>Why does application 'xyz' not open the Wave files created by LameXP?</b><br>
 <br>
 Some of the decoders used in LameXP will insert an additional 'JUNK' chunk into the Wave/RIFF file, right<br>
 before the 'fmt' chunk ("Wave header"). There are technical reasons why this 'JUNK' chunk (placeholder) might<br>
@@ -269,7 +373,7 @@ You can use a command-line like this:<br>
 
 <br><br>
 
-<a name="89cbd3d0"><b>Why does LameXP run only 'n' parallel instances/threads on my computer?</b></a><br>
+<a name="89cbd3d0"></a><b>Why does LameXP run only 'n' parallel instances/threads on my computer?</b><br>
 <br>
 By default LameXP will detect the number of CPU cores that are available on your system and run as many<br>
 encoder/decoder instances in parallel as CPU cores are available. This is done in order to maximize the CPU<br>
@@ -290,7 +394,7 @@ thus a single encoder instance may create several threads - LameXP has no contro
 
 <br><br>
 
-<a name="12d077d5"><b>How can I force LameXP to create ID3 version 2 (ID3v2) tags?</b></a><br>
+<a name="12d077d5"></a><b>How can I force LameXP to create ID3 version 2 (ID3v2) tags?</b><br>
 <br>
 The LAME encoder automatically chooses the proper ID3 tag version. By default it will create a version 1 tag,<br>
 if possible. Only if the information cannot be embedded into a version 1 tag (ID3v1), e.g. because the string<br>
@@ -300,11 +404,30 @@ doesn't apply the other way around! Moreover embedding an ID3v1 and an ID3v2 tag
 the information would have fit into a single ID3v1 tag, means an unnecessary redundancy!<br>
 <br>
 If, however, you need to enforce the creation of an ID3v2 tag for some reason, you can use the "--add-id3v2"<br>
-parameter for that purpose. Simply add the parameter to the "Custom Encoder Parameters" for LAME.<br><br>
+parameter for that purpose. Simply add the parameter to the "Custom Encoder Parameters" for LAME.<br>
+<br>
+That's what the LAME help says about ID3 tags:<br>
+<blockquote>A version 2 tag will NOT be added unless one of the input fields<br>
+won't fit in a version 1 tag (e.g. the title string is longer than 30<br>
+characters), or the '--add-id3v2' or '--id3v2-only' options are used,<br>
+or output is redirected to stdout.</blockquote>
 
 <br><br>
 
-<a name="4213adbc"><b>Can LameXP be used to convert/extract tracks from an Audio CD?</b></a><br>
+<a name="d83ab3c6"></a><b>Why does LameXP use LAME v3.99 rather than v3.98?</b><br>
+<br>
+LAME v3.99 contains the latest improvements and bugfixes of the LAME mp3 encoder, but it's less tested than<br>
+the older 3.98 release series. The most important reason why LAME v3.99 is used in LameXP v4.xx is because<br>
+LameXP v4.xx focuses on proper Unicode support, but LAME v3.98 did NOT support Unicode filenames or Unicode<br>
+meta tags (through the CLI front-end, on the Windows platform). However LAME v3.99 finally does!<br>
+<br>
+So far we have not encountered any noteworthy problems with LAME v3.99. If, however, you encounter a problem<br>
+with LAME v3.99, please report your finding to the <a href="http://lame.sourceforge.net/contact.php" target="_blank">LAME development team</a>. Do NOT submit any LAME-specific bug<br>
+reports to the LameXP developers, as we generally cannot analyze/fix problems specific to the LAME encoder.<br><br>
+
+<br><br>
+
+<a name="4213adbc"></a><b>Can LameXP be used to convert/extract tracks from an Audio CD?</b><br>
 <br>
 LameXP can be used to convert audio files that have been extracted from an Audio CD, but it can NOT extract<br>
 or read the audio tracks from the Audio CD directly (yet). Consequently you will have to extract ("rip") the<br>
@@ -320,7 +443,7 @@ the '.cda' files directly is destined to fail (as the '.cda' files do NOT actual
 
 <br><br>
 
-<a name="e7c9ae2b"><b>Why do I get the error 'Executable doesn't support Windows compatibility mode' on startup?</b></a><br>
+<a name="e7c9ae2b"></a><b>Why do I get the error 'Executable doesn't support Windows compatibility mode' on startup?</b><br>
 <br>
 LameXP was designed to run on all supported platforms natively (except for Linux/Wine). If you see this error<br>
 message, that's probably because your system is configured to run LameXP in 'compatibility mode', i.e. your<br>
@@ -330,37 +453,43 @@ switching to the 'Compatibility' tab and un-checking the 'Run this program in co
 
 <br><br>
 
-<a name="328b0a18"><b>Why do I get the error 'Executable requires Windows 2000 or later' on startup?</b></a><br>
+<a name="328b0a18"></a><b>Why do I get the error 'Executable requires Windows XP or later' on startup?</b><br>
+<a name="3ffe490e"></a><b>Why do I get the error 'The procedure entry point De/EncodePointer could not be located' on startup?</b><br>
+<a name="01922741"></a><b>Why do I get the error 'LameXP.exe is not a valid Win32 application' on startup?</b><br>
 <br>
 You are trying to run LameXP on a platform that is NOT supported, such as Windows 95, Windows 98, Windows<br>
-Millennium Edition or Windows NT 4.0. There is nothing you can do about that, except for updating to a less<br>
-antiquated OS. Running an outdated/unsupported OS is a severe security risk anyway!<br>
+Millennium Edition, Windows NT 4.0 or Windows 2000. There is nothing you can do about that, except for<br>
+updating to a less antiquated OS. Running an outdated and unsupported OS is a severe security risk anyway!<br>
 <br>
-Note: This error can also occur, if your system has been configured to run LameXP in <a href="#e7c9ae2b">compatibility mode</a>.<br><br>
+LameXP won't run on the 'RTM' release of Windows XP (no service packs) either. Service Pack 2 or newer is<br>
+required! If needed, you can download Service Pack 3 for Windows XP as <a href="http://www.microsoft.com/downloads/en/details.aspx?FamilyID=5b33b5a8-5e76-401f-be08-1e1555d4f3d4" target="_blank">network installation</a> or as <a href="http://www.microsoft.com/downloads/en/details.aspx?FamilyID=2FCDE6CE-B5FB-4488-8C50-FE22559D164E" target="_blank">ISO image</a>.<br>
+Finally this error can also occur, if your system has been configured to run LameXP in <a href="#e7c9ae2b">compatibility mode</a>.<br>
+<br>
+Remark: Executables compiled with Microsoft Visual Studio 2010 won't run on Windows 2000 or older (<a href="http://msdn.microsoft.com/en-us/library/ws0swas0(v=VS.100).aspx" target="_blank">details</a>).<br><br>
 
 <br><br>
 
-<a name="491aaad9"><b>Why do I get the error 'A device attached to the system is not functioning' on startup?</b></a><br>
+<a name="491aaad9"></a><b>Why do I get the error 'A device attached to the system is not functioning' on startup?</b><br>
 <br>
 This error message from the Windows operating system is somewhat misleading. It often appears together with<br>
 a second error message and it means that Windows was unable to load/execute the program file. There are<br>
 various reasons why this error might occur, but usually it indicates that you are trying to run LameXP or the<br>
 LameXP setup/update program on a platform that is NOT supported, such as Windows 95, Windows 98, Windows<br>
-Millennium Edition or Windows NT 4.0. There is nothing you can do about that, except for updating to a less<br>
-antiquated OS. Running an outdated/unsupported OS is a severe security risk anyway!<br>
+Millennium Edition, Windows NT 4.0 or Windows 2000. There is nothing you can do about that, except for<br>
+updating to a less antiquated OS. Running an outdated and unsupported OS is a severe security risk anyway!<br>
 <br>
-Remark: Executable files compiled with Microsoft Visual Studio 2005 (or later) won't load on Windows 9x.<br><br>
+Remark: Executables compiled with Microsoft Visual Studio 2010 won't run on Windows 2000 or older (<a href="http://msdn.microsoft.com/en-us/library/ws0swas0(v=VS.100).aspx" target="_blank">details</a>).<br><br>
 
 <br><br>
 
-<a name="f35cfa24"><b>How can I translate LameXP to my language or improve an existing translation?</b></a><br>
+<a name="f35cfa24"></a><b>How can I translate LameXP to my language or improve an existing translation?</b><br>
 <br>
 Please see the guide for translators at:<br><ul>
 <li><a href="http://mulder.brhack.net/public/doc/lamexp_translate.html" target="_blank">http://mulder.brhack.net/public/doc/lamexp_translate.html</a></ul>
 
 <br><br>
 
-<a name="8dba381f"><b>Where can I download the latest version of LameXP?</b></a><br>
+<a name="8dba381f"></a><b>Where can I download the latest version of LameXP?</b><br>
 <br>
 The latest "official" release of LameXP can be found on the following mirrors:<br><ul>
 <li><a href="https://github.com/lordmulder/LameXP/downloads" target="_blank">https://github.com/lordmulder/LameXP/downloads</a>
@@ -369,7 +498,7 @@ The latest "official" release of LameXP can be found on the following mirrors:<b
 
 <br><br>
 
-<a name="9c2e273d"><b>Where can I submit bug reports or feature requests?</b></a><br>
+<a name="9c2e273d"></a><b>Where can I submit bug reports or feature requests?</b><br>
 <br>
 The preferred place to report bugs or request new features is the LameXP thread at Doom9's Forum:<br><ul>
 <li><a href="http://forum.doom9.org/showthread.php?t=157726" target="_blank">http://forum.doom9.org/showthread.php?t=157726</a> (English)
@@ -378,7 +507,7 @@ The preferred place to report bugs or request new features is the LameXP thread 
 Please do NOT send me E-Mail unless you really have to! I receive a LOT of E-Mail and your mail can get lost!<br><br>
 <br><br>
 
-<a name="982cf1c0"><b>Where can I find the LameXP source code?</b></a><br>
+<a name="982cf1c0"></a><b>Where can I find the LameXP source code?</b><br>
 <br>
 LameXP is developed using the <a href="http://en.wikipedia.org/wiki/Git_(software)" target="_blank">Git</a> revision control system. The LameXP Git repository is mirrored at:<br><ul>
 <li><a href="git://github.com/lordmulder/LameXP.git" target="_blank">git://github.com/lordmulder/LameXP.git</a> (<a href="https://github.com/lordmulder/LameXP/commits/master" target="_blank">Log</a>)
@@ -387,17 +516,18 @@ LameXP is developed using the <a href="http://en.wikipedia.org/wiki/Git_(softwar
 
 <br><br>
 
-<a name="a0c1e92b"><b>What are the prerequisites to build LameXP from the sources?</b></a><br>
+<a name="a0c1e92b"></a><b>What are the prerequisites to build LameXP from the sources?</b><br>
 <br>
 LameXP is currently being developed using the following build environment:<br><ul>
-<li>Visual Studio 2008, Service Pack 1
-<li>Qt libraries v4.7.2 for Windows (VS 2008)
-<li>Microsoft Windows SDK v7.1</ul>
+<li>Visual Studio 2010 with Service Pack 1
+<li>Qt libraries v4.7.2 for Windows (VS 2008), compiled with Visual Studio 2010
+<li>Windows SDK for Windows 7 and .NET Framework 4 (v7.1)</ul>
 <br>
 Also note the following hints:<br><ul>
 <li>You must launch Visual Studio using "qtvars.bat vsstart" in order to enable the Qt tools
 <li>The Microsoft Windows SDK v6.0A should work as well, with a few limitations
 <li>In order to make a fully "static" build of LameXP, you need to compile Qt as static libraries
+<li>Visual Studio 2008 solution/project files are still provided for people targeting Windows 2000
 <li>Support for the GNU Toolchain (GCC/MinGW + Make) is planned for a future version</ul>
 
 <br><br>
