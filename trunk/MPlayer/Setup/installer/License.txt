@@ -1,8 +1,8 @@
 MPlayer - The Movie Player
-Copyright (C) 2000-2009 MPlayer Team
+Copyright (C) 2000-2011 MPlayer Team
 
 SMPlayer front-end for MPlayer
-Copyright (C) 2006-2009 Ricardo Villalba
+Copyright (C) 2006-2010 Ricardo Villalba
 
 MPUI - MPlayer for Windows
 Copyright (C) 2005 Martin J. Fiedler

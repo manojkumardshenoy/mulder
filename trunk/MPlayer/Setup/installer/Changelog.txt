@@ -1,3 +1,7 @@
+[2011-04-14]
+* MPlayer binaries updated to SVN-r33216
+* SMPlayer updated to Version 0.6.9 (SVN-r3604)
+
 [2011-03-27]
 * MPlayer binaries updated to SVN-r33124
 * Fixed multi-threading (was broken with MPlayer SVN-r33107)

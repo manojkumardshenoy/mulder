@@ -23,7 +23,7 @@
 
 ; Compressor
 SetCompressor /SOLID LZMA
-SetCompressorDictSize 144
+SetCompressorDictSize 128
 
 ; UAC Support
 RequestExecutionLevel user
@@ -771,6 +771,8 @@ FunctionEnd
   FaildCopy_${ID}:
   !undef ID
 !macroend
+
+!define AppendToZero '!insertmacro TextFileAppend $0'
 
 ; ---------------------------------------
 ; Extract file conditionally
