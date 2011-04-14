@@ -29,8 +29,11 @@
 !ifndef LAMEXP_BUILD
   !error "LAMEXP_BUILD is not defined !!!"
 !endif
-!ifndef LAMEXP_SUFFIX
-  !error "LAMEXP_SUFFIX is not defined !!!"
+!ifndef LAMEXP_INSTTYPE
+  !error "LAMEXP_INSTTYPE is not defined !!!"
+!endif
+!ifndef LAMEXP_PATCH
+  !error "LAMEXP_PATCH is not defined !!!"
 !endif
 !ifndef LAMEXP_DATE
   !error "LAMEXP_DATE is not defined !!!"
@@ -57,7 +60,6 @@
 ;--------------------------------
 
 !define LAMEXP_IS_PRERELEASE
-!searchparse '${LAMEXP_SUFFIX}' '' LAMEXP_INSTTYPE '-' LAMEXP_IGNORE
 
 !if '${LAMEXP_INSTTYPE}' == 'Final'
   !undef LAMEXP_IS_PRERELEASE
@@ -84,7 +86,7 @@
 RequestExecutionLevel user
 ShowInstDetails show
 ShowUninstDetails show
-Name "LameXP v${LAMEXP_VERSION} ${LAMEXP_SUFFIX} [Build #${LAMEXP_BUILD}]"
+Name "LameXP v${LAMEXP_VERSION} ${LAMEXP_INSTTYPE}-${LAMEXP_PATCH} [Build #${LAMEXP_BUILD}]"
 OutFile "${LAMEXP_OUTPUT_FILE}"
 BrandingText "Date created: ${LAMEXP_DATE} [Build #${LAMEXP_BUILD}]"
 InstallDir "$PROGRAMFILES\MuldeR\LameXP v${LAMEXP_VERSION}"
@@ -129,7 +131,7 @@ VIProductVersion "${PRODUCT_VERSION_DATE}.${LAMEXP_BUILD}"
 VIAddVersionKey "Author" "LoRd_MuldeR <mulder2@gmx.de>"
 VIAddVersionKey "Comments" "This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version."
 VIAddVersionKey "CompanyName" "Free Software Foundation"
-VIAddVersionKey "FileDescription" "LameXP v${LAMEXP_VERSION} ${LAMEXP_SUFFIX} [Build #${LAMEXP_BUILD}]"
+VIAddVersionKey "FileDescription" "LameXP v${LAMEXP_VERSION} ${LAMEXP_INSTTYPE}-${LAMEXP_PATCH} [Build #${LAMEXP_BUILD}]"
 VIAddVersionKey "FileVersion" "${PRODUCT_VERSION_DATE}.${LAMEXP_BUILD} (${LAMEXP_VERSION})"
 VIAddVersionKey "LegalCopyright" "Copyright 2004-2011 LoRd_MuldeR"
 VIAddVersionKey "LegalTrademarks" "GNU"
@@ -261,23 +263,25 @@ Function .onInit
 		Quit
 	${EndIf}  
 
-	${If} ${IsNT}
-		Goto OS_Windows_NT
-	${Else}
-		MessageBox MB_TOPMOST|MB_ICONSTOP "Sorry, the Windows 9x series (including ME) is not supported by this application!"
+	${IfNot} ${IsNT}
+		MessageBox MB_TOPMOST|MB_ICONSTOP "Sorry, this application does NOT support Windows 9x or Windows ME!"
 		Quit
 	${EndIf}
 
-	OS_Windows_NT:
 	${If} ${AtMostWin2000}
-		MessageBox MB_TOPMOST|MB_ICONSTOP "Sorry, Windows 2000 (and older) is not supported by this application!"
+		!insertmacro GetCommandlineParameter "Update" "?" $R0
+		${If} $R0 == "?"
+			MessageBox MB_TOPMOST|MB_ICONSTOP "Sorry, your platform is not supported anymore. Installation aborted!$\nThe minimum required platform is Windows XP (Service Pack 2)."
+		${Else}
+			MessageBox MB_TOPMOST|MB_ICONSTOP "Sorry, your platform is not supported anymore. Update not possible!$\nThe minimum required platform is Windows XP (Service Pack 2)."
+		${EndIf}
 		Quit
 	${EndIf}
 
 	${If} ${IsWinXP}
 	${AndIf} ${AtMostServicePack} 1
-		MessageBox MB_TOPMOST|MB_ICONSTOP "Sorry, this application requires Windows XP with Service Pack 2 or newer!"
-		MessageBox MB_TOPMOST|MB_ICONINFORMATION|MB_YESNO "Do you want to download Service Pack 3 for Windows XP now?" IDNO +2
+		MessageBox MB_TOPMOST|MB_ICONEXCLAMATION "This application requires Windows XP with Service Pack 2 or newer!"
+		MessageBox MB_TOPMOST|MB_ICONQUESTION|MB_YESNO "Do you want to download Service Pack 3 for Windows XP now?" IDNO +2
 		ExecShell "open" "http://www.microsoft.com/downloads/en/details.aspx?FamilyID=5b33b5a8-5e76-401f-be08-1e1555d4f3d4"
 		Quit
 	${EndIf}
