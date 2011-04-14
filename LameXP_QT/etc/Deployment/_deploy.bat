@@ -34,6 +34,11 @@ del /Q "%OBJ_PATH%\*.obj"
 del /Q "%OBJ_PATH%\*.res"
 del /Q "%OBJ_PATH%\*.bat"
 del /Q "%OBJ_PATH%\*.idb"
+del /Q "%OBJ_PATH%\*.log"
+del /Q "%OBJ_PATH%\*.manifest"
+del /Q "%OBJ_PATH%\*.lastbuildstate"
+del /Q "%OBJ_PATH%\*.htm"
+del /Q "%OBJ_PATH%\*.dep"
 del /Q "%MOC_PATH%\*.cpp"
 del /Q "%MOC_PATH%\*.h"
 REM ------------------------------------------
@@ -114,7 +119,7 @@ REM ------------------------------------------
 REM :: CREATE PACKAGES ::
 REM ------------------------------------------
 "%PATH_SEVENZ%\7z.exe" a -tzip -r "%OUT_FILE%.zip" "%TMP_PATH%\*"
-"%PATH_MKNSIS%\makensis.exe" "/DLAMEXP_SOURCE_PATH=%TMP_PATH%" "/DLAMEXP_OUTPUT_FILE=%OUT_FILE%.exe" "/DLAMEXP_UPX_PATH=%PATH_UPXBIN%" "/DLAMEXP_DATE=%OUT_DATE%" "/DLAMEXP_VERSION=%VER_LAMEXP_MAJOR%.%VER_LAMEXP_MINOR_HI%%VER_LAMEXP_MINOR_LO%" "/DLAMEXP_BUILD=%VER_LAMEXP_BUILD%" "/DLAMEXP_SUFFIX=%VER_LAMEXP_SUFFIX%" "..\NSIS\setup.nsi"
+"%PATH_MKNSIS%\makensis.exe" "/DLAMEXP_SOURCE_PATH=%TMP_PATH%" "/DLAMEXP_OUTPUT_FILE=%OUT_FILE%.exe" "/DLAMEXP_UPX_PATH=%PATH_UPXBIN%" "/DLAMEXP_DATE=%OUT_DATE%" "/DLAMEXP_VERSION=%VER_LAMEXP_MAJOR%.%VER_LAMEXP_MINOR_HI%%VER_LAMEXP_MINOR_LO%" "/DLAMEXP_BUILD=%VER_LAMEXP_BUILD%" "/DLAMEXP_INSTTYPE=%VER_LAMEXP_TYPE%" "/DLAMEXP_PATCH=%VER_LAMEXP_PATCH%" "..\NSIS\setup.nsi"
 rd /S /Q "%TMP_PATH%"
 REM ------------------------------------------
 if not exist "%OUT_FILE%.zip" (
