@@ -21,6 +21,9 @@
 
 #include "stdafx.h"
 
+//Const
+static const _TCHAR *stdOutName = _T("<stdout>");
+
 //Vars
 static PAVIFILE g_aviFile = NULL;
 static PAVISTREAM g_aviStream = NULL;
@@ -33,6 +36,7 @@ static LONG g_frameBufferSize = 0;
 static FILE *g_outputFile = NULL;
 static DWORD g_dataSizePos = NULL;
 static DWORD g_dataSize = NULL;
+static volatile bool abortFlag = false;
 
 //Functions
 static bool avs2wav_openSource(_TCHAR *inputFilename);
@@ -42,3 +46,4 @@ static bool avs2wav_closeOutput(void);
 
 //Helper
 static char *utf16_to_utf8(const wchar_t *input);
+static BOOL WINAPI CtrlHandlerRoutine(DWORD dwCtrlType);
