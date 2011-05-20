@@ -137,7 +137,7 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 	if(_wfopen_s(&readTest,inputFilename, L"r"))
 	{
 		wcerr << "Failed" << endl;
-		wcerr << "File does not exist or cannot be opened for reading:" << endl;
+		wcerr << "--> File does not exist or cannot be opened for reading:" << endl;
 		wcerr << inputFilename << endl << endl;
 		return false;
 	}
@@ -150,7 +150,7 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 	if(success != AVIERR_OK)
 	{
 		wcerr << "Failed" << endl;
-		wcerr << "AVIFileOpen failed, unable to open file:" << endl;
+		wcerr << "--> AVIFileOpen failed, unable to open file:" << endl;
 		wcerr << inputFilename << endl << endl;
 		return false;
 	}
@@ -165,8 +165,11 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 		{
 			if (!streamIdx)
 			{
+				AVIFileRelease(g_aviFile);
+				g_aviFile = NULL;
 				wcerr << "Failed" << endl;
-				wcerr << "AVIFileGetStream failed, unable to get any streams!" << endl;
+				wcerr << "--> AVIFileGetStream failed, unable to get any streams!" << endl;
+				return false;
 			}
 			break;
 		}		
@@ -174,9 +177,11 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 		success = AVIStreamInfo(g_aviStream, &g_aviStreamInfo, sizeof(AVISTREAMINFO));
 		if(success != AVIERR_OK)
 		{
+			AVIFileRelease(g_aviFile);
+			g_aviFile = NULL;
 			wcerr << "Failed" << endl;
-			wcerr << "AVIStreamInfo failed, unable to get stream info!" << endl;
-			break;
+			wcerr << "--> AVIStreamInfo failed, unable to get stream info!" << endl;
+			return false;
 		}
 
 		if(g_aviStreamInfo.fccType == streamtypeAUDIO)
@@ -190,9 +195,11 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 			{
 				delete g_wavHeader;
 				g_wavHeader = NULL;
+				AVIFileRelease(g_aviFile);
+				g_aviFile = NULL;
 				wcerr << "Failed" << endl;
-				wcerr << "AVIStreamReadFormat failed!" << endl;
-				break;
+				wcerr << "--> AVIStreamReadFormat failed, unable to get stream format!" << endl;
+				return false;
 			}
 
 			foundAudioStream = true;
@@ -202,12 +209,12 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 	}
 
 	//Check if audio stream is avialble
-	if(!foundAudioStream)
+	if(!foundAudioStream || (g_streamSampleLength <= 0))
 	{
 		AVIFileRelease(g_aviFile);
 		g_aviFile = NULL;
 		wcerr << "Failed" << endl;
-		wcerr << "Could not find any Audio Stream in the input!" << endl;
+		wcerr << "--> Could not find any Audio Stream in the input!" << endl;
 		return false;
 	}
 	
