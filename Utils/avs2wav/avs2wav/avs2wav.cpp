@@ -79,6 +79,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	if(!avs2wav_openOutput(outputFilename))
 	{
 		cerr << "Failed to open output file. Terminating!" << endl;
+		if(g_wavHeader) delete g_wavHeader;
+		AVIStreamRelease(g_aviStream);
 		AVIFileRelease(g_aviFile);
 		AVIFileExit();
 		return -3;
@@ -103,6 +105,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		cerr << "Failed to dump audio stream. Terminating!" << endl;
 		fclose(g_outputFile);
+		if(g_wavHeader) delete g_wavHeader;
+		if(g_frameBuffer) delete [] g_frameBuffer;
+		AVIStreamRelease(g_aviStream);
 		AVIFileRelease(g_aviFile);
 		AVIFileExit();
 		return -4;
@@ -118,6 +123,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//Final Cleanup
 	if(g_wavHeader) delete g_wavHeader;
 	if(g_frameBuffer) delete [] g_frameBuffer;
+	AVIStreamRelease(g_aviStream);
 	AVIFileRelease(g_aviFile);
 	AVIFileExit();
 
@@ -137,8 +143,7 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 	if(_wfopen_s(&readTest,inputFilename, L"r"))
 	{
 		wcerr << "Failed" << endl;
-		wcerr << "--> File does not exist or cannot be opened for reading:" << endl;
-		wcerr << inputFilename << endl << endl;
+		wcerr << "--> File does not exist or cannot be opened for reading!" << endl;
 		return false;
 	}
 	
@@ -150,8 +155,7 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 	if(success != AVIERR_OK)
 	{
 		wcerr << "Failed" << endl;
-		wcerr << "--> AVIFileOpen failed, unable to open file:" << endl;
-		wcerr << inputFilename << endl << endl;
+		wcerr << "--> AVIFileOpen failed, unable to open file!" << endl;
 		return false;
 	}
 
@@ -177,6 +181,7 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 		success = AVIStreamInfo(g_aviStream, &g_aviStreamInfo, sizeof(AVISTREAMINFO));
 		if(success != AVIERR_OK)
 		{
+			AVIStreamRelease(g_aviStream);
 			AVIFileRelease(g_aviFile);
 			g_aviFile = NULL;
 			wcerr << "Failed" << endl;
@@ -195,6 +200,7 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 			{
 				delete g_wavHeader;
 				g_wavHeader = NULL;
+				AVIStreamRelease(g_aviStream);
 				AVIFileRelease(g_aviFile);
 				g_aviFile = NULL;
 				wcerr << "Failed" << endl;
@@ -206,6 +212,9 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 			g_streamSampleLength = AVIStreamLength(g_aviStream);
 			break;
 		}
+
+		AVIStreamRelease(g_aviStream);
+		g_aviStream = NULL;
 	}
 
 	//Check if audio stream is avialble
