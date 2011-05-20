@@ -12,6 +12,8 @@
 #include <iostream>
 #include <windows.h>
 #include <time.h>
+#include <io.h>
+#include <fcntl.h>
 #include <Vfw.h>
 
 // TODO: reference additional headers your program requires here

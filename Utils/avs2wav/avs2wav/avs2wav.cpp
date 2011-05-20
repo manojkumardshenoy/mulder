@@ -32,7 +32,7 @@ int _tmain(int argc, _TCHAR* argv[])
 {
 	//Print version info and credits
 	cerr << "avs2wav " << versionTag << " [" << __DATE__ << "]" << endl;
-	cerr << "by Jory Stone <jcsston@toughguy.net>, LoRd_MuldeR <mulder2@gmx.de>" << endl;
+	cerr << "by Jory Stone <jcsston@toughguy.net>, updates by LoRd_MuldeR <mulder2@gmx.de>" << endl;
 	cerr << endl;
 
 	//Init global vars
@@ -47,9 +47,12 @@ int _tmain(int argc, _TCHAR* argv[])
 		return -1;
 	}
 		
+	//Add Ctrl+C handler
+	SetConsoleCtrlHandler(CtrlHandlerRoutine, TRUE);
+
 	//Set input/output files
 	_TCHAR *inputFilename = argv[1];
-	_TCHAR *outputFilename = argv[2];
+	_TCHAR *outputFilename = _wcsicmp(argv[2], _T("-")) ?  argv[2] : _wcsdup(stdOutName);
 	
 	//Print input/output files
 	if(char *buffer = utf16_to_utf8(inputFilename))
@@ -99,13 +102,15 @@ int _tmain(int argc, _TCHAR* argv[])
 	LONG iterator = 0;
 	cerr << endl;
 	
+
 	//Dump the audio stream
-	while(avs2wav_dumpStream(&status))
+	wcerr << "Dumping audio data, please wait:" << endl;
+	while(avs2wav_dumpStream(&status) && !abortFlag)
 	{
 		if(!iterator)
 		{
 			double progress = static_cast<double>(g_currentframeSample) / static_cast<double>(g_streamSampleLength);
-			fprintf(stderr, "\rDumping audio data, please wait: %ld/%ld [%d%%]", g_currentframeSample, g_streamSampleLength, static_cast<int>(progress * 100.0));
+			fprintf(stderr, "\r%ld/%ld [%d%%]", g_currentframeSample, g_streamSampleLength, static_cast<int>(progress * 100.0));
 			cerr << flush;
 		}
 		iterator = (iterator + 1) % 512;
@@ -114,7 +119,14 @@ int _tmain(int argc, _TCHAR* argv[])
 	//Check if dump was successfull
 	if(status)
 	{
-		cerr << "Failed to dump audio stream. Terminating!" << endl;
+		if(abortFlag)
+		{
+			cerr << endl << endl << "The user has requested to abort. Terminating!" << endl;
+		}
+		else
+		{
+			cerr << endl << "Failed to dump audio stream. Terminating!" << endl;
+		}
 		
 		fclose(g_outputFile);
 		g_outputFile = NULL;
@@ -140,7 +152,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 
 	//Complete
-	fprintf(stderr, "\rDumping audio data, please wait: %ld/%ld [%d%%]\n", g_streamSampleLength, g_streamSampleLength, 100);
+	fprintf(stderr, "\r%ld/%ld [%d%%]\n\n", g_streamSampleLength, g_streamSampleLength, 100);
 	cerr << "All samples have been dumped." << endl;
 
 	//Close output
@@ -198,6 +210,7 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 		return false;
 	}
 
+	int skippedStreams = 0;
 	bool foundAudioStream = false;
 
 	//Find audio stream
@@ -222,6 +235,7 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 		{
 			AVIStreamRelease(g_aviStream);
 			g_aviStream = NULL;
+			skippedStreams++;
 			continue;
 		}
 
@@ -238,25 +252,37 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 				g_wavHeader = NULL;
 				AVIStreamRelease(g_aviStream);
 				g_aviStream = NULL;
+				skippedStreams++;
+				continue;
+			}
+
+			g_streamSampleLength = AVIStreamLength(g_aviStream);
+			if(g_streamSampleLength <= 0)
+			{
+				delete g_wavHeader;
+				g_wavHeader = NULL;
+				AVIStreamRelease(g_aviStream);
+				g_aviStream = NULL;
+				skippedStreams++;
 				continue;
 			}
 
 			foundAudioStream = true;
-			g_streamSampleLength = AVIStreamLength(g_aviStream);
 			break;
 		}
 
+		skippedStreams++;
 		AVIStreamRelease(g_aviStream);
 		g_aviStream = NULL;
 	}
 
 	//Check if audio stream is avialble
-	if(!foundAudioStream || (g_streamSampleLength <= 0))
+	if(!foundAudioStream )
 	{
 		AVIFileRelease(g_aviFile);
 		g_aviFile = NULL;
 		wcerr << "Failed" << endl;
-		wcerr << "--> Could not find any Audio Stream in the input!" << endl;
+		wcerr << "--> Could not find any Audio Stream in the input! (skipped " << skippedStreams << " streams)" << endl;
 		return false;
 	}
 	
@@ -272,51 +298,66 @@ bool avs2wav_openOutput(_TCHAR *outputFilename)
 	wcerr << "Opening output file... " << flush;
 	
 	//Check if output file was opened
-	if(_wfopen_s(&g_outputFile, outputFilename, L"wb+"))
+	if(_wcsicmp(outputFilename, stdOutName))
 	{
-		wcerr << "Failed" << endl;
-		wcerr << "FOpen failed, unable to open output file:" << endl;
-		wcerr << outputFilename << endl << endl;
-		return false;
+		if(_wfopen_s(&g_outputFile, outputFilename, _T("wb+")))
+		{
+			wcerr << "Failed" << endl;
+			wcerr << "FOpen failed, unable to open output file:" << endl;
+			wcerr << outputFilename << endl << endl;
+			return false;
+		}
+	}
+	else
+	{
+		if(!(g_outputFile = _fdopen(_open_osfhandle((long) GetStdHandle(STD_OUTPUT_HANDLE), _O_BINARY), "wb+")))
+		{
+			wcerr << "Failed" << endl;
+			wcerr << "_fdopen failed, unable to open standard output handle!" << endl << endl;
+			return false;
+		}
+		g_dataSizePos = 0;
+		wcerr << "Done" << endl;
+		return true;
 	}
 
-	// Init local vars
+	//Init local vars
 	WAVEFORMATEX wavHeader;
 	DWORD dwTemp = 0;
 	WORD wTemp = 0;
 	BYTE bTemp = 0;;
 	
-	// Copy header
+	//Copy header
 	memcpy(&wavHeader, g_wavHeader, sizeof(WAVEFORMATEX));
 	wavHeader.cbSize = 0;
 
-	// Write the base header
+	//Write the base header
 	fwrite("RIFF", 1, 4, g_outputFile);
 	dwTemp = g_streamSampleLength * wavHeader.nBlockAlign + 450;
 	fwrite(&dwTemp, 1, 4, g_outputFile);
 	fwrite("WAVE", 1, 4, g_outputFile);
 
-	// Format chunk header
+	//Format chunk header
 	fwrite("fmt ", 1, 4, g_outputFile);
-	// Size of the chunk
+	//Size of the chunk
 	dwTemp = 0x10;
 	fwrite(&dwTemp, 1, 4, g_outputFile);
-	// Format Tag
+	//Format Tag
 	wTemp = g_wavHeader->wFormatTag;
 	fwrite(&wTemp, 1, 2, g_outputFile);
-	// Channel count
+	//Channel count
 	wTemp = g_wavHeader->nChannels;
 	fwrite(&wTemp, 1, 2, g_outputFile);
-	// Sample Rate
+	//Sample Rate
 	dwTemp = g_wavHeader->nSamplesPerSec;
 	fwrite(&dwTemp, 1, 4, g_outputFile);
-	// Bytes Per Second
+	//Bytes Per Second
 	dwTemp = g_wavHeader->nAvgBytesPerSec;
 	fwrite(&dwTemp, 1, 4, g_outputFile);
-	// Bytes Per Sample (all chanels)
+	//Bytes Per Sample (all chanels)
 	wTemp = g_wavHeader->nBlockAlign;
 	fwrite(&wTemp, 1, 2, g_outputFile);
-	// Bits Per Sample (per channel)
+	//Bits Per Sample (per channel)
 	wTemp = g_wavHeader->wBitsPerSample;
 	fwrite(&wTemp, 1, 2, g_outputFile);
 
@@ -325,8 +366,8 @@ bool avs2wav_openOutput(_TCHAR *outputFilename)
 	dwTemp = g_dataSizePos * wavHeader.nBlockAlign;
 	fwrite(&dwTemp, 1, 4, g_outputFile);
 	
-	// Reserve space for the data chunk size
-	// fwrite("    ", 1, 4, m_OutputFile);
+	//Reserve space for the data chunk size
+	//fwrite("    ", 1, 4, m_OutputFile);
 	
 	wcerr << "Done" << endl;
 	return true;
@@ -341,13 +382,16 @@ bool avs2wav_closeOutput(void)
 	{
 		return false;
 	}
-
-	fseek(g_outputFile, g_dataSizePos, SEEK_SET);
-	fwrite(&g_dataSize, 1, 4, g_outputFile);
-	g_dataSize += g_dataSizePos - 8;
-	fseek(g_outputFile, 4, SEEK_SET);
-	fwrite(&g_dataSize, 1, 4, g_outputFile);
 	
+	if(g_dataSizePos)
+	{
+		fseek(g_outputFile, g_dataSizePos, SEEK_SET);
+		fwrite(&g_dataSize, 1, 4, g_outputFile);
+		g_dataSize += g_dataSizePos - 8;
+		fseek(g_outputFile, 4, SEEK_SET);
+		fwrite(&g_dataSize, 1, 4, g_outputFile);
+	}
+
 	fclose(g_outputFile);
 	g_outputFile = NULL;
 	
@@ -384,7 +428,7 @@ bool avs2wav_dumpStream(LONG *status)
 		}
 		catch(...)
 		{
-			wcerr << endl << "Memory allocation has failed!" << endl;
+			wcerr << endl << endl << "Memory allocation has failed!" << endl;
 			g_frameBuffer = NULL;
 			*status = -2;
 			return false;
@@ -397,7 +441,7 @@ bool avs2wav_dumpStream(LONG *status)
 	//Check if successfull
 	if (result != AVIERR_OK)
 	{
-		wcerr << endl << "AVIStreamRead returned error!" << endl;
+		wcerr << endl << endl << "AVIStreamRead returned error!" << endl;
 		*status = -1;
 		return false;
 	}
@@ -414,10 +458,16 @@ bool avs2wav_dumpStream(LONG *status)
 		if(size_t size = fwrite(g_frameBuffer, 1, bytesRead, g_outputFile))
 		{
 			g_dataSize += size;
+			if(size < static_cast<size_t>(bytesRead))
+			{
+				wcerr << endl << endl << "Not all data was written to output file!" << endl;
+				*status = -3;
+				return false;
+			}
 		}
 		else
 		{
-			wcerr << endl << "Faild to write data to output file!" << endl;
+			wcerr << endl << endl << "Faild to write data to output file!" << endl;
 			*status = -3;
 			return false;
 		}
@@ -446,4 +496,13 @@ char *utf16_to_utf8(const wchar_t *input)
 
 	Result = WideCharToMultiByte(CP_UTF8, 0, input, -1, Buffer, BuffSize, NULL, NULL);
 	return ((Result > 0) && (Result <= BuffSize)) ? Buffer : NULL;
+}
+
+////////////////////////////////////////////////////
+// Ctrl+C Handler
+////////////////////////////////////////////////////
+BOOL WINAPI CtrlHandlerRoutine(DWORD dwCtrlType)
+{
+	abortFlag = true;
+	return TRUE;
 }
