@@ -21,7 +21,7 @@
 
 #include "avs2wav.h"
 
-static const char* versionTag = "v1.1";
+static const char* versionTag = "v1.2";
 
 using namespace std;
 
@@ -79,17 +79,27 @@ int _tmain(int argc, _TCHAR* argv[])
 	if(!avs2wav_openOutput(outputFilename))
 	{
 		cerr << "Failed to open output file. Terminating!" << endl;
-		if(g_wavHeader) delete g_wavHeader;
+		
 		AVIStreamRelease(g_aviStream);
+		g_aviStream = NULL;
 		AVIFileRelease(g_aviFile);
+		g_aviFile = NULL;
+
+		if(g_wavHeader)
+		{
+			delete g_wavHeader;
+			g_wavHeader = NULL;
+		}
+
 		AVIFileExit();
 		return -3;
 	}
 
-	//Dump the audio stream
 	LONG status = 0;
 	LONG iterator = 0;
 	cerr << endl;
+	
+	//Dump the audio stream
 	while(avs2wav_dumpStream(&status))
 	{
 		if(!iterator)
@@ -101,14 +111,30 @@ int _tmain(int argc, _TCHAR* argv[])
 		iterator = (iterator + 1) % 512;
 	}
 
+	//Check if dump was successfull
 	if(status)
 	{
 		cerr << "Failed to dump audio stream. Terminating!" << endl;
+		
 		fclose(g_outputFile);
-		if(g_wavHeader) delete g_wavHeader;
-		if(g_frameBuffer) delete [] g_frameBuffer;
+		g_outputFile = NULL;
+		
 		AVIStreamRelease(g_aviStream);
+		g_aviStream = NULL;
 		AVIFileRelease(g_aviFile);
+		g_aviFile = NULL;
+		
+		if(g_wavHeader)
+		{
+			delete g_wavHeader;
+			g_wavHeader = NULL;
+		}
+		if(g_frameBuffer)
+		{
+			delete [] g_frameBuffer;
+			g_frameBuffer = NULL;
+		}
+		
 		AVIFileExit();
 		return -4;
 	}
@@ -120,13 +146,26 @@ int _tmain(int argc, _TCHAR* argv[])
 	//Close output
 	avs2wav_closeOutput();
 		
-	//Final Cleanup
-	if(g_wavHeader) delete g_wavHeader;
-	if(g_frameBuffer) delete [] g_frameBuffer;
+	//Close input
 	AVIStreamRelease(g_aviStream);
+	g_aviStream = NULL;
 	AVIFileRelease(g_aviFile);
-	AVIFileExit();
+	g_aviFile = NULL;
 
+	//Free memory
+	if(g_wavHeader)
+	{
+		delete g_wavHeader;
+		g_wavHeader = NULL;
+	}
+	if(g_frameBuffer)
+	{
+		delete [] g_frameBuffer;
+		g_frameBuffer = NULL;
+	}
+
+	//Close the AVIFile library
+	AVIFileExit();
 	return 0;
 }
 
@@ -164,7 +203,7 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 	//Find audio stream
 	for(LONG streamIdx = 0; streamIdx < LONG_MAX; streamIdx++)
 	{		
-		success = AVIFileGetStream(g_aviFile, &g_aviStream, streamtypeAUDIO, streamIdx);
+		success = AVIFileGetStream(g_aviFile, &g_aviStream, 0, streamIdx);
 		if(success != AVIERR_OK)
 		{
 			if (!streamIdx)
@@ -182,11 +221,8 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 		if(success != AVIERR_OK)
 		{
 			AVIStreamRelease(g_aviStream);
-			AVIFileRelease(g_aviFile);
-			g_aviFile = NULL;
-			wcerr << "Failed" << endl;
-			wcerr << "--> AVIStreamInfo failed, unable to get stream info!" << endl;
-			return false;
+			g_aviStream = NULL;
+			continue;
 		}
 
 		if(g_aviStreamInfo.fccType == streamtypeAUDIO)
@@ -201,11 +237,8 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 				delete g_wavHeader;
 				g_wavHeader = NULL;
 				AVIStreamRelease(g_aviStream);
-				AVIFileRelease(g_aviFile);
-				g_aviFile = NULL;
-				wcerr << "Failed" << endl;
-				wcerr << "--> AVIStreamReadFormat failed, unable to get stream format!" << endl;
-				return false;
+				g_aviStream = NULL;
+				continue;
 			}
 
 			foundAudioStream = true;
@@ -381,6 +414,12 @@ bool avs2wav_dumpStream(LONG *status)
 		if(size_t size = fwrite(g_frameBuffer, 1, bytesRead, g_outputFile))
 		{
 			g_dataSize += size;
+		}
+		else
+		{
+			wcerr << endl << "Faild to write data to output file!" << endl;
+			*status = -3;
+			return false;
 		}
 	}
 
