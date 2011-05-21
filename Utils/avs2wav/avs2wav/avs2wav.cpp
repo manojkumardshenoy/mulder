@@ -44,6 +44,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		cerr << "Usage:" << endl;
 		cerr << "  avs2wav.exe <input.avs> <output.wav>" << endl;
 		cerr << endl;
+		cerr << "Set the output file name to \"-\" in order to output raw PCM data to STDOUT." << endl;
+		cerr << "If you only need the audio info, set the output file name to to \"?\"." << endl;
+		cerr << endl;
 		return -1;
 	}
 		
@@ -52,7 +55,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	//Set input/output files
 	_TCHAR *inputFilename = argv[1];
-	_TCHAR *outputFilename = _wcsicmp(argv[2], _T("-")) ?  argv[2] : _wcsdup(stdOutName);
+	_TCHAR *outputFilename = _wcsicmp(argv[2], _T("-")) ?  (_wcsicmp(argv[2], _T("?")) ? argv[2] : _wcsdup(infoOnlyName)) : _wcsdup(stdOutName);
 	
 	//Print input/output files
 	if(char *buffer = utf16_to_utf8(inputFilename))
@@ -104,6 +107,36 @@ int _tmain(int argc, _TCHAR* argv[])
 
 		AVIFileExit();
 		return -3;
+	}
+
+	//Print stream info
+	wcerr << endl << "[Audio Info]" << endl;
+	wcerr << "TotalSamples: " << g_streamSampleLength << endl;
+	wcerr << "TotalSeconds: " << static_cast<int>(floor((static_cast<double>(g_streamSampleLength) / static_cast<double>(g_wavHeader->nSamplesPerSec)) + 0.5)) << endl;
+	wcerr << "SamplesPerSec: " << g_wavHeader->nSamplesPerSec << endl;
+	wcerr << "BitsPerSample: " << g_wavHeader->wBitsPerSample << endl;
+	wcerr << "Channels: " << g_wavHeader->nChannels << endl;
+	wcerr << "AvgBytesPerSec: " << g_wavHeader->nAvgBytesPerSec << endl;
+
+	//Exit right now, if in INFO mode
+	if(!g_outputFile)
+	{
+		cerr << endl;
+		cerr << "Info has been printed. Exiting." << endl;
+
+		AVIStreamRelease(g_aviStream);
+		g_aviStream = NULL;
+		AVIFileRelease(g_aviFile);
+		g_aviFile = NULL;
+		
+		if(g_wavHeader)
+		{
+			delete g_wavHeader;
+			g_wavHeader = NULL;
+		}
+
+		AVIFileExit();
+		return 0;
 	}
 
 	LONG status = 0;
@@ -163,7 +196,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	//Complete
 	fprintf(stderr, "\r%ld/%ld [%d%%]\n\n", g_streamSampleLength, g_streamSampleLength, 100);
-	cerr << "All samples have been dumped." << endl;
+	cerr << "All samples have been dumped. Exiting." << endl;
 
 	//Close output
 	avs2wav_closeOutput();
@@ -392,6 +425,14 @@ bool avs2wav_checkAvsSupport(void)
 bool avs2wav_openOutput(_TCHAR *outputFilename)
 {
 	wcerr << "Opening output file... " << flush;
+	
+	//Check for info mode
+	if(!_wcsicmp(outputFilename, infoOnlyName))
+	{
+		g_outputFile = NULL;
+		wcerr << "Done" << endl;
+		return true;
+	}
 	
 	//Check if output file was opened
 	if(_wcsicmp(outputFilename, stdOutName))

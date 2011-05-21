@@ -23,6 +23,7 @@
 
 //Const
 static const _TCHAR *stdOutName = _T("<stdout>");
+static const _TCHAR *infoOnlyName = _T("<info>");
 
 //Vars
 static PAVIFILE g_aviFile = NULL;
