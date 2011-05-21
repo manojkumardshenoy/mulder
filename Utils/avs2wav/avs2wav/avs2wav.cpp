@@ -195,19 +195,15 @@ int _tmain(int argc, _TCHAR* argv[])
 bool avs2wav_openSource(_TCHAR *inputFilename)
 {	
 	HRESULT success = 0;
-	FILE *readTest = NULL;
-
 	wcerr << "Analyzing input file... " << flush;
 
-	if(_wfopen_s(&readTest,inputFilename, L"r"))
+	//Make sure the file exists
+	if(_waccess_s(inputFilename, 4))
 	{
 		wcerr << "Failed" << endl;
 		wcerr << "--> File does not exist or cannot be opened for reading!" << endl;
 		return false;
 	}
-	
-	fclose(readTest);
-	readTest = NULL;
 
 	//Open AVI file
 	success = AVIFileOpen(&g_aviFile, inputFilename, OF_SHARE_DENY_WRITE | OF_READ, 0L);
@@ -299,7 +295,7 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 }
 
 ////////////////////////////////////////////////////
-// Open output file
+// Check for Avisynth support
 ////////////////////////////////////////////////////
 bool avs2wav_checkAvsSupport(void)
 {
@@ -341,7 +337,16 @@ bool avs2wav_checkAvsSupport(void)
 	}
 
 	//Write simple AVS script
-	fprintf(tmpFile, "Version()\n");
+	static const char *avsText = "Version()\n";
+	if(fprintf(tmpFile, "%s", avsText) < static_cast<int>(strlen(avsText)))
+	{
+		wcerr << "Skipped" << endl;
+		wcerr << "fprintf failed, unable to write to temporary file:" << endl;
+		wcerr << tempName << endl << endl;
+		fclose(tmpFile);
+		return true;
+	}
+	
 	fclose(tmpFile);
 
 	//Try to open AVI file
