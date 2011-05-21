@@ -70,6 +70,14 @@ int _tmain(int argc, _TCHAR* argv[])
 	//Initialize the AVIFile library
 	AVIFileInit();
 
+	//Check avisynth support
+	if(!avs2wav_checkAvsSupport())
+	{
+		cerr << "System cannot load Avisynth scripts. Terminating!" << endl;
+		AVIFileExit();
+		return -5;
+	}
+
 	//Open input file
 	if(!avs2wav_openSource(inputFilename))
 	{
@@ -293,6 +301,70 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 ////////////////////////////////////////////////////
 // Open output file
 ////////////////////////////////////////////////////
+bool avs2wav_checkAvsSupport(void)
+{
+	FILE *tmpFile = NULL;
+	PAVIFILE aviFile = NULL;
+	size_t size = 0;
+
+	_TCHAR tempName[4096] = {'\0'};
+	_TCHAR tempPath[2048] = {'\0'};
+	_TCHAR tempPart[2048] = {'\0'};
+
+	wcerr << "Checking Avisynth... " << flush;
+	
+	//Get temp folder
+	if(_wgetenv_s(&size, tempPath, 2048, _T("TMP")) || (wcslen(tempPath) < 1))
+	{
+		if(_wgetenv_s(&size, tempPath, 2048, _T("TEMP")) || (wcslen(tempPath) < 1))
+		{
+			wcscpy_s(tempPath, 2048, _T("."));
+		}
+	}
+
+	//Generate temp file name
+	if(_wtmpnam_s(tempPart, 2048))
+	{
+		wcerr << "Skipped" << endl;
+		wcerr << "--> Unable to generate temporary file name!" << endl;
+		return true;
+	}
+	_stprintf_s(tempName, 4096, _T("%s%savs"), tempPath, tempPart);
+		
+	//Open temp file
+	if(_wfopen_s(&tmpFile, tempName, _T("w+")))
+	{
+		wcerr << "Skipped" << endl;
+		wcerr << "FOpen failed, unable to open temporary file:" << endl;
+		wcerr << tempName << endl << endl;
+		return true;
+	}
+
+	//Write simple AVS script
+	fprintf(tmpFile, "Version()\n");
+	fclose(tmpFile);
+
+	//Try to open AVI file
+	HRESULT success = AVIFileOpen(&aviFile, tempName, OF_SHARE_DENY_WRITE | OF_READ, 0L);
+	if(success != AVIERR_OK)
+	{
+		_tremove(tempName);
+		wcerr << "Failed" << endl;
+		wcerr << "--> AVIFileOpen failed, unable to load Avisynth script!" << endl;
+		return false;
+	}
+
+	AVIFileRelease(aviFile);
+	aviFile = NULL;
+	_tremove(tempName);
+
+	wcerr << "Done" << endl;
+	return true;
+}
+
+////////////////////////////////////////////////////
+// Open output file
+////////////////////////////////////////////////////
 bool avs2wav_openOutput(_TCHAR *outputFilename)
 {
 	wcerr << "Opening output file... " << flush;
@@ -303,8 +375,7 @@ bool avs2wav_openOutput(_TCHAR *outputFilename)
 		if(_wfopen_s(&g_outputFile, outputFilename, _T("wb+")))
 		{
 			wcerr << "Failed" << endl;
-			wcerr << "FOpen failed, unable to open output file:" << endl;
-			wcerr << outputFilename << endl << endl;
+			wcerr << "--> FOpen failed, unable to open output file!" << endl;
 			return false;
 		}
 	}
