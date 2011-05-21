@@ -36,6 +36,7 @@ static LONG g_frameBufferSize = 0;
 static FILE *g_outputFile = NULL;
 static DWORD g_dataSizePos = NULL;
 static DWORD g_dataSize = NULL;
+static LONG g_noSamplesCounter = 0;
 static volatile bool abortFlag = false;
 
 //Functions

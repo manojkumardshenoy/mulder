@@ -109,10 +109,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	LONG status = 0;
 	LONG iterator = 0;
 	cerr << endl;
-	
+
+	//Print progress
+	wcerr << "Dumping audio data, please wait:" << endl;
+	fprintf(stderr, "\r%ld/%ld [%d%%]", 0, g_streamSampleLength, 0);
 
 	//Dump the audio stream
-	wcerr << "Dumping audio data, please wait:" << endl;
 	while(avs2wav_dumpStream(&status) && !abortFlag)
 	{
 		if(!iterator)
@@ -121,7 +123,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			fprintf(stderr, "\r%ld/%ld [%d%%]", g_currentframeSample, g_streamSampleLength, static_cast<int>(progress * 100.0));
 			cerr << flush;
 		}
-		iterator = (iterator + 1) % 512;
+		iterator = (iterator + 1) % 256;
 	}
 
 	//Check if dump was successfull
@@ -195,6 +197,8 @@ int _tmain(int argc, _TCHAR* argv[])
 bool avs2wav_openSource(_TCHAR *inputFilename)
 {	
 	HRESULT success = 0;
+	_TCHAR shortInputFilename[4096] = {L'\0'};
+
 	wcerr << "Analyzing input file... " << flush;
 
 	//Make sure the file exists
@@ -205,8 +209,15 @@ bool avs2wav_openSource(_TCHAR *inputFilename)
 		return false;
 	}
 
+	//Try to get short name
+	DWORD length = GetShortPathName(inputFilename, shortInputFilename, 4096);
+	if(!((length > 0) && (length < 4096)))
+	{
+		shortInputFilename[0] = L'\0';
+	}
+
 	//Open AVI file
-	success = AVIFileOpen(&g_aviFile, inputFilename, OF_SHARE_DENY_WRITE | OF_READ, 0L);
+	success = AVIFileOpen(&g_aviFile, ((wcslen(shortInputFilename) > 0) ? shortInputFilename : inputFilename), OF_SHARE_DENY_WRITE | OF_READ, 0L);
 	if(success != AVIERR_OK)
 	{
 		wcerr << "Failed" << endl;
@@ -303,9 +314,10 @@ bool avs2wav_checkAvsSupport(void)
 	PAVIFILE aviFile = NULL;
 	size_t size = 0;
 
-	_TCHAR tempName[4096] = {'\0'};
-	_TCHAR tempPath[2048] = {'\0'};
-	_TCHAR tempPart[2048] = {'\0'};
+	_TCHAR tempName[4096] = {L'\0'};
+	_TCHAR tempPath[2048] = {L'\0'};
+	_TCHAR tempPart[2048] = {L'\0'};
+	_TCHAR tmpShort[4096] = {L'\0'};
 
 	wcerr << "Checking Avisynth... " << flush;
 	
@@ -326,7 +338,7 @@ bool avs2wav_checkAvsSupport(void)
 		return true;
 	}
 	_stprintf_s(tempName, 4096, _T("%s%savs"), tempPath, tempPart);
-		
+
 	//Open temp file
 	if(_wfopen_s(&tmpFile, tempName, _T("w+")))
 	{
@@ -349,8 +361,15 @@ bool avs2wav_checkAvsSupport(void)
 	
 	fclose(tmpFile);
 
+	//Try to get short name
+	DWORD length = GetShortPathName(tempName, tmpShort, 4096);
+	if(!((length > 0) && (length < 4096)))
+	{
+		tmpShort[0] = L'\0';
+	}
+
 	//Try to open AVI file
-	HRESULT success = AVIFileOpen(&aviFile, tempName, OF_SHARE_DENY_WRITE | OF_READ, 0L);
+	HRESULT success = AVIFileOpen(&aviFile, ((wcslen(tmpShort) > 0) ? tmpShort : tempName), OF_SHARE_DENY_WRITE | OF_READ, 0L);
 	if(success != AVIERR_OK)
 	{
 		_tremove(tempName);
@@ -521,11 +540,22 @@ bool avs2wav_dumpStream(LONG *status)
 		*status = -1;
 		return false;
 	}
-	
+
 	//Increase sample position
 	if(samplesRead > 0)
 	{
 		g_currentframeSample += samplesRead;
+		g_noSamplesCounter = 0;
+	}
+	else
+	{
+		g_noSamplesCounter++;
+		if(g_noSamplesCounter >= 128)
+		{
+			wcerr << endl << endl << "AVIStreamRead succeeded, but did not return any samples!" << endl;
+			*status = -4;
+			return false;
+		}
 	}
 
 	//Write to output file
