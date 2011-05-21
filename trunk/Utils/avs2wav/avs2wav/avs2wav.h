@@ -39,6 +39,7 @@ static DWORD g_dataSize = NULL;
 static volatile bool abortFlag = false;
 
 //Functions
+static bool avs2wav_checkAvsSupport(void);
 static bool avs2wav_openSource(_TCHAR *inputFilename);
 static bool avs2wav_openOutput(_TCHAR *outputFilename);
 static bool avs2wav_dumpStream(LONG *status);
