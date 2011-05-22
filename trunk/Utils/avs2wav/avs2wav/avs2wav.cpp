@@ -47,7 +47,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		cerr << "Set the output file name to \"-\" in order to output raw PCM data to STDOUT." << endl;
 		cerr << "If you only need the audio info, set the output file name to to \"?\"." << endl;
 		cerr << endl;
-		return -1;
+		return AVS2WAV_ERROR_INVALIDARGS;
 	}
 		
 	//Add Ctrl+C handler
@@ -78,7 +78,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		cerr << "System cannot load Avisynth scripts. Terminating!" << endl;
 		AVIFileExit();
-		return -5;
+		return AVS2WAV_ERROR_AVSINITFAILED;
 	}
 
 	//Open input file
@@ -86,7 +86,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		cerr << "Failed to open input file. Terminating!" << endl;
 		AVIFileExit();
-		return -2;
+		return AVS2WAV_ERROR_OPENINPUTFAILED;
 	}
 
 	//Open output file
@@ -106,17 +106,20 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 
 		AVIFileExit();
-		return -3;
+		return AVS2WAV_ERROR_OPENOUTPUTFAILED;
 	}
 
 	//Print stream info
-	wcerr << endl << "[Audio Info]" << endl;
-	wcerr << "TotalSamples: " << g_streamSampleLength << endl;
-	wcerr << "TotalSeconds: " << static_cast<int>(floor((static_cast<double>(g_streamSampleLength) / static_cast<double>(g_wavHeader->nSamplesPerSec)) + 0.5)) << endl;
-	wcerr << "SamplesPerSec: " << g_wavHeader->nSamplesPerSec << endl;
-	wcerr << "BitsPerSample: " << g_wavHeader->wBitsPerSample << endl;
-	wcerr << "Channels: " << g_wavHeader->nChannels << endl;
-	wcerr << "AvgBytesPerSec: " << g_wavHeader->nAvgBytesPerSec << endl;
+	if(g_wavHeader)
+	{
+		wcerr << endl << "[Audio Info]" << endl;
+		wcerr << "TotalSamples: " << g_streamSampleLength << endl;
+		wcerr << "TotalSeconds: " << static_cast<int>(floor((static_cast<double>(g_streamSampleLength) / static_cast<double>(g_wavHeader->nSamplesPerSec)) + 0.5)) << endl;
+		wcerr << "SamplesPerSec: " << g_wavHeader->nSamplesPerSec << endl;
+		wcerr << "BitsPerSample: " << g_wavHeader->wBitsPerSample << endl;
+		wcerr << "Channels: " << g_wavHeader->nChannels << endl;
+		wcerr << "AvgBytesPerSec: " << g_wavHeader->nAvgBytesPerSec << endl;
+	}
 
 	//Exit right now, if in INFO mode
 	if(!g_outputFile)
@@ -136,7 +139,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 
 		AVIFileExit();
-		return 0;
+		return AVS2WAV_ERROR_SUCCESS;
 	}
 
 	LONG status = 0;
@@ -160,7 +163,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 
 	//Check if dump was successfull
-	if(status)
+	if(status != AVS2WAV_STATUS_COMPLETE)
 	{
 		if(abortFlag)
 		{
@@ -168,7 +171,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 		else
 		{
-			cerr << endl << "Failed to dump audio stream. Terminating!" << endl;
+			cerr << endl << "Failed to dump audio stream (status " << status << "). Terminating!" << endl;
 		}
 		
 		fclose(g_outputFile);
@@ -191,7 +194,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 		
 		AVIFileExit();
-		return -4;
+		return AVS2WAV_ERROR_DUMPINCOMPLETE;
 	}
 
 	//Complete
@@ -221,7 +224,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	//Close the AVIFile library
 	AVIFileExit();
-	return 0;
+	return AVS2WAV_ERROR_SUCCESS;
 }
 
 ////////////////////////////////////////////////////
@@ -545,7 +548,7 @@ bool avs2wav_dumpStream(LONG *status)
 	//Any samples left to dump?
 	if(g_currentframeSample >= g_streamSampleLength)
 	{
-		*status = 0;
+		*status = AVS2WAV_STATUS_COMPLETE;
 		return false;
 	}
 
@@ -566,7 +569,7 @@ bool avs2wav_dumpStream(LONG *status)
 		{
 			wcerr << endl << endl << "Memory allocation has failed!" << endl;
 			g_frameBuffer = NULL;
-			*status = -2;
+			*status = AVS2WAV_STATUS_MALLOCFAILED;
 			return false;
 		}
 	}				
@@ -578,7 +581,7 @@ bool avs2wav_dumpStream(LONG *status)
 	if (result != AVIERR_OK)
 	{
 		wcerr << endl << endl << "AVIStreamRead returned error!" << endl;
-		*status = -1;
+		*status = AVS2WAV_STATUS_AVIREADERROR;
 		return false;
 	}
 
@@ -591,10 +594,10 @@ bool avs2wav_dumpStream(LONG *status)
 	else
 	{
 		g_noSamplesCounter++;
-		if(g_noSamplesCounter >= 128)
+		if(g_noSamplesCounter >= AVS2WAV_MAXRETRYCOUNT)
 		{
 			wcerr << endl << endl << "AVIStreamRead succeeded, but did not return any samples!" << endl;
-			*status = -4;
+			*status = AVS2WAV_STATUS_NOSAMPLES;
 			return false;
 		}
 	}
@@ -608,19 +611,19 @@ bool avs2wav_dumpStream(LONG *status)
 			if(size < static_cast<size_t>(bytesRead))
 			{
 				wcerr << endl << endl << "Not all data was written to output file!" << endl;
-				*status = -3;
+				*status = AVS2WAV_STATUS_WAVWRITERROR;
 				return false;
 			}
 		}
 		else
 		{
 			wcerr << endl << endl << "Faild to write data to output file!" << endl;
-			*status = -3;
+			*status = AVS2WAV_STATUS_WAVWRITERROR;
 			return false;
 		}
 	}
 
-	*status = 1;
+	*status = AVS2WAV_STATUS_MOREDATA;
 	return true;
 }
 
