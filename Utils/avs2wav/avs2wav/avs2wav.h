@@ -21,9 +21,28 @@
 
 #include "stdafx.h"
 
-//Const
+//Consts
 static const _TCHAR *stdOutName = _T("<stdout>");
 static const _TCHAR *infoOnlyName = _T("<info>");
+
+//Error codes
+#define AVS2WAV_ERROR_SUCCESS (0)
+#define AVS2WAV_ERROR_INVALIDARGS (-1)
+#define AVS2WAV_ERROR_OPENINPUTFAILED (-2)
+#define AVS2WAV_ERROR_OPENOUTPUTFAILED (-3)
+#define AVS2WAV_ERROR_DUMPINCOMPLETE (-4)
+#define AVS2WAV_ERROR_AVSINITFAILED (-5)
+
+//Statu codes
+#define AVS2WAV_STATUS_MOREDATA (1)
+#define AVS2WAV_STATUS_COMPLETE (0)
+#define AVS2WAV_STATUS_AVIREADERROR (-1)
+#define AVS2WAV_STATUS_MALLOCFAILED (-2)
+#define AVS2WAV_STATUS_WAVWRITERROR (-3)
+#define AVS2WAV_STATUS_NOSAMPLES (-4)
+
+//Misc
+#define AVS2WAV_MAXRETRYCOUNT (128)
 
 //Vars
 static PAVIFILE g_aviFile = NULL;
@@ -40,13 +59,13 @@ static DWORD g_dataSize = NULL;
 static LONG g_noSamplesCounter = 0;
 static volatile bool abortFlag = false;
 
-//Functions
+//Dump functions
 static bool avs2wav_checkAvsSupport(void);
 static bool avs2wav_openSource(_TCHAR *inputFilename);
 static bool avs2wav_openOutput(_TCHAR *outputFilename);
 static bool avs2wav_dumpStream(LONG *status);
 static bool avs2wav_closeOutput(void);
 
-//Helper
+//Helper functions
 static char *utf16_to_utf8(const wchar_t *input);
 static BOOL WINAPI CtrlHandlerRoutine(DWORD dwCtrlType);
