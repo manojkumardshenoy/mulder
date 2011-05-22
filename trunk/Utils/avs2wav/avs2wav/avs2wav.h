@@ -43,6 +43,7 @@ static const _TCHAR *infoOnlyName = _T("<info>");
 
 //Misc
 #define AVS2WAV_MAXRETRYCOUNT (128)
+#define AVS2WAV_FWRITE(Data,Size,File,ErrFlag) { if(fwrite(Data, 1, Size, File) != Size) ErrFlag = true; }
 
 //Vars
 static PAVIFILE g_aviFile = NULL;
@@ -54,8 +55,9 @@ static LONG g_currentframeSample = 0;
 static BYTE *g_frameBuffer = NULL;
 static LONG g_frameBufferSize = 0;
 static FILE *g_outputFile = NULL;
-static DWORD g_dataSizePos = NULL;
-static DWORD g_dataSize = NULL;
+static DWORD g_riffSizePos = 0;
+static DWORD g_dataSizePos = 0;
+static DWORD g_dataSize = 0;
 static LONG g_noSamplesCounter = 0;
 static volatile bool abortFlag = false;
 

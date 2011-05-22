@@ -202,7 +202,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	cerr << "All samples have been dumped. Exiting." << endl;
 
 	//Close output
-	avs2wav_closeOutput();
+	if(!avs2wav_closeOutput())
+	{
+		cerr << endl << "Error while closing output wave file!" << endl;
+	}
 		
 	//Close input
 	AVIStreamRelease(g_aviStream);
@@ -455,6 +458,7 @@ bool avs2wav_openOutput(_TCHAR *outputFilename)
 			wcerr << "_fdopen failed, unable to open standard output handle!" << endl << endl;
 			return false;
 		}
+		g_riffSizePos = 0;
 		g_dataSizePos = 0;
 		wcerr << "Done" << endl;
 		return true;
@@ -462,6 +466,7 @@ bool avs2wav_openOutput(_TCHAR *outputFilename)
 
 	//Init local vars
 	WAVEFORMATEX wavHeader;
+	bool writeError = false;
 	DWORD dwTemp = 0;
 	WORD wTemp = 0;
 	BYTE bTemp = 0;;
@@ -470,44 +475,48 @@ bool avs2wav_openOutput(_TCHAR *outputFilename)
 	memcpy(&wavHeader, g_wavHeader, sizeof(WAVEFORMATEX));
 	wavHeader.cbSize = 0;
 
-	//Write the base header
-	fwrite("RIFF", 1, 4, g_outputFile);
-	dwTemp = g_streamSampleLength * wavHeader.nBlockAlign + 450;
-	fwrite(&dwTemp, 1, 4, g_outputFile);
-	fwrite("WAVE", 1, 4, g_outputFile);
+	//Write the RIFF base header
+	AVS2WAV_FWRITE("RIFF", 4, g_outputFile, writeError)
+	g_riffSizePos = ftell(g_outputFile);
+	dwTemp = (-1);
+	AVS2WAV_FWRITE(&dwTemp, 4, g_outputFile, writeError)
+	AVS2WAV_FWRITE("WAVE", 4, g_outputFile, writeError)
 
 	//Format chunk header
-	fwrite("fmt ", 1, 4, g_outputFile);
-	//Size of the chunk
+	AVS2WAV_FWRITE("fmt ", 4, g_outputFile, writeError)
 	dwTemp = 0x10;
-	fwrite(&dwTemp, 1, 4, g_outputFile);
-	//Format Tag
+	AVS2WAV_FWRITE(&dwTemp, 4, g_outputFile, writeError)
 	wTemp = g_wavHeader->wFormatTag;
-	fwrite(&wTemp, 1, 2, g_outputFile);
-	//Channel count
+	AVS2WAV_FWRITE(&wTemp, 2, g_outputFile, writeError)
 	wTemp = g_wavHeader->nChannels;
-	fwrite(&wTemp, 1, 2, g_outputFile);
-	//Sample Rate
+	AVS2WAV_FWRITE(&wTemp, 2, g_outputFile, writeError)
 	dwTemp = g_wavHeader->nSamplesPerSec;
-	fwrite(&dwTemp, 1, 4, g_outputFile);
-	//Bytes Per Second
+	AVS2WAV_FWRITE(&dwTemp, 4, g_outputFile, writeError)
 	dwTemp = g_wavHeader->nAvgBytesPerSec;
-	fwrite(&dwTemp, 1, 4, g_outputFile);
-	//Bytes Per Sample (all chanels)
+	AVS2WAV_FWRITE(&dwTemp, 4, g_outputFile, writeError)
 	wTemp = g_wavHeader->nBlockAlign;
-	fwrite(&wTemp, 1, 2, g_outputFile);
-	//Bits Per Sample (per channel)
+	AVS2WAV_FWRITE(&wTemp, 2, g_outputFile, writeError)
 	wTemp = g_wavHeader->wBitsPerSample;
-	fwrite(&wTemp, 1, 2, g_outputFile);
+	AVS2WAV_FWRITE(&wTemp, 2, g_outputFile, writeError)
 
-	fwrite("data", 1, 4, g_outputFile);
+	//Data chunk header
+	AVS2WAV_FWRITE("data", 4, g_outputFile, writeError)
 	g_dataSizePos = ftell(g_outputFile);
-	dwTemp = g_dataSizePos * wavHeader.nBlockAlign;
-	fwrite(&dwTemp, 1, 4, g_outputFile);
+	dwTemp = (-1);
+	AVS2WAV_FWRITE(&dwTemp, 4, g_outputFile, writeError)
 	
-	//Reserve space for the data chunk size
-	//fwrite("    ", 1, 4, m_OutputFile);
-	
+	//Make sure header was written correctly
+	if(writeError || (g_riffSizePos < 1) || (g_dataSizePos < 1))
+	{
+		wcerr << "Failed" << endl;
+		wcerr << "fwrite failed, unable to write wave header!" << endl << endl;
+		g_riffSizePos = 0;
+		g_dataSizePos = 0;
+		fclose(g_outputFile);
+		g_outputFile = NULL;
+		return false;
+	}
+
 	wcerr << "Done" << endl;
 	return true;
 };
@@ -522,19 +531,43 @@ bool avs2wav_closeOutput(void)
 		return false;
 	}
 	
-	if(g_dataSizePos)
+	//Calculate RIFF chunk size
+	DWORD riffSize = ftell(g_outputFile) - 8;
+	if(riffSize <= g_dataSize)
 	{
-		fseek(g_outputFile, g_dataSizePos, SEEK_SET);
-		fwrite(&g_dataSize, 1, 4, g_outputFile);
-		g_dataSize += g_dataSizePos - 8;
-		fseek(g_outputFile, 4, SEEK_SET);
-		fwrite(&g_dataSize, 1, 4, g_outputFile);
+		fclose(g_outputFile);
+		g_outputFile = NULL;
+		return false;
 	}
 
+	bool riffSizeUpdated = false;
+	bool dataSizeUpdated = false;
+
+	//Update chunk sizes
+	if(g_dataSizePos && g_riffSizePos)
+	{
+		if(!fseek(g_outputFile, g_riffSizePos, SEEK_SET))
+		{
+			if(fwrite(&riffSize, 1, 4, g_outputFile) == 4)
+			{
+				riffSizeUpdated = true;
+			}
+		}
+		if(!fseek(g_outputFile, g_dataSizePos, SEEK_SET))
+		{
+			if(fwrite(&g_dataSize, 1, 4, g_outputFile) == 4)
+			{
+				dataSizeUpdated = true;
+			}
+		}
+	}
+
+	//Close file
 	fclose(g_outputFile);
 	g_outputFile = NULL;
 	
-	return true;
+	//Check if update was successful
+	return (riffSizeUpdated && dataSizeUpdated);
 }
 
 ////////////////////////////////////////////////////
