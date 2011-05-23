@@ -202,7 +202,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	cerr << "All samples have been dumped. Exiting." << endl;
 
 	//Close output
-	if(!avs2wav_closeOutput())
+	if(!avs2wav_closeOutput(outputFilename))
 	{
 		cerr << endl << "Error while closing output wave file!" << endl;
 	}
@@ -435,6 +435,7 @@ bool avs2wav_openOutput(_TCHAR *outputFilename)
 	//Check for info mode
 	if(!_wcsicmp(outputFilename, infoOnlyName))
 	{
+		g_dataSize = 0;
 		g_outputFile = NULL;
 		wcerr << "Done" << endl;
 		return true;
@@ -458,8 +459,7 @@ bool avs2wav_openOutput(_TCHAR *outputFilename)
 			wcerr << "_fdopen failed, unable to open standard output handle!" << endl << endl;
 			return false;
 		}
-		g_riffSizePos = 0;
-		g_dataSizePos = 0;
+		g_dataSize = 0;
 		wcerr << "Done" << endl;
 		return true;
 	}
@@ -476,47 +476,44 @@ bool avs2wav_openOutput(_TCHAR *outputFilename)
 	wavHeader.cbSize = 0;
 
 	//Write the RIFF base header
-	AVS2WAV_FWRITE("RIFF", 4, g_outputFile, writeError)
-	g_riffSizePos = ftell(g_outputFile);
+	fwrite_checked("RIFF", 4, g_outputFile, &writeError);
 	dwTemp = (-1);
-	AVS2WAV_FWRITE(&dwTemp, 4, g_outputFile, writeError)
-	AVS2WAV_FWRITE("WAVE", 4, g_outputFile, writeError)
+	fwrite_checked(&dwTemp, 4, g_outputFile, &writeError);
+	fwrite_checked("WAVE", 4, g_outputFile, &writeError);
 
 	//Format chunk header
-	AVS2WAV_FWRITE("fmt ", 4, g_outputFile, writeError)
+	fwrite_checked("fmt ", 4, g_outputFile, &writeError);
 	dwTemp = 0x10;
-	AVS2WAV_FWRITE(&dwTemp, 4, g_outputFile, writeError)
+	fwrite_checked(&dwTemp, 4, g_outputFile, &writeError);
 	wTemp = g_wavHeader->wFormatTag;
-	AVS2WAV_FWRITE(&wTemp, 2, g_outputFile, writeError)
+	fwrite_checked(&wTemp, 2, g_outputFile, &writeError);
 	wTemp = g_wavHeader->nChannels;
-	AVS2WAV_FWRITE(&wTemp, 2, g_outputFile, writeError)
+	fwrite_checked(&wTemp, 2, g_outputFile, &writeError);
 	dwTemp = g_wavHeader->nSamplesPerSec;
-	AVS2WAV_FWRITE(&dwTemp, 4, g_outputFile, writeError)
+	fwrite_checked(&dwTemp, 4, g_outputFile, &writeError);
 	dwTemp = g_wavHeader->nAvgBytesPerSec;
-	AVS2WAV_FWRITE(&dwTemp, 4, g_outputFile, writeError)
+	fwrite_checked(&dwTemp, 4, g_outputFile, &writeError);
 	wTemp = g_wavHeader->nBlockAlign;
-	AVS2WAV_FWRITE(&wTemp, 2, g_outputFile, writeError)
+	fwrite_checked(&wTemp, 2, g_outputFile, &writeError);
 	wTemp = g_wavHeader->wBitsPerSample;
-	AVS2WAV_FWRITE(&wTemp, 2, g_outputFile, writeError)
+	fwrite_checked(&wTemp, 2, g_outputFile, &writeError);
 
 	//Data chunk header
-	AVS2WAV_FWRITE("data", 4, g_outputFile, writeError)
-	g_dataSizePos = ftell(g_outputFile);
+	fwrite_checked("data", 4, g_outputFile, &writeError);
 	dwTemp = (-1);
-	AVS2WAV_FWRITE(&dwTemp, 4, g_outputFile, writeError)
+	fwrite_checked(&dwTemp, 4, g_outputFile, &writeError);
 	
 	//Make sure header was written correctly
-	if(writeError || (g_riffSizePos < 1) || (g_dataSizePos < 1))
+	if(writeError || (ftell(g_outputFile) != 44L))
 	{
 		wcerr << "Failed" << endl;
 		wcerr << "fwrite failed, unable to write wave header!" << endl << endl;
-		g_riffSizePos = 0;
-		g_dataSizePos = 0;
 		fclose(g_outputFile);
 		g_outputFile = NULL;
 		return false;
 	}
 
+	g_dataSize = 0;
 	wcerr << "Done" << endl;
 	return true;
 };
@@ -524,16 +521,54 @@ bool avs2wav_openOutput(_TCHAR *outputFilename)
 ////////////////////////////////////////////////////
 // Close output file
 ////////////////////////////////////////////////////
-bool avs2wav_closeOutput(void)
+bool avs2wav_closeOutput(_TCHAR *outputFilename)
 {
 	if(!g_outputFile)
 	{
 		return false;
 	}
 	
+	//Return if output file is STDOUT
+	if(!_wcsicmp(outputFilename, stdOutName))
+	{
+		fclose(g_outputFile);
+		g_outputFile = NULL;
+		return true;
+	}
+
+	//Seek to end of file
+	if(fseek(g_outputFile, 0, SEEK_END))
+	{
+		fclose(g_outputFile);
+		g_outputFile = NULL;
+		return false;
+	}
+	
+	//Query file size
+	__int64 fileSize = _ftelli64(g_outputFile);
+
+	//Make sure data fits in 4GB RIFF/Wave file
+	if(fileSize > 0xffffffffi64)
+	{
+		fclose(g_outputFile);
+		g_outputFile = NULL;
+		return false;
+	}
+
 	//Calculate RIFF chunk size
-	DWORD riffSize = ftell(g_outputFile) - 8;
-	if(riffSize <= g_dataSize)
+	DWORD riffSize = static_cast<DWORD>(fileSize - 8i64);
+	DWORD dataSize = static_cast<DWORD>(fileSize - 44i64);
+
+	//Seek to end of file
+	if(fseek(g_outputFile, 0, SEEK_END))
+	{
+		fclose(g_outputFile);
+		g_outputFile = NULL;
+		return false;
+	}
+
+	//Check data size
+	if(dataSize != g_dataSize)
 	{
 		fclose(g_outputFile);
 		g_outputFile = NULL;
@@ -544,21 +579,18 @@ bool avs2wav_closeOutput(void)
 	bool dataSizeUpdated = false;
 
 	//Update chunk sizes
-	if(g_dataSizePos && g_riffSizePos)
+	if(!fseek(g_outputFile, 4, SEEK_SET))
 	{
-		if(!fseek(g_outputFile, g_riffSizePos, SEEK_SET))
+		if(fwrite(&riffSize, 1, 4, g_outputFile) == 4)
 		{
-			if(fwrite(&riffSize, 1, 4, g_outputFile) == 4)
-			{
-				riffSizeUpdated = true;
-			}
+			riffSizeUpdated = true;
 		}
-		if(!fseek(g_outputFile, g_dataSizePos, SEEK_SET))
+	}
+	if(!fseek(g_outputFile, 40, SEEK_SET))
+	{
+		if(fwrite(&dataSize, 1, 4, g_outputFile) == 4)
 		{
-			if(fwrite(&g_dataSize, 1, 4, g_outputFile) == 4)
-			{
-				dataSizeUpdated = true;
-			}
+			dataSizeUpdated = true;
 		}
 	}
 
@@ -679,6 +711,17 @@ char *utf16_to_utf8(const wchar_t *input)
 
 	Result = WideCharToMultiByte(CP_UTF8, 0, input, -1, Buffer, BuffSize, NULL, NULL);
 	return ((Result > 0) && (Result <= BuffSize)) ? Buffer : NULL;
+}
+
+////////////////////////////////////////////////////
+// Checked fwrite
+////////////////////////////////////////////////////
+static void fwrite_checked(const void *data, size_t size, FILE* file, bool *errorFlag)
+{
+	if(fwrite(data, 1, size, file) != size)
+	{
+		*errorFlag = true;
+	}
 }
 
 ////////////////////////////////////////////////////
