@@ -32,6 +32,7 @@ static const _TCHAR *infoOnlyName = _T("<info>");
 #define AVS2WAV_ERROR_OPENOUTPUTFAILED (-3)
 #define AVS2WAV_ERROR_DUMPINCOMPLETE (-4)
 #define AVS2WAV_ERROR_AVSINITFAILED (-5)
+#define AVS2WAV_ERROR_WAVCLOSEFAILED (-6)
 
 //Statu codes
 #define AVS2WAV_STATUS_MOREDATA (1)

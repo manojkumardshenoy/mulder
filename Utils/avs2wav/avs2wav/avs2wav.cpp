@@ -200,12 +200,6 @@ int _tmain(int argc, _TCHAR* argv[])
 	//Complete
 	fprintf(stderr, "\r%ld/%ld [%d%%]\n\n", g_streamSampleLength, g_streamSampleLength, 100);
 	cerr << "All samples have been dumped. Exiting." << endl;
-
-	//Close output
-	if(!avs2wav_closeOutput(outputFilename))
-	{
-		cerr << endl << "Error while closing output wave file!" << endl;
-	}
 		
 	//Close input
 	AVIStreamRelease(g_aviStream);
@@ -225,8 +219,17 @@ int _tmain(int argc, _TCHAR* argv[])
 		g_frameBuffer = NULL;
 	}
 
+	//Close output
+	if(!avs2wav_closeOutput(outputFilename))
+	{
+		cerr << "Error while closing output wave file!" << endl;
+		AVIFileExit();
+		return AVS2WAV_ERROR_WAVCLOSEFAILED;
+	}
+
 	//Close the AVIFile library
 	AVIFileExit();
+
 	return AVS2WAV_ERROR_SUCCESS;
 }
 
@@ -525,10 +528,11 @@ bool avs2wav_closeOutput(_TCHAR *outputFilename)
 {
 	if(!g_outputFile)
 	{
+		cerr << endl << "File already closed or never opened!" << endl;
 		return false;
 	}
 	
-	//Return if output file is STDOUT
+	//Return if outputting to STDOUT
 	if(!_wcsicmp(outputFilename, stdOutName))
 	{
 		fclose(g_outputFile);
@@ -537,8 +541,9 @@ bool avs2wav_closeOutput(_TCHAR *outputFilename)
 	}
 
 	//Seek to end of file
-	if(fseek(g_outputFile, 0, SEEK_END))
+	if(_fseeki64(g_outputFile, 0i64, SEEK_END))
 	{
+		cerr << endl << "fseek failed, unable to seek to the end of the file!" << endl;
 		fclose(g_outputFile);
 		g_outputFile = NULL;
 		return false;
@@ -550,6 +555,7 @@ bool avs2wav_closeOutput(_TCHAR *outputFilename)
 	//Make sure data fits in 4GB RIFF/Wave file
 	if(fileSize > 0xffffffffi64)
 	{
+		cerr << endl << "Dump size exceeds 4 GB, cannot save as RIFF/Wave file!" << endl;
 		fclose(g_outputFile);
 		g_outputFile = NULL;
 		return false;
@@ -559,17 +565,10 @@ bool avs2wav_closeOutput(_TCHAR *outputFilename)
 	DWORD riffSize = static_cast<DWORD>(fileSize - 8i64);
 	DWORD dataSize = static_cast<DWORD>(fileSize - 44i64);
 
-	//Seek to end of file
-	if(fseek(g_outputFile, 0, SEEK_END))
-	{
-		fclose(g_outputFile);
-		g_outputFile = NULL;
-		return false;
-	}
-
 	//Check data size
 	if(dataSize != g_dataSize)
 	{
+		cerr << endl << "Unconsistent data size detected, cannot finalize Wave file!" << endl;
 		fclose(g_outputFile);
 		g_outputFile = NULL;
 		return false;
@@ -599,7 +598,13 @@ bool avs2wav_closeOutput(_TCHAR *outputFilename)
 	g_outputFile = NULL;
 	
 	//Check if update was successful
-	return (riffSizeUpdated && dataSizeUpdated);
+	if(!(riffSizeUpdated && dataSizeUpdated))
+	{
+		cerr << endl << "Failed to update chunk size fields, take care!" << endl;
+		return false;
+	}
+
+	return true;
 }
 
 ////////////////////////////////////////////////////
