@@ -238,7 +238,7 @@ Section
   !insertmacro SetPreference "osd" "1"
   !insertmacro SetPreference "use_soft_vol" "false"
   !insertmacro SetPreference "autosync" "true"
-  !insertmacro SetPreference "autosync_factor" "100"
+  !insertmacro SetPreference "autosync_factor" "30"
 
   ; -------------------------------------------------------------------
 
