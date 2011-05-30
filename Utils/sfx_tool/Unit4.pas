@@ -1,0 +1,40 @@
+unit Unit4;
+
+interface
+
+uses
+  Classes,Windows,ToolzAPI;
+
+type
+  TCompileThread = class(TThread)
+  public
+    Commandline:AnsiString;
+    ReturnValue:Int64;
+  private
+    { Private declarations }
+  protected
+    procedure Execute; override;
+  end;
+
+implementation
+
+{ Important: Methods and properties of objects in visual components can only be
+  used in a method called using Synchronize, for example,
+
+      Synchronize(UpdateCaption);
+
+  and UpdateCaption could look like,
+
+    procedure CompileThread.UpdateCaption;
+    begin
+      Form1.Caption := 'Updated in a thread';
+    end; }
+
+{ CompileThread }
+
+procedure TCompileThread.Execute;
+begin
+  ReturnValue := Exec(Commandline,SW_HIDE,true);
+end;
+
+end.
