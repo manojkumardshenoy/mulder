@@ -103,7 +103,6 @@ void DropBox::changeEvent(QEvent *e)
 	}
 }
 
-
 void DropBox::showEvent(QShowEvent *event)
 {
 	QRect screenGeometry = QApplication::desktop()->availableGeometry();
@@ -116,13 +115,17 @@ void DropBox::showEvent(QShowEvent *event)
 	if(m_firstShow)
 	{
 		m_firstShow = false;
-		int max_x = screenGeometry.width() - frameGeometry().width();
-		int max_y = screenGeometry.height() - frameGeometry().height();
+		int max_x = screenGeometry.width() - frameGeometry().width() + screenGeometry.left();
+		int max_y = screenGeometry.height() - frameGeometry().height() + screenGeometry.top();
 		move(max_x, max_y);
 		QTimer::singleShot(333, this, SLOT(showToolTip()));
 	}
 
-	m_moving = false;
+	if(m_moving)
+	{
+		QApplication::restoreOverrideCursor();
+		m_moving = false;
+	}
 }
 
 void DropBox::keyPressEvent(QKeyEvent *event)
@@ -180,14 +183,13 @@ void DropBox::mouseMoveEvent(QMouseEvent *event)
 	static const int magnetic = 22;
 	QRect screenGeometry = QApplication::desktop()->availableGeometry();
 	
-	int delta_x = m_mouseReferencePoint.x() - event->globalX();
-	int delta_y = m_mouseReferencePoint.y() - event->globalY();
-	
-	int max_x = screenGeometry.width() - frameGeometry().width();
-	int max_y = screenGeometry.height() - frameGeometry().height();
+	const int delta_x = m_mouseReferencePoint.x() - event->globalX();
+	const int delta_y = m_mouseReferencePoint.y() - event->globalY();
+	const int max_x = screenGeometry.width() - frameGeometry().width() + screenGeometry.left();
+	const int max_y = screenGeometry.height() - frameGeometry().height() + screenGeometry.top();
 
-	int new_x = min(max_x, max(0, m_windowReferencePoint.x() - delta_x));
-	int new_y = min(max_y, max(0, m_windowReferencePoint.y() - delta_y));
+	int new_x = min(max_x, max(screenGeometry.left(), m_windowReferencePoint.x() - delta_x));
+	int new_y = min(max_y, max(screenGeometry.top(), m_windowReferencePoint.y() - delta_y));
 
 	if(new_x < magnetic)
 	{
@@ -213,4 +215,21 @@ void DropBox::mouseMoveEvent(QMouseEvent *event)
 void DropBox::showToolTip(void)
 {
 	QToolTip::showText(dropBoxLabel->mapToGlobal(dropBoxLabel->pos()), dropBoxLabel->toolTip());
+}
+
+bool DropBox::event(QEvent *event)
+{
+	switch(event->type())
+	{
+	case QEvent::Leave:
+	case QEvent::WindowDeactivate:
+		if(m_moving)
+		{
+			QApplication::restoreOverrideCursor();
+			m_moving = false;
+		}
+		break;
+	}
+
+	return QDialog::event(event);
 }

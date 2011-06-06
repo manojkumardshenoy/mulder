@@ -52,22 +52,26 @@ static const struct
 }
 g_lamexp_tools[] =
 {
-	{"3b41f85dde8d4a5a0f4cd5f461099d0db24610ba", CPU_TYPE_ALL, "alac.exe", UINT_MAX},
+	{"0a6252606c1ceda7b8973e5935ef72d60b8fd64d", CPU_TYPE_X86, "aften.i386.exe", 8},
+	{"22253052acba92a0088bbf0aa82a8c505c07b854", CPU_TYPE_SSE, "aften.sse2.exe", 8},
+	{"2996a48b01b65a2c1806482654beeea7ffcf1f80", CPU_TYPE_X64, "aften.x64.exe",  8},
+	{"3b41f85dde8d4a5a0f4cd5f461099d0db24610ba", CPU_TYPE_ALL, "alac.exe", 20},
+	{"3e2cce2e090bab7c7d7d54c21c1fe96917698960", CPU_TYPE_ALL, "avs2wav.exe", 12},
 	{"fb74ac8b73ad8cba2c3b4e6e61f23401d630dc22", CPU_TYPE_ALL, "elevator.exe", UINT_MAX},
-	{"3c647950bccfcc75d0746c0772e7115684be4dc5", CPU_TYPE_ALL, "faad.exe", 27},
+	{"80e372d8b20be24102c18284286fcdf5fa14bd86", CPU_TYPE_ALL, "faad.exe", 27},
 	{"d33cd86f04bd4067e244d2804466583c7b90a4e2", CPU_TYPE_ALL, "flac.exe", 121},
 	{"9328a50e89b54ec065637496d9681a7e3eebf915", CPU_TYPE_ALL, "gpgv.exe", 1411},
 	{"d837bf6ee4dab557d8b02d46c75a24e58980fffa", CPU_TYPE_ALL, "gpgv.gpg", UINT_MAX},
-	{"b8800842893e2900eea7cda5c2556661333bc5db", CPU_TYPE_ALL, "lame.exe", 39916},
+	{"d5b3b80220d85a9fd2f486e37c1fb6511f3c2d72", CPU_TYPE_ALL, "lame.exe", 3990},
 	{"a4e929cfaa42fa2e61a3d0c6434c77a06d45aef3", CPU_TYPE_ALL, "mac.exe", 406},
-	{"9ee3074dc3232c61c0ffd6ae6755f65974695c51", CPU_TYPE_GEN, "mediainfo.i386.exe", 743},
-	{"3691da33a4efd7625d1bd01cbf5ce6ffd8a12d19", CPU_TYPE_X64, "mediainfo.x64.exe", 743},
+	{"a9aa99209fb9ad6ceb97b7a46774fc97141d3dce", CPU_TYPE_GEN, "mediainfo.i386.exe", 745},
+	{"9f6b81378e4c408fe5ded8a26ddd0d6c705d81cb", CPU_TYPE_X64, "mediainfo.x64.exe",  745},
 	{"aa89763a5ba4d1a5986549b9ee53e005c51940c1", CPU_TYPE_ALL, "mpcdec.exe", 435},
-	{"38f81efca6c1eeab0b9dc39d06c2ac750267217f", CPU_TYPE_ALL, "mpg123.exe", 1132},
+	{"c327400fcee268f581d8c03e2a5cbbe8031abb6f", CPU_TYPE_ALL, "mpg123.exe", 1133},
 	{"8dd7138714c3bcb39f5a3213413addba13d06f1e", CPU_TYPE_ALL, "oggdec.exe", UINT_MAX},
-	{"14a99d3b1f0b166dbd68db45196da871e58e14ec", CPU_TYPE_X86, "oggenc2.i386.exe", 287602},
-	{"36f8d93ef3df6a420a73a9b5cf02dafdaf4321f0", CPU_TYPE_SSE, "oggenc2.sse2.exe", 287602},
-	{"87ad1af73e9b9db3da3db645e5c2253cb0c2a2ea", CPU_TYPE_X64, "oggenc2.x64.exe", 287602},
+	{"97fed9ab0657baa36b6c7764461d66318654dbe6", CPU_TYPE_X86, "oggenc2.i386.exe", 287603},
+	{"e6dc1f31ce822588fa9cf52a341cebffd526546c", CPU_TYPE_SSE, "oggenc2.sse2.exe", 287603},
+	{"79aa9da24b2a0728cdf0a6927be316b864595b83", CPU_TYPE_X64, "oggenc2.x64.exe",  287603},
 	{"0d9035bb62bdf46a2785261f8be5a4a0972abd15", CPU_TYPE_ALL, "shorten.exe", 361},
 	{"50ead3b852cbfc067a402e6c2d0d0d8879663dec", CPU_TYPE_ALL, "sox.exe", 1432},
 	{"8671e16497a2d217d3707d4aa418678d02b16bcc", CPU_TYPE_ALL, "speexdec.exe", 12},
@@ -101,6 +105,7 @@ InitializationThread::InitializationThread(const lamexp_cpu_t *cpuFeatures)
 void InitializationThread::run()
 {
 	m_bSuccess = false;
+	bool bCustom = false;
 	delay();
 
 	//CPU type selection
@@ -133,10 +138,11 @@ void InitializationThread::run()
 
 	QDir toolsDir(":/tools/");
 	QList<QFileInfo> toolsList = toolsDir.entryInfoList(QStringList("*.*"), QDir::Files, QDir::Name);
-	
+	QDir appDir = QDir(QCoreApplication::applicationDirPath()).canonicalPath();
+
 	QTime timer;
 	timer.start();
-
+	
 	//Extract all files
 	while(!toolsList.isEmpty())
 	{
@@ -157,14 +163,25 @@ void InitializationThread::run()
 			
 			if(toolCpuType & cpuSupport)
 			{
-				qDebug("Extracting file: %s -> %s", toolName.toLatin1().constData(),  toolShortName.toLatin1().constData());
-				LockedFile *lockedFile = new LockedFile(QString(":/tools/%1").arg(toolName), QString("%1/tool_%2").arg(lamexp_temp_folder2(), toolShortName), toolHash);
-				lamexp_register_tool(toolShortName, lockedFile, toolVersion);
+				QFileInfo customTool(QString("%1/tools/%2/%3").arg(appDir.canonicalPath(), QString::number(lamexp_version_build()), toolShortName));
+				if(customTool.exists() && customTool.isFile())
+				{
+					bCustom = true;
+					qDebug("Setting up file: %s <- %s", toolShortName.toLatin1().constData(), appDir.relativeFilePath(customTool.canonicalFilePath()).toLatin1().constData());
+					LockedFile *lockedFile = new LockedFile(customTool.canonicalFilePath());
+					lamexp_register_tool(toolShortName, lockedFile, UINT_MAX);
+				}
+				else
+				{
+					qDebug("Extracting file: %s -> %s", toolName.toLatin1().constData(),  toolShortName.toLatin1().constData());
+					LockedFile *lockedFile = new LockedFile(QString(":/tools/%1").arg(toolName), QString("%1/tool_%2").arg(lamexp_temp_folder2(), toolShortName), toolHash);
+					lamexp_register_tool(toolShortName, lockedFile, toolVersion);
+				}
 			}
 		}
 		catch(char *errorMsg)
 		{
-			qFatal("At least one of the required tools could not be extracted:\n%s", errorMsg);
+			qFatal("At least one of the required tools could not be initialized:\n%s", errorMsg);
 			return;
 		}
 	}
@@ -176,12 +193,18 @@ void InitializationThread::run()
 		return;
 	}
 	
+	qDebug("All extracted.\n");
+
 	//Clean-up
 	mapChecksum.clear();
 	mapVersion.clear();
 	mapCpuType.clear();
-
-	qDebug("All extracted.\n");
+	
+	//Using any custom tools?
+	if(bCustom)
+	{
+		qWarning("Warning: Using custom tools, you might encounter unexpected problems!\n");
+	}
 
 	//Check delay
 	double delayExtract = static_cast<double>(timer.elapsed()) / 1000.0;
@@ -273,10 +296,12 @@ void InitializationThread::initTranslations(void)
 
 void InitializationThread::initNeroAac(void)
 {
+	const QString appPath = QDir(QCoreApplication::applicationDirPath()).canonicalPath();
+	
 	QFileInfo neroFileInfo[3];
-	neroFileInfo[0] = QFileInfo(QString("%1/neroAacEnc.exe").arg(QCoreApplication::applicationDirPath()));
-	neroFileInfo[1] = QFileInfo(QString("%1/neroAacDec.exe").arg(QCoreApplication::applicationDirPath()));
-	neroFileInfo[2] = QFileInfo(QString("%1/neroAacTag.exe").arg(QCoreApplication::applicationDirPath()));
+	neroFileInfo[0] = QFileInfo(QString("%1/neroAacEnc.exe").arg(appPath));
+	neroFileInfo[1] = QFileInfo(QString("%1/neroAacDec.exe").arg(appPath));
+	neroFileInfo[2] = QFileInfo(QString("%1/neroAacTag.exe").arg(appPath));
 	
 	bool neroFilesFound = true;
 	for(int i = 0; i < 3; i++)	{ if(!neroFileInfo[i].exists()) neroFilesFound = false; }

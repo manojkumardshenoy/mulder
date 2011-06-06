@@ -36,6 +36,7 @@
 class QString;
 class QStringList;
 class QDate;
+class QWidget;
 class LockedFile;
 enum QtMsgType;
 
@@ -84,6 +85,7 @@ const char *lamexp_support_url(void);
 void lamexp_init_console(int argc, char* argv[]);
 bool lamexp_init_qt(int argc, char* argv[]);
 int lamexp_init_ipc(void);
+LONG WINAPI lamexp_exception_handler(__in struct _EXCEPTION_POINTERS *ExceptionInfo);
 void lamexp_message_handler(QtMsgType type, const char *msg);
 void lamexp_register_tool(const QString &toolName, LockedFile *file, unsigned int version = 0);
 bool lamexp_check_tool(const QString &toolName);
@@ -114,6 +116,7 @@ QString lamexp_known_folder(lamexp_known_folder_t folder_id);
 __int64 lamexp_free_diskspace(const QString &path);
 bool lamexp_remove_file(const QString &filename);
 bool lamexp_themes_enabled(void);
+void lamexp_blink_window(QWidget *poWindow, unsigned int count = 10, unsigned int delay = 150);
 
 //Debug-only functions
 SIZE_T lamexp_dbg_private_bytes(void);

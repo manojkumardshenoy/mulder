@@ -197,6 +197,18 @@
     </message>
     <message>
         <source>Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.</source>
+        <translation type="unfinished">Внимание: это демо (пре-релиз) версия LameXP прекратит работу %1. Осталось %2 дней.</translation>
+    </message>
+    <message>
+        <source>Aften &amp;minus; A/52 audio encoder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ALAC Decoder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copyright (c) 2004 David Hammerton. Contributions by Cody Brocious.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -226,6 +238,202 @@
         <source>Version</source>
         <translation>Версия</translation>
     </message>
+    <message>
+        <source>Bitrate</source>
+        <translation type="unfinished">Битрэйт</translation>
+    </message>
+    <message>
+        <source>Constant</source>
+        <translation type="unfinished">Постоянный</translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished">Переменный</translation>
+    </message>
+</context>
+<context>
+    <name>CueImportDialog</name>
+    <message>
+        <source>Import Cue Sheet</source>
+        <translation type="unfinished">Импорт Cue плэйлиста</translation>
+    </message>
+    <message>
+        <source>The following Cue Sheet will be split and imported into LameXP.</source>
+        <translation type="unfinished">Следующий Cue плэйлист будет импортирован в LameXP.</translation>
+    </message>
+    <message>
+        <source>Loading Cue Sheet file, please be patient...</source>
+        <translation type="unfinished">Загружаю Cue плэйлист, пожалуйста, подождите...</translation>
+    </message>
+    <message>
+        <source>An unknown error has occured!</source>
+        <translation type="unfinished">Неизвестная ошибка случилась!</translation>
+    </message>
+    <message>
+        <source>Failed to load the Cue Sheet file:</source>
+        <translation type="unfinished">Немогу загрузить Cue плэйлист:</translation>
+    </message>
+    <message>
+        <source>Cue Sheet Error</source>
+        <translation type="unfinished">Ошибка Cue плэйлиста</translation>
+    </message>
+    <message>
+        <source>The specified file could not be found!</source>
+        <translation type="unfinished">Выбранный файл неможет быть найден!</translation>
+    </message>
+    <message>
+        <source>The file could not be opened for reading. Make sure you have the required rights!</source>
+        <translation type="unfinished">Немогу открыть файл для чтения. Пожалуйста проверьте что у вас есть доступ к файлу!</translation>
+    </message>
+    <message>
+        <source>The provided file does not look like a valid Cue Sheet disc image file!</source>
+        <translation type="unfinished">Выбранный файл непохож на провельный Cue плэйлист!</translation>
+    </message>
+    <message>
+        <source>Could not find any supported audio track in the Cue Sheet image!</source>
+        <translatorcomment>пыщь пыщь</translatorcomment>
+        <translation type="unfinished">Немогу найти аудио файлы, которые LameXP поддерживает!</translation>
+    </message>
+    <message>
+        <source>Note that LameXP can not handle &quot;binary&quot; Cue Sheet images.</source>
+        <translation type="unfinished">Заметьте, что LameXP неподдерживает бинарныйе Cue плэйлисты.</translation>
+    </message>
+    <message>
+        <source>The selected Cue Sheet file contains inconsistent information. Take care!</source>
+        <translatorcomment>омг сложные фразы</translatorcomment>
+        <translation type="unfinished">Выбранный Cue плэйлист содержит нелогичную информацию. Будьте осторожны!</translation>
+    </message>
+    <message>
+        <source>Choose Output Directory</source>
+        <translation type="unfinished">Выберите выходную директорию</translation>
+    </message>
+    <message>
+        <source>LameXP</source>
+        <translation type="unfinished">LameXP</translation>
+    </message>
+    <message>
+        <source>Error: The selected output directory is not writable!</source>
+        <translation type="unfinished">Ошибка: выбранная попка недостпна для записи!</translation>
+    </message>
+    <message>
+        <source>Low Diskspace Warning</source>
+        <translation type="unfinished">Предупреждение: Мало свободного места на диске</translation>
+    </message>
+    <message>
+        <source>There are less than %1 GB of free diskspace available in the selected output directory.</source>
+        <translation type="unfinished">В выбранный папке менее %1 Гб свободного места.</translation>
+    </message>
+    <message>
+        <source>It is highly recommend to free up more diskspace before proceeding with the import!</source>
+        <translation type="unfinished">Очень рекомендуется освободить больше места, перед началом операции!</translation>
+    </message>
+    <message>
+        <source>Analyzing file(s), please wait...</source>
+        <translation type="unfinished">Анализирую файл(ы), пожалуйста подождите...</translation>
+    </message>
+    <message>
+        <source>Splitting file(s), please wait...</source>
+        <translation type="unfinished">Разделяю файл(ы), пожалуйста подождите...</translation>
+    </message>
+    <message>
+        <source>Error: The selected output directory could not be created!</source>
+        <translation type="unfinished">Ошибка: Немогу создать директорию!</translation>
+    </message>
+    <message>
+        <source>An unexpected error has occured while splitting the Cue Sheet!</source>
+        <translation type="unfinished">Непредвиденная ошибка случилась при разделении Cue плэйлиста!</translation>
+    </message>
+    <message>
+        <source>Imported %1 track(s) from the Cue Sheet and skipped %2 track(s).</source>
+        <translation type="unfinished">Импортировано %1 трэк(ов) из Cue плэйлиста, пропущено %2 трэк(ов).</translation>
+    </message>
+    <message>
+        <source>Cue Sheet Completed</source>
+        <translation type="unfinished">Операция завершена</translation>
+    </message>
+    <message>
+        <source>Analysis Failed</source>
+        <translation type="unfinished">Ошибка при анализе</translation>
+    </message>
+    <message>
+        <source>Warning: The format of some of the input files could not be determined!</source>
+        <translation type="unfinished">Предупреждение: формат некоторых файлов неопознан!</translation>
+    </message>
+    <message>
+        <source>Continue Anyway</source>
+        <translation type="unfinished">Всёравно продолжить</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation type="unfinished">Отмена</translation>
+    </message>
+    <message>
+        <source>Process was aborted by the user after %1 track(s)!</source>
+        <translation type="unfinished">Процесс отменён пользователем после %1 трэк(ов)!</translation>
+    </message>
+</context>
+<context>
+    <name>CueSheetImport</name>
+    <message>
+        <source>Import Cue Sheet</source>
+        <translation type="unfinished">Импортировать Cue плэйлист</translation>
+    </message>
+    <message>
+        <source> Output Directory </source>
+        <translation type="unfinished">Выходная папка</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation type="unfinished">Выбрать...</translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation type="unfinished">Отменить</translation>
+    </message>
+    <message>
+        <source>Existing Source File</source>
+        <translation type="unfinished">Файл найден</translation>
+    </message>
+    <message>
+        <source>Missing Source File (Tracks will be skipped!)</source>
+        <translation type="unfinished">Файл не найден (будет пропущен!)</translation>
+    </message>
+</context>
+<context>
+    <name>CueSheetModel</name>
+    <message>
+        <source>No.</source>
+        <translatorcomment>беда беда</translatorcomment>
+        <translation type="unfinished">№.</translation>
+    </message>
+    <message>
+        <source>File / Track</source>
+        <translation type="unfinished">Файл / Трэк</translation>
+    </message>
+    <message>
+        <source>Index</source>
+        <translation type="unfinished">Индекс</translation>
+    </message>
+    <message>
+        <source>File %1</source>
+        <translation type="unfinished">Файл %1</translation>
+    </message>
+    <message>
+        <source>Track %1</source>
+        <translation type="unfinished">Трэк %1</translation>
+    </message>
+    <message>
+        <source>Unknown Artist</source>
+        <translation type="unfinished">Неизвестный Артист</translation>
+    </message>
+    <message>
+        <source>Unknown Title</source>
+        <translation type="unfinished">Неизвестное Название</translation>
+    </message>
+    <message>
+        <source>Duration</source>
+        <translation type="unfinished">Длителность</translation>
+    </message>
 </context>
 <context>
     <name>DecoderRegistry</name>
@@ -246,7 +454,7 @@
     <name>DiskObserverThread</name>
     <message>
         <source>Low diskspace on drive &apos;%1&apos; detected (only %2 MB are free), problems can occur!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Мало свободного места на диске &apos;%1&apos; (свободного всего %2 Мб), могут возникнуть проблемы!</translation>
     </message>
 </context>
 <context>
@@ -597,10 +805,6 @@
         <translation type="unfinished">Пользовательские параметры кодера</translation>
     </message>
     <message>
-        <source>LAME:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>OggEnc2:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -742,7 +946,7 @@
     </message>
     <message>
         <source>Open Folder Recursively...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Открытие папок рекурсивно...</translation>
     </message>
     <message>
         <source>Adding file(s), please wait...</source>
@@ -774,7 +978,7 @@
     </message>
     <message>
         <source>Scanning folder(s) for files, please wait...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Поиск файлов, пожалуйста, подождите...</translation>
     </message>
     <message>
         <source>Downloading WMA Decoder Setup, please wait...</source>
@@ -1208,15 +1412,11 @@
     </message>
     <message>
         <source>Add Folder</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Добавить папку</translation>
     </message>
     <message>
         <source>Cannot write to the selected directory. Please choose another directory!</source>
         <translation type="unfinished">Директория недоступна для записи. Пожалуйса, выберите другую директорию!</translation>
-    </message>
-    <message>
-        <source>CDA Files</source>
-        <translation type="unfinished">Файлы CDA</translation>
     </message>
     <message>
         <source>%1 file(s) have been rejected, because they are dummy CDDA files!</source>
@@ -1246,6 +1446,159 @@
         <source>Help &amp;&amp; Support</source>
         <translation type="unfinished">Помощиь и поддержка</translation>
     </message>
+    <message>
+        <source>Check for Beta Updates</source>
+        <translation type="unfinished">Поиск БЕТА версий</translation>
+    </message>
+    <message>
+        <source>Beta Updates</source>
+        <translation type="unfinished">БЕТА обновления</translation>
+    </message>
+    <message>
+        <source>Do you really want LameXP to check for Beta (pre-release) updates?</source>
+        <translation type="unfinished">Вы действительно хотите проверить наличие БЕТА (пред-релизных) обновлений?</translation>
+    </message>
+    <message>
+        <source>LameXP will check for Beta (pre-release) updates from now on.</source>
+        <translation type="unfinished">LameXP бует проверять наличие БЕТА (пред-релизных) обновлений.</translation>
+    </message>
+    <message>
+        <source>Check Now</source>
+        <translation type="unfinished">Проверить сейчас</translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation type="unfinished">Отменить</translation>
+    </message>
+    <message>
+        <source>LameXP will &lt;i&gt;not&lt;/i&gt; check for Beta (pre-release) updates from now on.</source>
+        <translation type="unfinished">LameXP не бует &lt;i&gt;проверять&lt;/i&gt; наличие БЕТА (пред-релизных) обновлений.</translation>
+    </message>
+    <message>
+        <source>Aften A/52</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lame MP3:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Aften A/52:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Aften A/52 Options </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Film Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Film Standard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Music Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Music Standard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Speech</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None (Default)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto Select</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1+1 (Ch1,Ch2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1/0 (C)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2/0 (L,R)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>3/0 (L,R,C)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2/1 (L,R,S)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>3/1 (L,R,C,S)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2/2 (L,R,SL,SR)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>3/2 (L,R,C,SL,SR)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio Coding Mode:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dynamic Range Compression:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fast Bit Allocation (Less Accurate)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Exponent Search Size:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Don&apos;t Show Again</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Import Cue Sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open Cue Sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cue Sheet File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CDDA Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cue Sheet</source>
+        <translation type="unfinished">Cue плэйлист</translation>
+    </message>
+    <message>
+        <source>%1 file(s) have been rejected, because they appear to be Cue Sheet images!</source>
+        <translation type="unfinished">%1 файл(ов) было отменено, потому что они являются Cue плэйлистами!</translation>
+    </message>
+    <message>
+        <source>Please use LameXP&apos;s Cue Sheet wizard for importing Cue Sheet files.</source>
+        <translatorcomment>пиздец бред</translatorcomment>
+        <translation type="unfinished">Пожалуйста используйте Мастер импорта Cue файлов для импорта Cue файлов.</translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -1270,11 +1623,11 @@
     <name>MetaInfoDialog</name>
     <message>
         <source>Load Artwork From File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Загрузить картинку из файла</translation>
     </message>
     <message>
         <source>Clear Artwork</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Удалить картинку</translation>
     </message>
     <message>
         <source>Meta Information</source>
@@ -1286,15 +1639,28 @@
     </message>
     <message>
         <source>Load Artwork</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Загрузить картинку</translation>
     </message>
     <message>
         <source>Artwork Error</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>!!переделать!!</translatorcomment>
+        <translation type="unfinished">Ошибка с картинкой</translation>
     </message>
     <message>
         <source>Sorry, failed to load artwork from selected file!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Извините, немогу загрузит картинку из выделенного файла!</translation>
+    </message>
+    <message>
+        <source>Edit this Information</source>
+        <translation type="unfinished">Редактировать эту информацию</translation>
+    </message>
+    <message>
+        <source>Copy everything to Meta Info tab</source>
+        <translation type="unfinished">Скопировать всё во вкладку Метаинформации</translation>
+    </message>
+    <message>
+        <source>Clear all Meta Info</source>
+        <translation type="unfinished">Очистить всю метаинформацию</translation>
     </message>
 </context>
 <context>
@@ -1658,7 +2024,7 @@
     </message>
     <message>
         <source>Executable &apos;%1&apos; requires Windows XP or later.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Исполняемому файлу &apos;%1&apos; требуется как минимум WindowsXP.</translation>
     </message>
 </context>
 <context>
@@ -1772,6 +2138,27 @@
     <message>
         <source>This usually indicates your are currently using a pre-release version of LameXP.</source>
         <translation type="unfinished">Это обычно показывает, что вы используете бета версию LameXP.</translation>
+    </message>
+    <message>
+        <source>Update is being downloaded, please be patient...</source>
+        <translation type="unfinished">Скачиваю обновления, будте терпеливы...</translation>
+    </message>
+    <message>
+        <source>Update ready to install. Applicaion will quit...</source>
+        <translation type="unfinished">Обновление готово к инсталяции. Завершение приложения...</translation>
+    </message>
+    <message>
+        <source>Update failed. Please try again or download manually!</source>
+        <translatorcomment>Фак май майнд</translatorcomment>
+        <translation type="unfinished">Немогу установит обновление.Пожалуйста попробуйте снова или установите обновление вручную!</translation>
+    </message>
+    <message>
+        <source>It appears that the computer currently is offline!</source>
+        <translation type="unfinished">Похоже компьютер неподключен к интернету!</translation>
+    </message>
+    <message>
+        <source>Please make sure your computer is connected to the internet and try again.</source>
+        <translation type="unfinished">Пожалуйста, проверьте, что ваш компьютер подключен к интернету и поробуйте снова.</translation>
     </message>
 </context>
 </TS>

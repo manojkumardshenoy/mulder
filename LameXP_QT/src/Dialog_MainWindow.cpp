@@ -29,6 +29,7 @@
 #include "Dialog_About.h"
 #include "Dialog_Update.h"
 #include "Dialog_DropBox.h"
+#include "Dialog_CueImport.h"
 #include "Thread_FileAnalyzer.h"
 #include "Thread_MessageHandler.h"
 #include "Model_MetaInfo.h"
@@ -71,7 +72,6 @@
 #define ABORT_IF_BUSY if(m_banner->isVisible() || m_delayedFileTimer->isActive()) { MessageBeep(MB_ICONEXCLAMATION); return; }
 #define SET_TEXT_COLOR(WIDGET,COLOR) { QPalette _palette = WIDGET->palette(); _palette.setColor(QPalette::WindowText, COLOR); WIDGET->setPalette(_palette); }
 #define SET_FONT_BOLD(WIDGET,BOLD) { QFont _font = WIDGET->font(); _font.setBold(BOLD); WIDGET->setFont(_font); }
-#define FLASH_WINDOW(WND) { FLASHWINFO flashInfo; memset(&flashInfo, 0, sizeof(FLASHWINFO)); flashInfo.cbSize = sizeof(FLASHWINFO); flashInfo.dwFlags = FLASHW_ALL; flashInfo.uCount = 12; flashInfo.dwTimeout = 125; flashInfo.hwnd = WND->winId(); FlashWindowEx(&flashInfo); }
 #define LINK(URL) QString("<a href=\"%1\">%2</a>").arg(URL).arg(URL)
 #define TEMP_HIDE_DROPBOX(CMD) { bool __dropBoxVisible = m_dropBox->isVisible(); if(__dropBoxVisible) m_dropBox->hide(); CMD; if(__dropBoxVisible) m_dropBox->show(); }
 
@@ -85,8 +85,10 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	m_fileListModel(fileListModel),
 	m_metaData(metaInfo),
 	m_settings(settingsModel),
+	m_neroEncoderAvailable(lamexp_check_tool("neroAacEnc.exe") && lamexp_check_tool("neroAacDec.exe") && lamexp_check_tool("neroAacTag.exe")),
 	m_accepted(false),
-	m_firstTimeShown(true)
+	m_firstTimeShown(true),
+	m_OutputFolderViewInitialized(false)
 {
 	//Init the dialog, from the .ui file
 	setupUi(this);
@@ -134,7 +136,6 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 
 	//Setup "Output" tab
 	m_fileSystemModel = new QFileSystemModelEx();
-	m_fileSystemModel->setRootPath(m_fileSystemModel->rootPath());
 	m_fileSystemModel->installEventFilter(this);
 	outputFolderView->setModel(m_fileSystemModel);
 	outputFolderView->header()->setStretchLastSection(true);
@@ -142,7 +143,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	outputFolderView->header()->hideSection(2);
 	outputFolderView->header()->hideSection(3);
 	outputFolderView->setHeaderHidden(true);
-	outputFolderView->setAnimated(true);
+	outputFolderView->setAnimated(false);
 	outputFolderView->setMouseTracking(false);
 	outputFolderView->setContextMenuPolicy(Qt::CustomContextMenu);
 	while(saveToSourceFolderCheckBox->isChecked() != m_settings->outputToSourceDir()) saveToSourceFolderCheckBox->click();
@@ -151,8 +152,6 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	connect(outputFolderView, SIGNAL(activated(QModelIndex)), this, SLOT(outputFolderViewClicked(QModelIndex)));
 	connect(outputFolderView, SIGNAL(pressed(QModelIndex)), this, SLOT(outputFolderViewClicked(QModelIndex)));
 	connect(outputFolderView, SIGNAL(entered(QModelIndex)), this, SLOT(outputFolderViewMoved(QModelIndex)));
-	outputFolderView->setCurrentIndex(m_fileSystemModel->index(m_settings->outputDir()));
-	outputFolderViewClicked(outputFolderView->currentIndex());
 	connect(buttonMakeFolder, SIGNAL(clicked()), this, SLOT(makeFolderButtonClicked()));
 	connect(buttonGotoHome, SIGNAL(clicked()), SLOT(gotoHomeFolderButtonClicked()));
 	connect(buttonGotoDesktop, SIGNAL(clicked()), this, SLOT(gotoDesktopButtonClicked()));
@@ -164,6 +163,8 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	connect(outputFolderView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(outputFolderContextMenu(QPoint)));
 	connect(m_showFolderContextAction, SIGNAL(triggered(bool)), this, SLOT(showFolderContextActionTriggered()));
 	outputFolderLabel->installEventFilter(this);
+	outputFolderView->setCurrentIndex(m_fileSystemModel->index(m_settings->outputDir()));
+	outputFolderViewClicked(outputFolderView->currentIndex());
 	
 	//Setup "Meta Data" tab
 	m_metaInfoModel = new MetaInfoModel(m_metaData, 6);
@@ -185,15 +186,18 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	m_encoderButtonGroup->addButton(radioButtonEncoderMP3, SettingsModel::MP3Encoder);
 	m_encoderButtonGroup->addButton(radioButtonEncoderVorbis, SettingsModel::VorbisEncoder);
 	m_encoderButtonGroup->addButton(radioButtonEncoderAAC, SettingsModel::AACEncoder);
+	m_encoderButtonGroup->addButton(radioButtonEncoderAC3, SettingsModel::AC3Encoder);
 	m_encoderButtonGroup->addButton(radioButtonEncoderFLAC, SettingsModel::FLACEncoder);
 	m_encoderButtonGroup->addButton(radioButtonEncoderPCM, SettingsModel::PCMEncoder);
 	m_modeButtonGroup = new QButtonGroup(this);
 	m_modeButtonGroup->addButton(radioButtonModeQuality, SettingsModel::VBRMode);
 	m_modeButtonGroup->addButton(radioButtonModeAverageBitrate, SettingsModel::ABRMode);
 	m_modeButtonGroup->addButton(radioButtonConstBitrate, SettingsModel::CBRMode);
+	radioButtonEncoderAAC->setEnabled(m_neroEncoderAvailable);
 	radioButtonEncoderMP3->setChecked(m_settings->compressionEncoder() == SettingsModel::MP3Encoder);
 	radioButtonEncoderVorbis->setChecked(m_settings->compressionEncoder() == SettingsModel::VorbisEncoder);
-	radioButtonEncoderAAC->setChecked(m_settings->compressionEncoder() == SettingsModel::AACEncoder);
+	radioButtonEncoderAAC->setChecked((m_settings->compressionEncoder() == SettingsModel::AACEncoder) && m_neroEncoderAvailable);
+	radioButtonEncoderAC3->setChecked(m_settings->compressionEncoder() == SettingsModel::AC3Encoder);
 	radioButtonEncoderFLAC->setChecked(m_settings->compressionEncoder() == SettingsModel::FLACEncoder);
 	radioButtonEncoderPCM->setChecked(m_settings->compressionEncoder() == SettingsModel::PCMEncoder);
 	radioButtonModeQuality->setChecked(m_settings->compressionRCMode() == SettingsModel::VBRMode);
@@ -213,11 +217,15 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	spinBoxNormalizationFilter->setValue(static_cast<double>(m_settings->normalizationFilterMaxVolume()) / 100.0);
 	spinBoxToneAdjustBass->setValue(static_cast<double>(m_settings->toneAdjustBass()) / 100.0);
 	spinBoxToneAdjustTreble->setValue(static_cast<double>(m_settings->toneAdjustTreble()) / 100.0);
+	spinBoxAftenSearchSize->setValue(m_settings->aftenExponentSearchSize());
 	comboBoxMP3ChannelMode->setCurrentIndex(m_settings->lameChannelMode());
 	comboBoxSamplingRate->setCurrentIndex(m_settings->samplingRate());
 	comboBoxNeroAACProfile->setCurrentIndex(m_settings->neroAACProfile());
+	comboBoxAftenCodingMode->setCurrentIndex(m_settings->aftenAudioCodingMode());
+	comboBoxAftenDRCMode->setCurrentIndex(m_settings->aftenDynamicRangeCompression());
 	while(checkBoxBitrateManagement->isChecked() != m_settings->bitrateManagementEnabled()) checkBoxBitrateManagement->click();
 	while(checkBoxNeroAAC2PassMode->isChecked() != m_settings->neroAACEnable2Pass()) checkBoxNeroAAC2PassMode->click();
+	while(checkBoxAftenFastAllocation->isChecked() != m_settings->aftenFastBitAllocation()) checkBoxAftenFastAllocation->click();
 	while(checkBoxNormalizationFilter->isChecked() != m_settings->normalizationFilterEnabled()) checkBoxNormalizationFilter->click();
 	while(checkBoxAutoDetectInstances->isChecked() != (m_settings->maximumInstances() < 1)) checkBoxAutoDetectInstances->click();
 	while(checkBoxUseSystemTempFolder->isChecked() == m_settings->customTempPathEnabled()) checkBoxUseSystemTempFolder->click();
@@ -225,6 +233,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	lineEditCustomParamOggEnc->setText(m_settings->customParametersOggEnc());
 	lineEditCustomParamNeroAAC->setText(m_settings->customParametersNeroAAC());
 	lineEditCustomParamFLAC->setText(m_settings->customParametersFLAC());
+	lineEditCustomParamAften->setText(m_settings->customParametersAften());
 	lineEditCustomTempFolder->setText(QDir::toNativeSeparators(m_settings->customTempPath()));
 	connect(sliderLameAlgoQuality, SIGNAL(valueChanged(int)), this, SLOT(updateLameAlgoQuality(int)));
 	connect(checkBoxBitrateManagement, SIGNAL(clicked(bool)), this, SLOT(bitrateManagementEnabledChanged(bool)));
@@ -235,6 +244,10 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	connect(checkBoxNeroAAC2PassMode, SIGNAL(clicked(bool)), this, SLOT(neroAAC2PassChanged(bool)));
 	connect(comboBoxNeroAACProfile, SIGNAL(currentIndexChanged(int)), this, SLOT(neroAACProfileChanged(int)));
 	connect(checkBoxNormalizationFilter, SIGNAL(clicked(bool)), this, SLOT(normalizationEnabledChanged(bool)));
+	connect(comboBoxAftenCodingMode, SIGNAL(currentIndexChanged(int)), this, SLOT(aftenCodingModeChanged(int)));
+	connect(comboBoxAftenDRCMode, SIGNAL(currentIndexChanged(int)), this, SLOT(aftenDRCModeChanged(int)));
+	connect(spinBoxAftenSearchSize, SIGNAL(valueChanged(int)), this, SLOT(aftenSearchSizeChanged(int)));
+	connect(checkBoxAftenFastAllocation, SIGNAL(clicked(bool)), this, SLOT(aftenFastAllocationChanged(bool)));
 	connect(spinBoxNormalizationFilter, SIGNAL(valueChanged(double)), this, SLOT(normalizationMaxVolumeChanged(double)));
 	connect(spinBoxToneAdjustBass, SIGNAL(valueChanged(double)), this, SLOT(toneAdjustBassChanged(double)));
 	connect(spinBoxToneAdjustTreble, SIGNAL(valueChanged(double)), this, SLOT(toneAdjustTrebleChanged(double)));
@@ -243,6 +256,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	connect(lineEditCustomParamOggEnc, SIGNAL(editingFinished()), this, SLOT(customParamsChanged()));
 	connect(lineEditCustomParamNeroAAC, SIGNAL(editingFinished()), this, SLOT(customParamsChanged()));
 	connect(lineEditCustomParamFLAC, SIGNAL(editingFinished()), this, SLOT(customParamsChanged()));
+	connect(lineEditCustomParamAften, SIGNAL(editingFinished()), this, SLOT(customParamsChanged()));
 	connect(sliderMaxInstances, SIGNAL(valueChanged(int)), this, SLOT(updateMaximumInstances(int)));
 	connect(checkBoxAutoDetectInstances, SIGNAL(clicked(bool)), this, SLOT(autoDetectInstancesChanged(bool)));
 	connect(buttonBrowseCustomTempFolder, SIGNAL(clicked()), this, SLOT(browseCustomTempFolderButtonClicked()));
@@ -319,6 +333,8 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	actionDisableWmaDecoderNotifications->setChecked(!m_settings->wmaDecoderNotificationsEnabled());
 	actionDisableShellIntegration->setChecked(!m_settings->shellIntegrationEnabled());
 	actionDisableShellIntegration->setDisabled(lamexp_portable_mode() && actionDisableShellIntegration->isChecked());
+	actionCheckForBetaUpdates->setChecked(m_settings->autoUpdateCheckBeta() || lamexp_version_demo());
+	actionCheckForBetaUpdates->setEnabled(!lamexp_version_demo());
 	connect(actionDisableUpdateReminder, SIGNAL(triggered(bool)), this, SLOT(disableUpdateReminderActionTriggered(bool)));
 	connect(actionDisableSounds, SIGNAL(triggered(bool)), this, SLOT(disableSoundsActionTriggered(bool)));
 	connect(actionInstallWMADecoder, SIGNAL(triggered(bool)), this, SLOT(installWMADecoderActionTriggered(bool)));
@@ -326,6 +342,8 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	connect(actionDisableWmaDecoderNotifications, SIGNAL(triggered(bool)), this, SLOT(disableWmaDecoderNotificationsActionTriggered(bool)));
 	connect(actionDisableShellIntegration, SIGNAL(triggered(bool)), this, SLOT(disableShellIntegrationActionTriggered(bool)));
 	connect(actionShowDropBoxWidget, SIGNAL(triggered(bool)), this, SLOT(showDropBoxWidgetActionTriggered(bool)));
+	connect(actionCheckForBetaUpdates, SIGNAL(triggered(bool)), this, SLOT(checkForBetaUpdatesActionTriggered(bool)));
+	connect(actionImportCueSheet, SIGNAL(triggered(bool)), this, SLOT(importCueSheetActionTriggered(bool)));
 		
 	//Activate help menu actions
 	actionVisitHomepage->setData(QString::fromLatin1(lamexp_website_url()));
@@ -359,6 +377,8 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	m_messageHandler = new MessageHandlerThread();
 	m_delayedFileList = new QStringList();
 	m_delayedFileTimer = new QTimer();
+	m_delayedFileTimer->setSingleShot(true);
+	m_delayedFileTimer->setInterval(5000);
 	connect(m_messageHandler, SIGNAL(otherInstanceDetected()), this, SLOT(notifyOtherInstance()), Qt::QueuedConnection);
 	connect(m_messageHandler, SIGNAL(fileReceived(QString)), this, SLOT(addFileDelayed(QString)), Qt::QueuedConnection);
 	connect(m_messageHandler, SIGNAL(killSignalReceived()), this, SLOT(close()), Qt::QueuedConnection);
@@ -441,6 +461,7 @@ void MainWindow::addFiles(const QStringList &files)
 	FileAnalyzer *analyzer = new FileAnalyzer(files);
 	connect(analyzer, SIGNAL(fileSelected(QString)), m_banner, SLOT(setText(QString)), Qt::QueuedConnection);
 	connect(analyzer, SIGNAL(fileAnalyzed(AudioFileModel)), m_fileListModel, SLOT(addFile(AudioFileModel)), Qt::QueuedConnection);
+	connect(m_banner, SIGNAL(userAbort()), analyzer, SLOT(abortProcess()), Qt::DirectConnection);
 
 	m_banner->show(tr("Adding file(s), please wait..."), analyzer);
 
@@ -450,7 +471,11 @@ void MainWindow::addFiles(const QStringList &files)
 	}
 	if(analyzer->filesDummyCDDA())
 	{
-		QMessageBox::warning(this, tr("CDA Files"), QString("<nobr>%1<br><br>%2<br>%3</nobr>").arg(tr("%1 file(s) have been rejected, because they are dummy CDDA files!").arg(analyzer->filesDummyCDDA()), tr("Sorry, LameXP cannot extract audio tracks from an Audio&minus;CD at present."), tr("We recommend using %1 for that purpose.").arg("<a href=\"http://www.exactaudiocopy.de/\">Exact Audio Copy</a>")));
+		QMessageBox::warning(this, tr("CDDA Files"), QString("<nobr>%1<br><br>%2<br>%3</nobr>").arg(tr("%1 file(s) have been rejected, because they are dummy CDDA files!").arg(analyzer->filesDummyCDDA()), tr("Sorry, LameXP cannot extract audio tracks from an Audio&minus;CD at present."), tr("We recommend using %1 for that purpose.").arg("<a href=\"http://www.exactaudiocopy.de/\">Exact Audio Copy</a>")));
+	}
+	if(analyzer->filesCueSheet())
+	{
+		QMessageBox::warning(this, tr("Cue Sheet"), QString("<nobr>%1<br>%2</nobr>").arg(tr("%1 file(s) have been rejected, because they appear to be Cue Sheet images!").arg(analyzer->filesCueSheet()), tr("Please use LameXP's Cue Sheet wizard for importing Cue Sheet files.")));
 	}
 	if(analyzer->filesRejected())
 	{
@@ -623,7 +648,11 @@ void MainWindow::showEvent(QShowEvent *event)
 	m_accepted = false;
 	m_dropNoteLabel->setGeometry(0, 0, sourceFileView->width(), sourceFileView->height());
 	sourceModelChanged();
-	tabWidget->setCurrentIndex(0);
+	
+	if(!event->spontaneous())
+	{
+		tabWidget->setCurrentIndex(0);
+	}
 
 	if(m_firstTimeShown)
 	{
@@ -646,12 +675,14 @@ void MainWindow::changeEvent(QEvent *e)
 {
 	if(e->type() == QEvent::LanguageChange)
 	{
-		int comboBoxIndex[3];
+		int comboBoxIndex[5];
 		
 		//Backup combobox indices, as retranslateUi() resets
 		comboBoxIndex[0] = comboBoxMP3ChannelMode->currentIndex();
 		comboBoxIndex[1] = comboBoxSamplingRate->currentIndex();
 		comboBoxIndex[2] = comboBoxNeroAACProfile->currentIndex();
+		comboBoxIndex[3] = comboBoxAftenCodingMode->currentIndex();
+		comboBoxIndex[4] = comboBoxAftenDRCMode->currentIndex();
 		
 		//Re-translate from UIC
 		Ui::MainWindow::retranslateUi(this);
@@ -660,6 +691,8 @@ void MainWindow::changeEvent(QEvent *e)
 		comboBoxMP3ChannelMode->setCurrentIndex(comboBoxIndex[0]);
 		comboBoxSamplingRate->setCurrentIndex(comboBoxIndex[1]);
 		comboBoxNeroAACProfile->setCurrentIndex(comboBoxIndex[2]);
+		comboBoxAftenCodingMode->setCurrentIndex(comboBoxIndex[3]);
+		comboBoxAftenDRCMode->setCurrentIndex(comboBoxIndex[4]);
 
 		//Update the window title
 		if(LAMEXP_DEBUG)
@@ -741,7 +774,11 @@ void MainWindow::dropEvent(QDropEvent *event)
 		}
 	}
 	
-	addFiles(droppedFiles);
+	if(!droppedFiles.isEmpty())
+	{
+		m_delayedFileList->append(droppedFiles);
+		QTimer::singleShot(0, this, SLOT(handleDelayedFiles()));
+	}
 }
 
 /*
@@ -804,6 +841,10 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 ////////////////////////////////////////////////////////////
 // Slots
 ////////////////////////////////////////////////////////////
+
+// =========================================================
+// Show window slots
+// =========================================================
 
 /*
  * Window shown
@@ -893,9 +934,9 @@ void MainWindow::windowShown(void)
 	}
 
 	//Check for AAC support
-	if(m_settings->neroAacNotificationsEnabled())
+	if(m_neroEncoderAvailable)
 	{
-		if(lamexp_check_tool("neroAacEnc.exe") && lamexp_check_tool("neroAacDec.exe") && lamexp_check_tool("neroAacTag.exe"))
+		if(m_settings->neroAacNotificationsEnabled())
 		{
 			if(lamexp_tool_version("neroAacEnc.exe") < lamexp_toolver_neroaac())
 			{
@@ -907,19 +948,25 @@ void MainWindow::windowShown(void)
 				QMessageBox::information(this, tr("AAC Encoder Outdated"), messageText);
 			}
 		}
-		else
+	}
+	else
+	{
+		if(m_settings->neroAacNotificationsEnabled())
 		{
-			radioButtonEncoderAAC->setEnabled(false);
 			QString appPath = QDir(QCoreApplication::applicationDirPath()).canonicalPath();
 			if(appPath.isEmpty()) appPath = QCoreApplication::applicationDirPath();
 			QString messageText;
-			messageText += QString("<nobr>%1<br>").arg(tr("The Nero AAC encoder could not be found. AAC encoding support will be disabled."));
-			messageText += QString("%1<br><br>").arg(tr("Please put 'neroAacEnc.exe', 'neroAacDec.exe' and 'neroAacTag.exe' into the LameXP directory!"));
-			messageText += QString("%1<br>").arg(tr("Your LameXP directory is located here:"));
-			messageText += QString("<i><nobr><a href=\"file:///%1\">%1</a></nobr></i><br><br>").arg(QDir::toNativeSeparators(appPath));
-			messageText += QString("%1<br>").arg(tr("You can download the Nero AAC encoder for free from the official Nero website at:"));
+			messageText += QString("<nobr>%1</nobr><br>").arg(tr("The Nero AAC encoder could not be found. AAC encoding support will be disabled.").replace("-", "&minus;"));
+			messageText += QString("<nobr>%1</nobr><br><br>").arg(tr("Please put 'neroAacEnc.exe', 'neroAacDec.exe' and 'neroAacTag.exe' into the LameXP directory!").replace("-", "&minus;"));
+			messageText += QString("<nobr>%1</nobr><br>").arg(tr("Your LameXP directory is located here:").replace("-", "&minus;"));
+			messageText += QString("<nobr><i><a href=\"file:///%1\">%2</a></i></nobr><br><br>").arg(QDir::toNativeSeparators(appPath), QDir::toNativeSeparators(appPath).replace("-", "&minus;"));
+			messageText += QString("<nobr>%1</nobr><br>").arg(tr("You can download the Nero AAC encoder for free from the official Nero website at:").replace("-", "&minus;"));
 			messageText += "<tt>" + LINK(AboutDialog::neroAacUrl) + "</tt><br></nobr>";
-			QMessageBox::information(this, tr("AAC Support Disabled"), messageText);
+			if(QMessageBox::information(this, tr("AAC Support Disabled"), messageText, tr("Discard"), tr("Don't Show Again")) == 1)
+			{
+				m_settings->neroAacNotificationsEnabled(false);
+				actionDisableNeroAacNotifications->setChecked(!m_settings->neroAacNotificationsEnabled());
+			}
 		}
 	}
 	
@@ -929,16 +976,22 @@ void MainWindow::windowShown(void)
 		if(!lamexp_check_tool("wmawav.exe"))
 		{
 			QString messageText;
-			messageText += QString("<nobr>%1<br>").arg(tr("LameXP has detected that the WMA File Decoder component is not currently installed on your system."));
-			messageText += QString("%1<br><br>").arg(tr("You won't be able to process WMA files as input unless the WMA File Decoder component is installed!"));
-			messageText += QString("%1</nobr>").arg(tr("Do you want to download and install the WMA File Decoder component now?"));
-			if(QMessageBox::information(this, tr("WMA Decoder Missing"), messageText, tr("Download && Install"), tr("Postpone")) == 0)
+			messageText += QString("<nobr>%1</nobr><br>").arg(tr("LameXP has detected that the WMA File Decoder component is not currently installed on your system.").replace("-", "&minus;"));
+			messageText += QString("<nobr>%1</nobr><br><br>").arg(tr("You won't be able to process WMA files as input unless the WMA File Decoder component is installed!").replace("-", "&minus;"));
+			messageText += QString("<nobr>%1</nobr>").arg(tr("Do you want to download and install the WMA File Decoder component now?").replace("-", "&minus;"));
+			int result = QMessageBox::information(this, tr("WMA Decoder Missing"), messageText, tr("Download && Install"), tr("Don't Show Again"), tr("Postpone"));
+			if(result == 0)
 			{
 				if(installWMADecoder())
 				{
 					QApplication::quit();
 					return;
 				}
+			}
+			else if(result == 1)
+			{
+				m_settings->wmaDecoderNotificationsEnabled(false);
+				actionDisableWmaDecoderNotifications->setChecked(!m_settings->wmaDecoderNotificationsEnabled());
 			}
 		}
 	}
@@ -973,28 +1026,18 @@ void MainWindow::windowShown(void)
 	}
 }
 
-/*
- * About button
- */
-void MainWindow::aboutButtonClicked(void)
-{
-	ABORT_IF_BUSY;
-
-	TEMP_HIDE_DROPBOX
-	(
-		AboutDialog *aboutBox = new AboutDialog(m_settings, this);
-		aboutBox->exec();
-		LAMEXP_DELETE(aboutBox);
-	)
-}
+// =========================================================
+// Main button solots
+// =========================================================
 
 /*
  * Encode button
  */
 void MainWindow::encodeButtonClicked(void)
 {
-	static const __int64 oneGigabyte = 1073741824; 
-	static const __int64 minimumFreeDiskspaceMultiplier = 2;
+	static const __int64 oneGigabyte = 1073741824i64; 
+	static const __int64 minimumFreeDiskspaceMultiplier = 2i64;
+	static const char *writeTestBuffer = "LAMEXP_WRITE_TEST";
 	
 	ABORT_IF_BUSY;
 
@@ -1039,6 +1082,7 @@ void MainWindow::encodeButtonClicked(void)
 	case SettingsModel::MP3Encoder:
 	case SettingsModel::VorbisEncoder:
 	case SettingsModel::AACEncoder:
+	case SettingsModel::AC3Encoder:
 	case SettingsModel::FLACEncoder:
 	case SettingsModel::PCMEncoder:
 		break;
@@ -1050,8 +1094,8 @@ void MainWindow::encodeButtonClicked(void)
 
 	if(!m_settings->outputToSourceDir())
 	{
-		QFile writeTest(QString("%1/~%2.txt").arg(m_settings->outputDir(), QUuid::createUuid().toString()));
-		if(!writeTest.open(QIODevice::ReadWrite))
+		QFile writeTest(QString("%1/~%2.txt").arg(m_settings->outputDir(), lamexp_rand_str()));
+		if(!(writeTest.open(QIODevice::ReadWrite) && (writeTest.write(writeTestBuffer) == strlen(writeTestBuffer))))
 		{
 			QMessageBox::warning(this, tr("LameXP"), QString("%1<br><nobr>%2</nobr><br><br>%3").arg(tr("Cannot write to the selected output directory."), m_settings->outputDir(), tr("Please choose a different directory!")));
 			tabWidget->setCurrentIndex(1);
@@ -1069,6 +1113,21 @@ void MainWindow::encodeButtonClicked(void)
 }
 
 /*
+ * About button
+ */
+void MainWindow::aboutButtonClicked(void)
+{
+	ABORT_IF_BUSY;
+
+	TEMP_HIDE_DROPBOX
+	(
+		AboutDialog *aboutBox = new AboutDialog(m_settings, this);
+		aboutBox->exec();
+		LAMEXP_DELETE(aboutBox);
+	)
+}
+
+/*
  * Close button
  */
 void MainWindow::closeButtonClicked(void)
@@ -1077,13 +1136,504 @@ void MainWindow::closeButtonClicked(void)
 	close();
 }
 
+// =========================================================
+// Tab widget slots
+// =========================================================
+
+/*
+ * Tab page changed
+ */
+void MainWindow::tabPageChanged(int idx)
+{
+	QList<QAction*> actions = m_tabActionGroup->actions();
+	for(int i = 0; i < actions.count(); i++)
+	{
+		bool ok = false;
+		int actionIndex = actions.at(i)->data().toInt(&ok);
+		if(ok && actionIndex == idx)
+		{
+			actions.at(i)->setChecked(true);
+		}
+	}
+
+	int initialWidth = this->width();
+	int maximumWidth = QApplication::desktop()->width();
+
+	if(this->isVisible())
+	{
+		while(tabWidget->width() < tabWidget->sizeHint().width())
+		{
+			int previousWidth = this->width();
+			this->resize(this->width() + 1, this->height());
+			if(this->frameGeometry().width() >= maximumWidth) break;
+			if(this->width() <= previousWidth) break;
+		}
+	}
+
+	if(idx == tabWidget->indexOf(tabOptions) && scrollArea->widget() && this->isVisible())
+	{
+		for(int i = 0; i < 2; i++)
+		{
+			QApplication::processEvents();
+			while(scrollArea->viewport()->width() < scrollArea->widget()->width())
+			{
+				int previousWidth = this->width();
+				this->resize(this->width() + 1, this->height());
+				if(this->frameGeometry().width() >= maximumWidth) break;
+				if(this->width() <= previousWidth) break;
+			}
+		}
+	}
+	else if(idx == tabWidget->indexOf(tabSourceFiles))
+	{
+		m_dropNoteLabel->setGeometry(0, 0, sourceFileView->width(), sourceFileView->height());
+	}
+	else if(idx == tabWidget->indexOf(tabOutputDir))
+	{
+		if(!m_OutputFolderViewInitialized)
+		{
+			QTimer::singleShot(0, this, SLOT(initOutputFolderModel()));
+		}
+	}
+
+	if(initialWidth < this->width())
+	{
+		QPoint prevPos = this->pos();
+		int delta = (this->width() - initialWidth) >> 2;
+		move(prevPos.x() - delta, prevPos.y());
+	}
+}
+
+/*
+ * Tab action triggered
+ */
+void MainWindow::tabActionActivated(QAction *action)
+{
+	if(action && action->data().isValid())
+	{
+		bool ok = false;
+		int index = action->data().toInt(&ok);
+		if(ok)
+		{
+			tabWidget->setCurrentIndex(index);
+		}
+	}
+}
+
+// =========================================================
+// View menu slots
+// =========================================================
+
+/*
+ * Style action triggered
+ */
+void MainWindow::styleActionActivated(QAction *action)
+{
+	//Change style setting
+	if(action && action->data().isValid())
+	{
+		bool ok = false;
+		int actionIndex = action->data().toInt(&ok);
+		if(ok)
+		{
+			m_settings->interfaceStyle(actionIndex);
+		}
+	}
+
+	//Set up the new style
+	switch(m_settings->interfaceStyle())
+	{
+	case 1:
+		if(actionStyleCleanlooks->isEnabled())
+		{
+			actionStyleCleanlooks->setChecked(true);
+			QApplication::setStyle(new QCleanlooksStyle());
+			break;
+		}
+	case 2:
+		if(actionStyleWindowsVista->isEnabled())
+		{
+			actionStyleWindowsVista->setChecked(true);
+			QApplication::setStyle(new QWindowsVistaStyle());
+			break;
+		}
+	case 3:
+		if(actionStyleWindowsXP->isEnabled())
+		{
+			actionStyleWindowsXP->setChecked(true);
+			QApplication::setStyle(new QWindowsXPStyle());
+			break;
+		}
+	case 4:
+		if(actionStyleWindowsClassic->isEnabled())
+		{
+			actionStyleWindowsClassic->setChecked(true);
+			QApplication::setStyle(new QWindowsStyle());
+			break;
+		}
+	default:
+		actionStylePlastique->setChecked(true);
+		QApplication::setStyle(new QPlastiqueStyle());
+		break;
+	}
+
+	//Force re-translate after style change
+	changeEvent(new QEvent(QEvent::LanguageChange));
+}
+
+/*
+ * Language action triggered
+ */
+void MainWindow::languageActionActivated(QAction *action)
+{
+	if(action->data().type() == QVariant::String)
+	{
+		QString langId = action->data().toString();
+
+		if(lamexp_install_translator(langId))
+		{
+			action->setChecked(true);
+			m_settings->currentLanguage(langId);
+		}
+	}
+}
+
+/*
+ * Load language from file action triggered
+ */
+void MainWindow::languageFromFileActionActivated(bool checked)
+{
+	QFileDialog dialog(this, tr("Load Translation"));
+	dialog.setFileMode(QFileDialog::ExistingFile);
+	dialog.setNameFilter(QString("%1 (*.qm)").arg(tr("Translation Files")));
+
+	if(dialog.exec())
+	{
+		QStringList selectedFiles = dialog.selectedFiles();
+		if(lamexp_install_translator_from_file(selectedFiles.first()))
+		{
+			QList<QAction*> actions = m_languageActionGroup->actions();
+			while(!actions.isEmpty())
+			{
+				actions.takeFirst()->setChecked(false);
+			}
+		}
+		else
+		{
+			languageActionActivated(m_languageActionGroup->actions().first());
+		}
+	}
+}
+
+// =========================================================
+// Tools menu slots
+// =========================================================
+
+/*
+ * Disable update reminder action
+ */
+void MainWindow::disableUpdateReminderActionTriggered(bool checked)
+{
+	if(checked)
+	{
+		if(0 == QMessageBox::question(this, tr("Disable Update Reminder"), tr("Do you really want to disable the update reminder?"), tr("Yes"), tr("No"), QString(), 1))
+		{
+			QMessageBox::information(this, tr("Update Reminder"), QString("%1<br>%2").arg(tr("The update reminder has been disabled."), tr("Please remember to check for updates at regular intervals!")));
+			m_settings->autoUpdateEnabled(false);
+		}
+		else
+		{
+			m_settings->autoUpdateEnabled(true);
+		}
+	}
+	else
+	{
+			QMessageBox::information(this, tr("Update Reminder"), tr("The update reminder has been re-enabled."));
+			m_settings->autoUpdateEnabled(true);
+	}
+
+	actionDisableUpdateReminder->setChecked(!m_settings->autoUpdateEnabled());
+}
+
+/*
+ * Disable sound effects action
+ */
+void MainWindow::disableSoundsActionTriggered(bool checked)
+{
+	if(checked)
+	{
+		if(0 == QMessageBox::question(this, tr("Disable Sound Effects"), tr("Do you really want to disable all sound effects?"), tr("Yes"), tr("No"), QString(), 1))
+		{
+			QMessageBox::information(this, tr("Sound Effects"), tr("All sound effects have been disabled."));
+			m_settings->soundsEnabled(false);
+		}
+		else
+		{
+			m_settings->soundsEnabled(true);
+		}
+	}
+	else
+	{
+			QMessageBox::information(this, tr("Sound Effects"), tr("The sound effects have been re-enabled."));
+			m_settings->soundsEnabled(true);
+	}
+
+	actionDisableSounds->setChecked(!m_settings->soundsEnabled());
+}
+
+/*
+ * Disable Nero AAC encoder action
+ */
+void MainWindow::disableNeroAacNotificationsActionTriggered(bool checked)
+{
+	if(checked)
+	{
+		if(0 == QMessageBox::question(this, tr("Nero AAC Notifications"), tr("Do you really want to disable all Nero AAC Encoder notifications?"), tr("Yes"), tr("No"), QString(), 1))
+		{
+			QMessageBox::information(this, tr("Nero AAC Notifications"), tr("All Nero AAC Encoder notifications have been disabled."));
+			m_settings->neroAacNotificationsEnabled(false);
+		}
+		else
+		{
+			m_settings->neroAacNotificationsEnabled(true);
+		}
+	}
+	else
+	{
+			QMessageBox::information(this, tr("Nero AAC Notifications"), tr("The Nero AAC Encoder notifications have been re-enabled."));
+			m_settings->neroAacNotificationsEnabled(true);
+	}
+
+	actionDisableNeroAacNotifications->setChecked(!m_settings->neroAacNotificationsEnabled());
+}
+
+/*
+ * Disable WMA Decoder component action
+ */
+void MainWindow::disableWmaDecoderNotificationsActionTriggered(bool checked)
+{
+	if(checked)
+	{
+		if(0 == QMessageBox::question(this, tr("WMA Decoder Notifications"), tr("Do you really want to disable all WMA Decoder notifications?"), tr("Yes"), tr("No"), QString(), 1))
+		{
+			QMessageBox::information(this, tr("WMA Decoder Notifications"), tr("All WMA Decoder notifications have been disabled."));
+			m_settings->wmaDecoderNotificationsEnabled(false);
+		}
+		else
+		{
+			m_settings->wmaDecoderNotificationsEnabled(true);
+		}
+	}
+	else
+	{
+			QMessageBox::information(this, tr("WMA Decoder Notifications"), tr("The WMA Decoder notifications have been re-enabled."));
+			m_settings->wmaDecoderNotificationsEnabled(true);
+	}
+
+	actionDisableWmaDecoderNotifications->setChecked(!m_settings->wmaDecoderNotificationsEnabled());
+}
+
+/*
+ * Download and install WMA Decoder component
+ */
+void MainWindow::installWMADecoderActionTriggered(bool checked)
+{
+	if(QMessageBox::question(this, tr("Install WMA Decoder"), tr("Do you want to download and install the WMA File Decoder component now?"), tr("Download && Install"), tr("Cancel")) == 0)
+	{
+		if(installWMADecoder())
+		{
+			QApplication::quit();
+			return;
+		}
+	}
+}
+
+/*
+ * Import a Cue Sheet file
+ */
+void MainWindow::importCueSheetActionTriggered(bool checked)
+{
+	ABORT_IF_BUSY;
+	
+	TEMP_HIDE_DROPBOX
+	(
+		QString selectedCueFile = QFileDialog::getOpenFileName(this, tr("Open Cue Sheet"), QString(), QString("%1 (*.cue)").arg(tr("Cue Sheet File")));
+		if(!selectedCueFile.isEmpty())
+		{
+			CueImportDialog *cueImporter  = new CueImportDialog(this, m_fileListModel, selectedCueFile);
+			cueImporter->exec();
+			LAMEXP_DELETE(cueImporter);
+		}
+	)
+}
+
+/*
+ * Show the "drop box" widget
+ */
+void MainWindow::showDropBoxWidgetActionTriggered(bool checked)
+{
+	m_settings->dropBoxWidgetEnabled(true);
+	
+	if(!m_dropBox->isVisible())
+	{
+		m_dropBox->show();
+	}
+	
+	lamexp_blink_window(m_dropBox);
+}
+
+/*
+ * Check for beta (pre-release) updates
+ */
+void MainWindow::checkForBetaUpdatesActionTriggered(bool checked)
+{	
+	bool checkUpdatesNow = false;
+	
+	if(checked)
+	{
+		if(0 == QMessageBox::question(this, tr("Beta Updates"), tr("Do you really want LameXP to check for Beta (pre-release) updates?"), tr("Yes"), tr("No"), QString(), 1))
+		{
+			if(0 == QMessageBox::information(this, tr("Beta Updates"), tr("LameXP will check for Beta (pre-release) updates from now on."), tr("Check Now"), tr("Discard")))
+			{
+				checkUpdatesNow = true;
+			}
+			m_settings->autoUpdateCheckBeta(true);
+		}
+		else
+		{
+			m_settings->autoUpdateCheckBeta(false);
+		}
+	}
+	else
+	{
+			QMessageBox::information(this, tr("Beta Updates"), tr("LameXP will <i>not</i> check for Beta (pre-release) updates from now on."));
+			m_settings->autoUpdateCheckBeta(false);
+	}
+
+	actionCheckForBetaUpdates->setChecked(m_settings->autoUpdateCheckBeta());
+
+	if(checkUpdatesNow)
+	{
+		if(checkForUpdates())
+		{
+			QApplication::quit();
+		}
+	}
+}
+
+/*
+ * Disable shell integration action
+ */
+void MainWindow::disableShellIntegrationActionTriggered(bool checked)
+{
+	if(checked)
+	{
+		if(0 == QMessageBox::question(this, tr("Shell Integration"), tr("Do you really want to disable the LameXP shell integration?"), tr("Yes"), tr("No"), QString(), 1))
+		{
+			ShellIntegration::remove();
+			QMessageBox::information(this, tr("Shell Integration"), tr("The LameXP shell integration has been disabled."));
+			m_settings->shellIntegrationEnabled(false);
+		}
+		else
+		{
+			m_settings->shellIntegrationEnabled(true);
+		}
+	}
+	else
+	{
+			ShellIntegration::install();
+			QMessageBox::information(this, tr("Shell Integration"), tr("The LameXP shell integration has been re-enabled."));
+			m_settings->shellIntegrationEnabled(true);
+	}
+
+	actionDisableShellIntegration->setChecked(!m_settings->shellIntegrationEnabled());
+	
+	if(lamexp_portable_mode() && actionDisableShellIntegration->isChecked())
+	{
+		actionDisableShellIntegration->setEnabled(false);
+	}
+}
+
+// =========================================================
+// Help menu slots
+// =========================================================
+
+/*
+ * Visit homepage action
+ */
+void MainWindow::visitHomepageActionActivated(void)
+{
+	if(QAction *action = dynamic_cast<QAction*>(QObject::sender()))
+	{
+		if(action->data().isValid() && (action->data().type() == QVariant::String))
+		{
+			QDesktopServices::openUrl(QUrl(action->data().toString()));
+		}
+	}
+}
+
+/*
+ * Show document
+ */
+void MainWindow::documentActionActivated(void)
+{
+	if(QAction *action = dynamic_cast<QAction*>(QObject::sender()))
+	{
+		if(action->data().isValid() && (action->data().type() == QVariant::String))
+		{
+			QFileInfo document(action->data().toString());
+			QFileInfo resource(QString(":/doc/%1.html").arg(document.baseName()));
+			if(document.exists() && document.isFile() && (document.size() == resource.size()))
+			{
+				QDesktopServices::openUrl(QUrl::fromLocalFile(document.canonicalFilePath()));
+			}
+			else
+			{
+				QFile source(resource.filePath());
+				QFile output(QString("%1/%2.%3.html").arg(lamexp_temp_folder2(), document.baseName(), lamexp_rand_str().left(8)));
+				if(source.open(QIODevice::ReadOnly) && output.open(QIODevice::ReadWrite))
+				{
+					output.write(source.readAll());
+					action->setData(output.fileName());
+					source.close();
+					output.close();
+					QDesktopServices::openUrl(QUrl::fromLocalFile(output.fileName()));
+				}
+			}
+		}
+	}
+}
+
+/*
+ * Check for updates action
+ */
+void MainWindow::checkUpdatesActionActivated(void)
+{
+	ABORT_IF_BUSY;
+	bool bFlag = false;
+
+	TEMP_HIDE_DROPBOX
+	(
+		bFlag = checkForUpdates();
+	)
+	
+	if(bFlag)
+	{
+		QApplication::quit();
+	}
+}
+
+// =========================================================
+// Source file slots
+// =========================================================
+
 /*
  * Add file(s) button
  */
 void MainWindow::addFilesButtonClicked(void)
 {
 	ABORT_IF_BUSY;
-	
+
 	TEMP_HIDE_DROPBOX
 	(
 		if(lamexp_themes_enabled())
@@ -1221,6 +1771,13 @@ void MainWindow::showDetailsButtonClicked(void)
 		(
 			iResult = metaInfoDialog->exec(file, index.row() > 0, index.row() < m_fileListModel->rowCount() - 1);
 		)
+		
+		if(iResult == INT_MAX)
+		{
+			m_metaInfoModel->assignInfoFrom(file);
+			tabWidget->setCurrentIndex(tabWidget->indexOf(tabMetaData));
+			break;
+		}
 
 		if(!iResult) break;
 	}
@@ -1229,178 +1786,155 @@ void MainWindow::showDetailsButtonClicked(void)
 }
 
 /*
- * Tab page changed
+ * Show context menu for source files
  */
-void MainWindow::tabPageChanged(int idx)
+void MainWindow::sourceFilesContextMenu(const QPoint &pos)
 {
-	QList<QAction*> actions = m_tabActionGroup->actions();
-	for(int i = 0; i < actions.count(); i++)
+	QAbstractScrollArea *scrollArea = dynamic_cast<QAbstractScrollArea*>(QObject::sender());
+	QWidget *sender = scrollArea ? scrollArea->viewport() : dynamic_cast<QWidget*>(QObject::sender());
+
+	if(sender)
 	{
-		bool ok = false;
-		int actionIndex = actions.at(i)->data().toInt(&ok);
-		if(ok && actionIndex == idx)
+		if(pos.x() <= sender->width() && pos.y() <= sender->height() && pos.x() >= 0 && pos.y() >= 0)
 		{
-			actions.at(i)->setChecked(true);
+			m_sourceFilesContextMenu->popup(sender->mapToGlobal(pos));
+		}
+	}
+}
+
+/*
+ * Open selected file in external player
+ */
+void MainWindow::previewContextActionTriggered(void)
+{
+	const static char *appNames[3] = {"smplayer_portable.exe", "smplayer.exe", "mplayer.exe"};
+	const static wchar_t *registryKey = L"SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{DB9E4EAB-2717-499F-8D56-4CC8A644AB60}";
+	
+	QModelIndex index = sourceFileView->currentIndex();
+	if(!index.isValid())
+	{
+		return;
+	}
+
+	QString mplayerPath;
+	HKEY registryKeyHandle;
+
+	if(RegOpenKeyExW(HKEY_LOCAL_MACHINE, registryKey, 0, KEY_READ, &registryKeyHandle) == ERROR_SUCCESS)
+	{
+		wchar_t Buffer[4096];
+		DWORD BuffSize = sizeof(wchar_t*) * 4096;
+		if(RegQueryValueExW(registryKeyHandle, L"InstallLocation", 0, 0, reinterpret_cast<BYTE*>(Buffer), &BuffSize) == ERROR_SUCCESS)
+		{
+			mplayerPath = QString::fromUtf16(reinterpret_cast<const unsigned short*>(Buffer));
 		}
 	}
 
-	int initialWidth = this->width();
-	int maximumWidth = QApplication::desktop()->width();
-
-	if(this->isVisible())
+	if(!mplayerPath.isEmpty())
 	{
-		while(tabWidget->width() < tabWidget->sizeHint().width())
+		QDir mplayerDir(mplayerPath);
+		if(mplayerDir.exists())
 		{
-			int previousWidth = this->width();
-			this->resize(this->width() + 1, this->height());
-			if(this->frameGeometry().width() >= maximumWidth) break;
-			if(this->width() <= previousWidth) break;
-		}
-	}
-
-	if(idx == tabWidget->indexOf(tabOptions) && scrollArea->widget() && this->isVisible())
-	{
-		for(int i = 0; i < 2; i++)
-		{
-			QApplication::processEvents();
-			while(scrollArea->viewport()->width() < scrollArea->widget()->width())
+			for(int i = 0; i < 3; i++)
 			{
-				int previousWidth = this->width();
-				this->resize(this->width() + 1, this->height());
-				if(this->frameGeometry().width() >= maximumWidth) break;
-				if(this->width() <= previousWidth) break;
+				if(mplayerDir.exists(appNames[i]))
+				{
+					QProcess::startDetached(mplayerDir.absoluteFilePath(appNames[i]), QStringList() << QDir::toNativeSeparators(m_fileListModel->getFile(index).filePath()));
+					return;
+				}
 			}
 		}
 	}
-	else if(idx == tabWidget->indexOf(tabSourceFiles))
-	{
-		m_dropNoteLabel->setGeometry(0, 0, sourceFileView->width(), sourceFileView->height());
-	}
-
-	if(initialWidth < this->width())
-	{
-		QPoint prevPos = this->pos();
-		int delta = (this->width() - initialWidth) >> 2;
-		move(prevPos.x() - delta, prevPos.y());
-	}
+	
+	QDesktopServices::openUrl(QString("file:///").append(m_fileListModel->getFile(index).filePath()));
 }
 
 /*
- * Tab action triggered
+ * Find selected file in explorer
  */
-void MainWindow::tabActionActivated(QAction *action)
+void MainWindow::findFileContextActionTriggered(void)
 {
-	if(action && action->data().isValid())
+	QModelIndex index = sourceFileView->currentIndex();
+	if(index.isValid())
 	{
-		bool ok = false;
-		int index = action->data().toInt(&ok);
-		if(ok)
-		{
-			tabWidget->setCurrentIndex(index);
-		}
-	}
-}
+		QString systemRootPath;
 
-/*
- * Style action triggered
- */
-void MainWindow::styleActionActivated(QAction *action)
-{
-	//Change style setting
-	if(action && action->data().isValid())
-	{
-		bool ok = false;
-		int actionIndex = action->data().toInt(&ok);
-		if(ok)
+		QDir systemRoot(lamexp_known_folder(lamexp_folder_systemfolder));
+		if(systemRoot.exists() && systemRoot.cdUp())
 		{
-			m_settings->interfaceStyle(actionIndex);
+			systemRootPath = systemRoot.canonicalPath();
 		}
-	}
 
-	//Set up the new style
-	switch(m_settings->interfaceStyle())
-	{
-	case 1:
-		if(actionStyleCleanlooks->isEnabled())
+		if(!systemRootPath.isEmpty())
 		{
-			actionStyleCleanlooks->setChecked(true);
-			QApplication::setStyle(new QCleanlooksStyle());
-			break;
-		}
-	case 2:
-		if(actionStyleWindowsVista->isEnabled())
-		{
-			actionStyleWindowsVista->setChecked(true);
-			QApplication::setStyle(new QWindowsVistaStyle());
-			break;
-		}
-	case 3:
-		if(actionStyleWindowsXP->isEnabled())
-		{
-			actionStyleWindowsXP->setChecked(true);
-			QApplication::setStyle(new QWindowsXPStyle());
-			break;
-		}
-	case 4:
-		if(actionStyleWindowsClassic->isEnabled())
-		{
-			actionStyleWindowsClassic->setChecked(true);
-			QApplication::setStyle(new QWindowsStyle());
-			break;
-		}
-	default:
-		actionStylePlastique->setChecked(true);
-		QApplication::setStyle(new QPlastiqueStyle());
-		break;
-	}
-
-	//Force re-translate after style change
-	changeEvent(new QEvent(QEvent::LanguageChange));
-}
-
-/*
- * Language action triggered
- */
-void MainWindow::languageActionActivated(QAction *action)
-{
-	if(action->data().type() == QVariant::String)
-	{
-		QString langId = action->data().toString();
-
-		if(lamexp_install_translator(langId))
-		{
-			action->setChecked(true);
-			m_settings->currentLanguage(langId);
-		}
-	}
-}
-
-/*
- * Load language from file action triggered
- */
-void MainWindow::languageFromFileActionActivated(bool checked)
-{
-	QFileDialog dialog(this, tr("Load Translation"));
-	dialog.setFileMode(QFileDialog::ExistingFile);
-	dialog.setNameFilter(QString("%1 (*.qm)").arg(tr("Translation Files")));
-
-	if(dialog.exec())
-	{
-		QStringList selectedFiles = dialog.selectedFiles();
-		if(lamexp_install_translator_from_file(selectedFiles.first()))
-		{
-			QList<QAction*> actions = m_languageActionGroup->actions();
-			while(!actions.isEmpty())
+			QFileInfo explorer(QString("%1/explorer.exe").arg(systemRootPath));
+			if(explorer.exists() && explorer.isFile())
 			{
-				actions.takeFirst()->setChecked(false);
+				QProcess::execute(explorer.canonicalFilePath(), QStringList() << "/select," << QDir::toNativeSeparators(m_fileListModel->getFile(index).filePath()));
+				return;
 			}
 		}
 		else
 		{
-			languageActionActivated(m_languageActionGroup->actions().first());
+			qWarning("SystemRoot directory could not be detected!");
 		}
 	}
 }
+
+/*
+ * Add all pending files
+ */
+void MainWindow::handleDelayedFiles(void)
+{
+	if(m_banner->isVisible())
+	{
+		return;
+	}
+	
+	m_delayedFileTimer->stop();
+	if(m_delayedFileList->isEmpty())
+	{
+		return;
+	}
+
+	QStringList selectedFiles;
+	tabWidget->setCurrentIndex(0);
+
+	while(!m_delayedFileList->isEmpty())
+	{
+		QFileInfo currentFile = QFileInfo(m_delayedFileList->takeFirst());
+		if(!currentFile.exists())
+		{
+			continue;
+		}
+		if(currentFile.isFile())
+		{
+			selectedFiles << currentFile.canonicalFilePath();
+			continue;
+		}
+		if(currentFile.isDir())
+		{
+			QList<QFileInfo> list = QDir(currentFile.canonicalFilePath()).entryInfoList(QDir::Files);
+			for(int j = 0; j < list.count(); j++)
+			{
+				selectedFiles << list.at(j).canonicalFilePath();
+			}
+		}
+	}
+	
+	addFiles(selectedFiles);
+}
+
+/*
+ * Show or hide Drag'n'Drop notice after model reset
+ */
+void MainWindow::sourceModelChanged(void)
+{
+	m_dropNoteLabel->setVisible(m_fileListModel->rowCount() <= 0);
+}
+
+// =========================================================
+// Output folder slots
+// =========================================================
 
 /*
  * Output folder changed (mouse clicked)
@@ -1582,18 +2116,77 @@ void MainWindow::makeFolderButtonClicked(void)
 }
 
 /*
+ * Output to source dir changed
+ */
+void MainWindow::saveToSourceFolderChanged(void)
+{
+	m_settings->outputToSourceDir(saveToSourceFolderCheckBox->isChecked());
+}
+
+/*
+ * Prepend relative source file path to output file name changed
+ */
+void MainWindow::prependRelativePathChanged(void)
+{
+	m_settings->prependRelativeSourcePath(prependRelativePathCheckBox->isChecked());
+}
+
+/*
+ * Show context menu for output folder
+ */
+void MainWindow::outputFolderContextMenu(const QPoint &pos)
+{
+	QAbstractScrollArea *scrollArea = dynamic_cast<QAbstractScrollArea*>(QObject::sender());
+	QWidget *sender = scrollArea ? scrollArea->viewport() : dynamic_cast<QWidget*>(QObject::sender());	
+
+	if(pos.x() <= sender->width() && pos.y() <= sender->height() && pos.x() >= 0 && pos.y() >= 0)
+	{
+		m_outputFolderContextMenu->popup(sender->mapToGlobal(pos));
+	}
+}
+
+/*
+ * Show selected folder in explorer
+ */
+void MainWindow::showFolderContextActionTriggered(void)
+{
+	QDesktopServices::openUrl(QUrl::fromLocalFile(m_fileSystemModel->filePath(outputFolderView->currentIndex())));
+}
+
+/*
+ * Initialize file system model
+ */
+void MainWindow::initOutputFolderModel(void)
+{
+	QModelIndex previousIndex = outputFolderView->currentIndex();
+	m_fileSystemModel->setRootPath(m_fileSystemModel->rootPath());
+	QApplication::processEvents();
+	outputFolderView->reset();
+	outputFolderView->setCurrentIndex(previousIndex);
+	m_OutputFolderViewInitialized = true;
+}
+
+// =========================================================
+// Metadata tab slots
+// =========================================================
+
+/*
  * Edit meta button clicked
  */
 void MainWindow::editMetaButtonClicked(void)
 {
 	ABORT_IF_BUSY;
-	
+
 	const QModelIndex index = metaDataView->currentIndex();
-	m_metaInfoModel->editItem(index, this);
-	
-	if(index.row() == 4)
+
+	if(index.isValid())
 	{
-		m_settings->metaInfoPosition(m_metaData->filePosition());
+		m_metaInfoModel->editItem(index, this);
+	
+		if(index.row() == 4)
+		{
+			m_settings->metaInfoPosition(m_metaData->filePosition());
+		}
 	}
 }
 
@@ -1607,136 +2200,24 @@ void MainWindow::clearMetaButtonClicked(void)
 }
 
 /*
- * Visit homepage action
+ * Meta tags enabled changed
  */
-void MainWindow::visitHomepageActionActivated(void)
+void MainWindow::metaTagsEnabledChanged(void)
 {
-	if(QAction *action = dynamic_cast<QAction*>(QObject::sender()))
-	{
-		if(action->data().isValid() && (action->data().type() == QVariant::String))
-		{
-			QDesktopServices::openUrl(QUrl(action->data().toString()));
-		}
-	}
+	m_settings->writeMetaTags(writeMetaDataCheckBox->isChecked());
 }
 
 /*
- * Show document
+ * Playlist enabled changed
  */
-void MainWindow::documentActionActivated(void)
+void MainWindow::playlistEnabledChanged(void)
 {
-	if(QAction *action = dynamic_cast<QAction*>(QObject::sender()))
-	{
-		if(action->data().isValid() && (action->data().type() == QVariant::String))
-		{
-			QFileInfo document(action->data().toString());
-			QFileInfo resource(QString(":/doc/%1.html").arg(document.baseName()));
-			if(document.exists() && document.isFile() && (document.size() == resource.size()))
-			{
-				QDesktopServices::openUrl(QUrl::fromLocalFile(document.canonicalFilePath()));
-			}
-			else
-			{
-				QFile source(resource.filePath());
-				QFile output(QString("%1/%2.%3.html").arg(lamexp_temp_folder2(), document.baseName(), lamexp_rand_str().left(8)));
-				if(source.open(QIODevice::ReadOnly) && output.open(QIODevice::ReadWrite))
-				{
-					output.write(source.readAll());
-					action->setData(output.fileName());
-					source.close();
-					output.close();
-					QDesktopServices::openUrl(QUrl::fromLocalFile(output.fileName()));
-				}
-			}
-		}
-	}
+	m_settings->createPlaylist(generatePlaylistCheckBox->isChecked());
 }
 
-/*
- * Check for updates action
- */
-void MainWindow::checkUpdatesActionActivated(void)
-{
-	ABORT_IF_BUSY;
-	bool bFlag = false;
-
-	TEMP_HIDE_DROPBOX
-	(
-		bFlag = checkForUpdates();
-	)
-	
-	if(bFlag)
-	{
-		QApplication::quit();
-	}
-}
-
-/*
- * Other instance detected
- */
-void MainWindow::notifyOtherInstance(void)
-{
-	if(!m_banner->isVisible())
-	{
-		QMessageBox msgBox(QMessageBox::Warning, tr("Already Running"), tr("LameXP is already running, please use the running instance!"), QMessageBox::NoButton, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
-		msgBox.exec();
-	}
-}
-
-/*
- * Add file from another instance
- */
-void MainWindow::addFileDelayed(const QString &filePath)
-{
-	m_delayedFileTimer->stop();
-	qDebug("Received file: %s", filePath.toUtf8().constData());
-	m_delayedFileList->append(filePath);
-	m_delayedFileTimer->start(5000);
-}
-
-/*
- * Add all pending files
- */
-void MainWindow::handleDelayedFiles(void)
-{
-	if(m_banner->isVisible())
-	{
-		return;
-	}
-	
-	m_delayedFileTimer->stop();
-	if(m_delayedFileList->isEmpty())
-	{
-		return;
-	}
-
-	QStringList selectedFiles;
-	tabWidget->setCurrentIndex(0);
-
-	while(!m_delayedFileList->isEmpty())
-	{
-		QFileInfo currentFile = QFileInfo(m_delayedFileList->takeFirst());
-		if(!currentFile.exists())
-		{
-			continue;
-		}
-		if(currentFile.isFile())
-		{
-			selectedFiles << currentFile.canonicalFilePath();
-			continue;
-		}
-		if(currentFile.isDir())
-		{
-			QList<QFileInfo> list = QDir(currentFile.canonicalFilePath()).entryInfoList(QDir::Files);
-			for(int j = 0; j < list.count(); j++)
-			{
-				selectedFiles << list.at(j).canonicalFilePath();
-			}
-		}
-	}
-	
-	addFiles(selectedFiles);
-}
+// =========================================================
+// Compression tab slots
+// =========================================================
 
 /*
  * Update encoder
@@ -1752,6 +2233,13 @@ void MainWindow::updateEncoder(int id)
 		radioButtonModeAverageBitrate->setEnabled(true);
 		radioButtonConstBitrate->setEnabled(false);
 		if(radioButtonConstBitrate->isChecked()) radioButtonModeQuality->setChecked(true);
+		sliderBitrate->setEnabled(true);
+		break;
+	case SettingsModel::AC3Encoder:
+		radioButtonModeQuality->setEnabled(true);
+		radioButtonModeQuality->setChecked(true);
+		radioButtonModeAverageBitrate->setEnabled(false);
+		radioButtonConstBitrate->setEnabled(true);
 		sliderBitrate->setEnabled(true);
 		break;
 	case SettingsModel::FLACEncoder:
@@ -1814,6 +2302,19 @@ void MainWindow::updateRCMode(int id)
 			break;
 		}
 		break;
+	case SettingsModel::AC3Encoder:
+		switch(m_settings->compressionRCMode())
+		{
+		case SettingsModel::VBRMode:
+			sliderBitrate->setMinimum(0);
+			sliderBitrate->setMaximum(16);
+			break;
+		default:
+			sliderBitrate->setMinimum(0);
+			sliderBitrate->setMaximum(18);
+			break;
+		}
+		break;
 	case SettingsModel::AACEncoder:
 		switch(m_settings->compressionRCMode())
 		{
@@ -1869,6 +2370,9 @@ void MainWindow::updateBitrate(int value)
 		case SettingsModel::FLACEncoder:
 			labelBitrate->setText(tr("Compression %1").arg(value));
 			break;
+		case SettingsModel::AC3Encoder:
+			labelBitrate->setText(tr("Quality Level %1").arg(min(1024, max(0, value * 64))));
+			break;
 		case SettingsModel::PCMEncoder:
 			labelBitrate->setText(tr("Uncompressed"));
 			break;
@@ -1885,6 +2389,9 @@ void MainWindow::updateBitrate(int value)
 			break;
 		case SettingsModel::FLACEncoder:
 			labelBitrate->setText(tr("Compression %1").arg(value));
+			break;
+		case SettingsModel::AC3Encoder:
+			labelBitrate->setText(QString("&asymp; %1 kbps").arg(SettingsModel::ac3Bitrates[value]));
 			break;
 		case SettingsModel::PCMEncoder:
 			labelBitrate->setText(tr("Uncompressed"));
@@ -1903,6 +2410,9 @@ void MainWindow::updateBitrate(int value)
 		case SettingsModel::FLACEncoder:
 			labelBitrate->setText(tr("Compression %1").arg(value));
 			break;
+		case SettingsModel::AC3Encoder:
+			labelBitrate->setText(QString("%1 kbps").arg(SettingsModel::ac3Bitrates[value]));
+			break;
 		case SettingsModel::PCMEncoder:
 			labelBitrate->setText(tr("Uncompressed"));
 			break;
@@ -1914,6 +2424,9 @@ void MainWindow::updateBitrate(int value)
 	}
 }
 
+// =========================================================
+// Advanced option slots
+// =========================================================
 
 /*
  * Lame algorithm quality changed
@@ -2021,6 +2534,38 @@ void MainWindow::neroAACProfileChanged(int value)
 }
 
 /*
+ * Aften audio coding mode changed
+ */
+void MainWindow::aftenCodingModeChanged(int value)
+{
+	if(value >= 0) m_settings->aftenAudioCodingMode(value);
+}
+
+/*
+ * Aften DRC mode changed
+ */
+void MainWindow::aftenDRCModeChanged(int value)
+{
+	if(value >= 0) m_settings->aftenDynamicRangeCompression(value);
+}
+
+/*
+ * Aften exponent search size changed
+ */
+void MainWindow::aftenSearchSizeChanged(int value)
+{
+	if(value >= 0) m_settings->aftenExponentSearchSize(value);
+}
+
+/*
+ * Aften fast bit allocation changed
+ */
+void MainWindow::aftenFastAllocationChanged(bool checked)
+{
+	m_settings->aftenFastBitAllocation(checked);
+}
+
+/*
  * Normalization filter enabled changed
  */
 void MainWindow::normalizationEnabledChanged(bool checked)
@@ -2074,12 +2619,14 @@ void MainWindow::customParamsChanged(void)
 	lineEditCustomParamOggEnc->setText(lineEditCustomParamOggEnc->text().simplified());
 	lineEditCustomParamNeroAAC->setText(lineEditCustomParamNeroAAC->text().simplified());
 	lineEditCustomParamFLAC->setText(lineEditCustomParamFLAC->text().simplified());
+	lineEditCustomParamAften->setText(lineEditCustomParamAften->text().simplified());
 
 	bool customParamsUsed = false;
 	if(!lineEditCustomParamLAME->text().isEmpty()) customParamsUsed = true;
 	if(!lineEditCustomParamOggEnc->text().isEmpty()) customParamsUsed = true;
 	if(!lineEditCustomParamNeroAAC->text().isEmpty()) customParamsUsed = true;
 	if(!lineEditCustomParamFLAC->text().isEmpty()) customParamsUsed = true;
+	if(!lineEditCustomParamAften->text().isEmpty()) customParamsUsed = true;
 
 	labelCustomParamsIcon->setVisible(customParamsUsed);
 	labelCustomParamsText->setVisible(customParamsUsed);
@@ -2089,6 +2636,7 @@ void MainWindow::customParamsChanged(void)
 	m_settings->customParametersOggEnc(lineEditCustomParamOggEnc->text());
 	m_settings->customParametersNeroAAC(lineEditCustomParamNeroAAC->text());
 	m_settings->customParametersFLAC(lineEditCustomParamFLAC->text());
+	m_settings->customParametersAften(lineEditCustomParamAften->text());
 }
 
 /*
@@ -2157,14 +2705,18 @@ void MainWindow::resetAdvancedOptionsButtonClicked(void)
 	spinBoxNormalizationFilter->setValue(static_cast<double>(m_settings->normalizationFilterMaxVolumeDefault()) / 100.0);
 	spinBoxToneAdjustBass->setValue(static_cast<double>(m_settings->toneAdjustBassDefault()) / 100.0);
 	spinBoxToneAdjustTreble->setValue(static_cast<double>(m_settings->toneAdjustTrebleDefault()) / 100.0);
+	spinBoxAftenSearchSize->setValue(m_settings->aftenExponentSearchSizeDefault());
 	comboBoxMP3ChannelMode->setCurrentIndex(m_settings->lameChannelModeDefault());
 	comboBoxSamplingRate->setCurrentIndex(m_settings->samplingRateDefault());
 	comboBoxNeroAACProfile->setCurrentIndex(m_settings->neroAACProfileDefault());
+	comboBoxAftenCodingMode->setCurrentIndex(m_settings->aftenAudioCodingModeDefault());
+	comboBoxAftenDRCMode->setCurrentIndex(m_settings->aftenDynamicRangeCompressionDefault());
 	while(checkBoxBitrateManagement->isChecked() != m_settings->bitrateManagementEnabledDefault()) checkBoxBitrateManagement->click();
 	while(checkBoxNeroAAC2PassMode->isChecked() != m_settings->neroAACEnable2PassDefault()) checkBoxNeroAAC2PassMode->click();
 	while(checkBoxNormalizationFilter->isChecked() != m_settings->normalizationFilterEnabledDefault()) checkBoxNormalizationFilter->click();
 	while(checkBoxAutoDetectInstances->isChecked() != (m_settings->maximumInstancesDefault() < 1)) checkBoxAutoDetectInstances->click();
 	while(checkBoxUseSystemTempFolder->isChecked() == m_settings->customTempPathEnabledDefault()) checkBoxUseSystemTempFolder->click();
+	while(checkBoxAftenFastAllocation->isChecked() != m_settings->aftenFastBitAllocationDefault()) checkBoxAftenFastAllocation->click();
 	lineEditCustomParamLAME->setText(m_settings->customParametersLAMEDefault());
 	lineEditCustomParamOggEnc->setText(m_settings->customParametersOggEncDefault());
 	lineEditCustomParamNeroAAC->setText(m_settings->customParametersNeroAACDefault());
@@ -2174,46 +2726,36 @@ void MainWindow::resetAdvancedOptionsButtonClicked(void)
 	scrollArea->verticalScrollBar()->setValue(0);
 }
 
+// =========================================================
+// Multi-instance handling slots
+// =========================================================
+
 /*
- * Model reset
+ * Other instance detected
  */
-void MainWindow::sourceModelChanged(void)
+void MainWindow::notifyOtherInstance(void)
 {
-	m_dropNoteLabel->setVisible(m_fileListModel->rowCount() <= 0);
+	if(!m_banner->isVisible())
+	{
+		QMessageBox msgBox(QMessageBox::Warning, tr("Already Running"), tr("LameXP is already running, please use the running instance!"), QMessageBox::NoButton, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+		msgBox.exec();
+	}
 }
 
 /*
- * Meta tags enabled changed
+ * Add file from another instance
  */
-void MainWindow::metaTagsEnabledChanged(void)
+void MainWindow::addFileDelayed(const QString &filePath)
 {
-	m_settings->writeMetaTags(writeMetaDataCheckBox->isChecked());
+	m_delayedFileTimer->stop();
+	qDebug("Received file: %s", filePath.toUtf8().constData());
+	m_delayedFileList->append(filePath);
+	m_delayedFileTimer->start(5000);
 }
 
-/*
- * Playlist enabled changed
- */
-void MainWindow::playlistEnabledChanged(void)
-{
-	m_settings->createPlaylist(generatePlaylistCheckBox->isChecked());
-}
-
-/*
- * Output to source dir changed
- */
-void MainWindow::saveToSourceFolderChanged(void)
-{
-	m_settings->outputToSourceDir(saveToSourceFolderCheckBox->isChecked());
-}
-
-/*
- * Prepend relative source file path to output file name changed
- */
-void MainWindow::prependRelativePathChanged(void)
-{
-	m_settings->prependRelativeSourcePath(prependRelativePathCheckBox->isChecked());
-}
-
+// =========================================================
+// Misc slots
+// =========================================================
 
 /*
  * Restore the override cursor
@@ -2221,288 +2763,4 @@ void MainWindow::prependRelativePathChanged(void)
 void MainWindow::restoreCursor(void)
 {
 	QApplication::restoreOverrideCursor();
-}
-
-/*
- * Show context menu for source files
- */
-void MainWindow::sourceFilesContextMenu(const QPoint &pos)
-{
-	QAbstractScrollArea *scrollArea = dynamic_cast<QAbstractScrollArea*>(QObject::sender());
-	QWidget *sender = scrollArea ? scrollArea->viewport() : dynamic_cast<QWidget*>(QObject::sender());
-
-	if(sender)
-	{
-		if(pos.x() <= sender->width() && pos.y() <= sender->height() && pos.x() >= 0 && pos.y() >= 0)
-		{
-			m_sourceFilesContextMenu->popup(sender->mapToGlobal(pos));
-		}
-	}
-}
-
-/*
- * Open selected file in external player
- */
-void MainWindow::previewContextActionTriggered(void)
-{
-	const static char *appNames[3] = {"smplayer_portable.exe", "smplayer.exe", "mplayer.exe"};
-	const static wchar_t *registryKey = L"SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{DB9E4EAB-2717-499F-8D56-4CC8A644AB60}";
-	
-	QModelIndex index = sourceFileView->currentIndex();
-	if(!index.isValid())
-	{
-		return;
-	}
-
-	QString mplayerPath;
-	HKEY registryKeyHandle;
-
-	if(RegOpenKeyExW(HKEY_LOCAL_MACHINE, registryKey, 0, KEY_READ, &registryKeyHandle) == ERROR_SUCCESS)
-	{
-		wchar_t Buffer[4096];
-		DWORD BuffSize = sizeof(wchar_t*) * 4096;
-		if(RegQueryValueExW(registryKeyHandle, L"InstallLocation", 0, 0, reinterpret_cast<BYTE*>(Buffer), &BuffSize) == ERROR_SUCCESS)
-		{
-			mplayerPath = QString::fromUtf16(reinterpret_cast<const unsigned short*>(Buffer));
-		}
-	}
-
-	if(!mplayerPath.isEmpty())
-	{
-		QDir mplayerDir(mplayerPath);
-		if(mplayerDir.exists())
-		{
-			for(int i = 0; i < 3; i++)
-			{
-				if(mplayerDir.exists(appNames[i]))
-				{
-					QProcess::startDetached(mplayerDir.absoluteFilePath(appNames[i]), QStringList() << QDir::toNativeSeparators(m_fileListModel->getFile(index).filePath()));
-					return;
-				}
-			}
-		}
-	}
-	
-	QDesktopServices::openUrl(QString("file:///").append(m_fileListModel->getFile(index).filePath()));
-}
-
-/*
- * Find selected file in explorer
- */
-void MainWindow::findFileContextActionTriggered(void)
-{
-	QModelIndex index = sourceFileView->currentIndex();
-	if(index.isValid())
-	{
-		QString systemRootPath;
-
-		QDir systemRoot(lamexp_known_folder(lamexp_folder_systemfolder));
-		if(systemRoot.exists() && systemRoot.cdUp())
-		{
-			systemRootPath = systemRoot.canonicalPath();
-		}
-
-		if(!systemRootPath.isEmpty())
-		{
-			QFileInfo explorer(QString("%1/explorer.exe").arg(systemRootPath));
-			if(explorer.exists() && explorer.isFile())
-			{
-				QProcess::execute(explorer.canonicalFilePath(), QStringList() << "/select," << QDir::toNativeSeparators(m_fileListModel->getFile(index).filePath()));
-				return;
-			}
-		}
-		else
-		{
-			qWarning("SystemRoot directory could not be detected!");
-		}
-	}
-}
-
-/*
- * Show context menu for output folder
- */
-void MainWindow::outputFolderContextMenu(const QPoint &pos)
-{
-	QAbstractScrollArea *scrollArea = dynamic_cast<QAbstractScrollArea*>(QObject::sender());
-	QWidget *sender = scrollArea ? scrollArea->viewport() : dynamic_cast<QWidget*>(QObject::sender());	
-
-	if(pos.x() <= sender->width() && pos.y() <= sender->height() && pos.x() >= 0 && pos.y() >= 0)
-	{
-		m_outputFolderContextMenu->popup(sender->mapToGlobal(pos));
-	}
-}
-
-/*
- * Show selected folder in explorer
- */
-void MainWindow::showFolderContextActionTriggered(void)
-{
-	QDesktopServices::openUrl(QUrl::fromLocalFile(m_fileSystemModel->filePath(outputFolderView->currentIndex())));
-}
-
-/*
- * Disable update reminder action
- */
-void MainWindow::disableUpdateReminderActionTriggered(bool checked)
-{
-	if(checked)
-	{
-		if(0 == QMessageBox::question(this, tr("Disable Update Reminder"), tr("Do you really want to disable the update reminder?"), tr("Yes"), tr("No"), QString(), 1))
-		{
-			QMessageBox::information(this, tr("Update Reminder"), QString("%1<br>%2").arg(tr("The update reminder has been disabled."), tr("Please remember to check for updates at regular intervals!")));
-			m_settings->autoUpdateEnabled(false);
-		}
-		else
-		{
-			m_settings->autoUpdateEnabled(true);
-		}
-	}
-	else
-	{
-			QMessageBox::information(this, tr("Update Reminder"), tr("The update reminder has been re-enabled."));
-			m_settings->autoUpdateEnabled(true);
-	}
-
-	actionDisableUpdateReminder->setChecked(!m_settings->autoUpdateEnabled());
-}
-
-/*
- * Disable sound effects action
- */
-void MainWindow::disableSoundsActionTriggered(bool checked)
-{
-	if(checked)
-	{
-		if(0 == QMessageBox::question(this, tr("Disable Sound Effects"), tr("Do you really want to disable all sound effects?"), tr("Yes"), tr("No"), QString(), 1))
-		{
-			QMessageBox::information(this, tr("Sound Effects"), tr("All sound effects have been disabled."));
-			m_settings->soundsEnabled(false);
-		}
-		else
-		{
-			m_settings->soundsEnabled(true);
-		}
-	}
-	else
-	{
-			QMessageBox::information(this, tr("Sound Effects"), tr("The sound effects have been re-enabled."));
-			m_settings->soundsEnabled(true);
-	}
-
-	actionDisableSounds->setChecked(!m_settings->soundsEnabled());
-}
-
-/*
- * Disable Nero AAC encoder action
- */
-void MainWindow::disableNeroAacNotificationsActionTriggered(bool checked)
-{
-	if(checked)
-	{
-		if(0 == QMessageBox::question(this, tr("Nero AAC Notifications"), tr("Do you really want to disable all Nero AAC Encoder notifications?"), tr("Yes"), tr("No"), QString(), 1))
-		{
-			QMessageBox::information(this, tr("Nero AAC Notifications"), tr("All Nero AAC Encoder notifications have been disabled."));
-			m_settings->neroAacNotificationsEnabled(false);
-		}
-		else
-		{
-			m_settings->neroAacNotificationsEnabled(true);
-		}
-	}
-	else
-	{
-			QMessageBox::information(this, tr("Nero AAC Notifications"), tr("The Nero AAC Encoder notifications have been re-enabled."));
-			m_settings->neroAacNotificationsEnabled(true);
-	}
-
-	actionDisableNeroAacNotifications->setChecked(!m_settings->neroAacNotificationsEnabled());
-}
-
-/*
- * Disable WMA Decoder component action
- */
-void MainWindow::disableWmaDecoderNotificationsActionTriggered(bool checked)
-{
-	if(checked)
-	{
-		if(0 == QMessageBox::question(this, tr("WMA Decoder Notifications"), tr("Do you really want to disable all WMA Decoder notifications?"), tr("Yes"), tr("No"), QString(), 1))
-		{
-			QMessageBox::information(this, tr("WMA Decoder Notifications"), tr("All WMA Decoder notifications have been disabled."));
-			m_settings->wmaDecoderNotificationsEnabled(false);
-		}
-		else
-		{
-			m_settings->wmaDecoderNotificationsEnabled(true);
-		}
-	}
-	else
-	{
-			QMessageBox::information(this, tr("WMA Decoder Notifications"), tr("The WMA Decoder notifications have been re-enabled."));
-			m_settings->wmaDecoderNotificationsEnabled(true);
-	}
-
-	actionDisableWmaDecoderNotifications->setChecked(!m_settings->wmaDecoderNotificationsEnabled());
-}
-
-/*
- * Download and install WMA Decoder component
- */
-void MainWindow::installWMADecoderActionTriggered(bool checked)
-{
-	if(QMessageBox::question(this, tr("Install WMA Decoder"), tr("Do you want to download and install the WMA File Decoder component now?"), tr("Download && Install"), tr("Cancel")) == 0)
-	{
-		if(installWMADecoder())
-		{
-			QApplication::quit();
-			return;
-		}
-	}
-}
-
-/*
- * Show the "drop box" widget
- */
-void MainWindow::showDropBoxWidgetActionTriggered(bool checked)
-{
-	m_settings->dropBoxWidgetEnabled(true);
-	
-	if(!m_dropBox->isVisible())
-	{
-		m_dropBox->show();
-	}
-	
-	FLASH_WINDOW(m_dropBox);
-}
-
-/*
- * Disable shell integration action
- */
-void MainWindow::disableShellIntegrationActionTriggered(bool checked)
-{
-	if(checked)
-	{
-		if(0 == QMessageBox::question(this, tr("Shell Integration"), tr("Do you really want to disable the LameXP shell integration?"), tr("Yes"), tr("No"), QString(), 1))
-		{
-			ShellIntegration::remove();
-			QMessageBox::information(this, tr("Shell Integration"), tr("The LameXP shell integration has been disabled."));
-			m_settings->shellIntegrationEnabled(false);
-		}
-		else
-		{
-			m_settings->shellIntegrationEnabled(true);
-		}
-	}
-	else
-	{
-			ShellIntegration::install();
-			QMessageBox::information(this, tr("Shell Integration"), tr("The LameXP shell integration has been re-enabled."));
-			m_settings->shellIntegrationEnabled(true);
-	}
-
-	actionDisableShellIntegration->setChecked(!m_settings->shellIntegrationEnabled());
-	
-	if(lamexp_portable_mode() && actionDisableShellIntegration->isChecked())
-	{
-		actionDisableShellIntegration->setEnabled(false);
-	}
 }

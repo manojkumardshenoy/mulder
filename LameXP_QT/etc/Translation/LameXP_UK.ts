@@ -21,7 +21,7 @@
     </message>
     <message>
         <source>About LameXP</source>
-        <translation type="unfinished"></translation>
+        <translation>Про LameXP</translation>
     </message>
     <message>
         <source>Show License Text</source>
@@ -45,11 +45,11 @@
     </message>
     <message>
         <source>About Qt4</source>
-        <translation type="unfinished"></translation>
+        <translation>Про Qt4</translation>
     </message>
     <message>
         <source>Discard</source>
-        <translation type="unfinished">Відмінити</translation>
+        <translation>Відмінити</translation>
     </message>
     <message>
         <source>The following people have contributed to LameXP:</source>
@@ -57,7 +57,7 @@
     </message>
     <message>
         <source>Translators:</source>
-        <translation type="unfinished"></translation>
+        <translation>Перекладачі:</translation>
     </message>
     <message>
         <source>If you are willing to contribute a LameXP translation, feel free to contact us!</source>
@@ -73,7 +73,7 @@
     </message>
     <message>
         <source>LAME &amp;minus; OpenSource mp3 Encoder</source>
-        <translation type="unfinished"></translation>
+        <translation>LAME &amp;minus; OpenSource mp3 Encoder</translation>
     </message>
     <message>
         <source>Released under the terms of the GNU Lesser General Public License.</source>
@@ -81,7 +81,7 @@
     </message>
     <message>
         <source>OggEnc &amp;minus; Ogg Vorbis Encoder</source>
-        <translation type="unfinished"></translation>
+        <translation>OggEnc &amp;minus; Ogg Vorbis Encoder</translation>
     </message>
     <message>
         <source>Completely open and patent-free audio encoding technology.</source>
@@ -89,7 +89,7 @@
     </message>
     <message>
         <source>Nero AAC Reference MPEG-4 Encoder</source>
-        <translation type="unfinished"></translation>
+        <translation>Nero AAC Reference MPEG-4 Encoder</translation>
     </message>
     <message>
         <source>Freeware state-of-the-art HE-AAC encoder with 2-Pass support.</source>
@@ -101,7 +101,7 @@
     </message>
     <message>
         <source>FLAC &amp;minus; Free Lossless Audio Codec</source>
-        <translation type="unfinished"></translation>
+        <translation>FLAC &amp;minus; Free Lossless Audio Codec</translation>
     </message>
     <message>
         <source>Open and patent-free lossless audio compression technology.</source>
@@ -109,11 +109,11 @@
     </message>
     <message>
         <source>mpg123 &amp;minus; Fast Console MPEG Audio Player/Decoder</source>
-        <translation type="unfinished"></translation>
+        <translation>mpg123 &amp;minus; Fast Console MPEG Audio Player/Decoder</translation>
     </message>
     <message>
         <source>FAAD &amp;minus; OpenSource MPEG-4 and MPEG-2 AAC Decoder</source>
-        <translation type="unfinished"></translation>
+        <translation>FAAD &amp;minus; OpenSource MPEG-4 and MPEG-2 AAC Decoder</translation>
     </message>
     <message>
         <source>Released under the terms of the GNU General Public License.</source>
@@ -121,11 +121,11 @@
     </message>
     <message>
         <source>AC3Filter Tools &amp;minus; AC3/DTS Decoder</source>
-        <translation type="unfinished"></translation>
+        <translation>AC3Filter Tools &amp;minus; AC3/DTS Decoder</translation>
     </message>
     <message>
         <source>WavPack &amp;minus; Hybrid Lossless Compression</source>
-        <translation type="unfinished"></translation>
+        <translation>WavPack &amp;minus; Hybrid Lossless Compression</translation>
     </message>
     <message>
         <source>Completely open audio compression format.</source>
@@ -133,11 +133,11 @@
     </message>
     <message>
         <source>Musepack &amp;minus; Living Audio Compression</source>
-        <translation type="unfinished"></translation>
+        <translation>Musepack &amp;minus; Living Audio Compression</translation>
     </message>
     <message>
         <source>Monkey&apos;s Audio &amp;minus; Lossless Audio Compressor</source>
-        <translation type="unfinished"></translation>
+        <translation>Monkey&apos;s Audio &amp;minus; Lossless Audio Compressor</translation>
     </message>
     <message>
         <source>Freely available source code, simple SDK and non-restrictive licensing.</source>
@@ -145,11 +145,11 @@
     </message>
     <message>
         <source>Shorten &amp;minus; Lossless Audio Compressor</source>
-        <translation type="unfinished"></translation>
+        <translation>Shorten &amp;minus; Lossless Audio Compressor</translation>
     </message>
     <message>
         <source>Speex &amp;minus; Free Codec For Free Speech</source>
-        <translation type="unfinished"></translation>
+        <translation>Speex &amp;minus; Free Codec For Free Speech</translation>
     </message>
     <message>
         <source>Open Source patent-free audio format designed for speech.</source>
@@ -157,23 +157,23 @@
     </message>
     <message>
         <source>The True Audio &amp;minus; Lossless Audio Codec</source>
-        <translation type="unfinished"></translation>
+        <translation>The True Audio &amp;minus; Lossless Audio Codec</translation>
     </message>
     <message>
         <source>MediaInfo &amp;minus; Media File Analysis Tool</source>
-        <translation type="unfinished"></translation>
+        <translation>MediaInfo &amp;minus; Media File Analysis Tool</translation>
     </message>
     <message>
         <source>SoX &amp;minus; Sound eXchange</source>
-        <translation type="unfinished"></translation>
+        <translation>SoX &amp;minus; Sound eXchange</translation>
     </message>
     <message>
         <source>GnuPG &amp;minus; The GNU Privacy Guard</source>
-        <translation type="unfinished"></translation>
+        <translation>GnuPG &amp;minus; The GNU Privacy Guard</translation>
     </message>
     <message>
         <source>GNU Wget &amp;minus; Software for retrieving files using HTTP</source>
-        <translation type="unfinished"></translation>
+        <translation>GNU Wget &amp;minus; Software for retrieving files using HTTP</translation>
     </message>
     <message>
         <source>Silk Icons &amp;minus; Over 700  icons in PNG format</source>
@@ -193,10 +193,22 @@
     </message>
     <message>
         <source>n/a</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">не доступно</translation>
     </message>
     <message>
         <source>Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Aften &amp;minus; A/52 audio encoder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ALAC Decoder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copyright (c) 2004 David Hammerton. Contributions by Cody Brocious.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -204,712 +216,93 @@
     <name>AudioFileModel</name>
     <message>
         <source>Profile</source>
-        <translation type="unfinished">Профіль</translation>
+        <translation>Профіль</translation>
     </message>
     <message>
         <source>Channels</source>
-        <translation type="unfinished">Канали</translation>
+        <translation>Канали</translation>
     </message>
     <message>
         <source>Samplerate</source>
-        <translation type="unfinished">Частота дискретизації</translation>
+        <translation>Частота дискретизації</translation>
     </message>
     <message>
         <source>Bitdepth</source>
-        <translation type="unfinished">Бітова глибина</translation>
+        <translation>Бітова глибина</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation type="unfinished">Тип</translation>
+        <translation>Тип</translation>
     </message>
     <message>
         <source>Version</source>
-        <translation type="unfinished">Версія</translation>
-    </message>
-</context>
-<context>
-    <name>DecoderRegistry</name>
-    <message>
-        <source>All supported types</source>
-        <translation type="unfinished">Всі підтримувані типи</translation>
+        <translation>Версія</translation>
     </message>
     <message>
-        <source>Playlists</source>
-        <translation type="unfinished">Списки відтворення</translation>
+        <source>Bitrate</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>All files</source>
-        <translation type="unfinished">Всі файли</translation>
+        <source>Constant</source>
+        <translation type="unfinished"></translation>
     </message>
-</context>
-<context>
-    <name>DiskObserverThread</name>
     <message>
-        <source>Low diskspace on drive &apos;%1&apos; detected (only %2 MB are free), problems can occur!</source>
+        <source>Variable</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>DropBox</name>
+    <name>CueImportDialog</name>
     <message>
-        <source>LameXP - DropBox</source>
-        <translation type="unfinished">LameXP - DropBox</translation>
-    </message>
-    <message>
-        <source>LameXP DropBox</source>
-        <translation type="unfinished">LameXP DropBox</translation>
-    </message>
-    <message>
-        <source>You can add files to LameXP via Drag&amp;amp;Drop here!</source>
-        <translation type="unfinished">Ви можете додавати файли до LameXP за допомогою Drag&amp;amp;Drop, перетягнувши їх сюди!</translation>
-    </message>
-    <message>
-        <source>(Right-click to close the DropBox)</source>
-        <translation type="unfinished">(Клік правою клавішею миші для закриття DropBox)</translation>
-    </message>
-</context>
-<context>
-    <name>FileListModel</name>
-    <message>
-        <source>Title</source>
-        <translation type="unfinished">Назва</translation>
-    </message>
-    <message>
-        <source>Full Path</source>
-        <translation type="unfinished">Повний шлях</translation>
-    </message>
-</context>
-<context>
-    <name>LogViewDialog</name>
-    <message>
-        <source>Log View</source>
-        <translation type="unfinished">Лог</translation>
-    </message>
-    <message>
-        <source>Discard</source>
-        <translation type="unfinished">Відмінити</translation>
-    </message>
-    <message>
-        <source>Save to File...</source>
-        <translation type="unfinished">Зберегти до файлу...</translation>
-    </message>
-    <message>
-        <source>Copy to Clipboard</source>
-        <translation type="unfinished">Копіювати до буфера обміну</translation>
-    </message>
-    <message>
-        <source>Log File</source>
-        <translation type="unfinished">Файл логу</translation>
-    </message>
-    <message>
-        <source>The log file shows detailed information about the selected job.</source>
-        <translation type="unfinished">Файл логу відображає детальну інформацію про вибрані завдання.</translation>
-    </message>
-</context>
-<context>
-    <name>MainWindow</name>
-    <message>
-        <source>LameXP - Audio Encoder Front-end</source>
-        <translation type="unfinished">LameXP - Audio Encoder Front-end</translation>
-    </message>
-    <message>
-        <source>Source Files</source>
-        <translation type="unfinished">Вхідні файли</translation>
-    </message>
-    <message>
-        <source>Add File(s)</source>
-        <translation type="unfinished">Додати файл(и)</translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <translation type="unfinished">Видалити</translation>
-    </message>
-    <message>
-        <source>Clear</source>
-        <translation type="unfinished">Очистити</translation>
-    </message>
-    <message>
-        <source>Show Details</source>
-        <translation type="unfinished">Показати деталі</translation>
-    </message>
-    <message>
-        <source>Output Directory</source>
-        <translation type="unfinished">Тека вихідних файлів</translation>
-    </message>
-    <message>
-        <source>Goto Home Folder</source>
-        <translation type="unfinished">Домашня тека</translation>
-    </message>
-    <message>
-        <source>Goto Music Folder</source>
-        <translation type="unfinished">Тека  &quot;Моя музика&quot;</translation>
-    </message>
-    <message>
-        <source>Goto Desktop Folder</source>
-        <translation type="unfinished">Робочий стіл</translation>
-    </message>
-    <message>
-        <source>Make New Folder</source>
-        <translation type="unfinished">Створити нову теку</translation>
-    </message>
-    <message>
-        <source>Save output files to the same location where the input file is located</source>
-        <translation type="unfinished">Зберігати вихідні файли в ту ж саму теку, де знаходяться вхідні</translation>
-    </message>
-    <message>
-        <source>Prepend relative source file path to output file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Meta Data</source>
-        <translation type="unfinished">Метадані</translation>
-    </message>
-    <message>
-        <source> Meta Information </source>
-        <translation type="unfinished">Метаінформація</translation>
-    </message>
-    <message>
-        <source>Edit</source>
-        <translation type="unfinished">Редагувати</translation>
-    </message>
-    <message>
-        <source>Note: Meta information you enter here will &lt;u&gt;supersede&lt;/u&gt; data from the source!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation type="unfinished">Скинути</translation>
-    </message>
-    <message>
-        <source> Options </source>
-        <translation type="unfinished">Налаштування</translation>
-    </message>
-    <message>
-        <source>Automatically generate playlist file (.m3u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Write meta information to encoded files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Compression</source>
-        <translation type="unfinished">Стиснення</translation>
-    </message>
-    <message>
-        <source> Encoder / Format </source>
-        <translation type="unfinished"> Кодер / Формат </translation>
-    </message>
-    <message>
-        <source>Lame MP3</source>
-        <translation type="unfinished">Lame MP3</translation>
-    </message>
-    <message>
-        <source>Ogg Vorbis</source>
-        <translation type="unfinished">Ogg Vorbis</translation>
-    </message>
-    <message>
-        <source>Nero AAC</source>
-        <translation type="unfinished">Nero AAC</translation>
-    </message>
-    <message>
-        <source>Wave (PCM)</source>
-        <translation type="unfinished">Wave (PCM)</translation>
-    </message>
-    <message>
-        <source>FLAC</source>
-        <translation type="unfinished">FLAC</translation>
-    </message>
-    <message>
-        <source> Rate Control Method </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quality-based (VBR)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Average Bitrate (ABR)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Constant Bitrate (CBR)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Quality / Bitrate </source>
-        <translation type="unfinished"> Якість / Бітрейт </translation>
-    </message>
-    <message>
-        <source>Minimum</source>
-        <translation type="unfinished">Мінімум</translation>
-    </message>
-    <message>
-        <source>Maximum</source>
-        <translation type="unfinished">Максимум</translation>
-    </message>
-    <message>
-        <source>Advanced Options</source>
-        <translation type="unfinished">Розширені налаштування</translation>
-    </message>
-    <message>
-        <source> Bitrate Management (LAME and OggEnc2) </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enable Bitrate Management</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Minimum (kbps):</source>
-        <translation type="unfinished">Мінімум (кб/с):</translation>
-    </message>
-    <message>
-        <source>Maximum (kbps):</source>
-        <translation type="unfinished">Максимум (кб/с):</translation>
-    </message>
-    <message>
-        <source> LAME Algorithm Quality </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Faster Processing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Better quality</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Channel Mode / Sampling Rate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Auto Select (Default)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Joint Stereo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Forced Joint Stereo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Simple</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Dual Mono</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Mono</source>
-        <translation type="unfinished">Моно</translation>
-    </message>
-    <message>
-        <source>MP3 Channel Mode:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Sampling Rate (Hz):</source>
-        <translation type="unfinished">Частота дискретизації (Гц):</translation>
-    </message>
-    <message>
-        <source>16.000</source>
-        <translation type="unfinished">16.000</translation>
-    </message>
-    <message>
-        <source>22.050</source>
-        <translation type="unfinished">22.050</translation>
-    </message>
-    <message>
-        <source>24.000</source>
-        <translation type="unfinished">24.000</translation>
-    </message>
-    <message>
-        <source>32.000</source>
-        <translation type="unfinished">32.000</translation>
-    </message>
-    <message>
-        <source>44.100</source>
-        <translation type="unfinished">44.100</translation>
-    </message>
-    <message>
-        <source>48.000</source>
-        <translation type="unfinished">48.000</translation>
-    </message>
-    <message>
-        <source>Nero AAC Options</source>
-        <translation type="unfinished">Опції Nero AAC</translation>
-    </message>
-    <message>
-        <source>Enable 2-Pass Processing (ABR Mode)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Select AAC Profile:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Auto Select (Recommended)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enforce LC-AAC</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enforce HE-AAC (AAC + SBR)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enforce HE-AAC v2 (AAC + SBR + PS)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Volume Normalization </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enable Normalization Filter</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Peak Volume (dB):</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Tone Adjustment </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Adjust Treble (dB):</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Adjust Bass (dB):</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Reset Advanced Options </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Encode Now!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>About...</source>
-        <translation type="unfinished">Про...</translation>
-    </message>
-    <message>
-        <source> Exit Program</source>
-        <translation type="unfinished">Вийти з програми</translation>
-    </message>
-    <message>
-        <source>File</source>
-        <translation type="unfinished">Файл</translation>
-    </message>
-    <message>
-        <source>?</source>
-        <translation type="unfinished">?</translation>
-    </message>
-    <message>
-        <source>View</source>
-        <translation type="unfinished">Вигляд</translation>
-    </message>
-    <message>
-        <source>Style</source>
-        <translation type="unfinished">Стиль</translation>
-    </message>
-    <message>
-        <source>Language</source>
-        <translation type="unfinished">Мова</translation>
-    </message>
-    <message>
-        <source>Tools</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Configuration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quit</source>
-        <translation type="unfinished">Вихід</translation>
-    </message>
-    <message>
-        <source>Open File(s)...</source>
-        <translation type="unfinished">Відкрити файл(и)...</translation>
-    </message>
-    <message>
-        <source>Visit Official Web-Site</source>
-        <translation type="unfinished">Відвідати офіційну веб-сторінку</translation>
-    </message>
-    <message>
-        <source>Check for Updates</source>
-        <translation type="unfinished">Перевірити на наявність оновлень</translation>
-    </message>
-    <message>
-        <source>Open Folder...</source>
-        <translation type="unfinished">Відкрити теку...</translation>
-    </message>
-    <message>
-        <source>Clear All</source>
-        <translation type="unfinished">Очистити всі</translation>
-    </message>
-    <message>
-        <source>Plastique</source>
-        <translation type="unfinished">Plastique</translation>
-    </message>
-    <message>
-        <source>Cleanlooks</source>
-        <translation type="unfinished">Cleanlooks</translation>
-    </message>
-    <message>
-        <source>Windows Vista (&quot;Aero&quot;)</source>
-        <translation type="unfinished">Windows Vista (&quot;Aero&quot;)</translation>
-    </message>
-    <message>
-        <source>Windows Classic</source>
-        <translation type="unfinished">Windows Classic</translation>
-    </message>
-    <message>
-        <source>Windows XP (&quot;Luna&quot;)</source>
-        <translation type="unfinished">Windows XP (&quot;Luna&quot;)</translation>
-    </message>
-    <message>
-        <source>Disable Update Reminder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Disable Sound Effects</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Install WMA Decoder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Disable Nero AAC Notifications</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Disable WMA Decoder Notifications</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Show DropBox</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>From File...</source>
-        <translation type="unfinished">З файлу...</translation>
-    </message>
-    <message>
-        <source>Encode!</source>
-        <translation type="unfinished">Кодувати!</translation>
-    </message>
-    <message>
-        <source>Disable Shell Integration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Adding file(s), please wait...</source>
-        <translation type="unfinished">Додавання файла(ів), будь ласка, зачекайте...</translation>
-    </message>
-    <message>
-        <source>Access Denied</source>
-        <translation type="unfinished">Доступ заборонено</translation>
-    </message>
-    <message>
-        <source>%1 file(s) have been rejected, because read access was not granted!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>This usually means the file is locked by another process.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Files Rejected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>%1 file(s) have been rejected, because the file format could not be recognized!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>This usually means the file is damaged or the file format is not supported.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Downloading WMA Decoder Setup, please wait...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Download Failed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to download the WMA Decoder setup. Check your internet connection!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Try Again</source>
-        <translation type="unfinished">Спробуйте ще раз</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The download seems to be corrupted. Please try again!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>WMA Decoder</source>
-        <translation type="unfinished">декодер WMA</translation>
-    </message>
-    <message>
-        <source>The WMA File Decoder has been installed. Please restart LameXP now!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quit LameXP</source>
-        <translation type="unfinished">Вийти з LameXP</translation>
-    </message>
-    <message>
-        <source>Postpone</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DEMO VERSION</source>
-        <translation type="unfinished">ДЕМО ВЕРСІЯ</translation>
-    </message>
-    <message>
-        <source>You can drop in audio files here!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Open File in External Application</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Browse File Location</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Browse Selected Folder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>License Declined</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>You have declined the license. Consequently the application will exit now!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Goodbye!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LameXP - Expired</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>This demo (pre-release) version of LameXP has expired at %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LameXP is free software and release versions won&apos;t expire.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Exit Program</source>
-        <translation type="unfinished">Вийти з програми</translation>
-    </message>
-    <message>
-        <source>Urgent Update</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Your version of LameXP is more than a year old. Time for an update!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Update Reminder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Your last update check was more than 14 days ago. Check for updates now?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Your did not check for LameXP updates yet. Check for updates now?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LameXP detected that your version of the Nero AAC encoder is outdated!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The current version available is %1 (or later), but you still have version %2 installed.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>n/a</source>
+        <source>Import Cue Sheet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>You can download the latest version of the Nero AAC encoder from the Nero website at:</source>
+        <source>The following Cue Sheet will be split and imported into LameXP.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>AAC Encoder Outdated</source>
+        <source>Loading Cue Sheet file, please be patient...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The Nero AAC encoder could not be found. AAC encoding support will be disabled.</source>
+        <source>Failed to load the Cue Sheet file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Please put &apos;neroAacEnc.exe&apos;, &apos;neroAacDec.exe&apos; and &apos;neroAacTag.exe&apos; into the LameXP directory!</source>
+        <source>The specified file could not be found!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Your LameXP directory is located here:</source>
+        <source>Cue Sheet Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>You can download the Nero AAC encoder for free from the official Nero website at:</source>
+        <source>An unknown error has occured!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>AAC Support Disabled</source>
+        <source>The file could not be opened for reading. Make sure you have the required rights!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>LameXP has detected that the WMA File Decoder component is not currently installed on your system.</source>
+        <source>The provided file does not look like a valid Cue Sheet disc image file!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>You won&apos;t be able to process WMA files as input unless the WMA File Decoder component is installed!</source>
+        <source>Could not find any supported audio track in the Cue Sheet image!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Do you want to download and install the WMA File Decoder component now?</source>
+        <source>Note that LameXP can not handle &quot;binary&quot; Cue Sheet images.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>WMA Decoder Missing</source>
+        <source>The selected Cue Sheet file contains inconsistent information. Take care!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Download &amp;&amp; Install</source>
+        <source>Choose Output Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -917,331 +310,1287 @@
         <translation type="unfinished">LameXP</translation>
     </message>
     <message>
-        <source>You must add at least one file to the list before proceeding!</source>
+        <source>Error: The selected output directory could not be created!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error: The selected output directory is not writable!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Low Diskspace Warning</source>
+        <translation type="unfinished">Попередження про те, що недостатньо місця на диску</translation>
+    </message>
+    <message>
+        <source>There are less than %1 GB of free diskspace available in the selected output directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>There are less than %1 GB of free diskspace available on your system&apos;s TEMP folder.</source>
+        <source>It is highly recommend to free up more diskspace before proceeding with the import!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>It is highly recommend to free up more diskspace before proceeding with the encode!</source>
+        <source>Analyzing file(s), please wait...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Your TEMP folder is located at:</source>
+        <source>Analysis Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Abort Encoding Process</source>
+        <source>Warning: The format of some of the input files could not be determined!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Clean Disk Now</source>
+        <source>Continue Anyway</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Ignore</source>
-        <translation type="unfinished">Ігнорувати</translation>
-    </message>
-    <message>
-        <source>Low Diskspace</source>
+        <source>Abort</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>You are proceeding with low diskspace. Problems might occur!</source>
+        <source>Splitting file(s), please wait...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Sorry, an unsupported encoder has been chosen!</source>
+        <source>Process was aborted by the user after %1 track(s)!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Cannot write to the selected output directory.</source>
+        <source>An unexpected error has occured while splitting the Cue Sheet!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Please choose a different directory!</source>
+        <source>Imported %1 track(s) from the Cue Sheet and skipped %2 track(s).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add file(s)</source>
-        <translation type="unfinished">Додати файл(и)</translation>
+        <source>Cue Sheet Completed</source>
+        <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>CueSheetImport</name>
     <message>
-        <source>Load Translation</source>
-        <translation type="unfinished">Завантажити переклад</translation>
-    </message>
-    <message>
-        <source>Translation Files</source>
-        <translation type="unfinished">Файли перекладу</translation>
-    </message>
-    <message>
-        <source>New Folder</source>
-        <translation type="unfinished">Нова тека</translation>
-    </message>
-    <message>
-        <source>Enter the name of the new folder:</source>
-        <translation type="unfinished">Введіть назву нової теки:</translation>
-    </message>
-    <message>
-        <source>Failed to create folder</source>
-        <translation type="unfinished">Збій при створенні теки</translation>
-    </message>
-    <message>
-        <source>The new folder could not be created:</source>
+        <source>Import Cue Sheet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Drive is read-only or insufficient access rights!</source>
+        <source>Existing Source File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Already Running</source>
-        <translation type="unfinished">Вже запущено</translation>
-    </message>
-    <message>
-        <source>LameXP is already running, please use the running instance!</source>
+        <source>Missing Source File (Tracks will be skipped!)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Quality Level %1</source>
-        <translation type="unfinished">Рівень якості %1</translation>
-    </message>
-    <message>
-        <source>Compression %1</source>
-        <translation type="unfinished">Стиснення %1</translation>
-    </message>
-    <message>
-        <source>Uncompressed</source>
-        <translation type="unfinished">Нестиснутий</translation>
-    </message>
-    <message>
-        <source>Best Quality (Very Slow)</source>
-        <translation type="unfinished">Найкраща якість (Дуже повільно)</translation>
-    </message>
-    <message>
-        <source>High Quality (Recommended)</source>
-        <translation type="unfinished">Висока якість (Рекомендовано)</translation>
-    </message>
-    <message>
-        <source>Average Quality (Default)</source>
-        <translation type="unfinished">Середня якість (Типово)</translation>
-    </message>
-    <message>
-        <source>Low Quality (Fast)</source>
-        <translation type="unfinished">Низька якість (Швидко)</translation>
-    </message>
-    <message>
-        <source>Poor Quality (Very Fast)</source>
-        <translation type="unfinished">Дуже низька якість (Дуже швидко)</translation>
-    </message>
-    <message>
-        <source>Do you really want to disable the update reminder?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Yes</source>
-        <translation type="unfinished">Так</translation>
-    </message>
-    <message>
-        <source>No</source>
-        <translation type="unfinished">Ні</translation>
-    </message>
-    <message>
-        <source>The update reminder has been disabled.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Please remember to check for updates at regular intervals!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The update reminder has been re-enabled.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Do you really want to disable all sound effects?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Sound Effects</source>
-        <translation type="unfinished">Звуковий супровід</translation>
-    </message>
-    <message>
-        <source>All sound effects have been disabled.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The sound effects have been re-enabled.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Nero AAC Notifications</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Do you really want to disable all Nero AAC Encoder notifications?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>All Nero AAC Encoder notifications have been disabled.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The Nero AAC Encoder notifications have been re-enabled.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>WMA Decoder Notifications</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Do you really want to disable all WMA Decoder notifications?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>All WMA Decoder notifications have been disabled.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The WMA Decoder notifications have been re-enabled.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Shell Integration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Do you really want to disable the LameXP shell integration?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The LameXP shell integration has been disabled.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The LameXP shell integration has been re-enabled.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Custom Encoder Parameters </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LAME:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OggEnc2:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Nero AAC:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>FLAC:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Warning: Custom parameters won&apos;t be checked at all. Use them at your own risk !!!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Multi-Threading </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Choose the number of parallel instances based on the number of CPU cores (Recommended)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Fewer Instances</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>More Instances</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>%1 Instance(s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Temp Directory </source>
+        <source> Output Directory </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Browse...</source>
+        <translation type="unfinished">Обрати...</translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation type="unfinished">Відмінити</translation>
+    </message>
+</context>
+<context>
+    <name>CueSheetModel</name>
+    <message>
+        <source>No.</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File / Track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duration</source>
+        <translation type="unfinished">Тривалість</translation>
+    </message>
+    <message>
+        <source>File %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Track %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown Artist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown Title</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DecoderRegistry</name>
+    <message>
+        <source>All supported types</source>
+        <translation>Всі підтримувані типи</translation>
+    </message>
+    <message>
+        <source>Playlists</source>
+        <translation>Списки відтворення</translation>
+    </message>
+    <message>
+        <source>All files</source>
+        <translation>Всі файли</translation>
+    </message>
+</context>
+<context>
+    <name>DiskObserverThread</name>
+    <message>
+        <source>Low diskspace on drive &apos;%1&apos; detected (only %2 MB are free), problems can occur!</source>
+        <translation>Замало вільного місця зафіксовано на диску  &apos;%1&apos; (наявно лише %2 МБ), можуть виникнути проблеми!</translation>
+    </message>
+</context>
+<context>
+    <name>DropBox</name>
+    <message>
+        <source>LameXP - DropBox</source>
+        <translation>LameXP - DropBox</translation>
+    </message>
+    <message>
+        <source>LameXP DropBox</source>
+        <translation>LameXP DropBox</translation>
+    </message>
+    <message>
+        <source>You can add files to LameXP via Drag&amp;amp;Drop here!</source>
+        <translation>Ви можете додавати файли до LameXP перетягнувши їх сюди!</translation>
+    </message>
+    <message>
+        <source>(Right-click to close the DropBox)</source>
+        <translation>(Клік правою клавішею миші для закриття DropBox)</translation>
+    </message>
+</context>
+<context>
+    <name>FileListModel</name>
+    <message>
+        <source>Title</source>
+        <translation>Назва</translation>
+    </message>
+    <message>
+        <source>Full Path</source>
+        <translation>Повний шлях</translation>
+    </message>
+</context>
+<context>
+    <name>LogViewDialog</name>
+    <message>
+        <source>Log View</source>
+        <translation>Лог</translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation>Відмінити</translation>
+    </message>
+    <message>
+        <source>Save to File...</source>
+        <translation>Зберегти до файлу...</translation>
+    </message>
+    <message>
+        <source>Copy to Clipboard</source>
+        <translation>Копіювати до буфера обміну</translation>
+    </message>
+    <message>
+        <source>Log File</source>
+        <translation>Файл логу</translation>
+    </message>
+    <message>
+        <source>The log file shows detailed information about the selected job.</source>
+        <translation>Файл логу відображає детальну інформацію про вибрані завдання.</translation>
+    </message>
+</context>
+<context>
+    <name>MainWindow</name>
+    <message>
+        <source>LameXP - Audio Encoder Front-end</source>
+        <translation>LameXP - Audio Encoder Front-end</translation>
+    </message>
+    <message>
+        <source>Source Files</source>
+        <translation>Вхідні файли</translation>
+    </message>
+    <message>
+        <source>Add File(s)</source>
+        <translation>Додати файл(и)</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Видалити</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Очистити</translation>
+    </message>
+    <message>
+        <source>Show Details</source>
+        <translation>Показати деталі</translation>
+    </message>
+    <message>
+        <source>Output Directory</source>
+        <translation>Тека вихідних файлів</translation>
+    </message>
+    <message>
+        <source>Goto Home Folder</source>
+        <translation>Домашня тека</translation>
+    </message>
+    <message>
+        <source>Goto Music Folder</source>
+        <translation>Тека  &quot;Моя музика&quot;</translation>
+    </message>
+    <message>
+        <source>Goto Desktop Folder</source>
+        <translation>Робочий стіл</translation>
+    </message>
+    <message>
+        <source>Make New Folder</source>
+        <translation>Створити нову теку</translation>
+    </message>
+    <message>
+        <source>Save output files to the same location where the input file is located</source>
+        <translation>Зберігати вихідні файли в ту ж саму теку, де знаходяться вхідні</translation>
+    </message>
+    <message>
+        <source>Prepend relative source file path to output file</source>
+        <translation>Зберігати відносну структуру тек</translation>
+    </message>
+    <message>
+        <source>Meta Data</source>
+        <translation>Метадані</translation>
+    </message>
+    <message>
+        <source> Meta Information </source>
+        <translation>Метаінформація</translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation>Редагувати</translation>
+    </message>
+    <message>
+        <source>Note: Meta information you enter here will &lt;u&gt;supersede&lt;/u&gt; data from the source!</source>
+        <translation>Зверніть увагу: Метаінформація, введена вами тут, буде &lt;u&gt;заміщати&lt;/u&gt; дані оригінального файла!</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Скинути</translation>
+    </message>
+    <message>
+        <source> Options </source>
+        <translation>Налаштування</translation>
+    </message>
+    <message>
+        <source>Automatically generate playlist file (.m3u)</source>
+        <translation>Автоматично генерувати файли списків відтворення (.m3u)</translation>
+    </message>
+    <message>
+        <source>Write meta information to encoded files</source>
+        <translation>Записувати метаінформацію до файлів, що кодуються</translation>
+    </message>
+    <message>
+        <source>Compression</source>
+        <translation>Стиснення</translation>
+    </message>
+    <message>
+        <source> Encoder / Format </source>
+        <translation> Кодер / Формат </translation>
+    </message>
+    <message>
+        <source>Lame MP3</source>
+        <translation>Lame MP3</translation>
+    </message>
+    <message>
+        <source>Ogg Vorbis</source>
+        <translation>Ogg Vorbis</translation>
+    </message>
+    <message>
+        <source>Nero AAC</source>
+        <translation>Nero AAC</translation>
+    </message>
+    <message>
+        <source>Wave (PCM)</source>
+        <translation>Wave (PCM)</translation>
+    </message>
+    <message>
+        <source>FLAC</source>
+        <translation>FLAC</translation>
+    </message>
+    <message>
+        <source> Rate Control Method </source>
+        <translation>Режим контролю бітрейту</translation>
+    </message>
+    <message>
+        <source>Quality-based (VBR)</source>
+        <translation>Змінний бітрейт (VBR)</translation>
+    </message>
+    <message>
+        <source>Average Bitrate (ABR)</source>
+        <translation>Усереднений бітрейт (ABR)</translation>
+    </message>
+    <message>
+        <source>Constant Bitrate (CBR)</source>
+        <translation>Постійний бітрейт (CBR)</translation>
+    </message>
+    <message>
+        <source> Quality / Bitrate </source>
+        <translation> Якість / Бітрейт </translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation>Мінімум</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation>Максимум</translation>
+    </message>
+    <message>
+        <source>Advanced Options</source>
+        <translation>Розширені налаштування</translation>
+    </message>
+    <message>
+        <source> Bitrate Management (LAME and OggEnc2) </source>
+        <translation> Розподіл бітрейту (LAME and OggEnc2) </translation>
+    </message>
+    <message>
+        <source>Enable Bitrate Management</source>
+        <translation>Задіяти розподіл бітрейту</translation>
+    </message>
+    <message>
+        <source>Minimum (kbps):</source>
+        <translation>Мінімум (кб/с):</translation>
+    </message>
+    <message>
+        <source>Maximum (kbps):</source>
+        <translation>Максимум (кб/с):</translation>
+    </message>
+    <message>
+        <source> LAME Algorithm Quality </source>
+        <translation>Якість алгоритму стиснення LAME</translation>
+    </message>
+    <message>
+        <source>Faster Processing</source>
+        <translation>Швидша обробка</translation>
+    </message>
+    <message>
+        <source>Better quality</source>
+        <translation>Краща якість</translation>
+    </message>
+    <message>
+        <source>Channel Mode / Sampling Rate</source>
+        <translation>Розподіл каналів / Частота дискретизації</translation>
+    </message>
+    <message>
+        <source>Auto Select (Default)</source>
+        <translation>Автовибір (Типово)</translation>
+    </message>
+    <message>
+        <source>Joint Stereo</source>
+        <translation>Об&apos;єднане стерео</translation>
+    </message>
+    <message>
+        <source>Forced Joint Stereo</source>
+        <translation>Примусово задіяти об&apos;єднане стерео</translation>
+    </message>
+    <message>
+        <source>Simple</source>
+        <translation>Простий</translation>
+    </message>
+    <message>
+        <source>Dual Mono</source>
+        <translation>Подвійне моно</translation>
+    </message>
+    <message>
+        <source>Mono</source>
+        <translation>Моно</translation>
+    </message>
+    <message>
+        <source>MP3 Channel Mode:</source>
+        <translation>Розподіл каналів MP3:</translation>
+    </message>
+    <message>
+        <source>Sampling Rate (Hz):</source>
+        <translation>Частота дискретизації (Гц):</translation>
+    </message>
+    <message>
+        <source>16.000</source>
+        <translation>16.000</translation>
+    </message>
+    <message>
+        <source>22.050</source>
+        <translation>22.050</translation>
+    </message>
+    <message>
+        <source>24.000</source>
+        <translation>24.000</translation>
+    </message>
+    <message>
+        <source>32.000</source>
+        <translation>32.000</translation>
+    </message>
+    <message>
+        <source>44.100</source>
+        <translation>44.100</translation>
+    </message>
+    <message>
+        <source>48.000</source>
+        <translation>48.000</translation>
+    </message>
+    <message>
+        <source>Nero AAC Options</source>
+        <translation>Опції Nero AAC</translation>
+    </message>
+    <message>
+        <source>Enable 2-Pass Processing (ABR Mode)</source>
+        <translation>Задіяти обробку у 2 етапи (ABR Mode)</translation>
+    </message>
+    <message>
+        <source>Select AAC Profile:</source>
+        <translation>Вибір профіля AAC:</translation>
+    </message>
+    <message>
+        <source>Auto Select (Recommended)</source>
+        <translation>Автовибір (Рекомендовано)</translation>
+    </message>
+    <message>
+        <source>Enforce LC-AAC</source>
+        <translation>Примусово задіяти профіль LC-AAC</translation>
+    </message>
+    <message>
+        <source>Enforce HE-AAC (AAC + SBR)</source>
+        <translation>Примусово задіяти профіль HE-AAC (AAC + SBR)</translation>
+    </message>
+    <message>
+        <source>Enforce HE-AAC v2 (AAC + SBR + PS)</source>
+        <translation>Примусово задіяти профіль HE-AAC v2 (AAC + SBR + PS)</translation>
+    </message>
+    <message>
+        <source> Volume Normalization </source>
+        <translation>Нормалізація гучності</translation>
+    </message>
+    <message>
+        <source>Enable Normalization Filter</source>
+        <translation>Задіяти фільтр нормалізації</translation>
+    </message>
+    <message>
+        <source>Peak Volume (dB):</source>
+        <translation>Пікова гучність (дБ):</translation>
+    </message>
+    <message>
+        <source> Tone Adjustment </source>
+        <translation>Регулювання тону</translation>
+    </message>
+    <message>
+        <source>Adjust Treble (dB):</source>
+        <translation>Тембр (дБ):</translation>
+    </message>
+    <message>
+        <source>Adjust Bass (dB):</source>
+        <translation>Баси - НЧ (дБ):</translation>
+    </message>
+    <message>
+        <source>Reset Advanced Options </source>
+        <translation>Скинути розширені налаштування</translation>
+    </message>
+    <message>
+        <source> Encode Now!</source>
+        <translation>Почати кодування!</translation>
+    </message>
+    <message>
+        <source>About...</source>
+        <translation>Про...</translation>
+    </message>
+    <message>
+        <source> Exit Program</source>
+        <translation>Вийти з програми</translation>
+    </message>
+    <message>
+        <source>File</source>
+        <translation>Файл</translation>
+    </message>
+    <message>
+        <source>?</source>
+        <translation>?</translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation>Вигляд</translation>
+    </message>
+    <message>
+        <source>Style</source>
+        <translation>Стиль</translation>
+    </message>
+    <message>
+        <source>Language</source>
+        <translation>Мова</translation>
+    </message>
+    <message>
+        <source>Tools</source>
+        <translation>Інструменти</translation>
+    </message>
+    <message>
+        <source>Configuration</source>
+        <translation>Налаштування</translation>
+    </message>
+    <message>
+        <source>Quit</source>
+        <translation>Вихід</translation>
+    </message>
+    <message>
+        <source>Open File(s)...</source>
+        <translation>Відкрити файл(и)...</translation>
+    </message>
+    <message>
+        <source>Visit Official Web-Site</source>
+        <translation>Відвідати офіційну веб-сторінку</translation>
+    </message>
+    <message>
+        <source>Check for Updates</source>
+        <translation>Перевірити на наявність оновлень</translation>
+    </message>
+    <message>
+        <source>Open Folder...</source>
+        <translation>Відкрити теку...</translation>
+    </message>
+    <message>
+        <source>Clear All</source>
+        <translation>Очистити всі</translation>
+    </message>
+    <message>
+        <source>Plastique</source>
+        <translation>Plastique</translation>
+    </message>
+    <message>
+        <source>Cleanlooks</source>
+        <translation>Cleanlooks</translation>
+    </message>
+    <message>
+        <source>Windows Vista (&quot;Aero&quot;)</source>
+        <translation>Windows Vista (&quot;Aero&quot;)</translation>
+    </message>
+    <message>
+        <source>Windows Classic</source>
+        <translation>Windows Classic</translation>
+    </message>
+    <message>
+        <source>Windows XP (&quot;Luna&quot;)</source>
+        <translation>Windows XP (&quot;Luna&quot;)</translation>
+    </message>
+    <message>
+        <source>Disable Update Reminder</source>
+        <translation>Заборонити нагадування про наявність оновлень</translation>
+    </message>
+    <message>
+        <source>Disable Sound Effects</source>
+        <translation>Заборонити звукові ефекти</translation>
+    </message>
+    <message>
+        <source>Install WMA Decoder</source>
+        <translation>Встановити декодер WMA</translation>
+    </message>
+    <message>
+        <source>Disable Nero AAC Notifications</source>
+        <translation>Заборонити нагадування  про Nero AAC</translation>
+    </message>
+    <message>
+        <source>Disable WMA Decoder Notifications</source>
+        <translation>Заборонити нагадування  про декодер WMA</translation>
+    </message>
+    <message>
+        <source>Show DropBox</source>
+        <translation>Відображати DropBox</translation>
+    </message>
+    <message>
+        <source>From File...</source>
+        <translation>З файлу...</translation>
+    </message>
+    <message>
+        <source>Encode!</source>
+        <translation>Кодувати!</translation>
+    </message>
+    <message>
+        <source>Disable Shell Integration</source>
+        <translation>Заборонити інтеграцію в системну оболонку</translation>
+    </message>
+    <message>
+        <source>Adding file(s), please wait...</source>
+        <translation>Додавання файла(ів), будь ласка, зачекайте...</translation>
+    </message>
+    <message>
+        <source>Access Denied</source>
+        <translation>Доступ заборонено</translation>
+    </message>
+    <message>
+        <source>%1 file(s) have been rejected, because read access was not granted!</source>
+        <translation>%1 файл(и, ів) було пропущено, так як не гарантувався доступ на читання до них!</translation>
+    </message>
+    <message>
+        <source>This usually means the file is locked by another process.</source>
+        <translation>Це зазвичай означає, що файл заблоковано іншим процесом.</translation>
+    </message>
+    <message>
+        <source>Files Rejected</source>
+        <translation>Файли пропущено</translation>
+    </message>
+    <message>
+        <source>%1 file(s) have been rejected, because the file format could not be recognized!</source>
+        <translation>%1 файл(и, ів) було пропущено, так як не був розпізнаний формат файлу!</translation>
+    </message>
+    <message>
+        <source>This usually means the file is damaged or the file format is not supported.</source>
+        <translation>Це зазвичай означає, що файл пошкоджено або формат не підтримується.</translation>
+    </message>
+    <message>
+        <source>Downloading WMA Decoder Setup, please wait...</source>
+        <translation>Йде завантаження інсталятора декодера WMA, зачекайте будь ласка...</translation>
+    </message>
+    <message>
+        <source>Download Failed</source>
+        <translation>Завантаження перервано</translation>
+    </message>
+    <message>
+        <source>Failed to download the WMA Decoder setup. Check your internet connection!</source>
+        <translation>Неможливо завантажити інсталятор декодера WMA. Перевірте ваше інтернет з&apos;єднання!</translation>
+    </message>
+    <message>
+        <source>Try Again</source>
+        <translation>Спробувати ще раз</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Відмінити</translation>
+    </message>
+    <message>
+        <source>The download seems to be corrupted. Please try again!</source>
+        <translation>Схоже, що завантажені дані пошкоджено. Спробуйте провести завантаження ще раз!</translation>
+    </message>
+    <message>
+        <source>WMA Decoder</source>
+        <translation>декодер WMA</translation>
+    </message>
+    <message>
+        <source>The WMA File Decoder has been installed. Please restart LameXP now!</source>
+        <translation>Декодер WMA було встановлено. Будь ласка, повторно запустіть LameXP!</translation>
+    </message>
+    <message>
+        <source>Quit LameXP</source>
+        <translation>Вийти з LameXP</translation>
+    </message>
+    <message>
+        <source>Postpone</source>
+        <translation>Відхилити</translation>
+    </message>
+    <message>
+        <source>DEMO VERSION</source>
+        <translation>ДЕМО ВЕРСІЯ</translation>
+    </message>
+    <message>
+        <source>You can drop in audio files here!</source>
+        <translation>Ви можете перетягнути файли аудіо сюди!</translation>
+    </message>
+    <message>
+        <source>Open File in External Application</source>
+        <translation>Відкрити файл у сторонньому додатку</translation>
+    </message>
+    <message>
+        <source>Browse File Location</source>
+        <translation>Перейти до теки файлу</translation>
+    </message>
+    <message>
+        <source>Browse Selected Folder</source>
+        <translation>Перейти до вибраної теки</translation>
+    </message>
+    <message>
+        <source>License Declined</source>
+        <translation>Ліцензію не прийнято</translation>
+    </message>
+    <message>
+        <source>You have declined the license. Consequently the application will exit now!</source>
+        <translation>Ви не прийняли ліцензію. Тому додаток буде зараз закрито!</translation>
+    </message>
+    <message>
+        <source>Goodbye!</source>
+        <translation>До побачення!</translation>
+    </message>
+    <message>
+        <source>LameXP - Expired</source>
+        <translation>Період використання LameXP вийшов</translation>
+    </message>
+    <message>
+        <source>This demo (pre-release) version of LameXP has expired at %1.</source>
+        <translation>Період використання цієї демо (попереднього релізу) версії  LameXP закінчився %1.</translation>
+    </message>
+    <message>
+        <source>LameXP is free software and release versions won&apos;t expire.</source>
+        <translation>LameXP є безкоштовним ПО і період використання  не обмежено.</translation>
+    </message>
+    <message>
+        <source>Exit Program</source>
+        <translation>Вийти з програми</translation>
+    </message>
+    <message>
+        <source>Urgent Update</source>
+        <translation>Термінове поновлення</translation>
+    </message>
+    <message>
+        <source>Your version of LameXP is more than a year old. Time for an update!</source>
+        <translation>Версія вашого LameXP випущена більше року тому. Час поновити її!</translation>
+    </message>
+    <message>
+        <source>Update Reminder</source>
+        <translation>Нагадування оновлень</translation>
+    </message>
+    <message>
+        <source>Your last update check was more than 14 days ago. Check for updates now?</source>
+        <translation>Останній раз ви перевіряли оновлення більш ніж 14 днів тому. Перевірити оновлення зараз?</translation>
+    </message>
+    <message>
+        <source>Your did not check for LameXP updates yet. Check for updates now?</source>
+        <translation>Ви ще не перевярли оновлення LameXP. Перевірити оновлення зараз?</translation>
+    </message>
+    <message>
+        <source>LameXP detected that your version of the Nero AAC encoder is outdated!</source>
+        <translation>LameXP встановив, що версія кодера Nero AAC, яку ви використовуєте, є застарілою!</translation>
+    </message>
+    <message>
+        <source>The current version available is %1 (or later), but you still have version %2 installed.</source>
+        <translation>Поточна доступна версія - %1 (або старша), але ви досі використовуєте версію %2.</translation>
+    </message>
+    <message>
+        <source>n/a</source>
+        <translation>не доступно</translation>
+    </message>
+    <message>
+        <source>You can download the latest version of the Nero AAC encoder from the Nero website at:</source>
+        <translation>Ви можете завантажити останню версію кодера Nero AAC з офіційного веб-сайту:</translation>
+    </message>
+    <message>
+        <source>AAC Encoder Outdated</source>
+        <translation>Кодер AAC застарів</translation>
+    </message>
+    <message>
+        <source>The Nero AAC encoder could not be found. AAC encoding support will be disabled.</source>
+        <translation>Не можливо знайти кодер Nero AAC. Підтримка кодування AAC буде заборонена.</translation>
+    </message>
+    <message>
+        <source>Please put &apos;neroAacEnc.exe&apos;, &apos;neroAacDec.exe&apos; and &apos;neroAacTag.exe&apos; into the LameXP directory!</source>
+        <translation>Будь ласка, помістіть &apos;neroAacEnc.exe&apos;, &apos;neroAacDec.exe&apos; and &apos;neroAacTag.exe&apos; до теки LameXP!</translation>
+    </message>
+    <message>
+        <source>Your LameXP directory is located here:</source>
+        <translation>Тека, де знаходиться ваш LameXP:</translation>
+    </message>
+    <message>
+        <source>You can download the Nero AAC encoder for free from the official Nero website at:</source>
+        <translation>Ви можете завантажити кодер Nero AAC безкоштовно з офіційного веб-сайту:</translation>
+    </message>
+    <message>
+        <source>AAC Support Disabled</source>
+        <translation>Підтримку ААС заборонено</translation>
+    </message>
+    <message>
+        <source>LameXP has detected that the WMA File Decoder component is not currently installed on your system.</source>
+        <translation>LameXP визначив, що компонент WMA File Decode не встановлено у вашій системі.</translation>
+    </message>
+    <message>
+        <source>You won&apos;t be able to process WMA files as input unless the WMA File Decoder component is installed!</source>
+        <translation>Ви не зможете проводити обробку файлів WMA як вхідних допоки не буде встановлено WMA File Decoder!</translation>
+    </message>
+    <message>
+        <source>Do you want to download and install the WMA File Decoder component now?</source>
+        <translation>Ви бажаєте завантажити і встановити WMA File Decoder зараз?</translation>
+    </message>
+    <message>
+        <source>WMA Decoder Missing</source>
+        <translation>Не знайдено декодера WMA</translation>
+    </message>
+    <message>
+        <source>Download &amp;&amp; Install</source>
+        <translation>Завантаження і Встановлення</translation>
+    </message>
+    <message>
+        <source>LameXP</source>
+        <translation>LameXP</translation>
+    </message>
+    <message>
+        <source>You must add at least one file to the list before proceeding!</source>
+        <translation>Для продовження вам необхідно додати до списку хоча б один файл!</translation>
+    </message>
+    <message>
+        <source>Low Diskspace Warning</source>
+        <translation>Попередження про те, що недостатньо місця на диску</translation>
+    </message>
+    <message>
+        <source>There are less than %1 GB of free diskspace available on your system&apos;s TEMP folder.</source>
+        <translation>Наявно менш ніж %1 ГБ вільного місця в вашій системній теці тимчасових файлів.</translation>
+    </message>
+    <message>
+        <source>It is highly recommend to free up more diskspace before proceeding with the encode!</source>
+        <translation>Рекомендовано звільнити більше місця на жорсткому диску перед продовженням і переходом до кодування!</translation>
+    </message>
+    <message>
+        <source>Your TEMP folder is located at:</source>
+        <translation>Шлях до теки тимчасових файлів:</translation>
+    </message>
+    <message>
+        <source>Abort Encoding Process</source>
+        <translation>Перервати процес кодування</translation>
+    </message>
+    <message>
+        <source>Clean Disk Now</source>
+        <translation>Очистити диск зараз</translation>
+    </message>
+    <message>
+        <source>Ignore</source>
+        <translation>Ігнорувати</translation>
+    </message>
+    <message>
+        <source>Low Diskspace</source>
+        <translation>Недостатньо місця на диску</translation>
+    </message>
+    <message>
+        <source>You are proceeding with low diskspace. Problems might occur!</source>
+        <translation>Ви продовжили роботу з наявним місцем на диску, що є недостатнім. Тому можуть виникнути проблеми в подальшому!</translation>
+    </message>
+    <message>
+        <source>Sorry, an unsupported encoder has been chosen!</source>
+        <translation>Вибачте, але був обраний непідтримуваний кодер!</translation>
+    </message>
+    <message>
+        <source>Cannot write to the selected output directory.</source>
+        <translation>Неможливо вести запис до обраної вихідної теки.</translation>
+    </message>
+    <message>
+        <source>Please choose a different directory!</source>
+        <translation>Будь ласка, оберіть іншу теку!</translation>
+    </message>
+    <message>
+        <source>Add file(s)</source>
+        <translation>Додати файл(и)</translation>
+    </message>
+    <message>
+        <source>Load Translation</source>
+        <translation>Завантажити переклад</translation>
+    </message>
+    <message>
+        <source>Translation Files</source>
+        <translation>Файли перекладу</translation>
+    </message>
+    <message>
+        <source>New Folder</source>
+        <translation>Нова тека</translation>
+    </message>
+    <message>
+        <source>Enter the name of the new folder:</source>
+        <translation>Введіть назву нової теки:</translation>
+    </message>
+    <message>
+        <source>Failed to create folder</source>
+        <translation>Збій при створенні теки</translation>
+    </message>
+    <message>
+        <source>The new folder could not be created:</source>
+        <translation>Нову теку неможливо створити:</translation>
+    </message>
+    <message>
+        <source>Drive is read-only or insufficient access rights!</source>
+        <translation>Носій в режимі &apos;лише для читання&apos; або використовуються недостатні права доступу!</translation>
+    </message>
+    <message>
+        <source>Already Running</source>
+        <translation>Вже запущено</translation>
+    </message>
+    <message>
+        <source>LameXP is already running, please use the running instance!</source>
+        <translation>LameXP вже запущено, тому використовуйте запущену копію програми!</translation>
+    </message>
+    <message>
+        <source>Quality Level %1</source>
+        <translation>Рівень якості %1</translation>
+    </message>
+    <message>
+        <source>Compression %1</source>
+        <translation>Стиснення %1</translation>
+    </message>
+    <message>
+        <source>Uncompressed</source>
+        <translation>Нестиснутий</translation>
+    </message>
+    <message>
+        <source>Best Quality (Very Slow)</source>
+        <translation>Найкраща якість (Дуже повільно)</translation>
+    </message>
+    <message>
+        <source>High Quality (Recommended)</source>
+        <translation>Висока якість (Рекомендовано)</translation>
+    </message>
+    <message>
+        <source>Average Quality (Default)</source>
+        <translation>Середня якість (Типово)</translation>
+    </message>
+    <message>
+        <source>Low Quality (Fast)</source>
+        <translation>Низька якість (Швидко)</translation>
+    </message>
+    <message>
+        <source>Poor Quality (Very Fast)</source>
+        <translation>Дуже низька якість (Дуже швидко)</translation>
+    </message>
+    <message>
+        <source>Do you really want to disable the update reminder?</source>
+        <translation>Ви дійсно хочете заборонити нагадування про оновлення?</translation>
+    </message>
+    <message>
+        <source>Yes</source>
+        <translation>Так</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Ні</translation>
+    </message>
+    <message>
+        <source>The update reminder has been disabled.</source>
+        <translation>Нагадування про оновлення були заборонені.</translation>
+    </message>
+    <message>
+        <source>Please remember to check for updates at regular intervals!</source>
+        <translation>Будь ласка, періодично перевіряйте оновлення самостійно!</translation>
+    </message>
+    <message>
+        <source>The update reminder has been re-enabled.</source>
+        <translation>Нагадування про оновлення були дозволені.</translation>
+    </message>
+    <message>
+        <source>Do you really want to disable all sound effects?</source>
+        <translation>Ви дійсно хочете заборонити весь звуковий супровід?</translation>
+    </message>
+    <message>
+        <source>Sound Effects</source>
+        <translation>Звуковий супровід</translation>
+    </message>
+    <message>
+        <source>All sound effects have been disabled.</source>
+        <translation>Весь звуковий супровід був заборонений.</translation>
+    </message>
+    <message>
+        <source>The sound effects have been re-enabled.</source>
+        <translation>Весь звуковий супровід був дозволений.</translation>
+    </message>
+    <message>
+        <source>Nero AAC Notifications</source>
+        <translation>Нагадування  про Nero AAC</translation>
+    </message>
+    <message>
+        <source>Do you really want to disable all Nero AAC Encoder notifications?</source>
+        <translation>Ви дійсно хочете заборонити нагадування  про кодер Nero AAC?</translation>
+    </message>
+    <message>
+        <source>All Nero AAC Encoder notifications have been disabled.</source>
+        <translation>Нагадування про кодер Nero AAC були заборонені.</translation>
+    </message>
+    <message>
+        <source>The Nero AAC Encoder notifications have been re-enabled.</source>
+        <translation>Нагадування  про кодер Nero AAC були дозволені.</translation>
+    </message>
+    <message>
+        <source>WMA Decoder Notifications</source>
+        <translation>Нагадування  про декодер WMA</translation>
+    </message>
+    <message>
+        <source>Do you really want to disable all WMA Decoder notifications?</source>
+        <translation>Ви дійсно хочете заборонити нагадування  про декодер WMA?</translation>
+    </message>
+    <message>
+        <source>All WMA Decoder notifications have been disabled.</source>
+        <translation>Нагадування про декодер WMA були заборонені.</translation>
+    </message>
+    <message>
+        <source>The WMA Decoder notifications have been re-enabled.</source>
+        <translation>Нагадування про декодер WMA були дозволені.</translation>
+    </message>
+    <message>
+        <source>Shell Integration</source>
+        <translation>Інтеграція в системну оболонку</translation>
+    </message>
+    <message>
+        <source>Do you really want to disable the LameXP shell integration?</source>
+        <translation>Ви дійсно хочете заборонити інтеграцію LameXP в системну оболонку?</translation>
+    </message>
+    <message>
+        <source>The LameXP shell integration has been disabled.</source>
+        <translation>Інтеграцію LameXP в системну оболонку було заборонено.</translation>
+    </message>
+    <message>
+        <source>The LameXP shell integration has been re-enabled.</source>
+        <translation>Інтеграцію LameXP в системну оболонку було дозволено.</translation>
+    </message>
+    <message>
+        <source> Custom Encoder Parameters </source>
+        <translation>Користувацькі параметри кодування </translation>
+    </message>
+    <message>
+        <source>OggEnc2:</source>
+        <translation>OggEnc2:</translation>
+    </message>
+    <message>
+        <source>Nero AAC:</source>
+        <translation>Nero AAC:</translation>
+    </message>
+    <message>
+        <source>FLAC:</source>
+        <translation>FLAC:</translation>
+    </message>
+    <message>
+        <source>Warning: Custom parameters won&apos;t be checked at all. Use them at your own risk !!!</source>
+        <translation>Попередження: Користувацькі параметри кодування не будуть перевірятися, тому використовуйте їх на власний розсуд!!!</translation>
+    </message>
+    <message>
+        <source> Multi-Threading </source>
+        <translation>Багатопотоковість</translation>
+    </message>
+    <message>
+        <source>Choose the number of parallel instances based on the number of CPU cores (Recommended)</source>
+        <translation>Обирати кількість паралельно запущених копій на основі кількості ядер вашого процесора (Рекомендовано)</translation>
+    </message>
+    <message>
+        <source>Fewer Instances</source>
+        <translation>Кілька копій</translation>
+    </message>
+    <message>
+        <source>More Instances</source>
+        <translation>Більше копій</translation>
+    </message>
+    <message>
+        <source> Temp Directory </source>
+        <translation>Тека тимчасових файлів</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>Обрати...</translation>
     </message>
     <message>
         <source>Store temporary files in your system&apos;s default TEMP directory (Recommended)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Not Found</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Your currently selected TEMP folder does not exist anymore:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Restore Default</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cannot write to the selected directory. Please choose another directory!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>CDA Files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>%1 file(s) have been rejected, because they are dummy CDDA files!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>We recommend using %1 for that purpose.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Sorry, LameXP cannot extract audio tracks from an Audio&amp;minus;CD at present.</source>
-        <translation type="unfinished"></translation>
+        <translation>Зберігати тимчасові файли у відповідній системній теці (Реомендовано)</translation>
     </message>
     <message>
         <source>Frequently Asked Questions</source>
-        <translation type="unfinished"></translation>
+        <translation>Часті Питання (FAQ)</translation>
     </message>
     <message>
         <source>Changelog</source>
-        <translation type="unfinished"></translation>
+        <translation>Лог змін</translation>
     </message>
     <message>
         <source>Translator&apos;s Guide</source>
-        <translation type="unfinished"></translation>
+        <translation>Допомога перекладачу</translation>
     </message>
     <message>
         <source>Help &amp;&amp; Support</source>
-        <translation type="unfinished"></translation>
+        <translation>Допомога &amp;&amp; Підтримка</translation>
     </message>
     <message>
         <source>Open Folder Recursively...</source>
-        <translation type="unfinished"></translation>
+        <translation>Відкрити дерево тек...</translation>
+    </message>
+    <message>
+        <source>%1 file(s) have been rejected, because they are dummy CDDA files!</source>
+        <translation>%1 файл(и, ів) було пропущено, тому що вони є фіктивними файлами CDDA!</translation>
+    </message>
+    <message>
+        <source>Sorry, LameXP cannot extract audio tracks from an Audio&amp;minus;CD at present.</source>
+        <translation>Вибачте, але LameXP наразі не може витягнути аудіодоріжки з Audio&amp;minus;CD.</translation>
+    </message>
+    <message>
+        <source>We recommend using %1 for that purpose.</source>
+        <translation>Рекомендовано використовувати %1 для даних цілей.</translation>
     </message>
     <message>
         <source>Scanning folder(s) for files, please wait...</source>
-        <translation type="unfinished"></translation>
+        <translation>Йде сканування тек(и) на наявність файлів, будь ласка, зачекайте...</translation>
+    </message>
+    <message>
+        <source>Not Found</source>
+        <translation>Не знайдено</translation>
+    </message>
+    <message>
+        <source>Your currently selected TEMP folder does not exist anymore:</source>
+        <translation>Щойно обраної теки тимчасових файлів не існує:</translation>
+    </message>
+    <message>
+        <source>Restore Default</source>
+        <translation>Відновлення типових налаштувань</translation>
     </message>
     <message>
         <source>Add Folder</source>
+        <translation>Додати теку</translation>
+    </message>
+    <message>
+        <source>%1 Instance(s)</source>
+        <translation>%1 Копія (ї, й)</translation>
+    </message>
+    <message>
+        <source>Cannot write to the selected directory. Please choose another directory!</source>
+        <translation>Не можливо вести запис до обраної теки. Будь ласка, оберіть іншу!</translation>
+    </message>
+    <message>
+        <source>Aften A/52</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lame MP3:</source>
+        <translation type="unfinished">Lame MP3:</translation>
+    </message>
+    <message>
+        <source>Aften A/52:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Aften A/52 Options </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Film Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Film Standard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Music Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Music Standard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Speech</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None (Default)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto Select</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1+1 (Ch1,Ch2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1/0 (C)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2/0 (L,R)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>3/0 (L,R,C)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2/1 (L,R,S)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>3/1 (L,R,C,S)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2/2 (L,R,SL,SR)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>3/2 (L,R,C,SL,SR)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio Coding Mode:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dynamic Range Compression:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fast Bit Allocation (Less Accurate)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Exponent Search Size:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Check for Beta Updates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Import Cue Sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CDDA Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cue Sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 file(s) have been rejected, because they appear to be Cue Sheet images!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please use LameXP&apos;s Cue Sheet wizard for importing Cue Sheet files.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation type="unfinished">Відмінити</translation>
+    </message>
+    <message>
+        <source>Don&apos;t Show Again</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open Cue Sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cue Sheet File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Beta Updates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do you really want LameXP to check for Beta (pre-release) updates?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LameXP will check for Beta (pre-release) updates from now on.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Check Now</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LameXP will &lt;i&gt;not&lt;/i&gt; check for Beta (pre-release) updates from now on.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1249,49 +1598,61 @@
     <name>MetaInfo</name>
     <message>
         <source>Meta Information</source>
-        <translation type="unfinished">Метадані</translation>
+        <translation>Метадані</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="unfinished">Редагувати</translation>
+        <translation>Редагувати</translation>
     </message>
     <message>
         <source>Close</source>
-        <translation type="unfinished">Вийти</translation>
+        <translation>Вийти</translation>
     </message>
     <message>
         <source>Artwork</source>
-        <translation type="unfinished"></translation>
+        <translation>Обкладинка</translation>
     </message>
 </context>
 <context>
     <name>MetaInfoDialog</name>
     <message>
         <source>Meta Information</source>
-        <translation type="unfinished">Метаінформація</translation>
+        <translation>Метаінформація</translation>
     </message>
     <message>
         <source>The following meta information have been extracted from the original file.</source>
-        <translation type="unfinished">Дана метаінформація була витягнута з оригінального файла.</translation>
+        <translation>Дана метаінформація була витягнута з оригінального файла.</translation>
     </message>
     <message>
         <source>Load Artwork From File</source>
-        <translation type="unfinished"></translation>
+        <translation>Завантажити обкладинку з файлу</translation>
     </message>
     <message>
         <source>Clear Artwork</source>
-        <translation type="unfinished"></translation>
+        <translation>Очистити обкладинку</translation>
     </message>
     <message>
         <source>Load Artwork</source>
-        <translation type="unfinished"></translation>
+        <translation>Завантажити обкладинку</translation>
     </message>
     <message>
         <source>Artwork Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Помилка  при обробці обкладинки</translation>
     </message>
     <message>
         <source>Sorry, failed to load artwork from selected file!</source>
+        <translation>Вибачте, але неможливо завантажити обкладинку з вибраного файла!</translation>
+    </message>
+    <message>
+        <source>Edit this Information</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy everything to Meta Info tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clear all Meta Info</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1303,51 +1664,51 @@
     </message>
     <message>
         <source>Not Specified</source>
-        <translation type="unfinished"></translation>
+        <translation>Не задано</translation>
     </message>
     <message>
         <source>Full Path</source>
-        <translation type="unfinished">Повний шлях</translation>
+        <translation>Повний шлях</translation>
     </message>
     <message>
         <source>Format</source>
-        <translation type="unfinished"></translation>
+        <translation>Формат</translation>
     </message>
     <message>
         <source>Container</source>
-        <translation type="unfinished"></translation>
+        <translation>Контейнер</translation>
     </message>
     <message>
         <source>Compression</source>
-        <translation type="unfinished">Стиснення</translation>
+        <translation>Стиснення</translation>
     </message>
     <message>
         <source>Duration</source>
-        <translation type="unfinished"></translation>
+        <translation>Тривалість</translation>
     </message>
     <message>
         <source>Title</source>
-        <translation type="unfinished">Назва</translation>
+        <translation>Назва</translation>
     </message>
     <message>
         <source>Artist</source>
-        <translation type="unfinished"></translation>
+        <translation>Виконавець</translation>
     </message>
     <message>
         <source>Album</source>
-        <translation type="unfinished"></translation>
+        <translation>Альбом</translation>
     </message>
     <message>
         <source>Genre</source>
-        <translation type="unfinished"></translation>
+        <translation>Жанр</translation>
     </message>
     <message>
         <source>Year</source>
-        <translation type="unfinished"></translation>
+        <translation>Рік</translation>
     </message>
     <message>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>Позиція</translation>
     </message>
     <message>
         <source>Generate from list position</source>
@@ -1355,7 +1716,7 @@
     </message>
     <message>
         <source>Comment</source>
-        <translation type="unfinished"></translation>
+        <translation>Коментар</translation>
     </message>
     <message>
         <source>Property</source>
@@ -1363,7 +1724,7 @@
     </message>
     <message>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Значення</translation>
     </message>
     <message>
         <source>Unspecified</source>
@@ -1371,15 +1732,15 @@
     </message>
     <message>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>Ок</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Відмінити</translation>
     </message>
     <message>
         <source>Edit Title</source>
-        <translation type="unfinished"></translation>
+        <translation>Редагувати назву</translation>
     </message>
     <message>
         <source>Please enter the title for this file:</source>
@@ -1466,15 +1827,15 @@
     </message>
     <message>
         <source>The format of this file is NOT supported:</source>
-        <translation type="unfinished"></translation>
+        <translation>Формат даного файла НЕ підтримуєтья:</translation>
     </message>
     <message>
         <source>Container Format:</source>
-        <translation type="unfinished"></translation>
+        <translation>Формат контейнера:</translation>
     </message>
     <message>
         <source>Audio Format:</source>
-        <translation type="unfinished"></translation>
+        <translation>Формат аудіо:</translation>
     </message>
     <message>
         <source>Unsupported!</source>
@@ -1494,15 +1855,15 @@
     </message>
     <message>
         <source>Encoding</source>
-        <translation type="unfinished"></translation>
+        <translation>Кодування</translation>
     </message>
     <message>
         <source>Filtering</source>
-        <translation type="unfinished"></translation>
+        <translation>Фільтрування</translation>
     </message>
     <message>
         <source>Decoding</source>
-        <translation type="unfinished"></translation>
+        <translation>Декодування</translation>
     </message>
     <message>
         <source>The source audio file could not be found:</source>
@@ -1537,7 +1898,7 @@
     </message>
     <message>
         <source>Close</source>
-        <translation type="unfinished">Вийти</translation>
+        <translation>Вийти</translation>
     </message>
     <message>
         <source>Show details for selected job</source>
@@ -1636,44 +1997,44 @@
     <name>ProgressModel</name>
     <message>
         <source>Job</source>
-        <translation type="unfinished">Завдання</translation>
+        <translation>Завдання</translation>
     </message>
     <message>
         <source>Status</source>
-        <translation type="unfinished">Статус</translation>
+        <translation>Статус</translation>
     </message>
 </context>
 <context>
     <name>QApplication</name>
     <message>
         <source>Executable &apos;%1&apos; doesn&apos;t support Windows compatibility mode.</source>
-        <translation type="unfinished"></translation>
+        <translation>Додаток &apos;%1&apos; не підтримує режим сумісності Windows.</translation>
     </message>
     <message>
         <source>Executable &apos;%1&apos; requires Qt v%2, but found Qt v%3.</source>
-        <translation type="unfinished"></translation>
+        <translation>Додаток &apos;%1&apos; вимагає для роботи Qt v%2, але знайдено Qt v%3.</translation>
     </message>
     <message>
         <source>Executable &apos;%1&apos; requires Windows XP or later.</source>
-        <translation type="unfinished"></translation>
+        <translation>Додаток &apos;%1&apos; вимагає для роботи Windows XP або пізніші версії ОС.</translation>
     </message>
 </context>
 <context>
     <name>ShellIntegration</name>
     <message>
         <source>Audio File supported by LameXP</source>
-        <translation type="unfinished"></translation>
+        <translation>Аудіофайл, що підтримується LameXP</translation>
     </message>
     <message>
         <source>Convert this file with LameXP v%1</source>
-        <translation type="unfinished"></translation>
+        <translation>Конвертувати файл за допомогою LameXP v%1</translation>
     </message>
 </context>
 <context>
     <name>SplashScreen</name>
     <message>
         <source>LameXP is launching...</source>
-        <translation type="unfinished">LameXP в процесі запуску...</translation>
+        <translation>LameXP в процесі запуску...</translation>
     </message>
 </context>
 <context>
@@ -1704,11 +2065,11 @@
     </message>
     <message>
         <source>Download &amp;&amp; Install</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Завантаження і Встановлення</translation>
     </message>
     <message>
         <source>Close</source>
-        <translation type="unfinished">Вийти</translation>
+        <translation>Вийти</translation>
     </message>
     <message>
         <source>Build</source>
@@ -1768,6 +2129,26 @@
     </message>
     <message>
         <source>This usually indicates your are currently using a pre-release version of LameXP.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>It appears that the computer currently is offline!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please make sure your computer is connected to the internet and try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update is being downloaded, please be patient...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update ready to install. Applicaion will quit...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update failed. Please try again or download manually!</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
