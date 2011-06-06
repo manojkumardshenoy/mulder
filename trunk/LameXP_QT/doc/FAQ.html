@@ -32,12 +32,15 @@ a:visited { color: #0000EE; }
 <li><a href="#126abc5a">Is there a way to output ".m4a" or ".aac" files with LameXP?</a>
 <li><a href="#ebf016ab">How do I enable WMA input (decoding) in LameXP?</a>
 <li><a href="#9fd53558">How can I use LameXP as a "portable" application?</a>
+<li><a href="#3d6684e9">Is there a way to use custom tools (binaries) with LameXP instead of the "built-in" ones?</a>
 <li><a href="#df406578">The LameXP startup (splash screen) takes very long on my system. What can I do?</a>
+<li><a href="#900a2a6c">Is there a way to hide/show the LameXP console ("DOS Box") window?</a>
 <li><a href="#9b0a5c32">Why does application 'xyz' not open the Wave files created by LameXP?</a>
 <li><a href="#89cbd3d0">Why does LameXP run only 'n' parallel instances/threads on my computer?</a>
 <li><a href="#12d077d5">How can I force LameXP to create ID3 version 2 (ID3v2) tags?</a>
 <li><a href="#d83ab3c6">Why does LameXP use LAME v3.99 rather than v3.98?</a><br>
 <li><a href="#4213adbc">Can LameXP be used to convert/extract tracks from an Audio CD?</a>
+<li><a href="#434f2578">Why is the maximum normalization level limited to -0.5 dB?</a>
 <li><a href="#e7c9ae2b">Why do I get the error 'Executable doesn't support Windows compatibility mode' on startup?</a>
 <li><a href="#328b0a18">Why do I get the error 'Executable requires Windows XP or later' on startup?</a>
 <li><a href="#3ffe490e">Why do I get the error 'The procedure entry point De/EncodePointer could not be located' on startup?</a>
@@ -46,6 +49,7 @@ a:visited { color: #0000EE; }
 <li><a href="#f35cfa24">How can I translate LameXP to my language or improve an existing translation?</a>
 <li><a href="#8dba381f">Where can I download the latest version of LameXP?</a>
 <li><a href="#9c2e273d">Where can I submit bug reports or feature requests?</a>
+<li><a href="#e5694e3e">What programming language is LameXP written in?</a><br>
 <li><a href="#982cf1c0">Where can I find the LameXP source code?</a>
 <li><a href="#a0c1e92b">What are the prerequisites to build LameXP from the sources?</a></ul>
 
@@ -91,10 +95,11 @@ The following platforms are NOT supported any longer:<br><ul>
 <a name="29065b86"></a><b>What output formats (encoders) does LameXP support?</b><br>
 <br>
 Currently the following output formats are supported by LameXP:<br><ul>
-<li>MPEG Audio-Layer III (MP3), using the LAME encoder [built-in]
-<li>Ogg Vorbis, using the OggEnc2/libvorbis encoder [built-in]
-<li>Advanced Audio Coding (AAC), using Nero AAC encoder [available as separate download]
-<li>Free Lossless Audio Codec (FLAC) [built-in]
+<li>MPEG Audio-Layer III (MP3), using the <a href="http://lamexp.sourceforge.net/" target="_blank">LAME</a> encoder [built-in]
+<li>Ogg Vorbis, using the <a href="http://www.xiph.org/vorbis/" target="_blank">OggEnc2/libvorbis</a> encoder with <a href="http://www.geocities.jp/aoyoume/aotuv/" target="_blank">aoTuV</a> [built-in]
+<li>Advanced Audio Coding (AAC), using <a href="http://www.audiocoding.com/nero_aacenc.html" target="_blank">Nero AAC</a> encoder [separate download!]
+<li>ATSC A/52 (aka "AC-3"), using the <a href="http://aften.sourceforge.net/" target="_blank">Aften</a> encoder [built-in]
+<li>Free Lossless Audio Codec (<a href="http://flac.sourceforge.net/" target="_blank">FLAC</a>) [built-in]
 <li>Uncompressed PCM / Waveform Audio File (WAV/RIFF)</ul>
 
 <br><br>
@@ -106,6 +111,7 @@ Currently the following input formats are supported by LameXP:<br><ul>
 <li>Advanced Audio Coding (AAC), using FAAD decoder [built-in]
 <li>Apple Lossless (ALAC)
 <li>Apple/SGI AIFF
+<li>Avisynth, audio only [requires Avisynth 2.5.x to be installed]
 <li>Digital Theater System, using Valib decoder [built-in]
 <li>Free Lossless Audio Codec (FLAC)
 <li>Microsoft ADPCM
@@ -335,6 +341,27 @@ write-access is granted to the directory where the LameXP executable is located.
 
 <br><br>
 
+<a name="3d6684e9"></a><b>Is there a way to use custom tools (binaries) with LameXP instead of the "built-in" ones?</b><br>
+<br>
+LameXP uses a number third-party tools. All of these tools are already "built-in" (with a few exceptions) and<br>
+thus it is NOT required to provide separate binaries. Usually it will NOT be necessary to replace any of<br>
+the "built-in" tools with a custom (user-provided) binary. If, however, you need to replace/update/downgrade<br>
+one of the binaries for a good reason, the recommended method is re-building LameXP from the sources. If you<br>
+don't know how to build LameXP from the sources, then you probably shouldn't be trying to replace the binary.<br>
+<br>
+Having said that, there now is a more convenient method for using a custom tool version (binary) instead of<br>
+the "built-in" one. This method works WITHOUT re-building LameXP. However note that the following is intended<br>
+for testing and debugging purposes only! Also note that LameXP was specifically designed to work with the<br>
+"built-in" versions of the tools. It may not work properly or may not work at all with custom tool versions!<br>
+<br>
+In order to replace a "built-in" binary, simply put the user-provided binary to the following location:
+<blockquote>&lt;install_folder&gt;\tools\&lt;build_number&gt;\&lt;tool_name&gt;.exe</blockquote>
+If, for example, you want to replace 'lame.exe' in Build #666 of LameXP, you would put it to the this path:
+<blockquote>C:\Path to your LameXP install folder\tools\666\lame.exe</blockquote>
+(It is intended that the '&lt;build_number&gt;' part of the path has to be adjusted with every update of LameXP)<br><br>
+
+<br><br>
+
 <a name="df406578"></a><b>The LameXP startup (splash screen) takes very long on my system. What can I do?</b><br>
 <br>
 Starting up LameXP shouldn't take longer than approximately 10 seconds. However it was brought to our<br>
@@ -348,6 +375,27 @@ uninstall your current anti-virus program and try again. Usually it should be su
 "real-time protection", "file system protection" or "guard" feature of your anti-virus software. If it turns<br>
 out that the startup is significantly(!) faster WITHOUT the anti-virus software, please report the problem to<br>
 the developer of the anti-virus software. And, if they don't fix the problem, switch to a better product!<br><br>
+
+<br><br>
+
+<a name="900a2a6c"></a><b>Is there a way to hide/show the LameXP console ("DOS Box") window?</b><br>
+<br>
+It is common for many people to run an alleged "DOS" program inside Windows, using a so-called "DOS Box".<br>
+Everything works fine. But when you try to run such a program in DOS, you get an ugly message "This program<br>
+cannot be run in DOS mode". What's wrong? Well, the affected program is NOT a "DOS" one. It is a Windows<br>
+Console program. "DOS" is NOT a synonym of Console. And "Windows" is NOT a synonym of GUI (Graphical User<br>
+Interface). Both, DOS and Windows programs, can be either Console or GUI. Actually Windows programs can be<br>
+Console *and* GUI at the same time, i.e. a Windows GUI program can have a Console attached.<br>
+<br>
+LameXP is a GUI program for Windows. However it can have a "Debug" console attached. The purpose of this<br>
+console is providing users an insight into what's happening behind the scenes. While the console is mainly<br>
+intended for developers, it may be helpful for "regular" users too. Nonetheless you usually will NOT need the<br>
+console, unless something is going wrong. Therefore the LameXP console is disabled by default in all<br>
+"release" builds. You can enable the console by passing the "--console" command-line parameter, if required.<br>
+At the same time the console is enabled by default in all "beta" (pre-release) builds of LameXP. You can<br>
+still disable the console by passing the "--no-console" command-line parameter, if you don't like it.<br>
+<br>
+WARNING: Any attempt to close the LameXP console window will kill the application immediately !!!<br><br>
 
 <br><br>
 
@@ -443,6 +491,41 @@ the '.cda' files directly is destined to fail (as the '.cda' files do NOT actual
 
 <br><br>
 
+<a name="434f2578"></a><b>Why is the maximum normalization level limited to -0.5 dB?</b><br>
+<br>
+
+When an analogue [audio] signal is converted to the digital domain, the signal is sampled at a fixed rate<br>
+(e.g. 44100 samples per second) and each "sample" value is stored with a fixed number of bits (e.g. 16 or 24<br>
+bits per sample). Consequently [uncompressed] digital audio is represented as a sequence of binary sample<br>
+values. The range of possible sample values is determined by the word size ("bits per sample"). For example<br>
+with a word size of 16 bit, the minimum value is &minus;32768 and the maximum value is 32767 - assuming the values<br>
+are signed. The range of the sample values corresponds to the voltage range of the electrical input signal.<br>
+The maximum digital sample value (i.e. 32767 at 16-Bit) often is referred to as 0dBFS (0dB "full scale").<br>
+<br>
+Performing a Normalization in the digital domain seems straightforward: We simply multiply all sample values<br>
+with the same factor. And we choose this factor in such a way that the highest sample value(s) in the track<br>
+will become exactly 0dBFS after the normalization has been performed. However one needs to be aware that when<br>
+playing back the digital audio track, it needs to be converted back to an analogue signal. The D/A converter<br>
+will convert each sample from its binary representation to the corresponding voltage. Then a "reconstruction"<br>
+filter will be applied in order to recover a continuous signal from these individual voltages. And for the<br>
+reconstructed analogue signal it is possible to have voltages that are higher than the highest digital sample<br>
+in the audio track! This is illustrated in the following image (samples are represented as tiny squares):<br>
+<br>
+<a target="_blank" href="http://img3.imageshack.us/img3/9153/sine0dbfs.png"><img src="http://img3.imageshack.us/img3/9153/sine0dbfs.th.png" border="0"></a><br>
+<br>
+Consequently normalizing the sample values to 0dBFS is NOT a very good idea, as this may very well result in<br>
+a reconstructed analogue signal which exceeds(!) 0dBFS. And, as the analogue parts of the playback equipment<br>
+generally are NOT prepared for +0dBFS voltages, this may cause problems, such as annoying distortions!<br>
+<br>
+The help document of a well-known audio editing software contains the following advice:<br>
+<blockquote>If you're planning to put normalized audio on CD, you might want to normalize the waveforms to<br>
+no more than 96% [-0.36 dB] as some audio compact disc players have problems accurately reproducing<br>
+bits that have been processed to 100% (maximum) amplitude [0dBFS].</blockquote>
+For details please refer to the following article:<br><ul>
+<li><a href="http://www.audioholics.com/education/audio-formats-technology/issues-with-0dbfs-levels-on-digital-audio-playback-systems" target="_blank">http://www.audioholics.com/...issues-with-0dbfs-levels-on-digital-audio-playback-systems</a></ul>
+
+<br><br>
+
 <a name="e7c9ae2b"></a><b>Why do I get the error 'Executable doesn't support Windows compatibility mode' on startup?</b><br>
 <br>
 LameXP was designed to run on all supported platforms natively (except for Linux/Wine). If you see this error<br>
@@ -507,6 +590,14 @@ The preferred place to report bugs or request new features is the LameXP thread 
 Please do NOT send me E-Mail unless you really have to! I receive a LOT of E-Mail and your mail can get lost!<br><br>
 <br><br>
 
+<a name="e5694e3e"></a><b>What programming language is LameXP written in?</b><br>
+<br>
+While LameXP v3.xx and all earlier versions were written in Delphi/Pascal, starting with version 4.xx the<br>
+software has been re-written in the C++ programming language. LameXP v4.xx is based on the Qt cross-platform<br>
+application framework and offers full Unicode support. For the time being LameXP is Windows-only.<br><br>
+
+<br><br>
+
 <a name="982cf1c0"></a><b>Where can I find the LameXP source code?</b><br>
 <br>
 LameXP is developed using the <a href="http://en.wikipedia.org/wiki/Git_(software)" target="_blank">Git</a> revision control system. The LameXP Git repository is mirrored at:<br><ul>
@@ -519,17 +610,51 @@ LameXP is developed using the <a href="http://en.wikipedia.org/wiki/Git_(softwar
 <a name="a0c1e92b"></a><b>What are the prerequisites to build LameXP from the sources?</b><br>
 <br>
 LameXP is currently being developed using the following build environment:<br><ul>
-<li>Visual Studio 2010 with Service Pack 1
-<li>Qt libraries v4.7.2 for Windows (VS 2008), compiled with Visual Studio 2010
-<li>Windows SDK for Windows 7 and .NET Framework 4 (v7.1)</ul>
+<li><a href="http://www.microsoft.com/visualstudio/en-us" target="_blank">Visual Studio 2010</a> with Service Pack 1, running on Windows 7 with Service Pack 1
+<li>Desktop Qt v4.7.3 (MSVC 2008), included in <a href="http://qt.nokia.com/products/qt-sdk" target="_blank">Qt SDK v1.1</a>
+<li><a href="http://www.microsoft.com/downloads/en/details.aspx?FamilyID=35AEDA01-421D-4BA5-B44B-543DC8C33A20" target="_blank">Windows Platform SDK v7.1</a> (Windows SDK for Windows 7 and .NET Framework 4)
+<li>The minimum supported Windows version is Windows XP with Service Pack 2</ul>
 <br>
 Also note the following hints:<br><ul>
-<li>You must launch Visual Studio using "qtvars.bat vsstart" in order to enable the Qt tools
-<li>The Microsoft Windows SDK v6.0A should work as well, with a few limitations
-<li>In order to make a fully "static" build of LameXP, you need to compile Qt as static libraries
+<li>Run "qtenv2.bat" before launching Visual Studio in order to set up the Qt environment
 <li>Visual Studio 2008 solution/project files are still provided for people targeting Windows 2000
+<li>In order to make a "fully static" build of LameXP, you need to compile Qt as 'static' libraries
+<li>The Windows Platform SDK v6.0A should work as well, but there may be a few limitations
 <li>Support for the GNU Toolchain (GCC/MinGW + Make) is planned for a future version</ul>
-
+<br>
+In order to use the LameXP deployment scripts you need the following tools:<br><ul>
+<li><a href="http://www.7-zip.org/" target="_blank">7-Zip</a> - file archiver with a high compression ratio
+<li><a href="http://www.scratchpaper.com/" target="_blank">NSIS</a> - Nullsoft Scriptable Install System (Unicode Version)<ul>
+<li><a href="http://nsis.sourceforge.net/UAC_plug-in" target="_blank">UAC plug-in</a>
+<li><a href="http://nsis.sourceforge.net/LockedList_plug-in" target="_blank">LockedList plug-in</a>
+<li><a href="http://nsis.sourceforge.net/Inetc_plug-in" target="_blank">Inetc plug-in</a></ul>
+<li><a href="http://upx.sourceforge.net/" target="_blank">UPX</a> - the Ultimate Packer for eXecutables
+<li><a href="http://www.matcode.com/mpress.htm" target="_blank">MPRESS</a> - high-performance executable packer for PE32/PE32+
+<li><a href="ftp://ftp.gnupg.org/gcrypt/binary/" target="_blank">GnuPG</a> - the GNU Privacy Guard v1.4.x<div style="height:7px"></div>
+<li>Copy 'buildenv.template.txt' to 'buildenv.txt' and edit the paths as needed!</ul>
+<br>
+Instructions to build Qt as 'static' libraries:<br><ul>
+<li>Make sure Visual Studio 2010 and Strawberry Perl for Windows are installed
+<li>Install the Qt SDK v1.1 and choose to install the Qt 4.7.3 Sources
+<li>Open a new command window (cmd.exe)
+<li>Add Strawberry Perl to your PATH (e.g. 'set PATH=C:\strawberry\perl\bin;%PATH%')
+<li>Now run 'vcvarsall.bat' form your Visual C++ install directory - within the same console!
+<li>Change the current directory to the Qt Sources path (e.g. 'C:\QtSDK\QtSources\4.7.3')
+<li>Finally run 'configure.exe -release -static -ltcg &lt;more options&gt;' and wait for completion
+<li>You can now open and build the solution files (e.g. 'src\corelib\QtCore.sln' in Visual Studio
+<li>Make sure you select the "Release" configuration for your builds!
+<li>It is also required to change "Code Generation &rArr; Runtime Library" to "/MT" for all projects!
+<li>Libraries you need to build for LameXP include the following:<ul>
+<li>lib\qtmain.lib
+<li>lib\QtCore.lib
+<li>lib\QtGui.lib
+<li>lib\QtSvg.lib
+<li>lib\QtXml.lib
+<li>plugins\imageformats\qgif.lib
+<li>plugins\imageformats\qico.lib
+<li>plugins\imageformats\qsvg.lib</ul>
+<li>Put the static *.lib files into the 'LameXP\etc\Prerequisites\qt4_static\lib' directory
+<li>ImageFormat plugins go to 'LameXP\etc\Prerequisites\qt4_static\plugins\imageformats'</ul>
 <br><br>
 
 eof</body></html>

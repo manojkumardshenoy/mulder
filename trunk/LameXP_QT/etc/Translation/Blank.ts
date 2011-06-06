@@ -104,6 +104,10 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Aften &amp;minus; A/52 audio encoder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>FLAC &amp;minus; Free Lossless Audio Codec</source>
         <translation type="unfinished"></translation>
     </message>
@@ -161,6 +165,14 @@
     </message>
     <message>
         <source>The True Audio &amp;minus; Lossless Audio Codec</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ALAC Decoder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copyright (c) 2004 David Hammerton. Contributions by Cody Brocious.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -224,6 +236,199 @@
     </message>
     <message>
         <source>Version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bitrate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CueImportDialog</name>
+    <message>
+        <source>Import Cue Sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The following Cue Sheet will be split and imported into LameXP.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Loading Cue Sheet file, please be patient...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to load the Cue Sheet file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The specified file could not be found!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cue Sheet Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>An unknown error has occured!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The file could not be opened for reading. Make sure you have the required rights!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The provided file does not look like a valid Cue Sheet disc image file!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not find any supported audio track in the Cue Sheet image!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note that LameXP can not handle &quot;binary&quot; Cue Sheet images.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The selected Cue Sheet file contains inconsistent information. Take care!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose Output Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LameXP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error: The selected output directory could not be created!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error: The selected output directory is not writable!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Low Diskspace Warning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are less than %1 GB of free diskspace available in the selected output directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>It is highly recommend to free up more diskspace before proceeding with the import!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analyzing file(s), please wait...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analysis Failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warning: The format of some of the input files could not be determined!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Continue Anyway</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Splitting file(s), please wait...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Process was aborted by the user after %1 track(s)!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>An unexpected error has occured while splitting the Cue Sheet!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Imported %1 track(s) from the Cue Sheet and skipped %2 track(s).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cue Sheet Completed</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CueSheetImport</name>
+    <message>
+        <source>Import Cue Sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Existing Source File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Missing Source File (Tracks will be skipped!)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Output Directory </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CueSheetModel</name>
+    <message>
+        <source>No.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File / Track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Track %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown Artist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown Title</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -421,6 +626,10 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Aften A/52</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source> Rate Control Method </source>
         <translation type="unfinished"></translation>
     </message>
@@ -597,7 +806,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>LAME:</source>
+        <source>Lame MP3:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -614,6 +823,10 @@
     </message>
     <message>
         <source>Warning: Custom parameters won&apos;t be checked at all. Use them at your own risk !!!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Aften A/52:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -642,6 +855,86 @@
     </message>
     <message>
         <source>Store temporary files in your system&apos;s default TEMP directory (Recommended)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Aften A/52 Options </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Film Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Film Standard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Music Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Music Standard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Speech</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None (Default)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto Select</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1+1 (Ch1,Ch2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1/0 (C)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2/0 (L,R)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>3/0 (L,R,C)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2/1 (L,R,S)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>3/1 (L,R,C,S)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2/2 (L,R,SL,SR)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>3/2 (L,R,C,SL,SR)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio Coding Mode:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dynamic Range Compression:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fast Bit Allocation (Less Accurate)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Exponent Search Size:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -789,6 +1082,14 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Check for Beta Updates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Import Cue Sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Adding file(s), please wait...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -805,7 +1106,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>CDA Files</source>
+        <source>CDDA Files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -818,6 +1119,18 @@
     </message>
     <message>
         <source>We recommend using %1 for that purpose.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cue Sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 file(s) have been rejected, because they appear to be Cue Sheet images!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please use LameXP&apos;s Cue Sheet wizard for importing Cue Sheet files.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -985,6 +1298,14 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Discard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Don&apos;t Show Again</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>LameXP has detected that the WMA File Decoder component is not currently installed on your system.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1073,87 +1394,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add file(s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add Folder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Load Translation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Translation Files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>New Folder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enter the name of the new folder:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Failed to create folder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The new folder could not be created:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Drive is read-only or insufficient access rights!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Already Running</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>LameXP is already running, please use the running instance!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quality Level %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Compression %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Uncompressed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Best Quality (Very Slow)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>High Quality (Recommended)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Average Quality (Default)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Low Quality (Fast)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Poor Quality (Very Fast)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>%1 Instance(s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cannot write to the selected directory. Please choose another directory!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1229,6 +1474,34 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Open Cue Sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cue Sheet File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Beta Updates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do you really want LameXP to check for Beta (pre-release) updates?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LameXP will check for Beta (pre-release) updates from now on.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Check Now</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LameXP will &lt;i&gt;not&lt;/i&gt; check for Beta (pre-release) updates from now on.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Shell Integration</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1242,6 +1515,82 @@
     </message>
     <message>
         <source>The LameXP shell integration has been re-enabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add file(s)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add Folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New Folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enter the name of the new folder:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to create folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The new folder could not be created:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Drive is read-only or insufficient access rights!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quality Level %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compression %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Uncompressed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Best Quality (Very Slow)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>High Quality (Recommended)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Average Quality (Default)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Low Quality (Fast)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Poor Quality (Very Fast)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 Instance(s)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot write to the selected directory. Please choose another directory!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Already Running</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LameXP is already running, please use the running instance!</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1266,6 +1615,18 @@
 </context>
 <context>
     <name>MetaInfoDialog</name>
+    <message>
+        <source>Edit this Information</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy everything to Meta Info tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clear all Meta Info</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message>
         <source>Load Artwork From File</source>
         <translation type="unfinished"></translation>
@@ -1723,6 +2084,14 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>It appears that the computer currently is offline!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please make sure your computer is connected to the internet and try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Network connectivity test has failed!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1768,6 +2137,18 @@
     </message>
     <message>
         <source>This usually indicates your are currently using a pre-release version of LameXP.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update is being downloaded, please be patient...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update ready to install. Applicaion will quit...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update failed. Please try again or download manually!</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

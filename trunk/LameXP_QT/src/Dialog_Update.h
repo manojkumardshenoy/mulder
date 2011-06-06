@@ -53,9 +53,11 @@ protected:
 	void closeEvent(QCloseEvent *event);
 	void keyPressEvent(QKeyEvent *e);
 
+	const bool m_betaUpdates;
+
 private:
 	bool tryUpdateMirror(UpdateInfo *updateInfo, const QString &url);
-	bool getFile(const QString &url, const QString &outFile);
+	bool getFile(const QString &url, const QString &outFile, unsigned int maxRedir = 5);
 	bool checkSignature(const QString &file, const QString &signature);
 	bool parseVersionInfo(const QString &file, UpdateInfo *updateInfo);
 

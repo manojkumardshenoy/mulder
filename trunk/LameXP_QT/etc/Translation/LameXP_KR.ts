@@ -33,7 +33,7 @@
     </message>
     <message>
         <source>Decline License</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">라이센스 거부</translation>
     </message>
     <message>
         <source>3rd Party S/W</source>
@@ -81,7 +81,7 @@
     </message>
     <message>
         <source>OggEnc &amp;minus; Ogg Vorbis Encoder</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">OggEnc &amp;minus; Ogg Vorbis Encoder</translation>
     </message>
     <message>
         <source>Completely open and patent-free audio encoding technology.</source>
@@ -197,7 +197,19 @@
     </message>
     <message>
         <source>Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">알림: LameXP의 이 데모 (pre-release) 버전은 %1에 만료됩니다. 아직 %2 일 남음.</translation>
+    </message>
+    <message>
+        <source>Aften &amp;minus; A/52 audio encoder</source>
+        <translation type="unfinished">Aften &amp;minus; A/52 Audio Encoder</translation>
+    </message>
+    <message>
+        <source>ALAC Decoder</source>
+        <translation type="unfinished">ALAC Decoder</translation>
+    </message>
+    <message>
+        <source>Copyright (c) 2004 David Hammerton. Contributions by Cody Brocious.</source>
+        <translation type="unfinished">Copyright (c) 2004 David Hammerton. Contributions by Cody Brocious.</translation>
     </message>
 </context>
 <context>
@@ -225,6 +237,199 @@
     <message>
         <source>Version</source>
         <translation type="unfinished">버전</translation>
+    </message>
+    <message>
+        <source>Bitrate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CueImportDialog</name>
+    <message>
+        <source>Import Cue Sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The following Cue Sheet will be split and imported into LameXP.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Loading Cue Sheet file, please be patient...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>An unknown error has occured!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to load the Cue Sheet file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cue Sheet Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The specified file could not be found!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The file could not be opened for reading. Make sure you have the required rights!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The provided file does not look like a valid Cue Sheet disc image file!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not find any supported audio track in the Cue Sheet image!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note that LameXP can not handle &quot;binary&quot; Cue Sheet images.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The selected Cue Sheet file contains inconsistent information. Take care!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose Output Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LameXP</source>
+        <translation type="unfinished">LameXP</translation>
+    </message>
+    <message>
+        <source>Error: The selected output directory is not writable!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Low Diskspace Warning</source>
+        <translation type="unfinished">디스크 공간 부족 알림</translation>
+    </message>
+    <message>
+        <source>There are less than %1 GB of free diskspace available in the selected output directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>It is highly recommend to free up more diskspace before proceeding with the import!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analyzing file(s), please wait...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Splitting file(s), please wait...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error: The selected output directory could not be created!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>An unexpected error has occured while splitting the Cue Sheet!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Imported %1 track(s) from the Cue Sheet and skipped %2 track(s).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cue Sheet Completed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analysis Failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warning: The format of some of the input files could not be determined!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Continue Anyway</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation type="unfinished">취소</translation>
+    </message>
+    <message>
+        <source>Process was aborted by the user after %1 track(s)!</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CueSheetImport</name>
+    <message>
+        <source>Import Cue Sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Output Directory </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation type="unfinished">찾아보기...</translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation type="unfinished">닫기</translation>
+    </message>
+    <message>
+        <source>Existing Source File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Missing Source File (Tracks will be skipped!)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CueSheetModel</name>
+    <message>
+        <source>No.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File / Track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Track %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown Artist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown Title</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duration</source>
+        <translation type="unfinished">길이</translation>
     </message>
 </context>
 <context>
@@ -334,7 +539,7 @@
     </message>
     <message>
         <source>Output Directory</source>
-        <translation type="unfinished">츌력 디렉토리</translation>
+        <translation type="unfinished">출력 디렉토리</translation>
     </message>
     <message>
         <source>Goto Home Folder</source>
@@ -518,27 +723,27 @@
     </message>
     <message>
         <source>16.000</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">16.000</translation>
     </message>
     <message>
         <source>22.050</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">22.050</translation>
     </message>
     <message>
         <source>24.000</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">24.000</translation>
     </message>
     <message>
         <source>32.000</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">32.000</translation>
     </message>
     <message>
         <source>44.100</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">44.100</translation>
     </message>
     <message>
         <source>48.000</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">48.000</translation>
     </message>
     <message>
         <source>Nero AAC Options</source>
@@ -595,10 +800,6 @@
     <message>
         <source> Custom Encoder Parameters </source>
         <translation type="unfinished"> 인코더 사용자 매개 변수 </translation>
-    </message>
-    <message>
-        <source>LAME:</source>
-        <translation type="unfinished">LAME:</translation>
     </message>
     <message>
         <source>OggEnc2:</source>
@@ -803,10 +1004,6 @@
     <message>
         <source>This usually means the file is locked by another process.</source>
         <translation type="unfinished">다른 프로세스에 의해 파일이 잠겨 있는 경우입니다.</translation>
-    </message>
-    <message>
-        <source>CDA Files</source>
-        <translation type="unfinished">CDA 파일</translation>
     </message>
     <message>
         <source>%1 file(s) have been rejected, because they are dummy CDDA files!</source>
@@ -1244,6 +1441,158 @@
         <source>The LameXP shell integration has been re-enabled.</source>
         <translation type="unfinished">LameXP 쉘 통합이 재활성화 되었습니다.</translation>
     </message>
+    <message>
+        <source>Check for Beta Updates</source>
+        <translation type="unfinished">베타 업데이트 확인</translation>
+    </message>
+    <message>
+        <source>Beta Updates</source>
+        <translation type="unfinished">베타 업데이트</translation>
+    </message>
+    <message>
+        <source>Do you really want LameXP to check for Beta (pre-release) updates?</source>
+        <translation type="unfinished">LameXP 베타 버전(pre-release)의 업데이트를 확인하시겠습니까?</translation>
+    </message>
+    <message>
+        <source>LameXP will check for Beta (pre-release) updates from now on.</source>
+        <translation type="unfinished">지금부터 LameXP가 베타 버전(pre-release)의 업데이트를 확인합니다.</translation>
+    </message>
+    <message>
+        <source>Check Now</source>
+        <translation type="unfinished">지금 점검</translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation type="unfinished">닫기</translation>
+    </message>
+    <message>
+        <source>LameXP will &lt;i&gt;not&lt;/i&gt; check for Beta (pre-release) updates from now on.</source>
+        <translation type="unfinished">지금부터 LameXP가 베타 버전(pre-release) 업데이트를 &lt;i&gt;확인하지 않습니다&lt;/i&gt;.</translation>
+    </message>
+    <message>
+        <source>Aften A/52</source>
+        <translation type="unfinished">Aften A/52</translation>
+    </message>
+    <message>
+        <source>Lame MP3:</source>
+        <translation type="unfinished">Lame MP3:</translation>
+    </message>
+    <message>
+        <source>Aften A/52:</source>
+        <translation type="unfinished">Aften A/52:</translation>
+    </message>
+    <message>
+        <source> Aften A/52 Options </source>
+        <translation type="unfinished"> Aften A/52 옵션 </translation>
+    </message>
+    <message>
+        <source>Film Light</source>
+        <translation type="unfinished">필름 라이트</translation>
+    </message>
+    <message>
+        <source>Film Standard</source>
+        <translation type="unfinished">필름 표준</translation>
+    </message>
+    <message>
+        <source>Music Light</source>
+        <translation type="unfinished">뮤직 라이트</translation>
+    </message>
+    <message>
+        <source>Music Standard</source>
+        <translation type="unfinished">뮤직 표준</translation>
+    </message>
+    <message>
+        <source>Speech</source>
+        <translation type="unfinished">음성</translation>
+    </message>
+    <message>
+        <source>None (Default)</source>
+        <translation type="unfinished">없음 (기본)</translation>
+    </message>
+    <message>
+        <source>Auto Select</source>
+        <translation type="unfinished">자동 감지</translation>
+    </message>
+    <message>
+        <source>1+1 (Ch1,Ch2)</source>
+        <translation type="unfinished">1+1 (Ch1,Ch2)</translation>
+    </message>
+    <message>
+        <source>1/0 (C)</source>
+        <translation type="unfinished">1/0 (C)</translation>
+    </message>
+    <message>
+        <source>2/0 (L,R)</source>
+        <translation type="unfinished">2/0 (L,R)</translation>
+    </message>
+    <message>
+        <source>3/0 (L,R,C)</source>
+        <translation type="unfinished">3/0 (L,R,C)</translation>
+    </message>
+    <message>
+        <source>2/1 (L,R,S)</source>
+        <translation type="unfinished">2/1 (L,R,S)</translation>
+    </message>
+    <message>
+        <source>3/1 (L,R,C,S)</source>
+        <translation type="unfinished">3/1 (L,R,C,S)</translation>
+    </message>
+    <message>
+        <source>2/2 (L,R,SL,SR)</source>
+        <translation type="unfinished">2/2 (L,R,SL,SR)</translation>
+    </message>
+    <message>
+        <source>3/2 (L,R,C,SL,SR)</source>
+        <translation type="unfinished">3/2 (L,R,C,SL,SR)</translation>
+    </message>
+    <message>
+        <source>Audio Coding Mode:</source>
+        <translation type="unfinished">오디오 코딩 모드:</translation>
+    </message>
+    <message>
+        <source>Dynamic Range Compression:</source>
+        <translation type="unfinished">동적 영역 압축 :</translation>
+    </message>
+    <message>
+        <source>Fast Bit Allocation (Less Accurate)</source>
+        <translation type="unfinished">빠른 비트 할당 (덜 정확)</translation>
+    </message>
+    <message>
+        <source>Exponent Search Size:</source>
+        <translation type="unfinished">지수 검색 크기:</translation>
+    </message>
+    <message>
+        <source>Don&apos;t Show Again</source>
+        <translation type="unfinished">다시 표시하지 않음</translation>
+    </message>
+    <message>
+        <source>Import Cue Sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open Cue Sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cue Sheet File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CDDA Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cue Sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 file(s) have been rejected, because they appear to be Cue Sheet images!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please use LameXP&apos;s Cue Sheet wizard for importing Cue Sheet files.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -1293,6 +1642,18 @@
     <message>
         <source>Sorry, failed to load artwork from selected file!</source>
         <translation type="unfinished">죄송하지만, 선택한 파일로부터 아트워크 불러기가 실패되었습니다!</translation>
+    </message>
+    <message>
+        <source>Edit this Information</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy everything to Meta Info tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clear all Meta Info</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1655,7 +2016,7 @@
     </message>
     <message>
         <source>Executable &apos;%1&apos; requires Windows XP or later.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&apos;%1&apos; 실행은 Windows XP 또는 상위 버전이 필요합니다.</translation>
     </message>
 </context>
 <context>
@@ -1673,7 +2034,7 @@
     <name>SplashScreen</name>
     <message>
         <source>LameXP is launching...</source>
-        <translation type="unfinished">LameXP가 실행중...</translation>
+        <translation type="unfinished">LameXP 실행중...</translation>
     </message>
 </context>
 <context>
@@ -1769,6 +2130,26 @@
     <message>
         <source>This usually indicates your are currently using a pre-release version of LameXP.</source>
         <translation type="unfinished">이런 경우는 LameXP의 시험판 사용을 의미합니다.</translation>
+    </message>
+    <message>
+        <source>Update is being downloaded, please be patient...</source>
+        <translation type="unfinished">업데이트를 내려받고 있습니다. 잠시만 기다려주십시오...</translation>
+    </message>
+    <message>
+        <source>Update ready to install. Applicaion will quit...</source>
+        <translation type="unfinished">업데이트 설치 준비. 프로그램이 종료됩니다...</translation>
+    </message>
+    <message>
+        <source>Update failed. Please try again or download manually!</source>
+        <translation type="unfinished">업데이트 실패. 다시 시도하거나 업데이트를 수동으로 내려받으시기 바랍니다!</translation>
+    </message>
+    <message>
+        <source>It appears that the computer currently is offline!</source>
+        <translation type="unfinished">현재 컴퓨터가 인터넷에 연결되어 있지 않은 걸로 보입니다!</translation>
+    </message>
+    <message>
+        <source>Please make sure your computer is connected to the internet and try again.</source>
+        <translation type="unfinished">인터넷 연결을 확인하고 다시 시도하시기 바랍니다.</translation>
     </message>
 </context>
 </TS>

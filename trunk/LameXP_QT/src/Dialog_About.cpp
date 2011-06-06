@@ -34,6 +34,8 @@
 #include <QTimer>
 #include <QFileInfo>
 #include <QDir>
+#include <QDesktopWidget>
+#include <QLabel>
 
 #include <MMSystem.h>
 
@@ -42,6 +44,7 @@
 
 //Constants
 const char *AboutDialog::neroAacUrl = "http://www.nero.com/eng/technologies-aac-codec.html";
+const char *AboutDialog::disqueUrl = "http://www.youtube.com/watch?v=MEDB4xJsXVo"; /*http://www.youtube.com/watch?v=LjOM5YjMZ8w*/
 
 //Contributors
 static const struct 
@@ -72,9 +75,13 @@ g_lamexp_contributors[] =
 AboutDialog::AboutDialog(SettingsModel *settings, QWidget *parent, bool firstStart)
 :
 	QMessageBox(parent),
-	m_settings(settings)
+	m_settings(settings),
+	m_disque(NULL),
+	m_disqueTimer(NULL),
+	m_rotateNext(false),
+	m_disqueDelay(_I64_MAX)
 {
-	const QString versionStr = QString().sprintf
+	QString versionStr = QString().sprintf
 	(
 		"Version %d.%02d %s, Build %d [%s], %s, Qt v%s",
 		lamexp_version_major(),
@@ -86,11 +93,16 @@ AboutDialog::AboutDialog(SettingsModel *settings, QWidget *parent, bool firstSta
 		qVersion()
 	);
 
+	for(int i = 0; i < 4; i++)
+	{
+		m_cartoon[i] = NULL;
+	}
+
 	QString aboutText;
 
 	aboutText += QString("<h2>%1</h2>").arg(tr("LameXP &minus; Audio Encoder Front-end"));
-	aboutText += QString("<b>Copyright (C) 2004-%1 LoRd_MuldeR &lt;MuldeR2@GMX.de&gt;. Some rights reserved.</b><br>").arg(max(lamexp_version_date().year(), QDate::currentDate().year()));
-	aboutText += QString("<b>%1</b><br><br>").arg(versionStr);
+	aboutText += QString("<nobr><b>Copyright (C) 2004-%1 LoRd_MuldeR &lt;MuldeR2@GMX.de&gt;. Some rights reserved.</b></nobr><br>").arg(max(lamexp_version_date().year(), QDate::currentDate().year())).replace("-", "&minus;");
+	aboutText += QString("<nobr><b>%1</b></nobr><br><br>").arg(versionStr).replace("-", "&minus;");
 	aboutText += QString("<nobr>%1</nobr><br>").arg(tr("Please visit %1 for news and updates!").arg(LINK(lamexp_website_url())));
 	
 	if(LAMEXP_DEBUG)
@@ -101,7 +113,7 @@ AboutDialog::AboutDialog(SettingsModel *settings, QWidget *parent, bool firstSta
 	else if(lamexp_version_demo())
 	{
 		int daysLeft = max(QDate::currentDate().daysTo(lamexp_version_expires()), 0);
-		aboutText += QString("<hr><nobr><font color=\"crimson\">%1</font></nobr>").arg(tr("Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.").arg(lamexp_version_expires().toString(Qt::ISODate), QString::number(daysLeft)));
+		aboutText += QString("<hr><nobr><font color=\"crimson\">%1</font></nobr>").arg(tr("Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.").arg(lamexp_version_expires().toString(Qt::ISODate), QString::number(daysLeft))).replace("-", "&minus;");
 	}
 	
 	aboutText += "<hr><br>";
@@ -115,7 +127,7 @@ AboutDialog::AboutDialog(SettingsModel *settings, QWidget *parent, bool firstSta
 	aboutText += "GNU General Public License for more details.<br><br>";
 	aboutText += "You should have received a copy of the GNU General Public License<br>";
 	aboutText += "along with this program; if not, write to the Free Software<br>";
-	aboutText += "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</tt></nobr><br>";
+	aboutText += "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110&minus;1301, USA.</tt></nobr><br>";
 	aboutText += "<hr><table><tr>";
 	aboutText += "<td valign=\"middle\"><img src=\":/icons/error_big.png\"</td><td>&nbsp;</td>";
 	aboutText += QString("<td><font color=\"darkred\">%1</font></td>").arg(tr("Note: LameXP is free software. Do <b>not</b> pay money to obtain or use LameXP! If some third-party website tries to make you pay for downloading LameXP, you should <b>not</b> respond to the offer !!!"));
@@ -173,13 +185,45 @@ AboutDialog::AboutDialog(SettingsModel *settings, QWidget *parent, bool firstSta
 		fourthButton->setIcon(QIcon(":/icons/cross.png"));
 		fourthButton->setIconSize(QSize(16, 16));
 		fourthButton->setMinimumWidth(90);
-	}
 
+		QPixmap disque(":/images/Disque.png");
+		QRect screenGeometry = QApplication::desktop()->availableGeometry();
+		m_disque = new QLabel(this, Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+		m_disque->installEventFilter(this);
+		m_disque->setStyleSheet("background:transparent;");
+		m_disque->setAttribute(Qt::WA_TranslucentBackground);
+		m_disque->setGeometry(qrand() % (screenGeometry.width() - disque.width()), qrand() % (screenGeometry.height() - disque.height()), disque.width(), disque.height());
+		m_disque->setPixmap(disque);
+		m_disque->setWindowOpacity(0.01);
+		m_disque->show();
+		m_disqueFlags[0] = (qrand() > (RAND_MAX/2));
+		m_disqueFlags[1] = (qrand() > (RAND_MAX/2));
+		m_disqueTimer = new QTimer;
+		connect(m_disqueTimer, SIGNAL(timeout()), this, SLOT(moveDisque()));
+		m_disqueTimer->setInterval(10);
+		m_disqueTimer->start();
+	}
+	
 	m_firstShow = firstStart;
 }
 
 AboutDialog::~AboutDialog(void)
 {
+	if(m_disque)
+	{
+		m_disque->close();
+		LAMEXP_DELETE(m_disque);
+	}
+	if(m_disqueTimer)
+	{
+		m_disqueTimer->stop();
+		LAMEXP_DELETE(m_disqueTimer);
+	}
+	for(int i = 0; i < 4; i++)
+	{
+		LAMEXP_DELETE(m_cartoon[i]);
+	}
+
 }
 
 ////////////////////////////////////////////////////////////
@@ -273,7 +317,7 @@ void AboutDialog::showAboutContributors(void)
 	contributorsAboutBox->setIconPixmap(QIcon(":/images/Logo_Contributors.png").pixmap(QSize(64,74)));
 	contributorsAboutBox->setWindowIcon(QIcon(":/icons/user_suit.png"));
 	contributorsAboutBox->exec();
-				
+
 	LAMEXP_DELETE(contributorsAboutBox);
 }
 
@@ -282,19 +326,19 @@ void AboutDialog::showMoreAbout(void)
 	QString moreAboutText;
 
 	moreAboutText += QString("<h3>%1</h3>").arg(tr("The following third-party software is used in LameXP:"));
-	moreAboutText += "<div style=\"margin-left:-25px;font-size:8pt;white-space:nowrap\"><table><tr><td><ul>";
+	moreAboutText += "<div style=\"margin-left:-25px;font-size:7pt;white-space:nowrap\"><table><tr><td><ul>";
 	
 	moreAboutText += makeToolText
 	(
 		tr("LAME &minus; OpenSource mp3 Encoder"),
-		"lame.exe", "v?.??, Alpha-??",
+		"lame.exe", "v?.??, Beta-?",
 		tr("Released under the terms of the GNU Lesser General Public License."),
 		"http://lame.sourceforge.net/"
 	);
 	moreAboutText += makeToolText
 	(
 		tr("OggEnc &minus; Ogg Vorbis Encoder"),
-		"oggenc2_i386.exe", "v?.??, aoTuV Beta-?.??",
+		"oggenc2.exe", "v?.??, aoTuV Beta-?.??",
 		tr("Completely open and patent-free audio encoding technology."),
 		"http://www.vorbis.com/"
 	);
@@ -305,6 +349,13 @@ void AboutDialog::showMoreAbout(void)
 		tr("Freeware state-of-the-art HE-AAC encoder with 2-Pass support."),
 		neroAacUrl,
 		tr("Available from vendor web-site as free download:")
+	);
+	moreAboutText += makeToolText
+	(
+		tr("Aften &minus; A/52 audio encoder"),
+		"aften.exe", "v?.?.?",
+		tr("Released under the terms of the GNU Lesser General Public License."),
+		"http://aften.sourceforge.net/"
 	);
 	moreAboutText += makeToolText
 	(
@@ -382,8 +433,15 @@ void AboutDialog::showMoreAbout(void)
 	);
 	moreAboutText += makeToolText
 	(
+		tr("ALAC Decoder"),
+		"alac.exe", "v?.?.?",
+		tr("Copyright (c) 2004 David Hammerton. Contributions by Cody Brocious."),
+		"http://craz.net/programs/itunes/alac.html"
+	);
+	moreAboutText += makeToolText
+	(
 		tr("MediaInfo &minus; Media File Analysis Tool"),
-		"mediainfo_i386.exe", "v?.?.??",
+		"mediainfo.exe", "v?.?.??",
 		tr("Released under the terms of the GNU Lesser General Public License."),
 		"http://mediainfo.sourceforge.net/"
 	);
@@ -401,8 +459,6 @@ void AboutDialog::showMoreAbout(void)
 		tr("Released under the terms of the GNU Lesser General Public License."),
 		"http://www.gnupg.org/"
 	);
-
-
 	moreAboutText += makeToolText
 	(
 		tr("GNU Wget &minus; Software for retrieving files using HTTP"),
@@ -410,8 +466,6 @@ void AboutDialog::showMoreAbout(void)
 		tr("Released under the terms of the GNU Lesser General Public License."),
 		"http://www.gnu.org/software/wget/"
 	);
-
-
 	moreAboutText += makeToolText
 	(
 		tr("Silk Icons &minus; Over 700  icons in PNG format"),
@@ -419,9 +473,9 @@ void AboutDialog::showMoreAbout(void)
 		tr("By Mark James, released under the Creative Commons 'by' License."),
 		"http://www.famfamfam.com/lab/icons/silk/"
 	);
-	moreAboutText += QString("</ul></td><td>&nbsp;</td></tr></table></div><i>%1</i><br>").arg
+	moreAboutText += QString("</ul></td><td>&nbsp;</td></tr></table></div><i><nobr>%1</nobr></i><br>").arg
 	(
-		tr("LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of thrird-party software used in LameXP belongs to the individual authors.")
+		tr("LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of thrird-party software used in LameXP belongs to the individual authors.").replace("-", "&minus;")
 	);
 
 	QMessageBox *moreAboutBox = new QMessageBox(this);
@@ -440,6 +494,81 @@ void AboutDialog::showMoreAbout(void)
 	LAMEXP_DELETE(moreAboutBox);
 }
 
+void AboutDialog::moveDisque(void)
+{
+	int delta = 2;
+	LARGE_INTEGER perfCount, perfFrequ;
+
+	if(QueryPerformanceFrequency(&perfFrequ) &&	QueryPerformanceCounter(&perfCount))
+	{
+		if(m_disqueDelay != _I64_MAX)
+		{
+			const double delay = static_cast<double>(perfCount.QuadPart) - static_cast<double>(m_disqueDelay);
+			delta = max(1, min(128, static_cast<int>(ceil(delay / static_cast<double>(perfFrequ.QuadPart) / 0.00512))));
+		}
+		m_disqueDelay = perfCount.QuadPart;
+	}
+
+	if(m_disque)
+	{
+		QRect screenGeometry = QApplication::desktop()->availableGeometry();
+		const int minX = screenGeometry.left();
+		const int maxX = screenGeometry.width() - m_disque->width() + screenGeometry.left();
+		const int minY = screenGeometry.top();
+		const int maxY = screenGeometry.height() - m_disque->height() + screenGeometry.top();
+		
+		QPoint pos = m_disque->pos();
+		pos.setX(m_disqueFlags[0] ? pos.x() + delta : pos.x() - delta);
+		pos.setY(m_disqueFlags[1] ? pos.y() + delta : pos.y() - delta);
+
+		if(pos.x() <= minX)
+		{
+			m_disqueFlags[0] = true;
+			pos.setX(minX);
+			m_rotateNext = true;
+		}
+		else if(pos.x() >= maxX)
+		{
+			m_disqueFlags[0] = false;
+			pos.setX(maxX);
+			m_rotateNext = true;
+		}
+		if(pos.y() <= minY)
+		{
+			m_disqueFlags[1] = true;
+			pos.setY(minY);
+			m_rotateNext = true;
+		}
+		else if(pos.y() >= maxY)
+		{
+			m_disqueFlags[1] = false;
+			pos.setY(maxY);
+			m_rotateNext = true;
+		}
+
+		m_disque->move(pos);
+
+		if(m_rotateNext)
+		{
+			QPixmap *cartoon = NULL;
+			if(m_disqueFlags[0] == true && m_disqueFlags[1] != true) cartoon = m_cartoon[0];
+			if(m_disqueFlags[0] == true && m_disqueFlags[1] == true) cartoon = m_cartoon[1];
+			if(m_disqueFlags[0] != true && m_disqueFlags[1] == true) cartoon = m_cartoon[2];
+			if(m_disqueFlags[0] != true && m_disqueFlags[1] != true) cartoon = m_cartoon[3];
+			if(cartoon)
+			{
+				m_disque->setPixmap(*cartoon);
+				m_disque->resize(cartoon->size());
+			}
+			m_rotateNext = false;
+		}
+
+		if(m_disque->windowOpacity() < 0.9)
+		{
+			m_disque->setWindowOpacity(m_disque->windowOpacity() + 0.01);
+		}
+	}
+}
 ////////////////////////////////////////////////////////////
 // Protected Functions
 ////////////////////////////////////////////////////////////
@@ -459,6 +588,25 @@ void AboutDialog::showEvent(QShowEvent *e)
 		QTimer::singleShot(5000, this, SLOT(enableButtons()));
 		setCursor(QCursor(Qt::WaitCursor));
 	}
+}
+
+bool AboutDialog::eventFilter(QObject *obj, QEvent *event)
+{
+	if((obj == m_disque) && (event->type() == QEvent::MouseButtonPress))
+	{
+		QPixmap cartoon(":/images/Cartoon.png");
+		for(int i = 0; i < 4; i++)
+		{
+			if(!m_cartoon[i])
+			{
+				m_cartoon[i] = new QPixmap(cartoon.transformed(QMatrix().rotate(static_cast<double>(i*90) + 45.0), Qt::SmoothTransformation));
+				m_rotateNext = true;
+			}
+		}
+		QDesktopServices::openUrl(QUrl(disqueUrl));
+	}
+
+	return false;
 }
 
 ////////////////////////////////////////////////////////////

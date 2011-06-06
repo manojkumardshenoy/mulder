@@ -1,3 +1,4 @@
+..\..\gui\CueSheetImport.ui 
 ..\..\gui\DropBox.ui 
 ..\..\gui\LogViewDialog.ui 
 ..\..\gui\MainWindow.ui 
@@ -11,6 +12,7 @@
 ..\..\src\Decoder_AC3.cpp 
 ..\..\src\Decoder_ADPCM.cpp 
 ..\..\src\Decoder_ALAC.cpp 
+..\..\src\Decoder_Avisynth.cpp 
 ..\..\src\Decoder_FLAC.cpp 
 ..\..\src\Decoder_MAC.cpp 
 ..\..\src\Decoder_MP3.cpp 
@@ -23,6 +25,7 @@
 ..\..\src\Decoder_WavPack.cpp 
 ..\..\src\Decoder_WMA.cpp 
 ..\..\src\Dialog_About.cpp 
+..\..\src\Dialog_CueImport.cpp 
 ..\..\src\Dialog_DropBox.cpp 
 ..\..\src\Dialog_LogView.cpp 
 ..\..\src\Dialog_MainWindow.cpp 
@@ -33,6 +36,7 @@
 ..\..\src\Dialog_WorkingBanner.cpp 
 ..\..\src\Encoder_AAC.cpp 
 ..\..\src\Encoder_Abstract.cpp 
+..\..\src\Encoder_AC3.cpp 
 ..\..\src\Encoder_FLAC.cpp 
 ..\..\src\Encoder_MP3.cpp 
 ..\..\src\Encoder_Vorbis.cpp 
@@ -48,6 +52,7 @@
 ..\..\src\Main.cpp 
 ..\..\src\Model_Artwork.cpp 
 ..\..\src\Model_AudioFile.cpp 
+..\..\src\Model_CueSheet.cpp 
 ..\..\src\Model_FileList.cpp 
 ..\..\src\Model_FileSystem.cpp 
 ..\..\src\Model_MetaInfo.cpp 
@@ -56,6 +61,7 @@
 ..\..\src\PlaylistImporter.cpp 
 ..\..\src\Registry_Decoder.cpp 
 ..\..\src\ShellIntegration.cpp 
+..\..\src\Thread_CueSplitter.cpp 
 ..\..\src\Thread_DiskObserver.cpp 
 ..\..\src\Thread_FileAnalyzer.cpp 
 ..\..\src\Thread_Initialization.cpp 
@@ -70,6 +76,7 @@
 ..\..\src\Decoder_AC3.h 
 ..\..\src\Decoder_ADPCM.h 
 ..\..\src\Decoder_ALAC.h 
+..\..\src\Decoder_Avisynth.h 
 ..\..\src\Decoder_FLAC.h 
 ..\..\src\Decoder_MAC.h 
 ..\..\src\Decoder_MP3.h 
@@ -82,6 +89,7 @@
 ..\..\src\Decoder_WavPack.h 
 ..\..\src\Decoder_WMA.h 
 ..\..\src\Dialog_About.h 
+..\..\src\Dialog_CueImport.h 
 ..\..\src\Dialog_DropBox.h 
 ..\..\src\Dialog_LogView.h 
 ..\..\src\Dialog_MainWindow.h 
@@ -92,6 +100,7 @@
 ..\..\src\Dialog_WorkingBanner.h 
 ..\..\src\Encoder_AAC.h 
 ..\..\src\Encoder_Abstract.h 
+..\..\src\Encoder_AC3.h 
 ..\..\src\Encoder_FLAC.h 
 ..\..\src\Encoder_MP3.h 
 ..\..\src\Encoder_Vorbis.h 
@@ -106,6 +115,7 @@
 ..\..\src\LockedFile.h 
 ..\..\src\Model_Artwork.h 
 ..\..\src\Model_AudioFile.h 
+..\..\src\Model_CueSheet.h 
 ..\..\src\Model_FileList.h 
 ..\..\src\Model_FileSystem.h 
 ..\..\src\Model_MetaInfo.h 
@@ -116,6 +126,7 @@
 ..\..\src\Resource.h 
 ..\..\src\ShellIntegration.h 
 ..\..\src\Targetver.h 
+..\..\src\Thread_CueSplitter.h 
 ..\..\src\Thread_DiskObserver.h 
 ..\..\src\Thread_FileAnalyzer.h 
 ..\..\src\Thread_Initialization.h 

@@ -199,6 +199,18 @@
         <source>Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.</source>
         <translation>Hinweise: Diese Demo (Test) Version von LameXP läuft am %1 ab. Noch %2 Tage übrig.</translation>
     </message>
+    <message>
+        <source>Aften &amp;minus; A/52 audio encoder</source>
+        <translation>Aften &amp;minus; A/52 Audio-Kodierer</translation>
+    </message>
+    <message>
+        <source>ALAC Decoder</source>
+        <translation>ALAC Dekodierer</translation>
+    </message>
+    <message>
+        <source>Copyright (c) 2004 David Hammerton. Contributions by Cody Brocious.</source>
+        <translation>Copyright (c) 2004 David Hammerton. Unter Mitwirkung von Cody Brocious.</translation>
+    </message>
 </context>
 <context>
     <name>AudioFileModel</name>
@@ -225,6 +237,199 @@
     <message>
         <source>Version</source>
         <translation>Version</translation>
+    </message>
+    <message>
+        <source>Bitrate</source>
+        <translation>Bitrate</translation>
+    </message>
+    <message>
+        <source>Constant</source>
+        <translation>konstant</translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation>variabel</translation>
+    </message>
+</context>
+<context>
+    <name>CueImportDialog</name>
+    <message>
+        <source>Import Cue Sheet</source>
+        <translation>Cuehseet Assistent</translation>
+    </message>
+    <message>
+        <source>The following Cue Sheet will be split and imported into LameXP.</source>
+        <translation>Das folgende Cuesheet wird aufgeteilt und in LameXP importiert.</translation>
+    </message>
+    <message>
+        <source>Loading Cue Sheet file, please be patient...</source>
+        <translation>Cuesheet Datei wird geladen, bitte warten...</translation>
+    </message>
+    <message>
+        <source>An unknown error has occured!</source>
+        <translation>Ein unbekannter Fehler ist aufgetreten!</translation>
+    </message>
+    <message>
+        <source>Failed to load the Cue Sheet file:</source>
+        <translation>Fehler beim Laden der Cuesheet Datei:</translation>
+    </message>
+    <message>
+        <source>Cue Sheet Error</source>
+        <translation>Cuesheet Fehler</translation>
+    </message>
+    <message>
+        <source>The specified file could not be found!</source>
+        <translation>Die angegebene Datei konnte nicht gefunden werden!</translation>
+    </message>
+    <message>
+        <source>The file could not be opened for reading. Make sure you have the required rights!</source>
+        <translation>Datei kann nicht geöffnet werden. Stellen Sie sicher, dass Sie über die notwendigen Rechte verfügen!</translation>
+    </message>
+    <message>
+        <source>The provided file does not look like a valid Cue Sheet disc image file!</source>
+        <translation>Die angegebene Datei scheint keine gültige Cuesheet Datei zu sein!</translation>
+    </message>
+    <message>
+        <source>Could not find any supported audio track in the Cue Sheet image!</source>
+        <translation>Es konnte kein unterstützter Audio-Track im Cuesheet gefunden werden!</translation>
+    </message>
+    <message>
+        <source>Note that LameXP can not handle &quot;binary&quot; Cue Sheet images.</source>
+        <translation>Beachten Sie, dass LameXP keine &quot;binären&quot; Cuesheets unterstützt.</translation>
+    </message>
+    <message>
+        <source>The selected Cue Sheet file contains inconsistent information. Take care!</source>
+        <translation>Das Cuesheet enthält inkonsistente Informationen. Bitte geben Sie Acht!</translation>
+    </message>
+    <message>
+        <source>Choose Output Directory</source>
+        <translation>Ausgabe-Verzeichnis auswählen</translation>
+    </message>
+    <message>
+        <source>LameXP</source>
+        <translation>LameXP</translation>
+    </message>
+    <message>
+        <source>Error: The selected output directory is not writable!</source>
+        <translation>Fehler: Im Ausgabe-Verzeichnis kann nicht geschrieben werden!</translation>
+    </message>
+    <message>
+        <source>Low Diskspace Warning</source>
+        <translation>Warnung: Wenig freier Festplattenspeicher</translation>
+    </message>
+    <message>
+        <source>There are less than %1 GB of free diskspace available in the selected output directory.</source>
+        <translation>Es sind weniger als %1 GB freier Speicherplatz im Ausgabe-Verzeichnis verfügbar.</translation>
+    </message>
+    <message>
+        <source>It is highly recommend to free up more diskspace before proceeding with the import!</source>
+        <translation>Es wird dringend empfohlen, vor dem Fortfahren mehr Speicherplatz freizugeben!</translation>
+    </message>
+    <message>
+        <source>Analyzing file(s), please wait...</source>
+        <translation>Analysiere Dateien, bitte warten...</translation>
+    </message>
+    <message>
+        <source>Splitting file(s), please wait...</source>
+        <translation>Dateien werden aufgeteilt, bitte warten...</translation>
+    </message>
+    <message>
+        <source>Error: The selected output directory could not be created!</source>
+        <translation>Fehler: Das Ausgabe-Verzeichnis konnte nicht erstellt werden!</translation>
+    </message>
+    <message>
+        <source>An unexpected error has occured while splitting the Cue Sheet!</source>
+        <translation>Beim Aufteilen des Cuesheets is ein unerwarteter Fehler aufgetreten!</translation>
+    </message>
+    <message>
+        <source>Imported %1 track(s) from the Cue Sheet and skipped %2 track(s).</source>
+        <translation>%1 Datei(ein) wurden aus dem Cuesheet importiert. %2 Datei(en) übersprungen.</translation>
+    </message>
+    <message>
+        <source>Cue Sheet Completed</source>
+        <translation>Cuesheet Abgeschlossen</translation>
+    </message>
+    <message>
+        <source>Analysis Failed</source>
+        <translation>Analyse fehlgeschlagen</translation>
+    </message>
+    <message>
+        <source>Warning: The format of some of the input files could not be determined!</source>
+        <translation>Achtung: Das Dateiformat einiger Dateien konnte nicht festgestellt werden!</translation>
+    </message>
+    <message>
+        <source>Continue Anyway</source>
+        <translation>Trotzdem fortfahren</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>Process was aborted by the user after %1 track(s)!</source>
+        <translation>Der Vorgang wurde vom Benutzter nach %1 Track(s) abgebrochen!</translation>
+    </message>
+</context>
+<context>
+    <name>CueSheetImport</name>
+    <message>
+        <source>Import Cue Sheet</source>
+        <translation>Cuesheet Importieren</translation>
+    </message>
+    <message>
+        <source> Output Directory </source>
+        <translation> Ausgabe-Verzeichnis </translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>Durchsuchen...</translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation>Schließen</translation>
+    </message>
+    <message>
+        <source>Existing Source File</source>
+        <translation>Existierende Quelldatei</translation>
+    </message>
+    <message>
+        <source>Missing Source File (Tracks will be skipped!)</source>
+        <translation>Fehlende Quelldatei (Tracks werden übersprungen!)</translation>
+    </message>
+</context>
+<context>
+    <name>CueSheetModel</name>
+    <message>
+        <source>No.</source>
+        <translation>Nr.</translation>
+    </message>
+    <message>
+        <source>File / Track</source>
+        <translation>Datei / Track</translation>
+    </message>
+    <message>
+        <source>Index</source>
+        <translation>Index</translation>
+    </message>
+    <message>
+        <source>File %1</source>
+        <translation>Datei %1</translation>
+    </message>
+    <message>
+        <source>Track %1</source>
+        <translation>Titel %1</translation>
+    </message>
+    <message>
+        <source>Unknown Artist</source>
+        <translation>Unbekannter Künstler</translation>
+    </message>
+    <message>
+        <source>Unknown Title</source>
+        <translation>Unbekannter Titel</translation>
+    </message>
+    <message>
+        <source>Duration</source>
+        <translation>Dauer</translation>
     </message>
 </context>
 <context>
@@ -1134,10 +1339,6 @@
         <translation> Benutzerdefinierte Parameter </translation>
     </message>
     <message>
-        <source>LAME:</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>OggEnc2:</source>
         <translation></translation>
     </message>
@@ -1202,10 +1403,6 @@
         <translation>In das ausgewählte Verzeichnis kann nicht geschrieben werden. Bitte ein anderes Verzeichnis auswählen!</translation>
     </message>
     <message>
-        <source>CDA Files</source>
-        <translation>CDA Dateien</translation>
-    </message>
-    <message>
         <source>%1 file(s) have been rejected, because they are dummy CDDA files!</source>
         <translation>%1 Datei(en) wurden abgewiesen, weil es sich um CDDA Platzhalter&amp;minus;Dateien handelt!</translation>
     </message>
@@ -1244,6 +1441,158 @@
     <message>
         <source>Add Folder</source>
         <translation>Verzeichnis hinzufügen</translation>
+    </message>
+    <message>
+        <source>Check for Beta Updates</source>
+        <translation>Nach Beta-Updates suchen</translation>
+    </message>
+    <message>
+        <source>Beta Updates</source>
+        <translation>Beta Updates</translation>
+    </message>
+    <message>
+        <source>Do you really want LameXP to check for Beta (pre-release) updates?</source>
+        <translation>Möchten Sie wirklich, dass LameXP nach Beta (Entwickler) Updates sucht?</translation>
+    </message>
+    <message>
+        <source>LameXP will check for Beta (pre-release) updates from now on.</source>
+        <translation>LameXP wird fortan nach Beta (Entwickler) Updates suchen.</translation>
+    </message>
+    <message>
+        <source>Check Now</source>
+        <translation>Jetzt suchen</translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation>Schließen</translation>
+    </message>
+    <message>
+        <source>LameXP will &lt;i&gt;not&lt;/i&gt; check for Beta (pre-release) updates from now on.</source>
+        <translation>LameXP wird fortan &lt;i&gt;nicht&lt;/i&gt; nach Beta (Entwickler) Updates suchen.</translation>
+    </message>
+    <message>
+        <source>Aften A/52</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Lame MP3:</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Aften A/52:</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source> Aften A/52 Options </source>
+        <translation> Aften A/52 Optionen </translation>
+    </message>
+    <message>
+        <source>Film Light</source>
+        <translation>Film (Gering)</translation>
+    </message>
+    <message>
+        <source>Film Standard</source>
+        <translation>Film (Normal)</translation>
+    </message>
+    <message>
+        <source>Music Light</source>
+        <translation>Musik (Gering)</translation>
+    </message>
+    <message>
+        <source>Music Standard</source>
+        <translation>Musik (Normal)</translation>
+    </message>
+    <message>
+        <source>Speech</source>
+        <translation>Sprache</translation>
+    </message>
+    <message>
+        <source>None (Default)</source>
+        <translation>Keine (Standard)</translation>
+    </message>
+    <message>
+        <source>Auto Select</source>
+        <translation>Automatisch</translation>
+    </message>
+    <message>
+        <source>1+1 (Ch1,Ch2)</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>1/0 (C)</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>2/0 (L,R)</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>3/0 (L,R,C)</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>2/1 (L,R,S)</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>3/1 (L,R,C,S)</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>2/2 (L,R,SL,SR)</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>3/2 (L,R,C,SL,SR)</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Audio Coding Mode:</source>
+        <translation>Ton-Kodierungsmodus:</translation>
+    </message>
+    <message>
+        <source>Dynamic Range Compression:</source>
+        <translation>Dynamik-Kompression:</translation>
+    </message>
+    <message>
+        <source>Fast Bit Allocation (Less Accurate)</source>
+        <translation>Schnelle Bit-Zuteilung (weniger genau)</translation>
+    </message>
+    <message>
+        <source>Exponent Search Size:</source>
+        <translation>Exponenten Such-Größe:</translation>
+    </message>
+    <message>
+        <source>Don&apos;t Show Again</source>
+        <translation>Nicht mehr anzeigen</translation>
+    </message>
+    <message>
+        <source>Import Cue Sheet</source>
+        <translation>Cuesheet importieren</translation>
+    </message>
+    <message>
+        <source>Open Cue Sheet</source>
+        <translation>Cuesheet öffnen</translation>
+    </message>
+    <message>
+        <source>Cue Sheet File</source>
+        <translation>Cuesheet Datei</translation>
+    </message>
+    <message>
+        <source>CDDA Files</source>
+        <translation>CDDA Dateien</translation>
+    </message>
+    <message>
+        <source>Cue Sheet</source>
+        <translation>Cuesheet</translation>
+    </message>
+    <message>
+        <source>%1 file(s) have been rejected, because they appear to be Cue Sheet images!</source>
+        <translation>%1 Datei(en) wurden abgewiesen, weil es sich um Cuesheet Image&amp;minus;Dateien handelt!</translation>
+    </message>
+    <message>
+        <source>Please use LameXP&apos;s Cue Sheet wizard for importing Cue Sheet files.</source>
+        <translation>Bitte benutzen Sie zum Importieren von Cuesheets den Cuesheet Assistenten.</translation>
     </message>
 </context>
 <context>
@@ -1294,6 +1643,18 @@
     <message>
         <source>Sorry, failed to load artwork from selected file!</source>
         <translation>Artwork konnte nicht aus der Ausgewählten Datei geladen werden!</translation>
+    </message>
+    <message>
+        <source>Edit this Information</source>
+        <translation>Diese Information bearbeiten</translation>
+    </message>
+    <message>
+        <source>Copy everything to Meta Info tab</source>
+        <translation>Alles in den Metadaten-Tab kopieren</translation>
+    </message>
+    <message>
+        <source>Clear all Meta Info</source>
+        <translation>Metainformationen löschen</translation>
     </message>
 </context>
 <context>
@@ -1770,6 +2131,26 @@
     <message>
         <source>Unknown</source>
         <translation>Unbekannt</translation>
+    </message>
+    <message>
+        <source>Update is being downloaded, please be patient...</source>
+        <translation>Update wird heruntergeladen, bitte gedulden Sie sich...</translation>
+    </message>
+    <message>
+        <source>Update ready to install. Applicaion will quit...</source>
+        <translation>Update ist bereit zur Installtion. Programm wird beendet...</translation>
+    </message>
+    <message>
+        <source>Update failed. Please try again or download manually!</source>
+        <translation>Update fehlgeschlagen. Bitte versuchen Sie es noch einmal!</translation>
+    </message>
+    <message>
+        <source>It appears that the computer currently is offline!</source>
+        <translation>Anscheinend ist der Computer momentan offline!</translation>
+    </message>
+    <message>
+        <source>Please make sure your computer is connected to the internet and try again.</source>
+        <translation>Aktivieren Sie Ihre Internetverbindung und versuchen Sie es dann noch einmal.</translation>
     </message>
 </context>
 </TS>

@@ -41,6 +41,8 @@
 #include <QRegExp>
 #include <QResource>
 #include <QTranslator>
+#include <QEventLoop>
+#include <QTimer>
 
 //LameXP includes
 #include "Resource.h"
@@ -55,16 +57,15 @@
 #include <Objbase.h>
 
 //Debug only includes
-#ifdef _DEBUG
+#if LAMEXP_DEBUG
 #include <Psapi.h>
-#endif //_DEBUG
+#endif
 
-//Static build only macros
+//Initialize static Qt plugins
 #ifdef QT_NODLL
-#pragma warning(disable:4101)
-#define LAMEXP_INIT_QT_STATIC_PLUGIN(X) Q_IMPORT_PLUGIN(X)
-#else
-#define LAMEXP_INIT_QT_STATIC_PLUGIN(X)
+Q_IMPORT_PLUGIN(qgif)
+Q_IMPORT_PLUGIN(qico)
+Q_IMPORT_PLUGIN(qsvg)
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -204,6 +205,10 @@ static const char *g_lamexp_imageformats[] = {"png", "jpg", "gif", "ico", "svg",
 //Global locks
 static QMutex g_lamexp_message_mutex;
 
+//Main thread ID
+static const DWORD g_main_thread_id = GetCurrentThreadId();
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBAL FUNCTIONS
 ///////////////////////////////////////////////////////////////////////////////
@@ -229,7 +234,17 @@ const char *lamexp_support_url(void) { return g_lamexp_support_url; }
  */
 bool lamexp_version_demo(void)
 {
-	return LAMEXP_DEBUG || !(strstr(g_lamexp_version.ver_release_name, "Final") || strstr(g_lamexp_version.ver_release_name, "Hotfix"));
+	char buffer[128];
+	bool releaseVersion = false;
+	if(!strcpy_s(buffer, 128, g_lamexp_version.ver_release_name))
+	{
+		char *context, *prefix = strtok_s(buffer, "-,; ", &context);
+		if(prefix)
+		{
+			releaseVersion = (!_stricmp(prefix, "Final")) || (!_stricmp(prefix, "Hotfix"));
+		}
+	}
+	return LAMEXP_DEBUG || (!releaseVersion);
 }
 
 /*
@@ -284,6 +299,23 @@ const QDate &lamexp_version_date(void)
 	}
 
 	return g_lamexp_version_date;
+}
+
+/*
+ * Global exception handler
+ */
+LONG WINAPI lamexp_exception_handler(__in struct _EXCEPTION_POINTERS *ExceptionInfo)
+{
+	if(GetCurrentThreadId() != g_main_thread_id)
+	{
+		HANDLE mainThread = OpenThread(THREAD_TERMINATE, FALSE, g_main_thread_id);
+		if(mainThread) TerminateThread(mainThread, ULONG_MAX);
+		
+	}
+	
+	FatalAppExit(0, L"Unhandeled exception error, application will exit!");
+	TerminateProcess(GetCurrentProcess(), -1);
+	return LONG_MAX;
 }
 
 /*
@@ -540,10 +572,9 @@ lamexp_cpu_t lamexp_detect_cpu_features(void)
 }
 
 /*
- * Check for debugger
+ * Check for debugger (thread proc)
  */
-#if !defined(_DEBUG) || defined(NDEBUG)
-void WINAPI lamexp_debug_thread_proc(__in LPVOID lpParameter)
+static void WINAPI lamexp_debug_thread_proc(__in LPVOID lpParameter)
 {
 	while(!IsDebuggerPresent())
 	{
@@ -551,7 +582,11 @@ void WINAPI lamexp_debug_thread_proc(__in LPVOID lpParameter)
 	}
 	TerminateProcess(GetCurrentProcess(), -1);
 }
-HANDLE lamexp_debug_thread_init(void)
+
+/*
+ * Check for debugger (startup routine)
+ */
+static HANDLE lamexp_debug_thread_init(void)
 {
 	if(IsDebuggerPresent())
 	{
@@ -560,8 +595,6 @@ HANDLE lamexp_debug_thread_init(void)
 	}
 	return CreateThread(NULL, NULL, reinterpret_cast<LPTHREAD_START_ROUTINE>(&lamexp_debug_thread_proc), NULL, NULL, NULL);
 }
-static const HANDLE g_debug_thread = lamexp_debug_thread_init();
-#endif
 
 /*
  * Check for compatibility mode
@@ -679,6 +712,11 @@ bool lamexp_init_qt(int argc, char* argv[])
 		break;
 	}
 
+	//Check for Wine
+	QLibrary ntdll("ntdll.dll");
+	bool isWine = (ntdll.resolve("wine_get_version") != NULL) || (ntdll.resolve("wine_nt_to_unix_file_name") != NULL);
+	if(isWine) qWarning("It appears we are running under Wine, unexpected things might happen!\n");
+
 	//Create Qt application instance and setup version info
 	QDate date = QDate::currentDate();
 	QApplication *application = new QApplication(argc, argv);
@@ -691,10 +729,6 @@ bool lamexp_init_qt(int argc, char* argv[])
 	//Load plugins from application directory
 	QCoreApplication::setLibraryPaths(QStringList() << QApplication::applicationDirPath());
 	qDebug("Library Path:\n%s\n", QApplication::libraryPaths().first().toUtf8().constData());
-
-	//Init static Qt plugins
-	LAMEXP_INIT_QT_STATIC_PLUGIN(qico);
-	LAMEXP_INIT_QT_STATIC_PLUGIN(qsvg);
 
 	//Check for supported image formats
 	QList<QByteArray> supportedFormats = QImageReader::supportedImageFormats();
@@ -721,7 +755,7 @@ bool lamexp_init_qt(int argc, char* argv[])
 	}
 
 	//Update console icon, if a console is attached
-	if(g_lamexp_console_attached)
+	if(g_lamexp_console_attached && !isWine)
 	{
 		typedef DWORD (__stdcall *SetConsoleIconFun)(HICON);
 		QLibrary kernel32("kernel32.dll");
@@ -1348,6 +1382,9 @@ __int64 lamexp_free_diskspace(const QString &path)
 	}
 }
 
+/*
+ * Shutdown the computer
+ */
 bool lamexp_shutdown_computer(const QString &message, const unsigned long timeout, const bool forceShutdown)
 {
 	HANDLE hToken = NULL;
@@ -1370,6 +1407,57 @@ bool lamexp_shutdown_computer(const QString &message, const unsigned long timeou
 	}
 	
 	return false;
+}
+
+/*
+ * Make a window blink (to draw user's attention)
+ */
+void lamexp_blink_window(QWidget *poWindow, unsigned int count, unsigned int delay)
+{
+	static QMutex blinkMutex;
+
+	const double maxOpac = 1.0;
+	const double minOpac = 0.3;
+	const double delOpac = 0.1;
+
+	if(!blinkMutex.tryLock())
+	{
+		qWarning("Blinking is already in progress, skipping!");
+		return;
+	}
+	
+	try
+	{
+		const int steps = static_cast<int>(ceil(maxOpac - minOpac) / delOpac);
+		const int sleep = static_cast<int>(floor(static_cast<double>(delay) / static_cast<double>(steps)));
+		const double opacity = poWindow->windowOpacity();
+	
+		for(unsigned int i = 0; i < count; i++)
+		{
+			for(double x = maxOpac; x >= minOpac; x -= delOpac)
+			{
+				poWindow->setWindowOpacity(x);
+				QApplication::processEvents();
+				Sleep(sleep);
+			}
+
+			for(double x = minOpac; x <= maxOpac; x += delOpac)
+			{
+				poWindow->setWindowOpacity(x);
+				QApplication::processEvents();
+				Sleep(sleep);
+			}
+		}
+
+		poWindow->setWindowOpacity(opacity);
+		QApplication::processEvents();
+		blinkMutex.unlock();
+	}
+	catch (...)
+	{
+		blinkMutex.unlock();
+		qWarning("Exception error while blinking!");
+	}
 }
 
 /*
@@ -1424,16 +1512,21 @@ void lamexp_finalization(void)
 }
 
 /*
+ * Initialize debug thread
+ */
+static const HANDLE g_debug_thread = LAMEXP_DEBUG ? NULL : lamexp_debug_thread_init();
+
+/*
  * Get number private bytes [debug only]
  */
 SIZE_T lamexp_dbg_private_bytes(void)
 {
-#ifdef _DEBUG
+#if LAMEXP_DEBUG
 	PROCESS_MEMORY_COUNTERS_EX memoryCounters;
 	memoryCounters.cb = sizeof(PROCESS_MEMORY_COUNTERS_EX);
 	GetProcessMemoryInfo(GetCurrentProcess(), (PPROCESS_MEMORY_COUNTERS) &memoryCounters, sizeof(PROCESS_MEMORY_COUNTERS_EX));
 	return memoryCounters.PrivateUsage;
 #else
 	throw "Cannot call this function in a non-debug build!";
-#endif //_DEBUG
+#endif //LAMEXP_DEBUG
 }

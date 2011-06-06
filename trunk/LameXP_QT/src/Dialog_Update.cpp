@@ -40,6 +40,7 @@
 
 #include <time.h>
 #include <MMSystem.h>
+#include <WinInet.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -69,13 +70,36 @@ static const char *known_hosts[] =
 {
 	"http://www.amazon.com/",
 	"http://www.aol.com/",
-	"http://www.ask.com/",
+	"http://www.apache.org/",
+	"http://www.avidemux.org/",
+	"http://www.bbc.co.uk/",
+	"http://www.bing.com/",
 	"http://www.ebay.com/",
-	"http://www.example.com/",
+	"http://www.equation.com/",
+	"http://www.ffmpeg.org/",
 	"http://www.gitorious.org/",
-	"http://www.google.com/",
-	"http://www.msn.com/",
+	"http://www.gnome.org/",
+	"http://www.gnu.org/",
+	"http://code.google.com/",
+	"http://haali.su/mkv/",
+	"http://www.heise.de/",
+	"http://www.iana.org/",
+	"http://www.imgburn.com/",
+	"http://www.kernel.org/",
+	"http://www.libav.org/",
+	"http://www.mozilla.org/",
+	"http://mplayerhq.hu/",
+	"http://www.msn.com/?st=1",
+	"http://oss.netfarm.it/",
+	"http://www.opera.com/",
+	"http://www.quakelive.com/",
+	"http://www.seamonkey-project.org/",
 	"http://sourceforge.net/",
+	"http://www.spiegel.de/",
+	"http://tdm-gcc.tdragon.net/",
+	"http://www.tdrsmusic.com/",
+	"http://www.videohelp.com/",
+	"http://www.videolan.org/",
 	"http://www.wikipedia.org/",
 	"http://www.yahoo.com/",
 	"http://www.youtube.com/",
@@ -123,6 +147,7 @@ UpdateDialog::UpdateDialog(SettingsModel *settings, QWidget *parent)
 	m_updateInfo(NULL),
 	m_settings(settings),
 	m_logFile(new QStringList()),
+	m_betaUpdates(settings ? (settings->autoUpdateCheckBeta() || lamexp_version_demo()) : lamexp_version_demo()),
 	m_success(false),
 	m_updateReadyToInstall(false)
 {
@@ -144,6 +169,12 @@ UpdateDialog::UpdateDialog(SettingsModel *settings, QWidget *parent)
 	labelAnimationCenter->setMovie(m_animator);
 	m_animator->start();
 
+	//Indicate beta updates
+	if(m_betaUpdates)
+	{
+		setWindowTitle(windowTitle().append(" [Beta]"));
+	}
+	
 	//Enable button
 	connect(retryButton, SIGNAL(clicked()), this, SLOT(checkForUpdates()));
 	connect(installButton, SIGNAL(clicked()), this, SLOT(applyUpdate()));
@@ -253,6 +284,31 @@ void UpdateDialog::checkForUpdates(void)
 	m_logFile->clear();
 	m_logFile->append("Checking internet connection...");
 
+	DWORD inetFlags = NULL;
+	if(!InternetGetConnectedState(&inetFlags, NULL))
+	{
+		m_logFile->append(QStringList() << "" << "Operating system reports that the computer is currently offline !!!");
+		if(!retryButton->isVisible()) retryButton->show();
+		if(!logButton->isVisible()) logButton->show();
+		closeButton->setEnabled(true);
+		retryButton->setEnabled(true);
+		logButton->setEnabled(true);
+		if(frameAnimation->isVisible()) frameAnimation->hide();
+		statusLabel->setText(tr("It appears that the computer currently is offline!"));
+		progressBar->setValue(progressBar->maximum());
+		hintIcon->setPixmap(QIcon(":/icons/network_error.png").pixmap(16,16));
+		hintLabel->setText(tr("Please make sure your computer is connected to the internet and try again."));
+		hintIcon->show();
+		hintLabel->show();
+		LAMEXP_DELETE(m_updateInfo);
+		if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_ERROR), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+		QApplication::restoreOverrideCursor();
+		progressBar->setValue(progressBar->maximum());
+		WinSevenTaskbar::setTaskbarState(this->parentWidget(), WinSevenTaskbar::WinSevenTaskbarErrorState);
+		WinSevenTaskbar::setOverlayIcon(this->parentWidget(), &QIcon(":/icons/exclamation.png"));
+		return;
+	}
+	
 	QStringList hostList;
 	for(int i = 0; known_hosts[i]; i++)
 	{
@@ -268,11 +324,16 @@ void UpdateDialog::checkForUpdates(void)
 		{
 			m_logFile->append(QStringList() << "" << "Testing host:" << currentHost << "");
 			QString outFile = QString("%1/%2.htm").arg(lamexp_temp_folder2(), lamexp_rand_str());
-			if(getFile(currentHost, outFile))
+			if(getFile(currentHost, outFile, 0))
 			{
 				connectionScore++;
 			}
 			QFile::remove(outFile);
+		}
+		else
+		{
+			QApplication::processEvents();
+			Sleep(15);
 		}
 	}
 
@@ -300,7 +361,7 @@ void UpdateDialog::checkForUpdates(void)
 	}
 
 	statusLabel->setText(tr("Checking for new updates online, please wait..."));
-	m_logFile->append("Checking for updates online...");
+	m_logFile->append(QStringList() << "" << "----" << "" << "Checking for updates online...");
 	
 	QStringList mirrorList;
 	for(int i = 0; update_mirrors[i]; i++)
@@ -324,6 +385,11 @@ void UpdateDialog::checkForUpdates(void)
 			{
 				success = true;
 			}
+		}
+		else
+		{
+			QApplication::processEvents();
+			Sleep(15);
 		}
 	}
 	
@@ -403,16 +469,16 @@ bool UpdateDialog::tryUpdateMirror(UpdateInfo *updateInfo, const QString &url)
 {
 	bool success = false;
 	m_logFile->append(QStringList() << "" << "Trying mirror:" << url);
-	
+
 	QString randPart = lamexp_rand_str();
 	QString outFileVersionInfo = QString("%1/%2.ver").arg(lamexp_temp_folder2(), randPart);
 	QString outFileSignature = QString("%1/%2.sig").arg(lamexp_temp_folder2(), randPart);
 
 	m_logFile->append(QStringList() << "" << "Downloading update info:");
-	bool ok1 = getFile(QString("%1%2").arg(url, mirror_url_postfix[lamexp_version_demo() ? 1 : 0]), outFileVersionInfo);
+	bool ok1 = getFile(QString("%1%2").arg(url, mirror_url_postfix[m_betaUpdates ? 1 : 0]), outFileVersionInfo);
 
 	m_logFile->append(QStringList() << "" << "Downloading signature:");
-	bool ok2 = getFile(QString("%1%2.sig").arg(url, mirror_url_postfix[lamexp_version_demo() ? 1 : 0]), outFileSignature);
+	bool ok2 = getFile(QString("%1%2.sig").arg(url, mirror_url_postfix[m_betaUpdates ? 1 : 0]), outFileSignature);
 
 	if(ok1 && ok2)
 	{
@@ -438,7 +504,7 @@ bool UpdateDialog::tryUpdateMirror(UpdateInfo *updateInfo, const QString &url)
 	return success;
 }
 
-bool UpdateDialog::getFile(const QString &url, const QString &outFile)
+bool UpdateDialog::getFile(const QString &url, const QString &outFile, unsigned int maxRedir)
 {
 	QFileInfo output(outFile);
 	output.setCaching(false);
@@ -457,6 +523,11 @@ bool UpdateDialog::getFile(const QString &url, const QString &outFile)
 	process.setReadChannel(QProcess::StandardOutput);
 	process.setWorkingDirectory(output.absolutePath());
 
+	QStringList args;
+	args << "--no-cache" << "--no-dns-cache" << QString().sprintf("--max-redirect=%u", maxRedir);
+	args << QString("--referer=%1://%2/").arg(QUrl(url).scheme(), QUrl(url).host()) << "-U" << USER_AGENT_STR;
+	args << "-O" << output.fileName() << url;
+
 	QEventLoop loop;
 	connect(&process, SIGNAL(error(QProcess::ProcessError)), &loop, SLOT(quit()));
 	connect(&process, SIGNAL(finished(int,QProcess::ExitStatus)), &loop, SLOT(quit()));
@@ -467,7 +538,7 @@ bool UpdateDialog::getFile(const QString &url, const QString &outFile)
 	timer.setInterval(15000);
 	connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
 
-	process.start(m_binaryWGet, QStringList() << "-U" << USER_AGENT_STR << "-O" << output.fileName() << url);
+	process.start(m_binaryWGet, args);
 	
 	if(!process.waitForStarted())
 	{
@@ -661,7 +732,7 @@ void UpdateDialog::applyUpdate(void)
 
 	if(m_updateInfo)
 	{
-		statusLabel->setText("Update is being downloaded, please be patient...");
+		statusLabel->setText(tr("Update is being downloaded, please be patient..."));
 		frameAnimation->show();
 		if(hintLabel->isVisible()) hintLabel->hide();
 		if(hintIcon->isVisible()) hintIcon->hide();
@@ -700,7 +771,7 @@ void UpdateDialog::applyUpdate(void)
 
 		if(process.exitCode() == 0)
 		{
-			statusLabel->setText("Update ready to install. Applicaion will quit...");
+			statusLabel->setText(tr("Update ready to install. Applicaion will quit..."));
 			m_updateReadyToInstall = true;
 			WinSevenTaskbar::setTaskbarState(this->parentWidget(), WinSevenTaskbar::WinSevenTaskbarNoState);
 			WinSevenTaskbar::setOverlayIcon(this->parentWidget(), NULL);
@@ -708,7 +779,7 @@ void UpdateDialog::applyUpdate(void)
 		}
 		else
 		{
-			statusLabel->setText("Update failed. Please try again or download manually!");
+			statusLabel->setText(tr("Update failed. Please try again or download manually!"));
 			WinSevenTaskbar::setTaskbarState(this->parentWidget(), WinSevenTaskbar::WinSevenTaskbarErrorState);
 			WinSevenTaskbar::setOverlayIcon(this->parentWidget(), &QIcon(":/icons/exclamation.png"));
 			WinSevenTaskbar::setTaskbarProgress(this->parentWidget(), 100, 100);
