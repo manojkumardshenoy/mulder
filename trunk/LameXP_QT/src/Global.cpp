@@ -52,6 +52,7 @@
 #include <io.h>
 #include <fcntl.h>
 #include <intrin.h>
+#include <math.h>
 
 //COM includes
 #include <Objbase.h>
@@ -150,7 +151,7 @@ static bool g_lamexp_console_attached = false;
 #endif
 
 //Official web-site URL
-static const char *g_lamexp_website_url = "http://mulder.dummwiedeutsch.de/";
+static const char *g_lamexp_website_url = "http://lamexp.sourceforge.net/";
 static const char *g_lamexp_support_url = "http://forum.doom9.org/showthread.php?t=157726";
 
 //Tool versions (expected)
@@ -572,11 +573,27 @@ lamexp_cpu_t lamexp_detect_cpu_features(void)
 }
 
 /*
+ * Check for debugger (detect routine)
+ */
+static bool lamexp_check_for_debugger(void)
+{
+	__try 
+	{
+		DebugBreak();
+	}
+	__except(GetExceptionCode() == EXCEPTION_BREAKPOINT ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) 
+	{
+		return false;
+	}
+	return true;
+}
+
+/*
  * Check for debugger (thread proc)
  */
 static void WINAPI lamexp_debug_thread_proc(__in LPVOID lpParameter)
 {
-	while(!IsDebuggerPresent())
+	while(!(IsDebuggerPresent() || lamexp_check_for_debugger()))
 	{
 		Sleep(333);
 	}
@@ -588,11 +605,12 @@ static void WINAPI lamexp_debug_thread_proc(__in LPVOID lpParameter)
  */
 static HANDLE lamexp_debug_thread_init(void)
 {
-	if(IsDebuggerPresent())
+	if(IsDebuggerPresent() || lamexp_check_for_debugger())
 	{
 		FatalAppExit(0, L"Not a debug build. Please unload debugger and try again!");
 		TerminateProcess(GetCurrentProcess(), -1);
 	}
+
 	return CreateThread(NULL, NULL, reinterpret_cast<LPTHREAD_START_ROUTINE>(&lamexp_debug_thread_proc), NULL, NULL, NULL);
 }
 
