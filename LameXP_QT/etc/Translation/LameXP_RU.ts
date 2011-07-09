@@ -1599,6 +1599,38 @@
         <translatorcomment>пиздец бред</translatorcomment>
         <translation type="unfinished">Пожалуйста используйте Мастер импорта Cue файлов для импорта Cue файлов.</translation>
     </message>
+    <message>
+        <source>It seems that a bogus anti-virus software is slowing down the startup of LameXP.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please refer to the %1 document for details and solutions!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Slow Startup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disable Slow Startup Notifications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Slow Startup Notifications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do you really want to disable the slow startup notifications?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The slow startup notifications have been disabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The slow startup notifications have been re-enabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>

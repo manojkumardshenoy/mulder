@@ -756,7 +756,7 @@
     </message>
     <message>
         <source>Disable WMA Decoder Notifications</source>
-        <translation>WMA-Dekodierermeldungen deaktivieren</translation>
+        <translation>WMA-Dekodierer-Meldungen deaktivieren</translation>
     </message>
     <message>
         <source>Show DropBox</source>
@@ -956,15 +956,15 @@
     </message>
     <message>
         <source>Do you really want to disable all WMA Decoder notifications?</source>
-        <translation>Sind Sie sicher, dass Sie alle WMA-Dekodierermeldungen deaktivieren möchten?</translation>
+        <translation>Sind Sie sicher, dass Sie alle WMA-Dekodierer-Meldungen deaktivieren möchten?</translation>
     </message>
     <message>
         <source>All WMA Decoder notifications have been disabled.</source>
-        <translation>Alle WMA-Dekodierermeldungen wurden deaktiviert.</translation>
+        <translation>Alle WMA-Dekodierer-Meldungen wurden deaktiviert.</translation>
     </message>
     <message>
         <source>The WMA Decoder notifications have been re-enabled.</source>
-        <translation>Die WMA-Dekodierermeldungen wurden wieder aktiviert.</translation>
+        <translation>Die WMA-Dekodierer-Meldungen wurden wieder aktiviert.</translation>
     </message>
     <message>
         <source>Do you want to download and install the WMA File Decoder component now?</source>
@@ -1593,6 +1593,38 @@
     <message>
         <source>Please use LameXP&apos;s Cue Sheet wizard for importing Cue Sheet files.</source>
         <translation>Bitte benutzen Sie zum Importieren von Cuesheets den Cuesheet Assistenten.</translation>
+    </message>
+    <message>
+        <source>It seems that a bogus anti-virus software is slowing down the startup of LameXP.</source>
+        <translation>Anscheinend wird der Programmstart von LameXP durch eine fehlerhafte Antiviren-Software verlangsamt.</translation>
+    </message>
+    <message>
+        <source>Please refer to the %1 document for details and solutions!</source>
+        <translation>Bitte beachten Sie die Hinweise und Lösungsvorschläge im %1 Dokument!</translation>
+    </message>
+    <message>
+        <source>Slow Startup</source>
+        <translation>Langsamer Programmstart</translation>
+    </message>
+    <message>
+        <source>Disable Slow Startup Notifications</source>
+        <translation>Langsamer Programmstart Meldungen deaktivieren</translation>
+    </message>
+    <message>
+        <source>Slow Startup Notifications</source>
+        <translation>Langsamer Programmstart Meldungen</translation>
+    </message>
+    <message>
+        <source>Do you really want to disable the slow startup notifications?</source>
+        <translation>Sind Sie sicher, dass Sie alle langsamer Programmstart Meldungen deaktivieren möchten?</translation>
+    </message>
+    <message>
+        <source>The slow startup notifications have been disabled.</source>
+        <translation>Die langsamer Programmstart Meldungen wurden deaktiviert.</translation>
+    </message>
+    <message>
+        <source>The slow startup notifications have been re-enabled.</source>
+        <translation>Die langsamer Programmstart Meldungen wurden wieder aktiviert.</translation>
     </message>
 </context>
 <context>
