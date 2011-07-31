@@ -105,6 +105,7 @@ g_lamexp_version =
 static QDate g_lamexp_version_date;
 static const char *g_lamexp_months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 static const char *g_lamexp_version_raw_date = __DATE__;
+static const char *g_lamexp_version_raw_time = __TIME__;
 
 //Console attached flag
 static bool g_lamexp_console_attached = false;
@@ -148,6 +149,15 @@ static bool g_lamexp_console_attached = false;
 	#endif
 #else
 	#error Compiler is not supported!
+#endif
+
+//Architecture detection
+#if defined(_M_X64)
+	static const char *g_lamexp_version_arch = "x64";
+#elif defined(_M_IX86)
+	static const char *g_lamexp_version_arch = "x86";
+#else
+	#error Architecture is not supported!
 #endif
 
 //Official web-site URL
@@ -221,7 +231,9 @@ unsigned int lamexp_version_major(void) { return g_lamexp_version.ver_major; }
 unsigned int lamexp_version_minor(void) { return g_lamexp_version.ver_minor; }
 unsigned int lamexp_version_build(void) { return g_lamexp_version.ver_build; }
 const char *lamexp_version_release(void) { return g_lamexp_version.ver_release_name; }
-const char *lamexp_version_compiler(void) {return g_lamexp_version_compiler; }
+const char *lamexp_version_time(void) { return g_lamexp_version_raw_time; }
+const char *lamexp_version_compiler(void) { return g_lamexp_version_compiler; }
+const char *lamexp_version_arch(void) { return g_lamexp_version_arch; }
 unsigned int lamexp_toolver_neroaac(void) { return g_lamexp_toolver_neroaac; }
 
 /*
@@ -237,7 +249,7 @@ bool lamexp_version_demo(void)
 {
 	char buffer[128];
 	bool releaseVersion = false;
-	if(!strcpy_s(buffer, 128, g_lamexp_version.ver_release_name))
+	if(!strncpy_s(buffer, 128, g_lamexp_version.ver_release_name, _TRUNCATE))
 	{
 		char *context, *prefix = strtok_s(buffer, "-,; ", &context);
 		if(prefix)
@@ -269,7 +281,7 @@ const QDate &lamexp_version_date(void)
 		char *this_token = NULL;
 		char *next_token = NULL;
 
-		strcpy_s(temp, 32, g_lamexp_version_raw_date);
+		strncpy_s(temp, 32, g_lamexp_version_raw_date, _TRUNCATE);
 		this_token = strtok_s(temp, " ", &next_token);
 
 		for(int i = 0; i < 3; i++)
@@ -320,38 +332,53 @@ LONG WINAPI lamexp_exception_handler(__in struct _EXCEPTION_POINTERS *ExceptionI
 }
 
 /*
+ * Invalid parameters handler
+ */
+void lamexp_invalid_param_handler(const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t)
+{
+	if(GetCurrentThreadId() != g_main_thread_id)
+	{
+		HANDLE mainThread = OpenThread(THREAD_TERMINATE, FALSE, g_main_thread_id);
+		if(mainThread) TerminateThread(mainThread, ULONG_MAX);
+		
+	}
+	
+	FatalAppExit(0, L"Invalid parameter handler invoked, application will exit!");
+	TerminateProcess(GetCurrentProcess(), -1);
+}
+
+/*
+ * Change console text color
+ */
+static void lamexp_console_color(FILE* file, WORD attributes)
+{
+	const HANDLE hConsole = (HANDLE)(_get_osfhandle(_fileno(file)));
+	if((hConsole != NULL) && (hConsole != INVALID_HANDLE_VALUE))
+	{
+		SetConsoleTextAttribute(hConsole, attributes);
+	}
+}
+
+/*
  * Qt message handler
  */
 void lamexp_message_handler(QtMsgType type, const char *msg)
 {
-	static HANDLE hConsole = NULL;
 	static const char *GURU_MEDITATION = "\n\nGURU MEDITATION !!!\n\n";
-	const char *buffer = NULL, *text = msg;
-	char temp[1024];
+
+	const char *text = msg;
+	const char *buffer = NULL;
 	
 	QMutexLocker lock(&g_lamexp_message_mutex);
 
-	if(!strncmp(msg, "@BASE64@", 8))
+	if((strlen(msg) > 8) && (_strnicmp(msg, "@BASE64@", 8) == 0))
 	{
 		buffer = _strdup(QByteArray::fromBase64(msg + 8).constData());
 		if(buffer) text = buffer;
 	}
 
-	if(!hConsole)
+	if(g_lamexp_console_attached)
 	{
-		if(g_lamexp_console_attached)
-		{
-			hConsole = CreateFile(L"CONOUT$", GENERIC_WRITE, FILE_SHARE_WRITE | FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
-			if(hConsole == INVALID_HANDLE_VALUE) hConsole = NULL;
-		}
-	}
-
-	if(hConsole)
-	{
-		int len = sprintf_s(temp, 1024, "%s\n", text);
-		
-		CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
-		GetConsoleScreenBufferInfo(hConsole, &bufferInfo);
 		SetConsoleOutputCP(CP_UTF8);
 
 		switch(type)
@@ -360,43 +387,51 @@ void lamexp_message_handler(QtMsgType type, const char *msg)
 		case QtFatalMsg:
 			fflush(stdout);
 			fflush(stderr);
-			SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
-			WriteFile(hConsole, GURU_MEDITATION, strlen(GURU_MEDITATION), NULL, NULL);
-			WriteFile(hConsole, temp, len, NULL, NULL);
-			FlushFileBuffers(hConsole);
+			lamexp_console_color(stderr, FOREGROUND_RED | FOREGROUND_INTENSITY);
+			fprintf(stderr, GURU_MEDITATION);
+			fprintf(stderr, "%s\n", text);
+			fflush(stderr);
 			break;
 		case QtWarningMsg:
-			SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
-			WriteFile(hConsole, temp, len, NULL, NULL);
-			FlushFileBuffers(hConsole);
+			lamexp_console_color(stderr, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
+			fprintf(stderr, "%s\n", text);
+			fflush(stderr);
 			break;
 		default:
-			SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
-			WriteFile(hConsole, temp, len, NULL, NULL);
-			FlushFileBuffers(hConsole);
+			lamexp_console_color(stderr, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
+			fprintf(stderr, "%s\n", text);
+			fflush(stderr);
 			break;
 		}
 	
-		SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+		lamexp_console_color(stderr, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
 	}
 	else
 	{
+		char temp[1024] = {'\0'};
+		
 		switch(type)
 		{
 		case QtCriticalMsg:
 		case QtFatalMsg:
-			sprintf_s(temp, 1024, "[LameXP][C] %s", text);
+			_snprintf_s(temp, 1024, _TRUNCATE, "[LameXP][C] %s", text);
 			break;
 		case QtWarningMsg:
-			sprintf_s(temp, 1024, "[LameXP][W] %s", text);
+			_snprintf_s(temp, 1024, _TRUNCATE, "[LameXP][C] %s", text);
 			break;
 		default:
-			sprintf_s(temp, 1024, "[LameXP][I] %s", text);
+			_snprintf_s(temp, 1024, _TRUNCATE, "[LameXP][C] %s", text);
 			break;
 		}
 
-		while(char *ptr = strchr(temp, '\n')) *ptr = '\t';
-		strcat_s(temp, 1024, "\n");
+		char *ptr = strchr(temp, '\n');
+		while(ptr != NULL)
+		{
+			*ptr = '\t';
+			ptr = strchr(temp, '\n');
+		}
+		
+		strncat_s(temp, 1024, "\n", _TRUNCATE);
 		OutputDebugStringA(temp);
 	}
 
@@ -408,7 +443,7 @@ void lamexp_message_handler(QtMsgType type, const char *msg)
 		TerminateProcess(GetCurrentProcess(), -1);
 	}
 
-	if(buffer) free((void*) buffer);
+	LAMEXP_SAFE_FREE(buffer);
 }
 
 /*
@@ -437,7 +472,10 @@ void lamexp_init_console(int argc, char* argv[])
 	{
 		if(!g_lamexp_console_attached)
 		{
-			g_lamexp_console_attached = AllocConsole();
+			if(AllocConsole() != FALSE)
+			{
+				g_lamexp_console_attached = true;
+			}
 		}
 		
 		if(g_lamexp_console_attached)
@@ -445,17 +483,17 @@ void lamexp_init_console(int argc, char* argv[])
 			//-------------------------------------------------------------------
 			//See: http://support.microsoft.com/default.aspx?scid=kb;en-us;105305
 			//-------------------------------------------------------------------
-			int hCrtStdOut = _open_osfhandle((long) GetStdHandle(STD_OUTPUT_HANDLE), _O_TEXT);
-			int hCrtStdErr = _open_osfhandle((long) GetStdHandle(STD_ERROR_HANDLE), _O_TEXT);
+			int hCrtStdOut = _open_osfhandle((intptr_t) GetStdHandle(STD_OUTPUT_HANDLE), _O_BINARY);
+			int hCrtStdErr = _open_osfhandle((intptr_t) GetStdHandle(STD_ERROR_HANDLE), _O_BINARY);
 			FILE *hfStdOut = _fdopen(hCrtStdOut, "w");
 			FILE *hfStderr = _fdopen(hCrtStdErr, "w");
-			*stdout = *hfStdOut;
-			*stderr = *hfStderr;
-			setvbuf(stdout, NULL, _IONBF, 0);
-			setvbuf(stderr, NULL, _IONBF, 0);
+			if(hfStdOut) *stdout = *hfStdOut;
+			if(hfStderr) *stderr = *hfStderr;
 		}
 
-		if(HWND hwndConsole = GetConsoleWindow())
+		HWND hwndConsole = GetConsoleWindow();
+
+		if((hwndConsole != NULL) && (hwndConsole != INVALID_HANDLE_VALUE))
 		{
 			HMENU hMenu = GetSystemMenu(hwndConsole, 0);
 			EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
@@ -498,7 +536,7 @@ lamexp_cpu_t lamexp_detect_cpu_features(void)
 	memcpy(CPUIdentificationString + 4, &CPUInfo[3], sizeof(int));
 	memcpy(CPUIdentificationString + 8, &CPUInfo[2], sizeof(int));
 	features.intel = (_stricmp(CPUIdentificationString, "GenuineIntel") == 0);
-	strcpy_s(features.vendor, 0x40, CPUIdentificationString);
+	strncpy_s(features.vendor, 0x40, CPUIdentificationString, _TRUNCATE);
 
 	if(CPUInfo[0] >= 1)
 	{
@@ -534,10 +572,10 @@ lamexp_cpu_t lamexp_detect_cpu_features(void)
 		}
 	}
 
-	strcpy_s(features.brand, 0x40, CPUBrandString);
+	strncpy_s(features.brand, 0x40, CPUBrandString, _TRUNCATE);
 
-	if(strlen(features.brand) < 1) strcpy_s(features.brand, 0x40, "Unknown");
-	if(strlen(features.vendor) < 1) strcpy_s(features.vendor, 0x40, "Unknown");
+	if(strlen(features.brand) < 1) strncpy_s(features.brand, 0x40, "Unknown", _TRUNCATE);
+	if(strlen(features.vendor) < 1) strncpy_s(features.vendor, 0x40, "Unknown", _TRUNCATE);
 
 #if !defined(_M_X64 ) && !defined(_M_IA64)
 	if(!IsWow64ProcessPtr || !GetNativeSystemInfoPtr)
@@ -684,6 +722,8 @@ static bool lamexp_check_elevation(void)
 bool lamexp_init_qt(int argc, char* argv[])
 {
 	static bool qt_initialized = false;
+	bool isWine = false;
+	typedef BOOL (WINAPI *SetDllDirectoryProc)(WCHAR *lpPathName);
 
 	//Don't initialized again, if done already
 	if(qt_initialized)
@@ -691,6 +731,15 @@ bool lamexp_init_qt(int argc, char* argv[])
 		return true;
 	}
 	
+	//Secure DLL loading
+	QLibrary kernel32("kernel32.dll");
+	if(kernel32.load())
+	{
+		SetDllDirectoryProc pSetDllDirectory = (SetDllDirectoryProc) kernel32.resolve("SetDllDirectoryW");
+		if(pSetDllDirectory != NULL) pSetDllDirectory(L"");
+		kernel32.unload();
+	}
+
 	//Extract executable name from argv[] array
 	char *executableName = argv[0];
 	while(char *temp = strpbrk(executableName, "\\/:?"))
@@ -732,8 +781,13 @@ bool lamexp_init_qt(int argc, char* argv[])
 
 	//Check for Wine
 	QLibrary ntdll("ntdll.dll");
-	bool isWine = (ntdll.resolve("wine_get_version") != NULL) || (ntdll.resolve("wine_nt_to_unix_file_name") != NULL);
-	if(isWine) qWarning("It appears we are running under Wine, unexpected things might happen!\n");
+	if(ntdll.load())
+	{
+		if(ntdll.resolve("wine_nt_to_unix_file_name") != NULL) isWine = true;
+		if(ntdll.resolve("wine_get_version") != NULL) isWine = true;
+		if(isWine) qWarning("It appears we are running under Wine, unexpected things might happen!\n");
+		ntdll.unload();
+	}
 
 	//Create Qt application instance and setup version info
 	QDate date = QDate::currentDate();
@@ -777,10 +831,11 @@ bool lamexp_init_qt(int argc, char* argv[])
 	{
 		typedef DWORD (__stdcall *SetConsoleIconFun)(HICON);
 		QLibrary kernel32("kernel32.dll");
-		SetConsoleIconFun SetConsoleIconPtr = (SetConsoleIconFun) kernel32.resolve("SetConsoleIcon");
-		if(SetConsoleIconPtr)
+		if(kernel32.load())
 		{
-			SetConsoleIconPtr(QIcon(":/icons/sound.png").pixmap(16, 16).toWinHICON());
+			SetConsoleIconFun SetConsoleIconPtr = (SetConsoleIconFun) kernel32.resolve("SetConsoleIcon");
+			if(SetConsoleIconPtr != NULL) SetConsoleIconPtr(QIcon(":/icons/sound.png").pixmap(16, 16).toWinHICON());
+			kernel32.unload();
 		}
 	}
 
@@ -866,7 +921,7 @@ void lamexp_ipc_send(unsigned int command, const char* message)
 	lamexp_ipc->command = command;
 	if(message)
 	{
-		strcpy_s(lamexp_ipc->parameter, 4096, message);
+		strncpy_s(lamexp_ipc->parameter, 4096, message, _TRUNCATE);
 	}
 
 	if(g_lamexp_ipc_ptr.semaphore_write->acquire())
@@ -902,7 +957,7 @@ void lamexp_ipc_read(unsigned int *command, char* message, size_t buffSize)
 		if(!(lamexp_ipc->reserved_1 || lamexp_ipc->reserved_2))
 		{
 			*command = lamexp_ipc->command;
-			strcpy_s(message, buffSize, lamexp_ipc->parameter);
+			strncpy_s(message, buffSize, lamexp_ipc->parameter, _TRUNCATE);
 		}
 		else
 		{
