@@ -64,8 +64,8 @@ g_lamexp_tools[] =
 	{"b3fca757b3567dab75c042e62213c231de378ea0fdd7fe29b733417cd5d3d33558452f94", CPU_TYPE_ALL, "gpgv.gpg", UINT_MAX},
 	{"9c1c8024d5d75213edbc1dbad7aeaf2535000f57880b445c763ac45da365446b8cfd84c7", CPU_TYPE_ALL, "lame.exe", 3990},
 	{"67933924d68ce319795989648f29e7bd1abaac4ec09c26cbb0ff0d15a67a9df17e257933", CPU_TYPE_ALL, "mac.exe", 406},
-	{"7c5afaf883b7e2b4be47af2070a756470714af98741173a92d123eb4e0242f69321ccb61", CPU_TYPE_GEN, "mediainfo.i386.exe", 745},
-	{"38d1c95e42dcc180b0be2a401ab00f60e91a38342758f5c1927329f378921d75855a56a3", CPU_TYPE_X64, "mediainfo.x64.exe",  745},
+	{"9a8c97be6ae18d083f7ba32cd114f03feb6f6b1f3c008655e5d2688c0783f1ecd27fdd57", CPU_TYPE_GEN, "mediainfo.i386.exe", 747},
+	{"bd32724ebd1f5a7f39cc1f011df0a0ae475ec8c5958cecd216e9e248283d29ab846e123d", CPU_TYPE_X64, "mediainfo.x64.exe",  747},
 	{"a93ec86187025e66fb78026af35555bd3b4e30fe1a40e8d66f600cfd918f07f431f0b2f2", CPU_TYPE_ALL, "mpcdec.exe", 435},
 	{"5a89768010efb1ddfd88ccc378a89433ceaecb403a7b1f83f8716f6848d9a05b3d3c6d93", CPU_TYPE_ALL, "mpg123.exe", 1133},
 	{"0c781805dda931c529bd16069215f616a7a4c5e5c2dfb6b75fe85d52b20511830693e528", CPU_TYPE_ALL, "oggdec.exe", UINT_MAX},
@@ -78,7 +78,8 @@ g_lamexp_tools[] =
 	{"9b50cf64747d4afbad5d8d9b5a0a2d41c5a58256f47ebdbd8cc920e7e576085dfe1b14ff", CPU_TYPE_ALL, "tta.exe", 21},
 	{"875871c942846f6ad163f9e4949bba2f4331bec678ca5aefe58c961b6825bd0d419a078b", CPU_TYPE_ALL, "valdec.exe", 31},
 	{"e657331e281840878a37eb4fb357cb79f33d528ddbd5f9b2e2f7d2194bed4720e1af8eaf", CPU_TYPE_ALL, "wget.exe", 1114},
-	{"229d677a34885bd4981f7dff9ec2ec71a8bcf207d7337151c6ec0f49a5dc0b14df1bdd11", CPU_TYPE_ALL, "wupdate.exe", UINT_MAX},
+	{"bd001723181e1c0188b3d790127b06f860996465c4540942fd446369b8fa36d9cd4ac619", CPU_TYPE_ALL, "wma2wav.exe", 20110731},
+	{"a258711f7a8a0c75528f3ed4d2c17513ff8598b7e0a9d7db13ca941a3140094ffc2ffb62", CPU_TYPE_ALL, "wupdate.exe", UINT_MAX},
 	{"6b053b37d47a9c8659ebf2de43ad19dcba17b9cd868b26974b9cc8c27b6167e8bf07a5a2", CPU_TYPE_ALL, "wvunpack.exe", 4601},
 	{NULL, NULL, NULL, NULL}
 };
@@ -223,9 +224,6 @@ void InitializationThread::run()
 
 	//Look for Nero encoder
 	initNeroAac();
-	
-	//Look for WMA File decoder
-	initWmaDec();
 
 	delay();
 	m_bSuccess = true;
@@ -402,85 +400,85 @@ void InitializationThread::initNeroAac(void)
 }
 
 
-void InitializationThread::initWmaDec(void)
-{
-	static const char* wmaDecoderComponentPath = "NCH Software/Components/wmawav/wmawav.exe";
-
-	LockedFile *wmaFileBin = NULL;
-	QFileInfo wmaFileInfo = QFileInfo(QString("%1/%2").arg(lamexp_known_folder(lamexp_folder_programfiles), wmaDecoderComponentPath));
-
-	if(!(wmaFileInfo.exists() && wmaFileInfo.isFile()))
-	{
-		wmaFileInfo.setFile(QString("%1/%2").arg(QDir(QCoreApplication::applicationDirPath()).canonicalPath(), "wmawav.exe"));
-	}
-	if(!(wmaFileInfo.exists() && wmaFileInfo.isFile()))
-	{
-		qDebug("WMA File Decoder not found -> WMA decoding support will be disabled!\n");
-		return;
-	}
-
-	try
-	{
-		wmaFileBin = new LockedFile(wmaFileInfo.canonicalFilePath());
-	}
-	catch(...)
-	{
-		qWarning("Failed to get excluive lock to WMA File Decoder binary -> WMA decoding support will be disabled!");
-		return;
-	}
-
-	QProcess process;
-	process.setProcessChannelMode(QProcess::MergedChannels);
-	process.setReadChannel(QProcess::StandardOutput);
-	process.start(wmaFileInfo.canonicalFilePath(), QStringList());
-
-	if(!process.waitForStarted())
-	{
-		qWarning("WmaWav process failed to create!");
-		qWarning("Error message: \"%s\"\n", process.errorString().toLatin1().constData());
-		process.kill();
-		process.waitForFinished(-1);
-		return;
-	}
-
-	bool b_wmaWavFound = false;
-
-	while(process.state() != QProcess::NotRunning)
-	{
-		if(!process.waitForReadyRead())
-		{
-			if(process.state() == QProcess::Running)
-			{
-				qWarning("WmaWav process time out -> killing!");
-				process.kill();
-				process.waitForFinished(-1);
-				return;
-			}
-		}
-		while(process.canReadLine())
-		{
-			QString line = QString::fromUtf8(process.readLine().constData()).simplified();
-			if(line.contains("Usage: wmatowav.exe WMAFileSpec WAVFileSpec", Qt::CaseInsensitive))
-			{
-				b_wmaWavFound = true;
-			}
-		}
-	}
-
-	if(!b_wmaWavFound)
-	{
-		qWarning("WmaWav could not be identified -> WMA decoding support will be disabled!\n");
-		LAMEXP_DELETE(wmaFileBin);
-		return;
-	}
-
-	qDebug("Found WMA File Decoder binary:\n%s\n", wmaFileInfo.canonicalFilePath().toUtf8().constData());
-
-	if(wmaFileBin)
-	{
-		lamexp_register_tool(wmaFileInfo.fileName(), wmaFileBin);
-	}
-}
+//void InitializationThread::initWmaDec(void)
+//{
+//	static const char* wmaDecoderComponentPath = "NCH Software/Components/wmawav/wmawav.exe";
+//
+//	LockedFile *wmaFileBin = NULL;
+//	QFileInfo wmaFileInfo = QFileInfo(QString("%1/%2").arg(lamexp_known_folder(lamexp_folder_programfiles), wmaDecoderComponentPath));
+//
+//	if(!(wmaFileInfo.exists() && wmaFileInfo.isFile()))
+//	{
+//		wmaFileInfo.setFile(QString("%1/%2").arg(QDir(QCoreApplication::applicationDirPath()).canonicalPath(), "wmawav.exe"));
+//	}
+//	if(!(wmaFileInfo.exists() && wmaFileInfo.isFile()))
+//	{
+//		qDebug("WMA File Decoder not found -> WMA decoding support will be disabled!\n");
+//		return;
+//	}
+//
+//	try
+//	{
+//		wmaFileBin = new LockedFile(wmaFileInfo.canonicalFilePath());
+//	}
+//	catch(...)
+//	{
+//		qWarning("Failed to get excluive lock to WMA File Decoder binary -> WMA decoding support will be disabled!");
+//		return;
+//	}
+//
+//	QProcess process;
+//	process.setProcessChannelMode(QProcess::MergedChannels);
+//	process.setReadChannel(QProcess::StandardOutput);
+//	process.start(wmaFileInfo.canonicalFilePath(), QStringList());
+//
+//	if(!process.waitForStarted())
+//	{
+//		qWarning("WmaWav process failed to create!");
+//		qWarning("Error message: \"%s\"\n", process.errorString().toLatin1().constData());
+//		process.kill();
+//		process.waitForFinished(-1);
+//		return;
+//	}
+//
+//	bool b_wmaWavFound = false;
+//
+//	while(process.state() != QProcess::NotRunning)
+//	{
+//		if(!process.waitForReadyRead())
+//		{
+//			if(process.state() == QProcess::Running)
+//			{
+//				qWarning("WmaWav process time out -> killing!");
+//				process.kill();
+//				process.waitForFinished(-1);
+//				return;
+//			}
+//		}
+//		while(process.canReadLine())
+//		{
+//			QString line = QString::fromUtf8(process.readLine().constData()).simplified();
+//			if(line.contains("Usage: wmatowav.exe WMAFileSpec WAVFileSpec", Qt::CaseInsensitive))
+//			{
+//				b_wmaWavFound = true;
+//			}
+//		}
+//	}
+//
+//	if(!b_wmaWavFound)
+//	{
+//		qWarning("WmaWav could not be identified -> WMA decoding support will be disabled!\n");
+//		LAMEXP_DELETE(wmaFileBin);
+//		return;
+//	}
+//
+//	qDebug("Found WMA File Decoder binary:\n%s\n", wmaFileInfo.canonicalFilePath().toUtf8().constData());
+//
+//	if(wmaFileBin)
+//	{
+//		lamexp_register_tool(wmaFileInfo.fileName(), wmaFileBin);
+//	}
+//}
 
 ////////////////////////////////////////////////////////////
 // EVENTS
