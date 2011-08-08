@@ -85,6 +85,7 @@ public:
 	LAMEXP_MAKE_OPTION_S(outputDir);
 	LAMEXP_MAKE_OPTION_B(outputToSourceDir);
 	LAMEXP_MAKE_OPTION_B(prependRelativeSourcePath);
+	LAMEXP_MAKE_OPTION_S(favoriteOutputFolders);
 	LAMEXP_MAKE_OPTION_B(writeMetaTags);
 	LAMEXP_MAKE_OPTION_B(createPlaylist);
 	LAMEXP_MAKE_OPTION_S(autoUpdateLastCheck);
@@ -92,13 +93,13 @@ public:
 	LAMEXP_MAKE_OPTION_B(autoUpdateCheckBeta);
 	LAMEXP_MAKE_OPTION_B(soundsEnabled);
 	LAMEXP_MAKE_OPTION_B(neroAacNotificationsEnabled);
-	LAMEXP_MAKE_OPTION_B(wmaDecoderNotificationsEnabled);
 	LAMEXP_MAKE_OPTION_B(antivirNotificationsEnabled);
 	LAMEXP_MAKE_OPTION_B(dropBoxWidgetEnabled);
 	LAMEXP_MAKE_OPTION_B(shellIntegrationEnabled);
 	LAMEXP_MAKE_OPTION_S(currentLanguage);
 	LAMEXP_MAKE_OPTION_I(lameAlgoQuality);
 	LAMEXP_MAKE_OPTION_I(lameChannelMode);
+	LAMEXP_MAKE_OPTION_B(forceStereoDownmix);
 	LAMEXP_MAKE_OPTION_B(bitrateManagementEnabled);
 	LAMEXP_MAKE_OPTION_I(bitrateManagementMinRate);
 	LAMEXP_MAKE_OPTION_I(bitrateManagementMaxRate);
@@ -118,6 +119,8 @@ public:
 	LAMEXP_MAKE_OPTION_S(customParametersNeroAAC);
 	LAMEXP_MAKE_OPTION_S(customParametersAften);
 	LAMEXP_MAKE_OPTION_S(customParametersFLAC);
+	LAMEXP_MAKE_OPTION_B(renameOutputFilesEnabled);
+	LAMEXP_MAKE_OPTION_S(renameOutputFilesPattern);
 	LAMEXP_MAKE_OPTION_U(metaInfoPosition);
 	LAMEXP_MAKE_OPTION_U(maximumInstances);
 	LAMEXP_MAKE_OPTION_S(customTempPath);

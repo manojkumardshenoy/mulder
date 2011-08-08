@@ -44,6 +44,7 @@
 #include <stdlib.h>
 
 #define DIFF(X,Y) ((X > Y) ? (X-Y) : (Y-X))
+#define STRDEF(STR,DEF) ((!STR.isEmpty()) ? STR : DEF)
 
 QMutex *ProcessThread::m_mutex_genFileName = NULL;
 
@@ -59,6 +60,7 @@ ProcessThread::ProcessThread(const AudioFileModel &audioFile, const QString &out
 	m_encoder(encoder),
 	m_jobId(QUuid::createUuid()),
 	m_prependRelativeSourcePath(prependRelativeSourcePath),
+	m_renamePattern("<BaseName>"),
 	m_aborted(false)
 {
 	if(m_mutex_genFileName)
@@ -126,16 +128,16 @@ void ProcessThread::processFile()
 		return;
 	}
 
-	//Do we need to take of downsampling the input?
+	//Do we need to take care of downsampling the input?
 	if(m_encoder->requiresDownsample())
 	{
 		insertDownsampleFilter();
 	}
 
 	//Do we need Stereo downmix?
-	if(m_audioFile.formatAudioChannels() > 2 && m_encoder->requiresDownmix())
+	if(m_encoder->requiresDownmix())
 	{
-		m_filters.prepend(new DownmixFilter());
+		insertDownmixFilter();
 	}
 
 	QString sourceFile = m_audioFile.filePath();
@@ -171,28 +173,26 @@ void ProcessThread::processFile()
 		}
 	}
 
-	//Apply all filters
-	while(!m_filters.isEmpty())
+	//Apply all audio filters
+	if(bSuccess)
 	{
-		QString tempFile = generateTempFileName();
-		AbstractFilter *poFilter = m_filters.takeFirst();
-
-		if(bSuccess)
+		while(!m_filters.isEmpty())
 		{
+			QString tempFile = generateTempFileName();
+			AbstractFilter *poFilter = m_filters.takeFirst();
+			m_currentStep = FilteringStep;
+
 			connect(poFilter, SIGNAL(statusUpdated(int)), this, SLOT(handleUpdate(int)), Qt::DirectConnection);
 			connect(poFilter, SIGNAL(messageLogged(QString)), this, SLOT(handleMessage(QString)), Qt::DirectConnection);
 
-			m_currentStep = FilteringStep;
-			bSuccess = poFilter->apply(sourceFile, tempFile, &m_aborted);
-
-			if(bSuccess)
+			if(poFilter->apply(sourceFile, tempFile, &m_aborted))
 			{
 				sourceFile = tempFile;
-				handleMessage("\n-------------------------------\n");
 			}
-		}
 
-		delete poFilter;
+			handleMessage("\n-------------------------------\n");
+			delete poFilter;
+		}
 	}
 
 	//Encode audio file
@@ -304,10 +304,20 @@ QString ProcessThread::generateOutFileName(void)
 		writeTest.remove();
 	}
 
-	QString outFileName = QString("%1/%2.%3").arg(targetDir.canonicalPath(), baseName, m_encoder->extension());
+	QString fileName = m_renamePattern;
+	fileName.replace("<BaseName>", STRDEF(baseName, tr("Unknown File Name")), Qt::CaseInsensitive);
+	fileName.replace("<TrackNo>", QString().sprintf("%02d", m_audioFile.filePosition()), Qt::CaseInsensitive);
+	fileName.replace("<Title>", STRDEF(m_audioFile.fileName(), tr("Unknown Title")) , Qt::CaseInsensitive);
+	fileName.replace("<Artist>", STRDEF(m_audioFile.fileArtist(), tr("Unknown Artist")), Qt::CaseInsensitive);
+	fileName.replace("<Album>", STRDEF(m_audioFile.fileAlbum(), tr("Unknown Album")), Qt::CaseInsensitive);
+	fileName.replace("<Year>", QString().sprintf("%04d", m_audioFile.fileYear()), Qt::CaseInsensitive);
+	fileName.replace("<Comment>", STRDEF(m_audioFile.fileComment(), tr("Unknown Comment")), Qt::CaseInsensitive);
+	fileName = lamexp_clean_filename(fileName).simplified();
+
+	QString outFileName = QString("%1/%2.%3").arg(targetDir.canonicalPath(), fileName, m_encoder->extension());
 	while(QFileInfo(outFileName).exists())
 	{
-		outFileName = QString("%1/%2 (%3).%4").arg(targetDir.canonicalPath(), baseName, QString::number(++n), m_encoder->extension());
+		outFileName = QString("%1/%2 (%3).%4").arg(targetDir.canonicalPath(), fileName, QString::number(++n), m_encoder->extension());
 	}
 
 	QFile placeholder(outFileName);
@@ -379,6 +389,27 @@ void ProcessThread::insertDownsampleFilter(void)
 	}
 }
 
+void ProcessThread::insertDownmixFilter(void)
+{
+	bool applyDownmixing = true;
+		
+	//Check if downmixing filter is already in the chain
+	for(int i = 0; i < m_filters.count(); i++)
+	{
+		if(dynamic_cast<DownmixFilter*>(m_filters.at(i)))
+		{
+			qWarning("Encoder requires Stereo downmix, but user has already forced downmix!");
+			applyDownmixing = false;
+		}
+	}
+		
+	//Now add the downmixing filter, if needed
+	if(applyDownmixing)
+	{
+		m_filters.prepend(new DownmixFilter());
+	}
+}
+
 ////////////////////////////////////////////////////////////
 // PUBLIC FUNCTIONS
 ////////////////////////////////////////////////////////////
@@ -386,6 +417,12 @@ void ProcessThread::insertDownsampleFilter(void)
 void ProcessThread::addFilter(AbstractFilter *filter)
 {
 	m_filters.append(filter);
+}
+
+void ProcessThread::setRenamePattern(const QString &pattern)
+{
+	QString newPattern = pattern.simplified();
+	if(!newPattern.isEmpty()) m_renamePattern = newPattern;
 }
 
 ////////////////////////////////////////////////////////////

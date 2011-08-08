@@ -755,10 +755,6 @@
         <translation>Nero AAC-Meldungen deaktivieren</translation>
     </message>
     <message>
-        <source>Disable WMA Decoder Notifications</source>
-        <translation>WMA-Dekodierer-Meldungen deaktivieren</translation>
-    </message>
-    <message>
         <source>Show DropBox</source>
         <translation>DropBox anzeigen</translation>
     </message>
@@ -1558,6 +1554,78 @@
         <source>The slow startup notifications have been re-enabled.</source>
         <translation>Die langsamer Programmstart Meldungen wurden wieder aktiviert.</translation>
     </message>
+    <message>
+        <source> Rename Output Files </source>
+        <translation> Ausgabedateien umbenennen </translation>
+    </message>
+    <message>
+        <source>Rename Output Files</source>
+        <translation>Ausgabedateien umbenennen</translation>
+    </message>
+    <message>
+        <source>Track number with leading zero</source>
+        <translation>Titelnummer mit führender Null</translation>
+    </message>
+    <message>
+        <source>Track title</source>
+        <translation>Titel</translation>
+    </message>
+    <message>
+        <source>Artist name</source>
+        <translation>Künstlername</translation>
+    </message>
+    <message>
+        <source>Album name</source>
+        <translation>Albumname</translation>
+    </message>
+    <message>
+        <source>Year with (at least) four digits</source>
+        <translation>Jahr mit mind. vier Stellen</translation>
+    </message>
+    <message>
+        <source>Comment</source>
+        <translation>Kommentar</translation>
+    </message>
+    <message>
+        <source>Rename Macros</source>
+        <translation>Platzhalter</translation>
+    </message>
+    <message>
+        <source>You can eneter custom parameters here!</source>
+        <translation>Sie können hier Parameter eingeben!</translation>
+    </message>
+    <message>
+        <source>Entere the pattern to rename the output files here!</source>
+        <translation>Schema zum Umbennen hier eingeben!</translation>
+    </message>
+    <message>
+        <source>&lt;a href=&quot;reset&quot;&gt;Reset&lt;/a&gt; &amp;nbsp; &lt;a href=&quot;#&quot;&gt;Show List of Macros&lt;/a&gt;</source>
+        <translation>&lt;a href=&quot;reset&quot;&gt;Zurücksetzen&lt;/a&gt; &amp;nbsp; &lt;a href=&quot;#&quot;&gt;Verfügbare Platzhalter anzeigen&lt;/a&gt;</translation>
+    </message>
+    <message>
+        <source>File name without extension</source>
+        <translation>Dateiname ohne Erweiterung</translation>
+    </message>
+    <message>
+        <source>Rename Pattern:</source>
+        <translation>Umbenennungsschema:</translation>
+    </message>
+    <message>
+        <source>Example File Name:</source>
+        <translation>Beispiel Dateiname:</translation>
+    </message>
+    <message>
+        <source>Characters forbidden in file names:</source>
+        <translation>Verbotene Zeichen in Dateinamen:</translation>
+    </message>
+    <message>
+        <source>Enforce Stereo Downmix of Surround (Multi-Channel) Sources</source>
+        <translation>Surround (Mehrkanal-Ton) Quellen immer auf Stereo heruntermischen</translation>
+    </message>
+    <message>
+        <source>Bookmark Current Output Folder</source>
+        <translation>Lesezeichen für aktuelles Verzeichnis hinzufügen</translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -1845,6 +1913,26 @@
     <message>
         <source>The target output directory is NOT writable:</source>
         <translation>In das Zielverzeichnis kann nicht geschrieben werden:</translation>
+    </message>
+    <message>
+        <source>Unknown File Name</source>
+        <translation>Unbekannter Dateiname</translation>
+    </message>
+    <message>
+        <source>Unknown Title</source>
+        <translation>Unbekannter Titel</translation>
+    </message>
+    <message>
+        <source>Unknown Artist</source>
+        <translation>Unbekannter Künstler</translation>
+    </message>
+    <message>
+        <source>Unknown Album</source>
+        <translation>Unbekanntes Album</translation>
+    </message>
+    <message>
+        <source>Unknown Comment</source>
+        <translation>Unbekannter Kommentar</translation>
     </message>
 </context>
 <context>

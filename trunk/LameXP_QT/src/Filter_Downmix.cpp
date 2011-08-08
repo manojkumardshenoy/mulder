@@ -43,6 +43,16 @@ DownmixFilter::~DownmixFilter(void)
 
 bool DownmixFilter::apply(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag)
 {
+	unsigned int channels = detectChannels(sourceFile, abortFlag);
+	emit messageLogged(QString().sprintf("--> Number of channels is: %d\n", channels));
+
+	if((channels == 1) || (channels == 2))
+	{
+		messageLogged("Skipping downmix!");
+		qDebug("Dowmmix not required for Mono or Stereo input, skipping!");
+		return false;
+	}
+
 	QProcess process;
 	QStringList args;
 
@@ -51,8 +61,36 @@ bool DownmixFilter::apply(const QString &sourceFile, const QString &outputFile, 
 	args << "-V3" << "-S";
 	args << "--guard" << "--temp" << ".";
 	args << QDir::toNativeSeparators(sourceFile);
-	args << "-c2";
 	args << QDir::toNativeSeparators(outputFile);
+
+	switch(channels)
+	{
+	case 3: //3.0 (L/R/C)
+		args << "remix" << "1v0.66,3v0.34" << "2v0.66,3v0.34";
+		break;
+	case 4: //3.1 (L/R/C/LFE)
+		args << "remix" << "1v0.5,3v0.25,4v0.25" << "2v0.5,3v0.25,4v0.25";
+		break;
+	case 5: //5.0 (L/R/C/BL/BR)
+		args << "remix" << "1v0.5,3v0.25,4v0.25" << "2v0.5,3v0.25,5v0.25";
+		break;
+	case 6: //5.1 (L/R/C/LFE/BL/BR)
+		args << "remix" << "1v0.4,3v0.2,4v0.2,5v0.2" << "2v0.4,3v0.2,4v0.2,6v0.2";
+		break;
+	case 7: //7.0 (L/R/C/BL/BR/SL/SR)
+		args << "remix" << "1v0.4,3v0.2,4v0.2,6v0.2" << "2v0.4,3v0.2,5v0.2,7v0.2";
+		break;
+	case 8: //7.1 (L/R/C/LFE/BL/BR/SL/SR)
+		args << "remix" << "1v0.36,3v0.16,4v0.16,5v0.16,7v0.16" << "2v0.36,3v0.16,4v0.16,6v0.16,8v0.16";
+		break;
+	case 9: //8.1 (L/R/C/LFE/BL/BR/SL/SR/BC)
+		args << "remix" << "1v0.308,3v0.154,4v0.154,5v0.154,7v0.154,9v0.076" << "2v0.308,3v0.154,4v0.154,6v0.154,8v0.154,9v0.076";
+		break;
+	default: //Unknown
+		qWarning("Downmixer: Unknown channel configuration!");
+		args << "channels" << "2";
+		break;
+	}
 
 	if(!startProcess(process, m_binary, args))
 	{
@@ -115,4 +153,68 @@ bool DownmixFilter::apply(const QString &sourceFile, const QString &outputFile, 
 	}
 	
 	return true;
+}
+
+unsigned int DownmixFilter::detectChannels(const QString &sourceFile, volatile bool *abortFlag)
+{
+	unsigned int channels = 0;
+	
+	QProcess process;
+	QStringList args;
+
+	args << "--i" << sourceFile;
+
+	if(!startProcess(process, m_binary, args))
+	{
+		return channels;
+	}
+
+	bool bTimeout = false;
+	bool bAborted = false;
+
+	QRegExp regExp("Channels\\s*:\\s*(\\d+)", Qt::CaseInsensitive);
+
+	while(process.state() != QProcess::NotRunning)
+	{
+		if(*abortFlag)
+		{
+			process.kill();
+			bAborted = true;
+			emit messageLogged("\nABORTED BY USER !!!");
+			break;
+		}
+		process.waitForReadyRead(m_processTimeoutInterval);
+		if(!process.bytesAvailable() && process.state() == QProcess::Running)
+		{
+			process.kill();
+			qWarning("SoX process timed out <-- killing!");
+			emit messageLogged("\nPROCESS TIMEOUT !!!");
+			bTimeout = true;
+			break;
+		}
+		while(process.bytesAvailable() > 0)
+		{
+			QByteArray line = process.readLine();
+			QString text = QString::fromUtf8(line.constData()).simplified();
+			if(regExp.lastIndexIn(text) >= 0)
+			{
+				bool ok = false;
+				unsigned int temp = regExp.cap(1).toUInt(&ok);
+				if(ok) channels = temp;
+			}
+			if(!text.isEmpty())
+			{
+				emit messageLogged(text);
+			}
+		}
+	}
+
+	process.waitForFinished();
+	if(process.state() != QProcess::NotRunning)
+	{
+		process.kill();
+		process.waitForFinished(-1);
+	}
+
+	return channels;
 }
