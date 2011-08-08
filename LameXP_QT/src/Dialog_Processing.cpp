@@ -35,6 +35,7 @@
 #include "Encoder_AC3.h"
 #include "Encoder_FLAC.h"
 #include "Encoder_Wave.h"
+#include "Filter_Downmix.h"
 #include "Filter_Normalize.h"
 #include "Filter_Resample.h"
 #include "Filter_ToneAdjust.h"
@@ -551,6 +552,7 @@ void ProcessingDialog::startNextJob(void)
 	AbstractEncoder *encoder = NULL;
 	bool nativeResampling = false;
 
+	//Create encoder instance
 	switch(m_settings->compressionEncoder())
 	{
 	case SettingsModel::MP3Encoder:
@@ -636,6 +638,7 @@ void ProcessingDialog::startNextJob(void)
 		throw "Unsupported encoder!";
 	}
 
+	//Create processing thread
 	ProcessThread *thread = new ProcessThread
 	(
 		currentFile,
@@ -645,6 +648,11 @@ void ProcessingDialog::startNextJob(void)
 		m_settings->prependRelativeSourcePath()
 	);
 
+	//Add audio filters
+	if(m_settings->forceStereoDownmix())
+	{
+		thread->addFilter(new DownmixFilter());
+	}
 	if((m_settings->samplingRate() > 0) && !nativeResampling)
 	{
 		if(SettingsModel::samplingRates[m_settings->samplingRate()] != currentFile.formatAudioSamplerate() || currentFile.formatAudioSamplerate() == 0)
@@ -660,16 +668,22 @@ void ProcessingDialog::startNextJob(void)
 	{
 		thread->addFilter(new NormalizeFilter(m_settings->normalizationFilterMaxVolume()));
 	}
+	if(m_settings->renameOutputFilesEnabled() && (!m_settings->renameOutputFilesPattern().simplified().isEmpty()))
+	{
+		thread->setRenamePattern(m_settings->renameOutputFilesPattern());
+	}
 
 	m_threadList.append(thread);
 	m_allJobs.append(thread->getId());
 	
+	//Connect thread signals
 	connect(thread, SIGNAL(finished()), this, SLOT(doneEncoding()), Qt::QueuedConnection);
 	connect(thread, SIGNAL(processStateInitialized(QUuid,QString,QString,int)), m_progressModel, SLOT(addJob(QUuid,QString,QString,int)), Qt::QueuedConnection);
 	connect(thread, SIGNAL(processStateChanged(QUuid,QString,int)), m_progressModel, SLOT(updateJob(QUuid,QString,int)), Qt::QueuedConnection);
 	connect(thread, SIGNAL(processStateFinished(QUuid,QString,bool)), this, SLOT(processFinished(QUuid,QString,bool)), Qt::QueuedConnection);
 	connect(thread, SIGNAL(processMessageLogged(QUuid,QString)), m_progressModel, SLOT(appendToLog(QUuid,QString)), Qt::QueuedConnection);
 	
+	//Give it a go!
 	m_runningThreads++;
 	thread->start();
 }

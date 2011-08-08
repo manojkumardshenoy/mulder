@@ -51,6 +51,7 @@ private slots:
 	void addFileDelayed(const QString &filePath, bool tryASAP = false);
 	void addFilesButtonClicked(void);
 	void addFilesDelayed(const QStringList &filePaths, bool tryASAP = false);
+	void addFavoriteFolderActionTriggered(void);
 	void addFolderDelayed(const QString &folderPath, bool recursive);
 	void aftenCodingModeChanged(int value);
 	void aftenDRCModeChanged(int value);
@@ -80,7 +81,9 @@ private slots:
 	void fileDownButtonClicked(void);
 	void fileUpButtonClicked(void);
 	void findFileContextActionTriggered(void);
+	void forceStereoDownmixEnabledChanged(bool checked);
 	void gotoDesktopButtonClicked(void);
+	void gotoFavoriteFolder(void);
 	void gotoHomeFolderButtonClicked(void);
 	void gotoMusicFolderButtonClicked(void);
 	void handleDelayedFiles(void);
@@ -103,6 +106,9 @@ private slots:
 	void prependRelativePathChanged(void);
 	void previewContextActionTriggered(void);
 	void removeFileButtonClicked(void);
+	void renameOutputEnabledChanged(bool checked);
+	void renameOutputPatternChanged(void);
+	void renameOutputPatternChanged(const QString &text);
 	void resetAdvancedOptionsButtonClicked(void);
 	void restoreCursor(void);
 	void samplingRateChanged(int value);
@@ -110,6 +116,7 @@ private slots:
 	void showDetailsButtonClicked(void);
 	void showDropBoxWidgetActionTriggered(bool checked);
 	void showFolderContextActionTriggered(void);
+	void showRenameMacros(const QString &text);
 	void sourceFilesContextMenu(const QPoint &pos);
 	void sourceModelChanged(void);
 	void styleActionActivated(QAction *action);
@@ -140,7 +147,7 @@ private:
 	void addFiles(const QStringList &files);
 	void addFolder(const QString &path, bool recursive = false, bool delayed = false);
 	bool checkForUpdates(void);
-	bool installWMADecoder(void);
+	void refreshFavorites(void);
 	
 	bool m_accepted;
 	bool m_firstTimeShown;
@@ -161,11 +168,13 @@ private:
 	QMenu *m_outputFolderContextMenu;
 	SettingsModel *m_settings;
 	QMenu *m_sourceFilesContextMenu;
+	QMenu *m_outputFolderFavoritesMenu;
 
 	QAction *m_findFileContextAction;
 	QAction *m_previewContextAction;
 	QAction *m_showDetailsContextAction;
 	QAction *m_showFolderContextAction;
+	QAction *m_addFavoriteFolderAction;
 	QActionGroup *m_languageActionGroup;
 	QActionGroup *m_styleActionGroup;
 	QActionGroup *m_tabActionGroup;

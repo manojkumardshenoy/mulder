@@ -75,6 +75,7 @@ LAMEXP_MAKE_ID(compressionBitrate, "Compression/Bitrate");
 LAMEXP_MAKE_ID(outputDir, "OutputDirectory/SelectedPath");
 LAMEXP_MAKE_ID(outputToSourceDir, "OutputDirectory/OutputToSourceFolder");
 LAMEXP_MAKE_ID(prependRelativeSourcePath, "OutputDirectory/PrependRelativeSourcePath");
+LAMEXP_MAKE_ID(favoriteOutputFolders, "OutputDirectory/Favorites");
 LAMEXP_MAKE_ID(writeMetaTags, "Flags/WriteMetaTags");
 LAMEXP_MAKE_ID(createPlaylist, "Flags/AutoCreatePlaylist");
 LAMEXP_MAKE_ID(autoUpdateLastCheck, "AutoUpdate/LastCheck");
@@ -82,13 +83,13 @@ LAMEXP_MAKE_ID(autoUpdateEnabled, "AutoUpdate/Enabled");
 LAMEXP_MAKE_ID(autoUpdateCheckBeta, "AutoUpdate/CheckForBetaVersions");
 LAMEXP_MAKE_ID(soundsEnabled, "Flags/EnableSounds");
 LAMEXP_MAKE_ID(neroAacNotificationsEnabled, "Flags/EnableNeroAacNotifications");
-LAMEXP_MAKE_ID(wmaDecoderNotificationsEnabled, "Flags/EnableWmaDecoderNotifications");
 LAMEXP_MAKE_ID(antivirNotificationsEnabled, "Flags/EnableAntivirusNotifications");
 LAMEXP_MAKE_ID(dropBoxWidgetEnabled, "Flags/EnableDropBoxWidget");
 LAMEXP_MAKE_ID(shellIntegrationEnabled, "Flags/EnableShellIntegration");
 LAMEXP_MAKE_ID(currentLanguage, "Localization/Language");
 LAMEXP_MAKE_ID(lameAlgoQuality, "AdvancedOptions/LAME/AlgorithmQuality");
 LAMEXP_MAKE_ID(lameChannelMode, "AdvancedOptions/LAME/ChannelMode");
+LAMEXP_MAKE_ID(forceStereoDownmix, "AdvancedOptions/StereoDownmix/Force");
 LAMEXP_MAKE_ID(bitrateManagementEnabled, "AdvancedOptions/BitrateManagement/Enabled");
 LAMEXP_MAKE_ID(bitrateManagementMinRate, "AdvancedOptions/BitrateManagement/MinRate");
 LAMEXP_MAKE_ID(bitrateManagementMaxRate, "AdvancedOptions/BitrateManagement/MaxRate");
@@ -108,6 +109,8 @@ LAMEXP_MAKE_ID(customParametersOggEnc, "AdvancedOptions/CustomParameters/OggEnc"
 LAMEXP_MAKE_ID(customParametersNeroAAC, "AdvancedOptions/CustomParameters/NeroAAC");
 LAMEXP_MAKE_ID(customParametersAften, "AdvancedOptions/CustomParameters/Aften");
 LAMEXP_MAKE_ID(customParametersFLAC, "AdvancedOptions/CustomParameters/FLAC");
+LAMEXP_MAKE_ID(renameOutputFilesEnabled, "AdvancedOptions/RenameOutputFiles/Enabled");
+LAMEXP_MAKE_ID(renameOutputFilesPattern, "AdvancedOptions/RenameOutputFiles/Pattern");
 LAMEXP_MAKE_ID(metaInfoPosition, "MetaInformation/PlaylistPosition");
 LAMEXP_MAKE_ID(maximumInstances, "AdvancedOptions/Threading/MaximumInstances");
 LAMEXP_MAKE_ID(customTempPath, "AdvancedOptions/TempDirectory/CustomPath");
@@ -265,6 +268,7 @@ LAMEXP_MAKE_OPTION_I(compressionBitrate, 7)
 LAMEXP_MAKE_OPTION_S(outputDir, QString())
 LAMEXP_MAKE_OPTION_B(outputToSourceDir, false)
 LAMEXP_MAKE_OPTION_B(prependRelativeSourcePath, false)
+LAMEXP_MAKE_OPTION_S(favoriteOutputFolders, QString());
 LAMEXP_MAKE_OPTION_B(writeMetaTags, true)
 LAMEXP_MAKE_OPTION_B(createPlaylist, true)
 LAMEXP_MAKE_OPTION_S(autoUpdateLastCheck, "Never")
@@ -272,13 +276,13 @@ LAMEXP_MAKE_OPTION_B(autoUpdateEnabled, true)
 LAMEXP_MAKE_OPTION_B(autoUpdateCheckBeta, false)
 LAMEXP_MAKE_OPTION_B(soundsEnabled, true)
 LAMEXP_MAKE_OPTION_B(neroAacNotificationsEnabled, true)
-LAMEXP_MAKE_OPTION_B(wmaDecoderNotificationsEnabled, true)
 LAMEXP_MAKE_OPTION_B(antivirNotificationsEnabled, true)
 LAMEXP_MAKE_OPTION_B(dropBoxWidgetEnabled, true)
 LAMEXP_MAKE_OPTION_B(shellIntegrationEnabled, !lamexp_portable_mode())
 LAMEXP_MAKE_OPTION_S(currentLanguage, defaultLanguage())
 LAMEXP_MAKE_OPTION_I(lameAlgoQuality, 3)
-LAMEXP_MAKE_OPTION_I(lameChannelMode, 0);
+LAMEXP_MAKE_OPTION_I(lameChannelMode, 0)
+LAMEXP_MAKE_OPTION_B(forceStereoDownmix, false)
 LAMEXP_MAKE_OPTION_B(bitrateManagementEnabled, false)
 LAMEXP_MAKE_OPTION_I(bitrateManagementMinRate, 32)
 LAMEXP_MAKE_OPTION_I(bitrateManagementMaxRate, 500)
@@ -298,6 +302,8 @@ LAMEXP_MAKE_OPTION_S(customParametersOggEnc, QString());
 LAMEXP_MAKE_OPTION_S(customParametersNeroAAC, QString());
 LAMEXP_MAKE_OPTION_S(customParametersAften, QString());
 LAMEXP_MAKE_OPTION_S(customParametersFLAC, QString());
+LAMEXP_MAKE_OPTION_B(renameOutputFilesEnabled, false);
+LAMEXP_MAKE_OPTION_S(renameOutputFilesPattern, "[<TrackNo>] <Artist> - <Title>");
 LAMEXP_MAKE_OPTION_U(metaInfoPosition, UINT_MAX);
 LAMEXP_MAKE_OPTION_U(maximumInstances, 0);
 LAMEXP_MAKE_OPTION_S(customTempPath, QDesktopServices::storageLocation(QDesktopServices::TempLocation));

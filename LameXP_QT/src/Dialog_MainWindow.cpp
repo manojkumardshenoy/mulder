@@ -70,7 +70,7 @@
 
 //Helper macros
 #define ABORT_IF_BUSY if(m_banner->isVisible() || m_delayedFileTimer->isActive()) { MessageBeep(MB_ICONEXCLAMATION); return; }
-#define SET_TEXT_COLOR(WIDGET,COLOR) { QPalette _palette = WIDGET->palette(); _palette.setColor(QPalette::WindowText, COLOR); WIDGET->setPalette(_palette); }
+#define SET_TEXT_COLOR(WIDGET,COLOR) { QPalette _palette = WIDGET->palette(); _palette.setColor(QPalette::WindowText, (COLOR)); _palette.setColor(QPalette::Text, (COLOR)); WIDGET->setPalette(_palette); }
 #define SET_FONT_BOLD(WIDGET,BOLD) { QFont _font = WIDGET->font(); _font.setBold(BOLD); WIDGET->setFont(_font); }
 #define LINK(URL) QString("<a href=\"%1\">%2</a>").arg(URL).arg(URL)
 #define TEMP_HIDE_DROPBOX(CMD) { bool __dropBoxVisible = m_dropBox->isVisible(); if(__dropBoxVisible) m_dropBox->hide(); CMD; if(__dropBoxVisible) m_dropBox->show(); }
@@ -147,6 +147,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	outputFolderView->setMouseTracking(false);
 	outputFolderView->setContextMenuPolicy(Qt::CustomContextMenu);
 	outputFolderView->installEventFilter(this);
+	outputFoldersFovoritesLabel->installEventFilter(this);
 	while(saveToSourceFolderCheckBox->isChecked() != m_settings->outputToSourceDir()) saveToSourceFolderCheckBox->click();
 	prependRelativePathCheckBox->setChecked(m_settings->prependRelativeSourcePath());
 	connect(outputFolderView, SIGNAL(clicked(QModelIndex)), this, SLOT(outputFolderViewClicked(QModelIndex)));
@@ -161,11 +162,16 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	connect(prependRelativePathCheckBox, SIGNAL(clicked()), this, SLOT(prependRelativePathChanged()));
 	m_outputFolderContextMenu = new QMenu();
 	m_showFolderContextAction = m_outputFolderContextMenu->addAction(QIcon(":/icons/zoom.png"), "N/A");
+	m_outputFolderFavoritesMenu = new QMenu();
+	m_addFavoriteFolderAction = m_outputFolderFavoritesMenu->addAction(QIcon(":/icons/add.png"), "N/A");
+	m_outputFolderFavoritesMenu->insertSeparator(m_addFavoriteFolderAction);
 	connect(outputFolderView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(outputFolderContextMenu(QPoint)));
 	connect(m_showFolderContextAction, SIGNAL(triggered(bool)), this, SLOT(showFolderContextActionTriggered()));
+	connect(m_addFavoriteFolderAction, SIGNAL(triggered(bool)), this, SLOT(addFavoriteFolderActionTriggered()));
 	outputFolderLabel->installEventFilter(this);
 	outputFolderView->setCurrentIndex(m_fileSystemModel->index(m_settings->outputDir()));
 	outputFolderViewClicked(outputFolderView->currentIndex());
+	refreshFavorites();
 	
 	//Setup "Meta Data" tab
 	m_metaInfoModel = new MetaInfoModel(m_metaData, 6);
@@ -230,12 +236,15 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	while(checkBoxNormalizationFilter->isChecked() != m_settings->normalizationFilterEnabled()) checkBoxNormalizationFilter->click();
 	while(checkBoxAutoDetectInstances->isChecked() != (m_settings->maximumInstances() < 1)) checkBoxAutoDetectInstances->click();
 	while(checkBoxUseSystemTempFolder->isChecked() == m_settings->customTempPathEnabled()) checkBoxUseSystemTempFolder->click();
+	while(checkBoxRenameOutput->isChecked() != m_settings->renameOutputFilesEnabled()) checkBoxRenameOutput->click();
+	while(checkBoxForceStereoDownmix->isChecked() != m_settings->forceStereoDownmix()) checkBoxForceStereoDownmix->click();
 	lineEditCustomParamLAME->setText(m_settings->customParametersLAME());
 	lineEditCustomParamOggEnc->setText(m_settings->customParametersOggEnc());
 	lineEditCustomParamNeroAAC->setText(m_settings->customParametersNeroAAC());
 	lineEditCustomParamFLAC->setText(m_settings->customParametersFLAC());
 	lineEditCustomParamAften->setText(m_settings->customParametersAften());
 	lineEditCustomTempFolder->setText(QDir::toNativeSeparators(m_settings->customTempPath()));
+	lineEditRenamePattern->setText(m_settings->renameOutputFilesPattern());
 	connect(sliderLameAlgoQuality, SIGNAL(valueChanged(int)), this, SLOT(updateLameAlgoQuality(int)));
 	connect(checkBoxBitrateManagement, SIGNAL(clicked(bool)), this, SLOT(bitrateManagementEnabledChanged(bool)));
 	connect(spinBoxBitrateManagementMin, SIGNAL(valueChanged(int)), this, SLOT(bitrateManagementMinChanged(int)));
@@ -264,6 +273,11 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	connect(lineEditCustomTempFolder, SIGNAL(textChanged(QString)), this, SLOT(customTempFolderChanged(QString)));
 	connect(checkBoxUseSystemTempFolder, SIGNAL(clicked(bool)), this, SLOT(useCustomTempFolderChanged(bool)));
 	connect(buttonResetAdvancedOptions, SIGNAL(clicked()), this, SLOT(resetAdvancedOptionsButtonClicked()));
+	connect(checkBoxRenameOutput, SIGNAL(clicked(bool)), this, SLOT(renameOutputEnabledChanged(bool)));
+	connect(lineEditRenamePattern, SIGNAL(editingFinished()), this, SLOT(renameOutputPatternChanged()));
+	connect(lineEditRenamePattern, SIGNAL(textChanged(QString)), this, SLOT(renameOutputPatternChanged(QString)));
+	connect(labelShowRenameMacros, SIGNAL(linkActivated(QString)), this, SLOT(showRenameMacros(QString)));
+	connect(checkBoxForceStereoDownmix, SIGNAL(clicked(bool)), this, SLOT(forceStereoDownmixEnabledChanged(bool)));
 	updateLameAlgoQuality(sliderLameAlgoQuality->value());
 	updateMaximumInstances(sliderMaxInstances->value());
 	toneAdjustTrebleChanged(spinBoxToneAdjustTreble->value());
@@ -331,7 +345,6 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	actionDisableUpdateReminder->setChecked(!m_settings->autoUpdateEnabled());
 	actionDisableSounds->setChecked(!m_settings->soundsEnabled());
 	actionDisableNeroAacNotifications->setChecked(!m_settings->neroAacNotificationsEnabled());
-	actionDisableWmaDecoderNotifications->setChecked(!m_settings->wmaDecoderNotificationsEnabled());
 	actionDisableSlowStartupNotifications->setChecked(!m_settings->antivirNotificationsEnabled());
 	actionDisableShellIntegration->setChecked(!m_settings->shellIntegrationEnabled());
 	actionDisableShellIntegration->setDisabled(lamexp_portable_mode() && actionDisableShellIntegration->isChecked());
@@ -441,6 +454,7 @@ MainWindow::~MainWindow(void)
 	LAMEXP_DELETE(m_encoderButtonGroup);
 	LAMEXP_DELETE(m_encoderButtonGroup);
 	LAMEXP_DELETE(m_sourceFilesContextMenu);
+	LAMEXP_DELETE(m_outputFolderFavoritesMenu);
 	LAMEXP_DELETE(m_dropBox);
 }
 
@@ -547,85 +561,6 @@ void MainWindow::addFolder(const QString &path, bool recursive, bool delayed)
 }
 
 /*
- * Download and install WMA Decoder component
- */
-//bool MainWindow::installWMADecoder(void)
-//{
-//	static const char *download_url = "http://www.nch.com.au/components/wmawav.exe";
-//	static const char *download_hash = "52a3b0e6690faf3f830c336d3c0eadfb7a4e9bc6";
-//	
-//	bool bResult = false;
-//
-//	QString binaryWGet = lamexp_lookup_tool("wget.exe");
-//	QString binaryElevator = lamexp_lookup_tool("elevator.exe");
-//	
-//	if(binaryWGet.isEmpty() || binaryElevator.isEmpty())
-//	{
-//		throw "Required binary is not available!";
-//	}
-//
-//	while(true)
-//	{
-//		QString setupFile = QString("%1/%2.exe").arg(lamexp_temp_folder2(), lamexp_rand_str());
-//
-//		QProcess process;
-//		process.setWorkingDirectory(QFileInfo(setupFile).absolutePath());
-//
-//		QEventLoop loop;
-//		connect(&process, SIGNAL(error(QProcess::ProcessError)), &loop, SLOT(quit()));
-//		connect(&process, SIGNAL(finished(int, QProcess::ExitStatus)), &loop, SLOT(quit()));
-//		
-//		process.start(binaryWGet, QStringList() << "-O" << QFileInfo(setupFile).fileName() << download_url);
-//		m_banner->show(tr("Downloading WMA Decoder Setup, please wait..."), &loop);
-//
-//		if(process.exitCode() != 0 || QFileInfo(setupFile).size() < 10240)
-//		{
-//			QFile::remove(setupFile);
-//			if(QMessageBox::critical(this, tr("Download Failed"), tr("Failed to download the WMA Decoder setup. Check your internet connection!"), tr("Try Again"), tr("Cancel")) == 0)
-//			{
-//				continue;
-//			}
-//			break;
-//		}
-//
-//		QFile setupFileContent(setupFile);
-//		QCryptographicHash setupFileHash(QCryptographicHash::Sha1);
-//		
-//		setupFileContent.open(QIODevice::ReadOnly);
-//		if(setupFileContent.isOpen() && setupFileContent.isReadable())
-//		{
-//			setupFileHash.addData(setupFileContent.readAll());
-//			setupFileContent.close();
-//		}
-//
-//		if(_stricmp(setupFileHash.result().toHex().constData(), download_hash))
-//		{
-//			qWarning("Hash miscompare:\n  Expected %s\n  Detected %s\n", download_hash, setupFileHash.result().toHex().constData());
-//			QFile::remove(setupFile);
-//			if(QMessageBox::critical(this, tr("Download Failed"), tr("The download seems to be corrupted. Please try again!"), tr("Try Again"), tr("Cancel")) == 0)
-//			{
-//				continue;
-//			}
-//			break;
-//		}
-//
-//		QApplication::setOverrideCursor(Qt::WaitCursor);
-//		process.start(binaryElevator, QStringList() << QString("/exec=%1").arg(setupFile));
-//		loop.exec(QEventLoop::ExcludeUserInputEvents);
-//		QFile::remove(setupFile);
-//		QApplication::restoreOverrideCursor();
-//
-//		if(QMessageBox::information(this, tr("WMA Decoder"), tr("The WMA File Decoder has been installed. Please restart LameXP now!"), tr("Quit LameXP"), tr("Postpone")) == 0)
-//		{
-//			bResult = true;
-//		}
-//		break;
-//	}
-//
-//	return bResult;
-//}
-
-/*
  * Check for updates
  */
 bool MainWindow::checkForUpdates(void)
@@ -643,6 +578,36 @@ bool MainWindow::checkForUpdates(void)
 
 	LAMEXP_DELETE(updateDialog);
 	return bReadyToInstall;
+}
+
+void MainWindow::refreshFavorites(void)
+{
+	QList<QAction*> folderList = m_outputFolderFavoritesMenu->actions();
+	QStringList favorites = m_settings->favoriteOutputFolders().split("|", QString::SkipEmptyParts);
+	while(favorites.count() > 6) favorites.removeFirst();
+
+	while(!folderList.isEmpty())
+	{
+		QAction *currentItem = folderList.takeFirst();
+		if(currentItem->isSeparator()) break;
+		m_outputFolderFavoritesMenu->removeAction(currentItem);
+		LAMEXP_DELETE(currentItem);
+	}
+
+	QAction *lastItem = m_outputFolderFavoritesMenu->actions().first();
+
+	while(!favorites.isEmpty())
+	{
+		QString path = favorites.takeLast();
+		if(QDir(path).exists())
+		{
+			QAction *action = new QAction(QIcon(":/icons/folder_go.png"), QDir::toNativeSeparators(path), this);
+			action->setData(path);
+			m_outputFolderFavoritesMenu->insertAction(lastItem, action);
+			connect(action, SIGNAL(triggered(bool)), this, SLOT(gotoFavoriteFolder()));
+			lastItem = action;
+		}
+	}
 }
 
 ////////////////////////////////////////////////////////////
@@ -719,6 +684,7 @@ void MainWindow::changeEvent(QEvent *e)
 		m_previewContextAction->setText(tr("Open File in External Application"));
 		m_findFileContextAction->setText(tr("Browse File Location"));
 		m_showFolderContextAction->setText(tr("Browse Selected Folder"));
+		m_addFavoriteFolderAction->setText(tr("Bookmark Current Output Folder"));
 
 		//Force GUI update
 		m_metaInfoModel->clearData();
@@ -726,6 +692,7 @@ void MainWindow::changeEvent(QEvent *e)
 		updateEncoder(m_settings->compressionEncoder());
 		updateLameAlgoQuality(sliderLameAlgoQuality->value());
 		updateMaximumInstances(sliderMaxInstances->value());
+		renameOutputPatternChanged(lineEditRenamePattern->text());
 
 		//Re-install shell integration
 		if(m_settings->shellIntegrationEnabled())
@@ -860,6 +827,35 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 			break;
 		case QEvent::Leave:
 			outputFolderLabel->setForegroundRole(QPalette::WindowText);
+			break;
+		}
+	}
+	else if(obj == outputFoldersFovoritesLabel)
+	{
+		QMouseEvent *mouseEvent = dynamic_cast<QMouseEvent*>(event);
+		QPoint pos = (mouseEvent != NULL) ? mouseEvent->pos() : QPoint();
+		QWidget *sender = dynamic_cast<QLabel*>(obj);
+
+		switch(event->type())
+		{
+		case QEvent::Enter:
+			outputFoldersFovoritesLabel->setFrameShadow(QFrame::Raised);
+			break;
+		case QEvent::MouseButtonPress:
+			outputFoldersFovoritesLabel->setFrameShadow(QFrame::Sunken);
+			break;
+		case QEvent::MouseButtonRelease:
+			outputFoldersFovoritesLabel->setFrameShadow(QFrame::Raised);
+			if(sender && mouseEvent)
+			{
+				if(pos.x() <= sender->width() && pos.y() <= sender->height() && pos.x() >= 0 && pos.y() >= 0 && mouseEvent->button() != Qt::MidButton)
+				{
+					m_outputFolderFavoritesMenu->popup(sender->mapToGlobal(pos));
+				}
+			}
+			break;
+		case QEvent::Leave:
+			outputFoldersFovoritesLabel->setFrameShadow(QFrame::Plain);
 			break;
 		}
 	}
@@ -2093,6 +2089,31 @@ void MainWindow::gotoMusicFolderButtonClicked(void)
 }
 
 /*
+ * Goto music favorite output folder
+ */
+void MainWindow::gotoFavoriteFolder(void)
+{
+	QAction *item = dynamic_cast<QAction*>(QObject::sender());
+	
+	if(item)
+	{
+		QDir path(item->data().toString());
+		if(path.exists())
+		{
+			outputFolderView->setCurrentIndex(m_fileSystemModel->index(path.canonicalPath()));
+			outputFolderViewClicked(outputFolderView->currentIndex());
+			outputFolderView->setFocus();
+		}
+		else
+		{
+			MessageBeep(MB_ICONERROR);
+			m_outputFolderFavoritesMenu->removeAction(item);
+			item->deleteLater();
+		}
+	}
+}
+
+/*
  * Make folder button
  */
 void MainWindow::makeFolderButtonClicked(void)
@@ -2138,6 +2159,8 @@ void MainWindow::makeFolderButtonClicked(void)
 		}
 	}
 	
+	suggestedName = lamexp_clean_filename(suggestedName);
+
 	while(true)
 	{
 		bool bApplied = false;
@@ -2145,15 +2168,7 @@ void MainWindow::makeFolderButtonClicked(void)
 
 		if(bApplied)
 		{
-			folderName.remove(":", Qt::CaseInsensitive);
-			folderName.remove("/", Qt::CaseInsensitive);
-			folderName.remove("\\", Qt::CaseInsensitive);
-			folderName.remove("?", Qt::CaseInsensitive);
-			folderName.remove("*", Qt::CaseInsensitive);
-			folderName.remove("<", Qt::CaseInsensitive);
-			folderName.remove(">", Qt::CaseInsensitive);
-			
-			folderName = folderName.simplified();
+			folderName = lamexp_clean_filepath(folderName.simplified());
 
 			if(folderName.isEmpty())
 			{
@@ -2169,7 +2184,7 @@ void MainWindow::makeFolderButtonClicked(void)
 				newFolder = QString(folderName).append(QString().sprintf(" (%d)", ++i));
 			}
 			
-			if(basePath.mkdir(newFolder))
+			if(basePath.mkpath(newFolder))
 			{
 				QDir createdDir = basePath;
 				if(createdDir.cd(newFolder))
@@ -2224,6 +2239,28 @@ void MainWindow::outputFolderContextMenu(const QPoint &pos)
 void MainWindow::showFolderContextActionTriggered(void)
 {
 	QDesktopServices::openUrl(QUrl::fromLocalFile(m_fileSystemModel->filePath(outputFolderView->currentIndex())));
+}
+
+/*
+ * Add current folder to favorites
+ */
+void MainWindow::addFavoriteFolderActionTriggered(void)
+{
+	QString path = m_fileSystemModel->filePath(outputFolderView->currentIndex());
+	QStringList favorites = m_settings->favoriteOutputFolders().split("|", QString::SkipEmptyParts);
+
+	if(!favorites.contains(path, Qt::CaseInsensitive))
+	{
+		favorites.append(path);
+		while(favorites.count() > 6) favorites.removeFirst();
+	}
+	else
+	{
+		MessageBeep(MB_ICONWARNING);
+	}
+
+	m_settings->favoriteOutputFolders(favorites.join("|"));
+	refreshFavorites();
 }
 
 /*
@@ -2712,6 +2749,93 @@ void MainWindow::customParamsChanged(void)
 	m_settings->customParametersAften(lineEditCustomParamAften->text());
 }
 
+
+/*
+ * Rename output files enabled changed
+ */
+void MainWindow::renameOutputEnabledChanged(bool checked)
+{
+	m_settings->renameOutputFilesEnabled(checked);
+}
+
+/*
+ * Rename output files patterm changed
+ */
+void MainWindow::renameOutputPatternChanged(void)
+{
+	QString temp = lineEditRenamePattern->text().simplified();
+	lineEditRenamePattern->setText(temp.isEmpty() ? m_settings->renameOutputFilesPatternDefault() : temp);
+	m_settings->renameOutputFilesPattern(lineEditRenamePattern->text());
+}
+
+/*
+ * Rename output files patterm changed
+ */
+void MainWindow::renameOutputPatternChanged(const QString &text)
+{
+	QString pattern(text.simplified());
+	
+	pattern.replace("<BaseName>", "The_White_Stripes_-_Fell_In_Love_With_A_Girl", Qt::CaseInsensitive);
+	pattern.replace("<TrackNo>", "04", Qt::CaseInsensitive);
+	pattern.replace("<Title>", "Fell In Love With A Girl", Qt::CaseInsensitive);
+	pattern.replace("<Artist>", "The White Stripes", Qt::CaseInsensitive);
+	pattern.replace("<Album>", "White Blood Cells", Qt::CaseInsensitive);
+	pattern.replace("<Year>", "2001", Qt::CaseInsensitive);
+	pattern.replace("<Comment>", "Encoded by LameXP", Qt::CaseInsensitive);
+
+	if(pattern.compare(lamexp_clean_filename(pattern)))
+	{
+		if(lineEditRenamePattern->palette().color(QPalette::Text) != Qt::red)
+		{
+			MessageBeep(MB_ICONERROR);
+			SET_TEXT_COLOR(lineEditRenamePattern, Qt::red);
+		}
+	}
+	else
+	{
+		if(lineEditRenamePattern->palette().color(QPalette::Text) != Qt::black)
+		{
+			MessageBeep(MB_ICONINFORMATION);
+			SET_TEXT_COLOR(lineEditRenamePattern, Qt::black);
+		}
+	}
+
+	labelRanameExample->setText(lamexp_clean_filename(pattern));
+}
+
+/*
+ * Show list of rename macros
+ */
+void MainWindow::showRenameMacros(const QString &text)
+{
+	if(text.compare("reset", Qt::CaseInsensitive) == 0)
+	{
+		lineEditRenamePattern->setText(m_settings->renameOutputFilesPatternDefault());
+		return;
+	}
+
+	const QString format = QString("<tr><td><tt>&lt;%1&gt;</tt></td><td>&nbsp;&nbsp;</td><td>%2</td></tr>");
+
+	QString message = QString("<table>");
+	message += QString(format).arg("BaseName", tr("File name without extension"));
+	message += QString(format).arg("TrackNo", tr("Track number with leading zero"));
+	message += QString(format).arg("Title", tr("Track title"));
+	message += QString(format).arg("Artist", tr("Artist name"));
+	message += QString(format).arg("Album", tr("Album name"));
+	message += QString(format).arg("Year", tr("Year with (at least) four digits"));
+	message += QString(format).arg("Comment", tr("Comment"));
+	message += "</table><br><br>";
+	message += QString("%1<br>").arg(tr("Characters forbidden in file names:"));
+	message += "<b><tt>\\ / : * ? &lt; &gt; |<br>";
+	
+	QMessageBox::information(this, tr("Rename Macros"), message, tr("Discard"));
+}
+
+void MainWindow::forceStereoDownmixEnabledChanged(bool checked)
+{
+	m_settings->forceStereoDownmix(checked);
+}
+
 /*
  * Maximum number of instances changed
  */
@@ -2790,11 +2914,14 @@ void MainWindow::resetAdvancedOptionsButtonClicked(void)
 	while(checkBoxAutoDetectInstances->isChecked() != (m_settings->maximumInstancesDefault() < 1)) checkBoxAutoDetectInstances->click();
 	while(checkBoxUseSystemTempFolder->isChecked() == m_settings->customTempPathEnabledDefault()) checkBoxUseSystemTempFolder->click();
 	while(checkBoxAftenFastAllocation->isChecked() != m_settings->aftenFastBitAllocationDefault()) checkBoxAftenFastAllocation->click();
+	while(checkBoxRenameOutput->isChecked() != m_settings->renameOutputFilesEnabledDefault()) checkBoxRenameOutput->click();
+	while(checkBoxForceStereoDownmix->isChecked() != m_settings->forceStereoDownmixDefault()) checkBoxForceStereoDownmix->click();
 	lineEditCustomParamLAME->setText(m_settings->customParametersLAMEDefault());
 	lineEditCustomParamOggEnc->setText(m_settings->customParametersOggEncDefault());
 	lineEditCustomParamNeroAAC->setText(m_settings->customParametersNeroAACDefault());
 	lineEditCustomParamFLAC->setText(m_settings->customParametersFLACDefault());
 	lineEditCustomTempFolder->setText(QDir::toNativeSeparators(m_settings->customTempPathDefault()));
+	lineEditRenamePattern->setText(m_settings->renameOutputFilesPatternDefault());
 	customParamsChanged();
 	scrollArea->verticalScrollBar()->setValue(0);
 }

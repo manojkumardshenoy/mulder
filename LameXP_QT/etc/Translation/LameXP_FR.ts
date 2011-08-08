@@ -763,10 +763,6 @@
         <translation>Désactiver les notifications Nero AAC</translation>
     </message>
     <message>
-        <source>Disable WMA Decoder Notifications</source>
-        <translation>Désactiver les notifications du décodeur WMA</translation>
-    </message>
-    <message>
         <source>Show DropBox</source>
         <translation>Afficher la DropBox</translation>
     </message>
@@ -1567,6 +1563,78 @@ Ouvrir le dossier récursivement...</translation>
         <source>The slow startup notifications have been re-enabled.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source> Rename Output Files </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rename Output Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Track number with leading zero</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Track title</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Artist name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Album name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Year with (at least) four digits</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Comment</source>
+        <translation type="unfinished">Commentaire</translation>
+    </message>
+    <message>
+        <source>Rename Macros</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can eneter custom parameters here!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Entere the pattern to rename the output files here!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;a href=&quot;reset&quot;&gt;Reset&lt;/a&gt; &amp;nbsp; &lt;a href=&quot;#&quot;&gt;Show List of Macros&lt;/a&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File name without extension</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rename Pattern:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Example File Name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Characters forbidden in file names:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enforce Stereo Downmix of Surround (Multi-Channel) Sources</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bookmark Current Output Folder</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -1854,6 +1922,26 @@ Ouvrir le dossier récursivement...</translation>
     <message>
         <source>The target output directory is NOT writable:</source>
         <translation>Le répertoire de sortie cible n&apos;est pas accessible en écriture:</translation>
+    </message>
+    <message>
+        <source>Unknown File Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown Title</source>
+        <translation type="unfinished">Titre inconnu</translation>
+    </message>
+    <message>
+        <source>Unknown Artist</source>
+        <translation type="unfinished">Artiste inconnu</translation>
+    </message>
+    <message>
+        <source>Unknown Album</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown Comment</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
