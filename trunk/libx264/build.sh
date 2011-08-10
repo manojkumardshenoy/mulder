@@ -4,13 +4,24 @@
 
 GIT_URL="git://git.videolan.org/x264.git"
 DEFAULT_PATCHES="x264_amdfam10_fix x264_print_params x264_dll_version"
-COMPILERS_STABLE="452 445"
-COMPILERS_OTHERS="460 451 345"
+COMPILERS_STABLE="446 453 462"
+COMPILERS_OTHERS="451 345"
 CPU_TYPES="i686 core2 amdfam10 pentium3 noasm"
 ROOT_DRIVE="e"
 
 ######################################################
 # Do NOT modify any lines below this one!
+######################################################
+
+if [ "$X264_BUILD_COMPILER" != "" ]; then
+  COMPILERS_OTHERS=""  
+  COMPILERS_STABLE="$X264_BUILD_COMPILER"
+fi
+
+if [ "$X264_BUILD_TYPES" != "" ]; then
+  CPU_TYPES="$X264_BUILD_TYPES"
+fi
+
 ######################################################
 
 git --help > /dev/null
@@ -143,7 +154,7 @@ make_x264() {
   ELFLAGS="-L../pthreads"
   ECFLAGS="-I../pthreads"
   
-  if [ -f "./libpack/lib/libavcodec.a" -a -f "./libpack/include/libavcodec/avcodec.h" -a $1 -ge 445 -a $1 -lt 460 ]; then #TODO: Fix for other GCC versions
+  if [ -f "./libpack/lib/libavcodec.a" -a -f "./libpack/include/libavcodec/avcodec.h" -a $1 -ge 445 -a $1 -lt 460 ]; then #TODO: Fix library pack for GCC prior to 4.4.5 and 4.6.0
     ELFLAGS="$ELFLAGS -L../libpack/lib"
     ECFLAGS="$ECFLAGS -I../libpack/include"
   fi
@@ -183,7 +194,7 @@ make_x264() {
   fi
 
   test_configuration "-flto"
-  if [ $? -eq 0 ]; then
+  if [ $? -eq 0 -a $1 -lt 460 ]; then #TODO: Fix LTO for GCC 4.6.1
     echo "LTO enabled :-)"
     ECFLAGS="$ECFLAGS -flto"
     ELFLAGS="$ELFLAGS -flto" # -fwhole-program
@@ -226,9 +237,9 @@ make_x264() {
   echo -e "Configure:\n"
   
   if [ "$2" != "noasm" ]; then
-    ./configure --enable-shared --extra-cflags="$ECFLAGS" --extra-ldflags="$ELFLAGS"
+    ./configure --enable-shared --enable-static --enable-strip  --extra-cflags="$ECFLAGS" --extra-ldflags="$ELFLAGS"
   else
-    ./configure --enable-shared --disable-asm --extra-cflags="$ECFLAGS" --extra-ldflags="$ELFLAGS"
+    ./configure --enable-shared --enable-static --enable-strip  --disable-asm --extra-cflags="$ECFLAGS" --extra-ldflags="$ELFLAGS"
   fi
 
   if [ $? -ne 0 ]; then
@@ -254,7 +265,7 @@ make_x264() {
     return
   fi
 
-  VER=$(grep X264_VERSION < config.h | cut -f 4 -d ' ')
+  VER=$(grep X264_VERSION < x264_config.h | cut -f 4 -d ' ')
   API=$(grep '#define X264_BUILD' < x264.h | cut -f 3 -d ' ')
   
   echo -e "\n--> x264 version: $VER (API: #$API)"
@@ -325,11 +336,13 @@ do
   done
 done
 
-for k in $COMPILERS_OTHERS
-do
-  make_pthread "$k"
-  make_x264 "$k" "i686" "" ""
-done
+if [ "$COMPILERS_OTHERS" != "" ]; then
+  for k in $COMPILERS_OTHERS
+  do
+    make_pthread "$k"
+    make_x264 "$k" "i686" "" ""
+  done
+fi
 
 ######################################################
 

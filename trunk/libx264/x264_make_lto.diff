@@ -1,17 +1,17 @@
 diff --git a/Makefile b/Makefile
-index bab55e5..1e2caaa 100644
+index 5831091..1510be0 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -144,10 +144,10 @@ libx264.a: .depend $(OBJS) $(OBJASM)
- 	$(RANLIB) libx264.a
+@@ -148,10 +148,10 @@ $(LIBX264): .depend $(OBJS) $(OBJASM)
+ 	$(if $(RANLIB), $(RANLIB) $@)
  
  $(SONAME): .depend $(OBJS) $(OBJASM) $(OBJSO)
--	$(CC) -shared -o $@ $(OBJS) $(OBJASM) $(OBJSO) $(SOFLAGS) $(LDFLAGS)
-+	$(CC) -shared -o $@ $(OBJS) $(OBJASM) $(OBJSO) $(SOFLAGS) $(CFLAGS) $(LDFLAGS)
+-	$(LD)$@ $(OBJS) $(OBJASM) $(OBJSO) $(SOFLAGS) $(LDFLAGS)
++	$(LD)$@ $(OBJS) $(OBJASM) $(OBJSO) $(SOFLAGS) $(CFLAGS) $(LDFLAGS)
  
- x264$(EXE): $(OBJCLI) libx264.a
--	$(CC) -o $@ $+ $(LDFLAGSCLI) $(LDFLAGS)
-+	$(CC) -o $@ $+ $(LDFLAGSCLI) $(CFLAGS) $(LDFLAGS)
+ x264$(EXE): .depend $(OBJCLI) $(CLI_LIBX264)
+-	$(LD)$@ $(OBJCLI) $(CLI_LIBX264) $(LDFLAGSCLI) $(LDFLAGS)
++	$(LD)$@ $(OBJCLI) $(CLI_LIBX264) $(CFLAGS) $(LDFLAGSCLI) $(LDFLAGS)
  
- checkasm: tools/checkasm.o libx264.a
- 	$(CC) -o $@ $+ $(LDFLAGS)
+ checkasm: tools/checkasm.o $(LIBX264)
+ 	$(LD)$@ $+ $(LDFLAGS)
