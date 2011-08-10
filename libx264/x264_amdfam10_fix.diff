@@ -1,21 +1,21 @@
 diff --git a/Makefile b/Makefile
-index a66a9ee..eb8a168 100644
+index 5831091..43829ef 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -192,7 +192,7 @@ else
+@@ -195,7 +195,7 @@ fprofiled:
+ else
  fprofiled:
  	$(MAKE) clean
- 	mv config.mak config.mak2
--	sed -e 's/CFLAGS.*/& -fprofile-generate/; s/LDFLAGS.*/& -fprofile-generate/' config.mak2 > config.mak
-+	sed -e 's/CFLAGS.*/& -fprofile-generate -DX264_FPROFILE_GENERATE/; s/LDFLAGS.*/& -fprofile-generate/' config.mak2 > config.mak
- 	$(MAKE) x264$(EXE)
+-	$(MAKE) x264$(EXE) CFLAGS="$(CFLAGS) $(PROF_GEN_CC)" LDFLAGS="$(LDFLAGS) $(PROF_GEN_LD)"
++	$(MAKE) x264$(EXE) CFLAGS="$(CFLAGS) $(PROF_GEN_CC) -DX264_FPROFILE_GENERATE" LDFLAGS="$(LDFLAGS) $(PROF_GEN_LD)"
  	$(foreach V, $(VIDS), $(foreach I, 0 1 2 3 4 5 6 7, ./x264$(EXE) $(OPT$I) --threads 1 $(V) -o $(DEVNULL) ;))
  	rm -f $(SRC2:%.c=%.o)
+ 	$(MAKE) CFLAGS="$(CFLAGS) $(PROF_USE_CC)" LDFLAGS="$(LDFLAGS) $(PROF_USE_LD)"
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index b5f1d1d..c36ac77 100644
+index 85ad046..882f360 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -1088,7 +1088,12 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -1155,7 +1155,12 @@ x264_t *x264_encoder_open( x264_param_t *param )
          x264_log( h, X264_LOG_ERROR, "Are you attempting to run an SSE4a-targeted build on a CPU that\n" );
          x264_log( h, X264_LOG_ERROR, "doesn't support it?\n" );
  #endif

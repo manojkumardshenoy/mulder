@@ -1,5 +1,5 @@
 diff --git a/x264dll.c b/x264dll.c
-index 5ffd109..10e94d9 100644
+index 7974d4a..daa3358 100644
 --- a/x264dll.c
 +++ b/x264dll.c
 @@ -24,8 +24,24 @@
