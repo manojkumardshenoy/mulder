@@ -47,7 +47,7 @@ Please be aware that this "workaround" can only succeed with the static(!) C Run
 How EncodePointer.lib works
 ---------------------------
 
-When the executable that contains the "main" functions calls some function from a DLL, it actually calls a "stub" functions.
+When the executable that contains the "main" functions calls some function from a DLL, it actually calls a "stub" function.
 
 The "stub" function is linked into the executable by the import library. That's the .lib file that corresponds to the DLL.
 
@@ -72,6 +72,30 @@ Note that the decorated name of "DecodePointer" is "_DecodePointer@4", so the sy
 Apparently Visual C++ is smart enough to wipe out the DLL import after "_DecodePointer@4" has been defined explicitely!
 
 In "EncodePointer.asm" both, __imp__DecodePointer@4 and __imp__EncodePointer@4, are redirected to a simple substitute function.
+
+
+Why it only works with the "static" CRT
+---------------------------------------
+
+EncodePointer.lib has to be linked into the binary which imports "DecodePointer" or "DecodePointer" from KERNEL32.DLL.
+
+When using the "shared" CRT library (DLL version), then it's NOT your binary but MSVCRT100.DLL which imports these functions!
+
+And, as MSVCRT100.DLL is generally provided as a pre-compiled redistributable, there is nothing we can do about that.
+
+Special attention has to be taken when linking third-party DLL's into your execuatble file - they might import MSVCRT100.DLL!
+
+As linking DLL files with the "static" CRT library is discouraged, it is recommended to link ALL libraries statically.
+
+
+Platform Support
+----------------
+
+Please be aware that there is absolutely no guarantee that the CRT of Visual C++ 2010 will work properly on Windows 2000.
+
+Anyway, I have tested EncodePointer.lib with a complex Qt-based GUI application and I have not encountered any problems so far.
+
+Also using EncodePointer.lib does NOT break the compatibility with Windows XP or Windows 7, as far as I can tell...
 
 
 eof.
