@@ -77,7 +77,7 @@ In "EncodePointer.asm" both, __imp__DecodePointer@4 and __imp__EncodePointer@4, 
 Why it only works with the "static" CRT
 ---------------------------------------
 
-EncodePointer.lib has to be linked into the binary which imports "DecodePointer" or "DecodePointer" from KERNEL32.DLL.
+EncodePointer.lib has to be linked into the binary which imports "DecodePointer" or "EncodePointer" from KERNEL32.DLL.
 
 When using the "shared" CRT library (DLL version), then it's NOT your binary but MSVCRT100.DLL which imports these functions!
 
