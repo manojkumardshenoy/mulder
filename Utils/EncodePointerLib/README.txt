@@ -47,11 +47,11 @@ Please be aware that this "workaround" can only succeed with the static(!) C Run
 How EncodePointer.lib works
 ---------------------------
 
-When the executable that contains the "main" functions calls some function from a DLL, it actually calls a "stub" function.
+When the executable that contains the "main" function calls some function from a DLL, it actually calls a "stub" function.
 
 The "stub" function is linked into the executable by the import library. That's the .lib file that corresponds to the DLL.
 
-We have to use a "stub" function, because at compile-time the address of the actualy function (in the DLL) can not be known.
+We have to use a "stub" function, because at compile-time the address of the actual function (in the DLL) can not be known yet.
 
 Instead the "stub" will look up the address of the actual function in the 'import address table' and then jump to that address.
 
@@ -83,7 +83,7 @@ When using the "shared" CRT library (DLL version), then it's NOT your binary but
 
 And, as MSVCRT100.DLL is generally provided as a pre-compiled redistributable, there is nothing we can do about that.
 
-Special attention has to be taken when linking third-party DLL's into your execuatble file - they might import MSVCRT100.DLL!
+Special attention has to be taken when linking third-party DLL's into your executable file - they might import MSVCRT100.DLL!
 
 As linking DLL files with the "static" CRT library is discouraged, it is recommended to link ALL libraries statically.
 
