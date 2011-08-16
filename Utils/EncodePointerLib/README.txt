@@ -18,6 +18,8 @@ There are three simple steps required to make Visual C++ 2010 binaries run under
 (2) In your project properties, change "Linker" -> "System" -> "Minimum Required Version" to "5.0"
 
 (3) In your project properties, add "EncodePointer.lib" to "Linker" -> "Input" -> "Additional Dependencies"
+    
+    If you explicitely link against "kernel32.lib", please make sure that "EncodePointer.lib" is first in the list!
 
 
 Background
@@ -40,8 +42,6 @@ Note that the entry point "EncodePointer" is missing too. These functions were a
 We can get rid of the dependencies on "EncodePointer" and "DecodePointer" by linking 'EncodePointer.lib' into the binay.
 
 After linking the library you can check that the two problematic functions are no longere imported from KERNEL32.DLL :-)
-
-Please be aware that this "workaround" can only succeed with the static(!) C Run-Time Library, but not with the DLL version!
 
 
 How EncodePointer.lib works
@@ -96,6 +96,20 @@ Please be aware that there is absolutely no guarantee that the CRT of Visual C++
 Anyway, I have tested EncodePointer.lib with a complex Qt-based GUI application and I have not encountered any problems so far.
 
 Also using EncodePointer.lib does NOT break the compatibility with Windows XP or Windows 7, as far as I can tell...
+
+
+Security Notice
+---------------
+
+The original implementation of EncodePointer() will obfuscate a pointer with a secret that is specific to the calling process.
+
+DecodePointer() will restore the original pointer value from a pointer that has previously been encoded by EncodePointer().
+
+Since it is impossible to predict an encoded pointer, encoded pointers provide another layer of protection for pointer values.
+
+Currently the substitute functions implemented in 'EncodePointer.lib' do NOT provide that layer of protection!
+
+Instead the substitute functions for EncodePointer() and DecodePointer() simply XOR the pointer with a hard-coded constant.
 
 
 eof.
