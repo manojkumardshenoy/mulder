@@ -98,15 +98,15 @@ LAMEXP_MAKE_ID(aftenDynamicRangeCompression, "AdvancedOptions/Aften/DynamicRange
 LAMEXP_MAKE_ID(aftenFastBitAllocation, "AdvancedOptions/Aften/FastBitAllocation");
 LAMEXP_MAKE_ID(aftenExponentSearchSize, "AdvancedOptions/Aften/ExponentSearchSize");
 LAMEXP_MAKE_ID(samplingRate, "AdvancedOptions/Common/Resampling");
-LAMEXP_MAKE_ID(neroAACEnable2Pass, "AdvancedOptions/NeroAAC/Enable2Pass");
-LAMEXP_MAKE_ID(neroAACProfile, "AdvancedOptions/NeroAAC/ForceProfile");
+LAMEXP_MAKE_ID(neroAACEnable2Pass, "AdvancedOptions/AACEnc/Enable2Pass");
+LAMEXP_MAKE_ID(aacEncProfile, "AdvancedOptions/AACEnc/ForceProfile");
 LAMEXP_MAKE_ID(normalizationFilterEnabled, "AdvancedOptions/VolumeNormalization/Enabled");
 LAMEXP_MAKE_ID(normalizationFilterMaxVolume, "AdvancedOptions/VolumeNormalization/MaxVolume");
 LAMEXP_MAKE_ID(toneAdjustBass, "AdvancedOptions/ToneAdjustment/Bass");
 LAMEXP_MAKE_ID(toneAdjustTreble, "AdvancedOptions/ToneAdjustment/Treble");
 LAMEXP_MAKE_ID(customParametersLAME, "AdvancedOptions/CustomParameters/LAME");
 LAMEXP_MAKE_ID(customParametersOggEnc, "AdvancedOptions/CustomParameters/OggEnc");
-LAMEXP_MAKE_ID(customParametersNeroAAC, "AdvancedOptions/CustomParameters/NeroAAC");
+LAMEXP_MAKE_ID(customParametersAacEnc, "AdvancedOptions/CustomParameters/AacEnc");
 LAMEXP_MAKE_ID(customParametersAften, "AdvancedOptions/CustomParameters/Aften");
 LAMEXP_MAKE_ID(customParametersFLAC, "AdvancedOptions/CustomParameters/FLAC");
 LAMEXP_MAKE_ID(renameOutputFilesEnabled, "AdvancedOptions/RenameOutputFiles/Enabled");
@@ -201,10 +201,13 @@ void SettingsModel::validate(void)
 	
 	if(!(lamexp_check_tool("neroAacEnc.exe") && lamexp_check_tool("neroAacDec.exe") && lamexp_check_tool("neroAacTag.exe")))
 	{
-		if(this->compressionEncoder() == SettingsModel::AACEncoder)
+		if(!(lamexp_check_tool("fhgaacenc.exe") && lamexp_check_tool("enc_fhgaac.dll")))
 		{
-			qWarning("Nero encoder selected, but not available any more. Reverting to MP3!");
-			this->compressionEncoder(SettingsModel::MP3Encoder);
+			if(this->compressionEncoder() == SettingsModel::AACEncoder)
+			{
+				qWarning("AAC encoder selected, but not available any more. Reverting to MP3!");
+				this->compressionEncoder(SettingsModel::MP3Encoder);
+			}
 		}
 	}
 	
@@ -288,7 +291,7 @@ LAMEXP_MAKE_OPTION_I(bitrateManagementMinRate, 32)
 LAMEXP_MAKE_OPTION_I(bitrateManagementMaxRate, 500)
 LAMEXP_MAKE_OPTION_I(samplingRate, 0)
 LAMEXP_MAKE_OPTION_B(neroAACEnable2Pass, true)
-LAMEXP_MAKE_OPTION_I(neroAACProfile, 0)
+LAMEXP_MAKE_OPTION_I(aacEncProfile, 0)
 LAMEXP_MAKE_OPTION_I(aftenAudioCodingMode, 0);
 LAMEXP_MAKE_OPTION_I(aftenDynamicRangeCompression, 5);
 LAMEXP_MAKE_OPTION_B(aftenFastBitAllocation, false);
@@ -299,7 +302,7 @@ LAMEXP_MAKE_OPTION_I(toneAdjustBass, 0)
 LAMEXP_MAKE_OPTION_I(toneAdjustTreble, 0)
 LAMEXP_MAKE_OPTION_S(customParametersLAME, QString());
 LAMEXP_MAKE_OPTION_S(customParametersOggEnc, QString());
-LAMEXP_MAKE_OPTION_S(customParametersNeroAAC, QString());
+LAMEXP_MAKE_OPTION_S(customParametersAacEnc, QString());
 LAMEXP_MAKE_OPTION_S(customParametersAften, QString());
 LAMEXP_MAKE_OPTION_S(customParametersFLAC, QString());
 LAMEXP_MAKE_OPTION_B(renameOutputFilesEnabled, false);
