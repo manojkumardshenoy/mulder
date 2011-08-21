@@ -211,6 +211,22 @@
         <source>Copyright (c) 2004 David Hammerton. Contributions by Cody Brocious.</source>
         <translation>Copyright (c) 2004 David Hammerton. Unter Mitwirkung von Cody Brocious.</translation>
     </message>
+    <message>
+        <source>Copyright (c) 2011 LoRd_MuldeR &lt;mulder2@gmx.de&gt;. Some rights reserved.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>By Jory Stone &lt;jcsston@toughguy.net&gt; and LoRd_MuldeR &lt;mulder2@gmx.de&gt;.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>wma2wav &amp;minus; Dump WMA files to Wave Audio</source>
+        <translation>wma2wav &amp;minus; WMA Dateien als Wave Audio speichern</translation>
+    </message>
+    <message>
+        <source>avs2wav &amp;minus; Avisynth to Wave Audio converter</source>
+        <translation>avs2wav &amp;minus; Avisynth zu Wave Audio Konverter</translation>
+    </message>
 </context>
 <context>
     <name>AudioFileModel</name>
@@ -612,10 +628,6 @@
     </message>
     <message>
         <source>Ogg Vorbis</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Nero AAC</source>
         <translation></translation>
     </message>
     <message>
@@ -1183,10 +1195,6 @@
         <translation>Abtastrate (Hz):</translation>
     </message>
     <message>
-        <source>Nero AAC Options</source>
-        <translation>Nero AAC-Optionen</translation>
-    </message>
-    <message>
         <source>Enable 2-Pass Processing (ABR Mode)</source>
         <translation>2 Durchläufe verwenden (ABR Modus)</translation>
     </message>
@@ -1268,10 +1276,6 @@
     </message>
     <message>
         <source>OggEnc2:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Nero AAC:</source>
         <translation></translation>
     </message>
     <message>
@@ -1625,6 +1629,18 @@
     <message>
         <source>Bookmark Current Output Folder</source>
         <translation>Lesezeichen für aktuelles Verzeichnis hinzufügen</translation>
+    </message>
+    <message>
+        <source>MPEG-4 AAC</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>AAC Encoder-Options</source>
+        <translation>AAC-Kodierer Optionen</translation>
+    </message>
+    <message>
+        <source>MPEG-4 AAC:</source>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -2068,8 +2084,8 @@
         <translation>Programm &apos;%1&apos; benötigt Qt v%2, aber Qt v%3 wurde gefunden.</translation>
     </message>
     <message>
-        <source>Executable &apos;%1&apos; requires Windows XP or later.</source>
-        <translation>Programm &apos;%1&apos; benötigt Windows XP oder neuer.</translation>
+        <source>Executable &apos;%1&apos; requires Windows 2000 or later.</source>
+        <translation>Programm &apos;%1&apos; benötigt Windows 2000 oder neuer.</translation>
     </message>
 </context>
 <context>

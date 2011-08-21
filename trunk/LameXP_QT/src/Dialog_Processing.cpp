@@ -32,6 +32,7 @@
 #include "Encoder_MP3.h"
 #include "Encoder_Vorbis.h"
 #include "Encoder_AAC.h"
+#include "Encoder_AAC_FHG.h"
 #include "Encoder_AC3.h"
 #include "Encoder_FLAC.h"
 #include "Encoder_Wave.h"
@@ -595,13 +596,25 @@ void ProcessingDialog::startNextJob(void)
 		break;
 	case SettingsModel::AACEncoder:
 		{
-			AACEncoder *aacEncoder = new AACEncoder();
-			aacEncoder->setBitrate(m_settings->compressionBitrate());
-			aacEncoder->setRCMode(m_settings->compressionRCMode());
-			aacEncoder->setEnable2Pass(m_settings->neroAACEnable2Pass());
-			aacEncoder->setProfile(m_settings->neroAACProfile());
-			aacEncoder->setCustomParams(m_settings->customParametersNeroAAC());
-			encoder = aacEncoder;
+			if(lamexp_check_tool("fhgaacenc.exe") && lamexp_check_tool("enc_fhgaac.dll"))
+			{
+				FHGAACEncoder *aacEncoder = new FHGAACEncoder();
+				aacEncoder->setBitrate(m_settings->compressionBitrate());
+				aacEncoder->setRCMode(m_settings->compressionRCMode());
+				aacEncoder->setProfile(m_settings->aacEncProfile());
+				aacEncoder->setCustomParams(m_settings->customParametersAacEnc());
+				encoder = aacEncoder;
+			}
+			else
+			{
+				AACEncoder *aacEncoder = new AACEncoder();
+				aacEncoder->setBitrate(m_settings->compressionBitrate());
+				aacEncoder->setRCMode(m_settings->compressionRCMode());
+				aacEncoder->setEnable2Pass(m_settings->neroAACEnable2Pass());
+				aacEncoder->setProfile(m_settings->aacEncProfile());
+				aacEncoder->setCustomParams(m_settings->customParametersAacEnc());
+				encoder = aacEncoder;
+			}
 		}
 		break;
 	case SettingsModel::AC3Encoder:

@@ -215,6 +215,22 @@
         <source>Copyright (c) 2004 David Hammerton. Contributions by Cody Brocious.</source>
         <translation>Copyright (c) 2004 David Hammerton. Contributions par Cody Brocious.</translation>
     </message>
+    <message>
+        <source>Copyright (c) 2011 LoRd_MuldeR &lt;mulder2@gmx.de&gt;. Some rights reserved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>By Jory Stone &lt;jcsston@toughguy.net&gt; and LoRd_MuldeR &lt;mulder2@gmx.de&gt;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>wma2wav &amp;minus; Dump WMA files to Wave Audio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>avs2wav &amp;minus; Avisynth to Wave Audio converter</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AudioFileModel</name>
@@ -617,10 +633,6 @@
     <message>
         <source>Ogg Vorbis</source>
         <translation>Ogg Vorbis</translation>
-    </message>
-    <message>
-        <source>Nero AAC</source>
-        <translation>Nero AAC</translation>
     </message>
     <message>
         <source>Wave (PCM)</source>
@@ -1191,10 +1203,6 @@ Sélection automatique (par défaut)</translation>
         <translation>Taux d&apos;échantillonnage (Hz) :</translation>
     </message>
     <message>
-        <source>Nero AAC Options</source>
-        <translation>Option Nero AAC</translation>
-    </message>
-    <message>
         <source>Enable 2-Pass Processing (ABR Mode)</source>
         <translation>Permettre le traitement en 2-Pass (Mode ABR)</translation>
     </message>
@@ -1277,10 +1285,6 @@ Sélection automatique (par défaut)</translation>
     <message>
         <source>OggEnc2:</source>
         <translation>OggEnc2 :</translation>
-    </message>
-    <message>
-        <source>Nero AAC:</source>
-        <translation>Nero AAC :</translation>
     </message>
     <message>
         <source>FLAC:</source>
@@ -1633,6 +1637,18 @@ Ouvrir le dossier récursivement...</translation>
     </message>
     <message>
         <source>Bookmark Current Output Folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MPEG-4 AAC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AAC Encoder-Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MPEG-4 AAC:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2077,8 +2093,8 @@ Ouvrir le dossier récursivement...</translation>
         <translation>L&apos;éxécutable %1 nécessite Qt v%2, mais Qt v%3 trouvé.</translation>
     </message>
     <message>
-        <source>Executable &apos;%1&apos; requires Windows XP or later.</source>
-        <translation>L&apos;éxécutable %1 nécessite Windows XP ou supérieur.</translation>
+        <source>Executable &apos;%1&apos; requires Windows 2000 or later.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

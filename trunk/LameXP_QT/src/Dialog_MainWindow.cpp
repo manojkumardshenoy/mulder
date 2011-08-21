@@ -86,6 +86,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	m_metaData(metaInfo),
 	m_settings(settingsModel),
 	m_neroEncoderAvailable(lamexp_check_tool("neroAacEnc.exe") && lamexp_check_tool("neroAacDec.exe") && lamexp_check_tool("neroAacTag.exe")),
+	m_fhgEncoderAvailable(lamexp_check_tool("fhgaacenc.exe") && lamexp_check_tool("enc_fhgaac.dll") && lamexp_check_tool("nsutil.dll") && lamexp_check_tool("libmp4v2.dll")),
 	m_accepted(false),
 	m_firstTimeShown(true),
 	m_OutputFolderViewInitialized(false)
@@ -200,10 +201,10 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	m_modeButtonGroup->addButton(radioButtonModeQuality, SettingsModel::VBRMode);
 	m_modeButtonGroup->addButton(radioButtonModeAverageBitrate, SettingsModel::ABRMode);
 	m_modeButtonGroup->addButton(radioButtonConstBitrate, SettingsModel::CBRMode);
-	radioButtonEncoderAAC->setEnabled(m_neroEncoderAvailable);
+	radioButtonEncoderAAC->setEnabled(m_neroEncoderAvailable || m_fhgEncoderAvailable);
 	radioButtonEncoderMP3->setChecked(m_settings->compressionEncoder() == SettingsModel::MP3Encoder);
 	radioButtonEncoderVorbis->setChecked(m_settings->compressionEncoder() == SettingsModel::VorbisEncoder);
-	radioButtonEncoderAAC->setChecked((m_settings->compressionEncoder() == SettingsModel::AACEncoder) && m_neroEncoderAvailable);
+	radioButtonEncoderAAC->setChecked((m_settings->compressionEncoder() == SettingsModel::AACEncoder) && (m_neroEncoderAvailable || m_fhgEncoderAvailable));
 	radioButtonEncoderAC3->setChecked(m_settings->compressionEncoder() == SettingsModel::AC3Encoder);
 	radioButtonEncoderFLAC->setChecked(m_settings->compressionEncoder() == SettingsModel::FLACEncoder);
 	radioButtonEncoderPCM->setChecked(m_settings->compressionEncoder() == SettingsModel::PCMEncoder);
@@ -227,7 +228,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	spinBoxAftenSearchSize->setValue(m_settings->aftenExponentSearchSize());
 	comboBoxMP3ChannelMode->setCurrentIndex(m_settings->lameChannelMode());
 	comboBoxSamplingRate->setCurrentIndex(m_settings->samplingRate());
-	comboBoxNeroAACProfile->setCurrentIndex(m_settings->neroAACProfile());
+	comboBoxAACProfile->setCurrentIndex(m_settings->aacEncProfile());
 	comboBoxAftenCodingMode->setCurrentIndex(m_settings->aftenAudioCodingMode());
 	comboBoxAftenDRCMode->setCurrentIndex(m_settings->aftenDynamicRangeCompression());
 	while(checkBoxBitrateManagement->isChecked() != m_settings->bitrateManagementEnabled()) checkBoxBitrateManagement->click();
@@ -238,9 +239,10 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	while(checkBoxUseSystemTempFolder->isChecked() == m_settings->customTempPathEnabled()) checkBoxUseSystemTempFolder->click();
 	while(checkBoxRenameOutput->isChecked() != m_settings->renameOutputFilesEnabled()) checkBoxRenameOutput->click();
 	while(checkBoxForceStereoDownmix->isChecked() != m_settings->forceStereoDownmix()) checkBoxForceStereoDownmix->click();
+	checkBoxNeroAAC2PassMode->setEnabled(!m_fhgEncoderAvailable);
 	lineEditCustomParamLAME->setText(m_settings->customParametersLAME());
 	lineEditCustomParamOggEnc->setText(m_settings->customParametersOggEnc());
-	lineEditCustomParamNeroAAC->setText(m_settings->customParametersNeroAAC());
+	lineEditCustomParamNeroAAC->setText(m_settings->customParametersAacEnc());
 	lineEditCustomParamFLAC->setText(m_settings->customParametersFLAC());
 	lineEditCustomParamAften->setText(m_settings->customParametersAften());
 	lineEditCustomTempFolder->setText(QDir::toNativeSeparators(m_settings->customTempPath()));
@@ -252,7 +254,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	connect(comboBoxMP3ChannelMode, SIGNAL(currentIndexChanged(int)), this, SLOT(channelModeChanged(int)));
 	connect(comboBoxSamplingRate, SIGNAL(currentIndexChanged(int)), this, SLOT(samplingRateChanged(int)));
 	connect(checkBoxNeroAAC2PassMode, SIGNAL(clicked(bool)), this, SLOT(neroAAC2PassChanged(bool)));
-	connect(comboBoxNeroAACProfile, SIGNAL(currentIndexChanged(int)), this, SLOT(neroAACProfileChanged(int)));
+	connect(comboBoxAACProfile, SIGNAL(currentIndexChanged(int)), this, SLOT(neroAACProfileChanged(int)));
 	connect(checkBoxNormalizationFilter, SIGNAL(clicked(bool)), this, SLOT(normalizationEnabledChanged(bool)));
 	connect(comboBoxAftenCodingMode, SIGNAL(currentIndexChanged(int)), this, SLOT(aftenCodingModeChanged(int)));
 	connect(comboBoxAftenDRCMode, SIGNAL(currentIndexChanged(int)), this, SLOT(aftenDRCModeChanged(int)));
@@ -654,7 +656,7 @@ void MainWindow::changeEvent(QEvent *e)
 		//Backup combobox indices, as retranslateUi() resets
 		comboBoxIndex[0] = comboBoxMP3ChannelMode->currentIndex();
 		comboBoxIndex[1] = comboBoxSamplingRate->currentIndex();
-		comboBoxIndex[2] = comboBoxNeroAACProfile->currentIndex();
+		comboBoxIndex[2] = comboBoxAACProfile->currentIndex();
 		comboBoxIndex[3] = comboBoxAftenCodingMode->currentIndex();
 		comboBoxIndex[4] = comboBoxAftenDRCMode->currentIndex();
 		
@@ -664,7 +666,7 @@ void MainWindow::changeEvent(QEvent *e)
 		//Restore combobox indices
 		comboBoxMP3ChannelMode->setCurrentIndex(comboBoxIndex[0]);
 		comboBoxSamplingRate->setCurrentIndex(comboBoxIndex[1]);
-		comboBoxNeroAACProfile->setCurrentIndex(comboBoxIndex[2]);
+		comboBoxAACProfile->setCurrentIndex(comboBoxIndex[2]);
 		comboBoxAftenCodingMode->setCurrentIndex(comboBoxIndex[3]);
 		comboBoxAftenDRCMode->setCurrentIndex(comboBoxIndex[4]);
 
@@ -988,7 +990,7 @@ void MainWindow::windowShown(void)
 	}
 	else
 	{
-		if(m_settings->neroAacNotificationsEnabled())
+		if(m_settings->neroAacNotificationsEnabled() && (!m_fhgEncoderAvailable))
 		{
 			QString appPath = QDir(QCoreApplication::applicationDirPath()).canonicalPath();
 			if(appPath.isEmpty()) appPath = QCoreApplication::applicationDirPath();
@@ -1006,32 +1008,6 @@ void MainWindow::windowShown(void)
 			}
 		}
 	}
-	
-	//Check for WMA support
-	//if(m_settings->wmaDecoderNotificationsEnabled())
-	//{
-	//	if(!lamexp_check_tool("wmawav.exe"))
-	//	{
-	//		QString messageText;
-	//		messageText += QString("<nobr>%1</nobr><br>").arg(tr("LameXP has detected that the WMA File Decoder component is not currently installed on your system.").replace("-", "&minus;"));
-	//		messageText += QString("<nobr>%1</nobr><br><br>").arg(tr("You won't be able to process WMA files as input unless the WMA File Decoder component is installed!").replace("-", "&minus;"));
-	//		messageText += QString("<nobr>%1</nobr>").arg(tr("Do you want to download and install the WMA File Decoder component now?").replace("-", "&minus;"));
-	//		int result = QMessageBox::information(this, tr("WMA Decoder Missing"), messageText, tr("Download && Install"), tr("Don't Show Again"), tr("Postpone"));
-	//		if(result == 0)
-	//		{
-	//			if(installWMADecoder())
-	//			{
-	//				QApplication::quit();
-	//				return;
-	//			}
-	//		}
-	//		else if(result == 1)
-	//		{
-	//			m_settings->wmaDecoderNotificationsEnabled(false);
-	//			actionDisableWmaDecoderNotifications->setChecked(!m_settings->wmaDecoderNotificationsEnabled());
-	//		}
-	//	}
-	//}
 
 	//Add files from the command-line
 	for(int i = 0; i < arguments.count() - 1; i++)
@@ -2366,6 +2342,13 @@ void MainWindow::updateEncoder(int id)
 		radioButtonConstBitrate->setEnabled(false);
 		sliderBitrate->setEnabled(false);
 		break;
+	case SettingsModel::AACEncoder:
+		radioButtonModeQuality->setEnabled(true);
+		radioButtonModeAverageBitrate->setEnabled(!m_fhgEncoderAvailable);
+		if(m_fhgEncoderAvailable && radioButtonModeAverageBitrate->isChecked()) radioButtonConstBitrate->setChecked(true);
+		radioButtonConstBitrate->setEnabled(true);
+		sliderBitrate->setEnabled(true);
+		break;
 	default:
 		radioButtonModeQuality->setEnabled(true);
 		radioButtonModeAverageBitrate->setEnabled(true);
@@ -2640,7 +2623,7 @@ void MainWindow::neroAAC2PassChanged(bool checked)
  */
 void MainWindow::neroAACProfileChanged(int value)
 {
-	if(value >= 0) m_settings->neroAACProfile(value);
+	if(value >= 0) m_settings->aacEncProfile(value);
 }
 
 /*
@@ -2744,7 +2727,7 @@ void MainWindow::customParamsChanged(void)
 
 	m_settings->customParametersLAME(lineEditCustomParamLAME->text());
 	m_settings->customParametersOggEnc(lineEditCustomParamOggEnc->text());
-	m_settings->customParametersNeroAAC(lineEditCustomParamNeroAAC->text());
+	m_settings->customParametersAacEnc(lineEditCustomParamNeroAAC->text());
 	m_settings->customParametersFLAC(lineEditCustomParamFLAC->text());
 	m_settings->customParametersAften(lineEditCustomParamAften->text());
 }
@@ -2905,7 +2888,7 @@ void MainWindow::resetAdvancedOptionsButtonClicked(void)
 	spinBoxAftenSearchSize->setValue(m_settings->aftenExponentSearchSizeDefault());
 	comboBoxMP3ChannelMode->setCurrentIndex(m_settings->lameChannelModeDefault());
 	comboBoxSamplingRate->setCurrentIndex(m_settings->samplingRateDefault());
-	comboBoxNeroAACProfile->setCurrentIndex(m_settings->neroAACProfileDefault());
+	comboBoxAACProfile->setCurrentIndex(m_settings->aacEncProfileDefault());
 	comboBoxAftenCodingMode->setCurrentIndex(m_settings->aftenAudioCodingModeDefault());
 	comboBoxAftenDRCMode->setCurrentIndex(m_settings->aftenDynamicRangeCompressionDefault());
 	while(checkBoxBitrateManagement->isChecked() != m_settings->bitrateManagementEnabledDefault()) checkBoxBitrateManagement->click();
@@ -2918,7 +2901,7 @@ void MainWindow::resetAdvancedOptionsButtonClicked(void)
 	while(checkBoxForceStereoDownmix->isChecked() != m_settings->forceStereoDownmixDefault()) checkBoxForceStereoDownmix->click();
 	lineEditCustomParamLAME->setText(m_settings->customParametersLAMEDefault());
 	lineEditCustomParamOggEnc->setText(m_settings->customParametersOggEncDefault());
-	lineEditCustomParamNeroAAC->setText(m_settings->customParametersNeroAACDefault());
+	lineEditCustomParamNeroAAC->setText(m_settings->customParametersAacEncDefault());
 	lineEditCustomParamFLAC->setText(m_settings->customParametersFLACDefault());
 	lineEditCustomTempFolder->setText(QDir::toNativeSeparators(m_settings->customTempPathDefault()));
 	lineEditRenamePattern->setText(m_settings->renameOutputFilesPatternDefault());

@@ -185,7 +185,7 @@
     </message>
     <message>
         <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of thrird-party software used in LameXP belongs to the individual authors.</source>
-        <translation>Всі права на LameXP належать LoRd_MuldeR. Права на стоороннє ПЗ, що використовується, в LameXP належить авторам цього ПЗ.</translation>
+        <translation>Всі права на LameXP належать LoRd_MuldeR. Права на стороннє ПЗ, що використовується в LameXP, належить авторам цього ПЗ.</translation>
     </message>
     <message>
         <source>About Third-party Software</source>
@@ -211,6 +211,22 @@
     <message>
         <source>Copyright (c) 2004 David Hammerton. Contributions by Cody Brocious.</source>
         <translation>Всі права належать 2004 David Hammerton. Підтримка зі сторони Cody Brocious.</translation>
+    </message>
+    <message>
+        <source>Copyright (c) 2011 LoRd_MuldeR &lt;mulder2@gmx.de&gt;. Some rights reserved.</source>
+        <translation>Всі права належать 2011 LoRd_MuldeR &lt;mulder2@gmx.de&gt;. Деякі права захищені.</translation>
+    </message>
+    <message>
+        <source>By Jory Stone &lt;jcsston@toughguy.net&gt; and LoRd_MuldeR &lt;mulder2@gmx.de&gt;.</source>
+        <translation>За участі Jory Stone &lt;jcsston@toughguy.net&gt; і LoRd_MuldeR &lt;mulder2@gmx.de&gt;.</translation>
+    </message>
+    <message>
+        <source>wma2wav &amp;minus; Dump WMA files to Wave Audio</source>
+        <translation>wma2wav &amp;minus; Декодує файли WMA у Wave аудіо</translation>
+    </message>
+    <message>
+        <source>avs2wav &amp;minus; Avisynth to Wave Audio converter</source>
+        <translation>avs2wav &amp;minus; аудіоконвертер у Wave аудіо, що базується на Avisynth</translation>
     </message>
 </context>
 <context>
@@ -615,10 +631,6 @@
         <translation>Ogg Vorbis</translation>
     </message>
     <message>
-        <source>Nero AAC</source>
-        <translation>Nero AAC</translation>
-    </message>
-    <message>
         <source>Wave (PCM)</source>
         <translation>Wave (PCM)</translation>
     </message>
@@ -745,10 +757,6 @@
     <message>
         <source>48.000</source>
         <translation>48.000</translation>
-    </message>
-    <message>
-        <source>Nero AAC Options</source>
-        <translation>Опції Nero AAC</translation>
     </message>
     <message>
         <source>Enable 2-Pass Processing (ABR Mode)</source>
@@ -1271,10 +1279,6 @@
         <translation>OggEnc2:</translation>
     </message>
     <message>
-        <source>Nero AAC:</source>
-        <translation>Nero AAC:</translation>
-    </message>
-    <message>
         <source>FLAC:</source>
         <translation>FLAC:</translation>
     </message>
@@ -1556,75 +1560,87 @@
     </message>
     <message>
         <source> Rename Output Files </source>
-        <translation type="unfinished"></translation>
+        <translation>Перейменовування вихідних файлів</translation>
     </message>
     <message>
         <source>Rename Output Files</source>
-        <translation type="unfinished"></translation>
+        <translation>Перейменовувати вихідні файли</translation>
     </message>
     <message>
         <source>Track number with leading zero</source>
-        <translation type="unfinished"></translation>
+        <translation>Номер доріжки з нулями в старших розрядах</translation>
     </message>
     <message>
         <source>Track title</source>
-        <translation type="unfinished"></translation>
+        <translation>Заголовок доріжки</translation>
     </message>
     <message>
         <source>Artist name</source>
-        <translation type="unfinished"></translation>
+        <translation>Ім&apos;я виконавця</translation>
     </message>
     <message>
         <source>Album name</source>
-        <translation type="unfinished"></translation>
+        <translation>Назва альбому</translation>
     </message>
     <message>
         <source>Year with (at least) four digits</source>
-        <translation type="unfinished"></translation>
+        <translation>Рік (з вказанням щонайменше чотирьох цифр)</translation>
     </message>
     <message>
         <source>Comment</source>
-        <translation type="unfinished">Коментар</translation>
+        <translation>Коментар</translation>
     </message>
     <message>
         <source>Rename Macros</source>
-        <translation type="unfinished"></translation>
+        <translation>Макроси для перейменовування</translation>
     </message>
     <message>
         <source>You can eneter custom parameters here!</source>
-        <translation type="unfinished"></translation>
+        <translation>Можна вводити користувацькі параметри тут!</translation>
     </message>
     <message>
         <source>Entere the pattern to rename the output files here!</source>
-        <translation type="unfinished"></translation>
+        <translation>Вводьте шаблони для перейменовування вихідних файлів тут!</translation>
     </message>
     <message>
         <source>&lt;a href=&quot;reset&quot;&gt;Reset&lt;/a&gt; &amp;nbsp; &lt;a href=&quot;#&quot;&gt;Show List of Macros&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;reset&quot;&gt;Скидання&lt;/a&gt; &amp;nbsp; &lt;a href=&quot;#&quot;&gt;Показати список макросів&lt;/a&gt;</translation>
     </message>
     <message>
         <source>File name without extension</source>
-        <translation type="unfinished"></translation>
+        <translation>Назва файлу без розширення</translation>
     </message>
     <message>
         <source>Rename Pattern:</source>
-        <translation type="unfinished"></translation>
+        <translation>Шаблон перейменовування:</translation>
     </message>
     <message>
         <source>Example File Name:</source>
-        <translation type="unfinished"></translation>
+        <translation>Приклад назви файлу:</translation>
     </message>
     <message>
         <source>Characters forbidden in file names:</source>
-        <translation type="unfinished"></translation>
+        <translation>Символи, заборонені в назвах файлів:</translation>
     </message>
     <message>
         <source>Enforce Stereo Downmix of Surround (Multi-Channel) Sources</source>
-        <translation type="unfinished"></translation>
+        <translation>Застосовувати об’єднувальне стерео-мікшування до вхідних файлів з об&apos;ємним звучанням (багатоканальних)</translation>
     </message>
     <message>
         <source>Bookmark Current Output Folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Додати поточну теку до закладок</translation>
+    </message>
+    <message>
+        <source>MPEG-4 AAC</source>
+        <translation>MPEG-4 AAC</translation>
+    </message>
+    <message>
+        <source>AAC Encoder-Options</source>
+        <translation>Налаштування кодера AAC</translation>
+    </message>
+    <message>
+        <source>MPEG-4 AAC:</source>
+        <translation>MPEG-4 AAC:</translation>
     </message>
 </context>
 <context>
@@ -1916,23 +1932,23 @@
     </message>
     <message>
         <source>Unknown File Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Невідома назва файла</translation>
     </message>
     <message>
         <source>Unknown Title</source>
-        <translation type="unfinished">Невідомий заголовок</translation>
+        <translation>Невідомий заголовок</translation>
     </message>
     <message>
         <source>Unknown Artist</source>
-        <translation type="unfinished">Невідомий виконавець</translation>
+        <translation>Невідомий виконавець</translation>
     </message>
     <message>
         <source>Unknown Album</source>
-        <translation type="unfinished"></translation>
+        <translation>Невідомий альбом</translation>
     </message>
     <message>
         <source>Unknown Comment</source>
-        <translation type="unfinished"></translation>
+        <translation>Невідомий коментар</translation>
     </message>
 </context>
 <context>
@@ -2068,8 +2084,8 @@
         <translation>Додаток &apos;%1&apos; вимагає для роботи Qt v%2, але знайдено Qt v%3.</translation>
     </message>
     <message>
-        <source>Executable &apos;%1&apos; requires Windows XP or later.</source>
-        <translation>Додаток &apos;%1&apos; вимагає для роботи Windows XP або пізніші версії ОС.</translation>
+        <source>Executable &apos;%1&apos; requires Windows 2000 or later.</source>
+        <translation>Додаток &apos;%1&apos; вимагає для роботи Windows 2000 або пізніші версії ОС.</translation>
     </message>
 </context>
 <context>
