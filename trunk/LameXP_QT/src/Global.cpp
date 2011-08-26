@@ -327,7 +327,7 @@ LONG WINAPI lamexp_exception_handler(__in struct _EXCEPTION_POINTERS *ExceptionI
 		if(mainThread) TerminateThread(mainThread, ULONG_MAX);
 	}
 	
-	FatalAppExit(0, L"Unhandeled exception error, application will exit!");
+	FatalAppExit(0, L"Unhandeled exception handler invoked, application will exit!");
 	TerminateProcess(GetCurrentProcess(), -1);
 	return LONG_MAX;
 }
@@ -492,8 +492,8 @@ void lamexp_init_console(int argc, char* argv[])
 			const int flags = _O_WRONLY | _O_U8TEXT;
 			int hCrtStdOut = _open_osfhandle((intptr_t) GetStdHandle(STD_OUTPUT_HANDLE), flags);
 			int hCrtStdErr = _open_osfhandle((intptr_t) GetStdHandle(STD_ERROR_HANDLE), flags);
-			FILE *hfStdOut = _fdopen(hCrtStdOut, "w");
-			FILE *hfStderr = _fdopen(hCrtStdErr, "w");
+			FILE *hfStdOut = (hCrtStdOut >= 0) ? _fdopen(hCrtStdOut, "w") : NULL;
+			FILE *hfStderr = (hCrtStdErr >= 0) ? _fdopen(hCrtStdErr, "w") : NULL;
 			if(hfStdOut) *stdout = *hfStdOut;
 			if(hfStderr) *stderr = *hfStderr;
 		}
@@ -506,8 +506,9 @@ void lamexp_init_console(int argc, char* argv[])
 			EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
 			RemoveMenu(hMenu, SC_CLOSE, MF_BYCOMMAND);
 
-			SetWindowLong(hwndConsole, GWL_STYLE, GetWindowLong(hwndConsole, GWL_STYLE) & (~WS_MAXIMIZEBOX));
-			SetWindowLong(hwndConsole, GWL_STYLE, GetWindowLong(hwndConsole, GWL_STYLE) & (~WS_MINIMIZEBOX));
+			SetWindowPos(hwndConsole, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_FRAMECHANGED);
+			SetWindowLong(hwndConsole, GWL_STYLE, GetWindowLong(hwndConsole, GWL_STYLE) & (~WS_MAXIMIZEBOX) & (~WS_MINIMIZEBOX));
+			SetWindowPos(hwndConsole, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_FRAMECHANGED);
 		}
 	}
 }
@@ -761,6 +762,10 @@ bool lamexp_init_qt(int argc, char* argv[])
 	//Check the Windows version
 	switch(QSysInfo::windowsVersion() & QSysInfo::WV_NT_based)
 	{
+	case 0:
+	case QSysInfo::WV_NT:
+		qFatal("%s", QApplication::tr("Executable '%1' requires Windows 2000 or later.").arg(QString::fromLatin1(executableName)).toLatin1().constData());
+		break;
 	case QSysInfo::WV_2000:
 		qDebug("Running on Windows 2000 (not officially supported!).\n");
 		lamexp_check_compatibility_mode("GetNativeSystemInfo", executableName);
@@ -782,7 +787,7 @@ bool lamexp_init_qt(int argc, char* argv[])
 		lamexp_check_compatibility_mode(NULL, executableName);
 		break;
 	default:
-		qFatal("%s", QApplication::tr("Executable '%1' requires Windows 2000 or later.").arg(QString::fromLatin1(executableName)).toLatin1().constData());
+		qWarning("Running on an unknown/unsupported OS (%d).\n", static_cast<int>(QSysInfo::windowsVersion() & QSysInfo::WV_NT_based));
 		break;
 	}
 
@@ -802,7 +807,7 @@ bool lamexp_init_qt(int argc, char* argv[])
 	application->setApplicationName("LameXP - Audio Encoder Front-End");
 	application->setApplicationVersion(QString().sprintf("%d.%02d.%04d", lamexp_version_major(), lamexp_version_minor(), lamexp_version_build())); 
 	application->setOrganizationName("LoRd_MuldeR");
-	application->setOrganizationDomain("mulder.dummwiedeutsch.de");
+	application->setOrganizationDomain("mulder.at.gg");
 	application->setWindowIcon((date.month() == 12 && date.day() >= 24 && date.day() <= 26) ? QIcon(":/MainIcon2.png") : QIcon(":/MainIcon.png"));
 	
 	//Load plugins from application directory
@@ -981,7 +986,9 @@ void lamexp_ipc_read(unsigned int *command, char* message, size_t buffSize)
 bool lamexp_portable_mode(void)
 {
 	QString baseName = QFileInfo(QApplication::applicationFilePath()).completeBaseName();
-	return baseName.contains("lamexp", Qt::CaseInsensitive) && baseName.contains("portable", Qt::CaseInsensitive);
+	int idx1 = baseName.indexOf("lamexp", 0, Qt::CaseInsensitive);
+	int idx2 = baseName.lastIndexOf("portable", -1, Qt::CaseInsensitive);
+	return (idx1 >= 0) && (idx2 >= 0) && (idx1 < idx2);
 }
 
 /*

@@ -126,14 +126,16 @@ public:
 	LAMEXP_MAKE_OPTION_S(customTempPath);
 	LAMEXP_MAKE_OPTION_B(customTempPathEnabled);
 	LAMEXP_MAKE_OPTION_B(slowStartup);
+	LAMEXP_MAKE_OPTION_S(mostRecentInputPath);
 
 	//Misc
 	void validate(void);
-
+	
 private:
 	QSettings *m_settings;
 	QString *m_defaultLanguage;
 	QString defaultLanguage(void);
+	QString initDirectory(const QString &path);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

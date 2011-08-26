@@ -76,6 +76,7 @@ LAMEXP_MAKE_ID(outputDir, "OutputDirectory/SelectedPath");
 LAMEXP_MAKE_ID(outputToSourceDir, "OutputDirectory/OutputToSourceFolder");
 LAMEXP_MAKE_ID(prependRelativeSourcePath, "OutputDirectory/PrependRelativeSourcePath");
 LAMEXP_MAKE_ID(favoriteOutputFolders, "OutputDirectory/Favorites");
+LAMEXP_MAKE_ID(mostRecentInputPath, "InputDirectory/MostRecentPath");
 LAMEXP_MAKE_ID(writeMetaTags, "Flags/WriteMetaTags");
 LAMEXP_MAKE_ID(createPlaylist, "Flags/AutoCreatePlaylist");
 LAMEXP_MAKE_ID(autoUpdateLastCheck, "AutoUpdate/LastCheck");
@@ -130,21 +131,37 @@ SettingsModel::SettingsModel(void)
 :
 	m_defaultLanguage(NULL)
 {
-	QString configPath;
+	QString configPath = "LameXP.ini";
 	
 	if(!lamexp_portable_mode())
 	{
-		QString dataPath = QDir(QDesktopServices::storageLocation(QDesktopServices::DataLocation)).canonicalPath();
-		if(dataPath.isEmpty()) dataPath = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
-		QDir(dataPath).mkpath(".");
-		configPath = QString("%1/config.ini").arg(dataPath);
+		QString dataPath = initDirectory(QDesktopServices::storageLocation(QDesktopServices::DataLocation));
+		if(!dataPath.isEmpty())
+		{
+			configPath = QString("%1/config.ini").arg(QDir(dataPath).canonicalPath());
+		}
+		else
+		{
+			qWarning("SettingsModel: DataLocation could not be initialized!");
+			dataPath = initDirectory(QDesktopServices::storageLocation(QDesktopServices::HomeLocation));
+			if(!dataPath.isEmpty())
+			{
+				configPath = QString("%1/LameXP.ini").arg(QDir(dataPath).canonicalPath());
+			}
+		}
 	}
 	else
 	{
 		qDebug("LameXP is running in \"portable\" mode -> config in application dir!\n");
 		QString appPath = QFileInfo(QApplication::applicationFilePath()).canonicalFilePath();
-		if(appPath.isEmpty()) appPath = QApplication::applicationFilePath();
-		configPath = QString("%1/%2.ini").arg(QFileInfo(appPath).absolutePath(), QFileInfo(appPath).completeBaseName());
+		if(appPath.isEmpty())
+		{
+			appPath = QFileInfo(QApplication::applicationFilePath()).absoluteFilePath();
+		}
+		if(QFileInfo(appPath).exists() && QFileInfo(appPath).isFile())
+		{
+			configPath = QString("%1/%2.ini").arg(QFileInfo(appPath).absolutePath(), QFileInfo(appPath).completeBaseName());
+		}
 	}
 
 	m_settings = new QSettings(configPath, QSettings::IniFormat);
@@ -213,7 +230,14 @@ void SettingsModel::validate(void)
 	
 	if(this->outputDir().isEmpty() || !QFileInfo(this->outputDir()).isDir())
 	{
-		this->outputDir(QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
+		QString musicLocation = QDesktopServices::storageLocation(QDesktopServices::MusicLocation);
+		this->outputDir(musicLocation.isEmpty() ? QDesktopServices::storageLocation(QDesktopServices::HomeLocation) : musicLocation);
+	}
+
+	if(this->mostRecentInputPath().isEmpty() || !QFileInfo(this->mostRecentInputPath()).isDir())
+	{
+		QString musicLocation = QDesktopServices::storageLocation(QDesktopServices::MusicLocation);
+		this->outputDir(musicLocation.isEmpty() ? QDesktopServices::storageLocation(QDesktopServices::HomeLocation) : musicLocation);
 	}
 
 	if(!lamexp_query_translations().contains(this->currentLanguage(), Qt::CaseInsensitive))
@@ -259,6 +283,30 @@ QString SettingsModel::defaultLanguage(void)
 	return LAMEXP_DEFAULT_LANGID;
 }
 
+QString SettingsModel::initDirectory(const QString &path)
+{
+	if(path.isEmpty())
+	{
+		return QString();
+	}
+
+	if(!QDir(path).exists())
+	{
+		for(int i = 0; i < 32; i++)
+		{
+			if(QDir(path).mkpath(".")) break;
+			Sleep(1);
+		}
+	}
+
+	if(!QDir(path).exists())
+	{
+		return QString();
+	}
+	
+	return QDir(path).canonicalPath();
+}
+
 ////////////////////////////////////////////////////////////
 // Getter and Setter
 ////////////////////////////////////////////////////////////
@@ -268,7 +316,7 @@ LAMEXP_MAKE_OPTION_I(interfaceStyle, 0)
 LAMEXP_MAKE_OPTION_I(compressionEncoder, 0)
 LAMEXP_MAKE_OPTION_I(compressionRCMode, 0)
 LAMEXP_MAKE_OPTION_I(compressionBitrate, 7)
-LAMEXP_MAKE_OPTION_S(outputDir, QString())
+LAMEXP_MAKE_OPTION_S(outputDir, QDesktopServices::storageLocation(QDesktopServices::MusicLocation))
 LAMEXP_MAKE_OPTION_B(outputToSourceDir, false)
 LAMEXP_MAKE_OPTION_B(prependRelativeSourcePath, false)
 LAMEXP_MAKE_OPTION_S(favoriteOutputFolders, QString());
@@ -312,3 +360,4 @@ LAMEXP_MAKE_OPTION_U(maximumInstances, 0);
 LAMEXP_MAKE_OPTION_S(customTempPath, QDesktopServices::storageLocation(QDesktopServices::TempLocation));
 LAMEXP_MAKE_OPTION_B(customTempPathEnabled, false);
 LAMEXP_MAKE_OPTION_B(slowStartup, false);
+LAMEXP_MAKE_OPTION_S(mostRecentInputPath, QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
