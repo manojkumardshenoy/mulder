@@ -29,7 +29,8 @@ uses
 function IsValidHandle(const AHandle: THandle): Boolean;
 procedure ReleaseHandle(var AHandle: THandle);
 function ExceptionHandler: Longint; stdcall;
-procedure AddLogMessage(const hLogFile: THandle; const hStdOut: THandle; const Text: WideString; const AddTimestamps: Boolean; const AddPrefixes: Boolean; const SilentMode: Boolean; const Codepage: UINT);
+procedure AddLogMessage(const hLogFile: THandle; const hStdHandle: THandle; const Text: WideString; const AddTimestamps: Boolean; const AddPrefixes: Boolean; const SilentMode: Boolean; const Codepage: UINT);
+function TimeToStr(const Time: Int64): String;
 
 implementation
 
@@ -57,7 +58,7 @@ begin
   Result := 0;
 end;
 
-procedure AddLogMessage(const hLogFile: THandle; const hStdOut: THandle; const Text: WideString; const AddTimestamps: Boolean; const AddPrefixes: Boolean; const SilentMode: Boolean; const Codepage: UINT);
+procedure AddLogMessage(const hLogFile: THandle; const hStdHandle: THandle; const Text: WideString; const AddTimestamps: Boolean; const AddPrefixes: Boolean; const SilentMode: Boolean; const Codepage: UINT);
 var
   TimeStamp: TSystemTime;
   TempBuffer: array [0..255] of AnsiChar;
@@ -80,9 +81,24 @@ begin
     WriteFileW(hLogFile, PWideChar(Text + #$0D#$0A), Codepage);
   end;
 
-  if IsValidHandle(hStdOut) and (not SilentMode) then
+  if IsValidHandle(hStdHandle) and (not SilentMode) then
   begin
-    WriteConsoleW(hStdOut, Text + #$0A#$0A, False);
+    WriteConsoleW(hStdHandle, Text + #$0A#$0A, False);
+  end;
+end;
+
+function TimeToStr(const Time: Int64): String;
+begin
+  if Time < 60 then
+  begin
+    Result := Format('%d seconds(s)', [Time]);
+  end
+  else if Time < 3600 then
+  begin
+    Result := Format('%d minute(s), %d second(s)', [Time div 60, Time mod 60]);
+  end
+  else begin
+    Result := Format('%d hour(s), %d minute(s)', [Time div 3600, (Time mod 3600) div 60]);
   end;
 end;
 
