@@ -155,7 +155,7 @@ label
 
 begin
   SetUnhandledExceptionFilter(Addr(ExceptionHandler));
-  WriteLn('');
+  WriteLn(ErrOutput, '');
 
 {$IF Defined(MEMLEAK)}
   InitialMemAlloc := GetHeapStatus.TotalAllocated;
@@ -472,7 +472,7 @@ begin
   LogFileName := ExpandFileNameW(FixPathNameW(LogFileName));
   ForceDirectoriesW(ExtractFileDirectoryW(LogFileName));
 
-  AddLogMessage(0, hStdOutput, 'Log file: ' + LogFileName, AddTimestamps, AddPrefixes, SilentMode, OutputCodepage);
+  AddLogMessage(0, hStdError, 'Log file: ' + LogFileName, AddTimestamps, AddPrefixes, SilentMode, OutputCodepage);
 
   //---------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -540,7 +540,7 @@ begin
       goto TerminateOnError;
     end;
 
-    AddLogMessage(hLogFile, hStdOutput, 'Commandline: ' + Commandline, AddTimestamps, AddPrefixes, SilentMode, OutputCodepage);
+    AddLogMessage(hLogFile, hStdError, 'Commandline: ' + Commandline, AddTimestamps, AddPrefixes, SilentMode, OutputCodepage);
   end;
 
   //---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -756,19 +756,19 @@ begin
     end;
   end;
 
-  WriteLn('');
+  WriteLn(ErrOutput, '');
 
   //---------------------------------------------------------------------------------------------------------------------------------------------------------
 
   if GetExitCodeProcess(ProcessInfo.hProcess, ProcExitCode) then
   begin
-    AddLogMessage(hLogFile, hStdOutput, Format('Process terminated with code: %u', [ProcExitCode]), AddTimestamps, AddPrefixes, SilentMode, OutputCodepage);
+    AddLogMessage(hLogFile, hStdError, Format('Process terminated with code: %u', [ProcExitCode]), AddTimestamps, AddPrefixes, SilentMode, OutputCodepage);
     ExitCode := ProcExitCode;
   end;
 
   if (TimeStart <> 0) and (TimeEnd <> 0) and (TimeFreq <> 0) then
   begin
-    AddLogMessage(hLogFile, hStdOutput, Format('Execution took %d seconds.', [(TimeEnd - TimeStart) div TimeFreq]), AddTimestamps, AddPrefixes, SilentMode, OutputCodepage);
+    AddLogMessage(hLogFile, hStdError, Format('Execution took %s.', [TimeToStr((TimeEnd - TimeStart) div TimeFreq)]), AddTimestamps, AddPrefixes, SilentMode, OutputCodepage);
   end;
 
   if (not SilentMode) then
@@ -782,7 +782,7 @@ begin
       begin
         i := 0;
       end;
-      WriteLn(Format('Captured %u/%u lines from stdout/stderr, skipped %u/%u lines (%d%%).'#10, [StdRedirThread.GetProcessedLines, ErrRedirThread.GetProcessedLines, StdRedirThread.GetSkippedLines, ErrRedirThread.GetSkippedLines, i]));
+      WriteLn(ErrOutput, Format('Captured %u/%u lines from stdout/stderr, skipped %u/%u lines (%d%%).'#10, [StdRedirThread.GetProcessedLines, ErrRedirThread.GetProcessedLines, StdRedirThread.GetSkippedLines, ErrRedirThread.GetSkippedLines, i]));
     end
     else if Assigned(StdRedirThread) then
     begin
@@ -793,7 +793,7 @@ begin
       begin
         i := 0;
       end;
-      WriteLn(Format('Captured %u lines from stdout, skipped %u lines (%d%%).'#10, [StdRedirThread.GetProcessedLines, StdRedirThread.GetSkippedLines, i]));
+      WriteLn(ErrOutput, Format('Captured %u lines from stdout, skipped %u lines (%d%%).'#10, [StdRedirThread.GetProcessedLines, StdRedirThread.GetSkippedLines, i]));
     end
     else if Assigned(ErrRedirThread) then
     begin
@@ -804,7 +804,7 @@ begin
       begin
         i := 0;
       end;
-      WriteLn(Format('Captured %u lines from stderr, skipped %u lines (%d%%).'#10, [ErrRedirThread.GetProcessedLines, ErrRedirThread.GetSkippedLines, i]));
+      WriteLn(ErrOutput, Format('Captured %u lines from stderr, skipped %u lines (%d%%).'#10, [ErrRedirThread.GetProcessedLines, ErrRedirThread.GetSkippedLines, i]));
     end;
   end;
 
