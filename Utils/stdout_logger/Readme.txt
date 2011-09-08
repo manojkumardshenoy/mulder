@@ -1,6 +1,6 @@
 
-Yet another stdout/stderr logging utility [2010-08-05]
-Copyright (C) 2010 LoRd_MuldeR <MuldeR2@GMX.de>
+Yet another stdout/stderr logging utility [2011-09-08]
+Copyright (C) 2010-2011 LoRd_MuldeR <MuldeR2@GMX.de>
 Released under the terms of the GNU General Public License (see License.txt)
 
 Usage:

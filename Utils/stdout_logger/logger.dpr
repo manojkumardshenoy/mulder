@@ -143,6 +143,9 @@ var
   WideBuffer: array [0..255] of WideChar;
   Len: Cardinal;
   Temp: Cardinal;
+  TimeStart: Int64;
+  TimeEnd: Int64;
+  TimeFreq: Int64;
   i: Integer;
 
 label
@@ -161,7 +164,7 @@ begin
   if(ParamCountW < 2) then
   begin
     WriteLn('Yet another stdout/stderr logging utility [' + GetImageLinkTimeStampAsString(False) + ']');
-    WriteLn('Copyright (C) 2010 LoRd_MuldeR <MuldeR2@GMX.de>');
+    WriteLn('Copyright (C) 2010-2011 LoRd_MuldeR <MuldeR2@GMX.de>');
     WriteLn('Released under the terms of the GNU General Public License (see License.txt)');
     WriteLn('');
     WriteLn('Usage:');
@@ -245,6 +248,9 @@ begin
   PriorityClass := 0;
   InputCodepage := CP_UTF8;
   OutputCodepage := CP_UTF8;
+  TimeStart := 0;
+  TimeEnd := 0;
+  TimeFreq := 0;
 
   for i := 0 to MAX_FILTER_COUNT-1 do
   begin
@@ -252,6 +258,7 @@ begin
   end;
 
   GetLocaleFormatSettings($0409, FormatSettings);
+  QueryPerformanceFrequency(TimeFreq);
 
   //---------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -658,6 +665,8 @@ begin
       ProcAssignProcessToJobObject(hJobObject, ProcessInfo.hProcess);
       ResumeThread(ProcessInfo.hThread);
     end;
+
+    QueryPerformanceCounter(TimeStart);
   end;
 
   //---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -726,6 +735,7 @@ begin
   if IsValidHandle(ProcessInfo.hProcess) then
   begin
     WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
+    QueryPerformanceCounter(TimeEnd);
   end;
 
   if Assigned(StdRedirThread) then
@@ -754,6 +764,11 @@ begin
   begin
     AddLogMessage(hLogFile, hStdOutput, Format('Process terminated with code: %u', [ProcExitCode]), AddTimestamps, AddPrefixes, SilentMode, OutputCodepage);
     ExitCode := ProcExitCode;
+  end;
+
+  if (TimeStart <> 0) and (TimeEnd <> 0) and (TimeFreq <> 0) then
+  begin
+    AddLogMessage(hLogFile, hStdOutput, Format('Execution took %d seconds.', [(TimeEnd - TimeStart) div TimeFreq]), AddTimestamps, AddPrefixes, SilentMode, OutputCodepage);
   end;
 
   if (not SilentMode) then
