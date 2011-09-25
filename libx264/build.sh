@@ -4,8 +4,8 @@
 
 GIT_URL="git://git.videolan.org/x264.git"
 DEFAULT_PATCHES="x264_amdfam10_fix x264_print_params x264_dll_version"
-COMPILERS_STABLE="446 453 462"
-COMPILERS_OTHERS="451 345"
+COMPILERS_STABLE="446 453 461"
+COMPILERS_OTHERS="462 451 440 345"
 CPU_TYPES="i686 core2 amdfam10 pentium3 noasm"
 ROOT_DRIVE="e"
 
