@@ -2,9 +2,9 @@
 
 REM ----------------------------------------------------------------
 
-set "CoreVersion=112"
+set "CoreVersion=118"
 set "AvidemuxFolder=E:\Avidemux 2.5"
-set "StdLoggerFolder=G:\DeLpHi\stdout_logger"
+set "StdLoggerFolder=F:\DeLpHi\stdout_logger"
 set "OutputFoldr=%CD%\test"
 
 REM ----------------------------------------------------------------
