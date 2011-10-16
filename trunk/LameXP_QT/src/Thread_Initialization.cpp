@@ -67,7 +67,7 @@ g_lamexp_tools[] =
 	{"29da0d3e810bc3e8d2cddb3db452325eefca0d0c1fff1379fa17806ad447752be1b88e2f", CPU_TYPE_X64_GEN, "aften.x64.exe",  8},
 	{"1cca303fabd889a18fc01c32a7fd861194cfcac60ba63740ea2d7c55d049dbf8f59259fa", CPU_TYPE_ALL_ALL, "alac.exe", 20},
 	{"6d22d4bbd7ce2162e38f70ac9187bc84eb28233b36ee6c0492d0a6195318782d7f05c444", CPU_TYPE_ALL_ALL, "avs2wav.exe", 13},
-	{"c6f23fb7ba18a7972802e013b66ec6ce52088bf4fe783774eb1d33dd3401fa8aad76cc8b", CPU_TYPE_ALL_ALL, "elevator.exe", UINT_MAX},
+	{"e53a787d4a0319453f4fe48c3145f190fcce7ac4802e521db908771437f6250746116e6c", CPU_TYPE_ALL_ALL, "elevator.exe", UINT_MAX},
 	{"9ae98a3fc779f69ee876a3b477fbc35a709ba5066823b2eb62eeb015057c38807e4be51f", CPU_TYPE_ALL_ALL, "faad.exe", 27},
 	{"446054f9a7f705f1aadc9053ca7b8a86a775499ef159978954ebdea92de056c34f8841f7", CPU_TYPE_ALL_ALL, "flac.exe", 121},
 	{"dd68d074c5e13a607580f3a24595c0f3882e37211d2ca628f46e6df20fabcc832dad488a", CPU_TYPE_ALL_ALL, "gpgv.exe", 1411},
@@ -75,10 +75,10 @@ g_lamexp_tools[] =
 	{"df995d8a9e4e5fab551d0e3460b9209320714dead70f662929fcc00a4bd72d8a6d23844a", CPU_TYPE_X86_GEN, "lame.i386.exe", 3990},
 	{"873faeddc44243b4712cd42dd0bfc3174a07113d245dd834657519ffe5dbd4b1e395ce32", CPU_TYPE_ALL_SSE, "lame.sse2.exe", 3990},
 	{"67933924d68ce319795989648f29e7bd1abaac4ec09c26cbb0ff0d15a67a9df17e257933", CPU_TYPE_ALL_ALL, "mac.exe", 406},
-	{"743db1020556b1815c4d6e6093a2538ae813d7fed1e11d254b8809ce54795b77fa696bca", CPU_TYPE_X86_ALL, "mediainfo.i386.exe", 748},
-	{"86ed4b4bd445b9d0c6ee094987d87fe5161102b59c8c74d11f294206c13f1a2ce899e100", CPU_TYPE_X64_GEN, "mediainfo.x64.exe",  748},
+	{"a521603c070cbd91a54df54bbaf0d74336a61e9cf527b98eb2ee62c2ab424e6b834e3292", CPU_TYPE_X86_ALL, "mediainfo.i386.exe", 750},
+	{"6ca4f3c6e15df2e2091257d6f2647372e419e375ea914094c5f631d7d54c07375e685335", CPU_TYPE_X64_GEN, "mediainfo.x64.exe",  750},
 	{"a93ec86187025e66fb78026af35555bd3b4e30fe1a40e8d66f600cfd918f07f431f0b2f2", CPU_TYPE_ALL_ALL, "mpcdec.exe", 435},
-	{"5a89768010efb1ddfd88ccc378a89433ceaecb403a7b1f83f8716f6848d9a05b3d3c6d93", CPU_TYPE_ALL_ALL, "mpg123.exe", 1133},
+	{"7fa1beb4161d603563089cadd601f68fb9f436f05d9477b6a604501b072f5a973dd45fbb", CPU_TYPE_ALL_ALL, "mpg123.exe", 1134},
 	{"0c781805dda931c529bd16069215f616a7a4c5e5c2dfb6b75fe85d52b20511830693e528", CPU_TYPE_ALL_ALL, "oggdec.exe", UINT_MAX},
 	{"0c019e13450dc664987e21f4e5489d182be7d6d0d81efbbaaf1c78693dfe3e38e0355b93", CPU_TYPE_X86_GEN, "oggenc2.i386.exe", 287603},
 	{"693dd6f779df70a047c15c2c79350855db38d5b0cd7e529b6877b7c821cfe6addfdd50a4", CPU_TYPE_X86_SSE, "oggenc2.sse2.exe", 287603},
@@ -89,8 +89,8 @@ g_lamexp_tools[] =
 	{"9b50cf64747d4afbad5d8d9b5a0a2d41c5a58256f47ebdbd8cc920e7e576085dfe1b14ff", CPU_TYPE_ALL_ALL, "tta.exe", 21},
 	{"875871c942846f6ad163f9e4949bba2f4331bec678ca5aefe58c961b6825bd0d419a078b", CPU_TYPE_ALL_ALL, "valdec.exe", 31},
 	{"e657331e281840878a37eb4fb357cb79f33d528ddbd5f9b2e2f7d2194bed4720e1af8eaf", CPU_TYPE_ALL_ALL, "wget.exe", 1114},
-	{"437d3817072d0b9c0bf5a1cf2daf0d7bc22106571f53cf6b6fe10942cdfdc50829847d8f", CPU_TYPE_ALL_ALL, "wma2wav.exe", 20110816},
-	{"a258711f7a8a0c75528f3ed4d2c17513ff8598b7e0a9d7db13ca941a3140094ffc2ffb62", CPU_TYPE_ALL_ALL, "wupdate.exe", UINT_MAX},
+	{"8923cf65e181f8a99f28e9d1ea0d89ace02142241a7f76dae3d540ffd0790495af815644", CPU_TYPE_ALL_ALL, "wma2wav.exe", 20111001},
+	{"aa7668d58559f0295cf088cbb6c184470d9b1b3da6028440c58b6edbca0940bf62501f5f", CPU_TYPE_ALL_ALL, "wupdate.exe", 20111014},
 	{"6b053b37d47a9c8659ebf2de43ad19dcba17b9cd868b26974b9cc8c27b6167e8bf07a5a2", CPU_TYPE_ALL_ALL, "wvunpack.exe", 4601},
 	{NULL, NULL, NULL, NULL}
 };
@@ -299,7 +299,7 @@ void InitializationThread::initTranslations(void)
 		
 		if(lamexp_translation_register(langId, qmFile, langName, systemId))
 		{
-			qDebug64("Registering translation: %1 = %2 (%3)", qmFile, langName, QString::number(systemId));
+			qDebug("Registering translation: %s = %s (%u)", qmFile.toUtf8().constData(), langName.toUtf8().constData(), systemId);
 		}
 		else
 		{

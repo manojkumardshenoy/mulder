@@ -77,13 +77,14 @@ void FileAnalyzer::run()
 	m_filesCueSheet = 0;
 
 	m_inputFiles.sort();
+	m_recentlyAdded.clear();
 	m_abortFlag = false;
 
 	while(!m_inputFiles.isEmpty())
 	{
 		int fileType = fileTypeNormal;
 		QString currentFile = QDir::fromNativeSeparators(m_inputFiles.takeFirst());
-		qDebug64("Analyzing: %1", currentFile);
+		qDebug("Analyzing: %s", currentFile.toUtf8().constData());
 		emit fileSelected(QFileInfo(currentFile).fileName());
 		AudioFileModel file = analyzeFile(currentFile, &fileType);
 		
@@ -94,7 +95,11 @@ void FileAnalyzer::run()
 			qWarning("Operation cancelled by user!");
 			return;
 		}
-
+		if(fileType == fileTypeSkip)
+		{
+			qWarning("File was recently added, skipping!");
+			continue;
+		}
 		if(fileType == fileTypeDenied)
 		{
 			m_filesDenied++;
@@ -129,19 +134,20 @@ void FileAnalyzer::run()
 				}
 				else
 				{
-					qDebug64("Rejected Avisynth file: %1", file.filePath());
+					qDebug("Rejected Avisynth file: %s", file.filePath().toUtf8().constData());
 					m_filesRejected++;
 				}
 			}
 			else
 			{
-				qDebug64("Rejected file of unknown type: %1", file.filePath());
+				qDebug("Rejected file of unknown type: %s", file.filePath().toUtf8().constData());
 				m_filesRejected++;
 			}
 			continue;
 		}
 
 		m_filesAccepted++;
+		m_recentlyAdded.append(file.filePath());
 		emit fileAnalyzed(file);
 	}
 
@@ -160,6 +166,12 @@ const AudioFileModel FileAnalyzer::analyzeFile(const QString &filePath, int *typ
 	AudioFileModel audioFile(filePath);
 	m_currentSection = sectionOther;
 	m_currentCover = coverNone;
+
+	if(m_recentlyAdded.contains(filePath, Qt::CaseInsensitive))
+	{
+		*type = fileTypeSkip;
+		return audioFile;
+	}
 
 	QFile readTest(filePath);
 	if(!readTest.open(QIODevice::ReadOnly))
@@ -501,7 +513,7 @@ bool FileAnalyzer::checkFile_CDDA(QFile &file)
 
 void FileAnalyzer::retrieveCover(AudioFileModel &audioFile, const QString &filePath)
 {
-	qDebug64("Retrieving cover from: %1", filePath);
+	qDebug("Retrieving cover from: %s", filePath.toUtf8().constData());
 	QString extension;
 
 	switch(m_currentCover)

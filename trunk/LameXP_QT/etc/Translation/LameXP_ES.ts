@@ -116,92 +116,92 @@
         <translation>LameXP tiene copyright de LoRd_MuldeR. El copyright del software de terceros usado en LameXP pertenece a sus autores individuales.</translation>
     </message>
     <message>
-        <source>LameXP &amp;minus; Audio Encoder Front-end</source>
-        <translation>LameXP &amp;minus; Interfaz de codificación de audio</translation>
+        <source>LameXP - Audio Encoder Front-end</source>
+        <translation>LameXP - Interfaz de codificación de audio</translation>
     </message>
     <message>
-        <source>LAME &amp;minus; OpenSource mp3 Encoder</source>
-        <translation>LameXP &amp;minus; Codificador mp3 de código abierto</translation>
+        <source>LAME - OpenSource mp3 Encoder</source>
+        <translation>LameXP - Codificador mp3 de código abierto</translation>
     </message>
     <message>
-        <source>OggEnc &amp;minus; Ogg Vorbis Encoder</source>
-        <translation>OggEnc &amp;minus; Codificador Ogg Vorbis</translation>
+        <source>OggEnc - Ogg Vorbis Encoder</source>
+        <translation>OggEnc - Codificador Ogg Vorbis</translation>
     </message>
     <message>
-        <source>FLAC &amp;minus; Free Lossless Audio Codec</source>
-        <translation>FLAC &amp;minus; Códec de audio libre sin pérdidas</translation>
+        <source>FLAC - Free Lossless Audio Codec</source>
+        <translation>FLAC - Códec de audio libre sin pérdidas</translation>
     </message>
     <message>
-        <source>mpg123 &amp;minus; Fast Console MPEG Audio Player/Decoder</source>
-        <translation>mpg123 &amp;minus; Consola de Reproducción/Decodificación de audio MPEG</translation>
+        <source>mpg123 - Fast Console MPEG Audio Player/Decoder</source>
+        <translation>mpg123 - Consola de Reproducción/Decodificación de audio MPEG</translation>
     </message>
     <message>
-        <source>FAAD &amp;minus; OpenSource MPEG-4 and MPEG-2 AAC Decoder</source>
-        <translation>FAAD &amp;minus; Decodificador MPEG-4 y MPEG-2 AAC de código abierto</translation>
+        <source>FAAD - OpenSource MPEG-4 and MPEG-2 AAC Decoder</source>
+        <translation>FAAD - Decodificador MPEG-4 y MPEG-2 AAC de código abierto</translation>
     </message>
     <message>
-        <source>AC3Filter Tools &amp;minus; AC3/DTS Decoder</source>
-        <translation>AC3Filter Tools &amp;minus; Decodificador AC3/DTS</translation>
+        <source>AC3Filter Tools - AC3/DTS Decoder</source>
+        <translation>AC3Filter Tools - Decodificador AC3/DTS</translation>
     </message>
     <message>
-        <source>WavPack &amp;minus; Hybrid Lossless Compression</source>
-        <translation>WavPack &amp;minus; Compresión híbrida sin pérdida</translation>
+        <source>WavPack - Hybrid Lossless Compression</source>
+        <translation>WavPack - Compresión híbrida sin pérdida</translation>
     </message>
     <message>
-        <source>Monkey&apos;s Audio &amp;minus; Lossless Audio Compressor</source>
-        <translation>Monkey&apos;s Audio &amp;minus; Compresor de audio sin pérdida</translation>
+        <source>Monkey&apos;s Audio - Lossless Audio Compressor</source>
+        <translation>Monkey&apos;s Audio - Compresor de audio sin pérdida</translation>
     </message>
     <message>
-        <source>The True Audio &amp;minus; Lossless Audio Codec</source>
-        <translation>The True Audio &amp;minus; Códec de audio sin pérdida</translation>
+        <source>The True Audio - Lossless Audio Codec</source>
+        <translation>The True Audio - Códec de audio sin pérdida</translation>
     </message>
     <message>
-        <source>MediaInfo &amp;minus; Media File Analysis Tool</source>
-        <translation>MediaInfo &amp;minus; Herramienta de análisis de archivos multimedia</translation>
+        <source>MediaInfo - Media File Analysis Tool</source>
+        <translation>MediaInfo - Herramienta de análisis de archivos multimedia</translation>
     </message>
     <message>
-        <source>SoX &amp;minus; Sound eXchange</source>
-        <translation>SoX &amp;minus; Sound eXchange</translation>
+        <source>SoX - Sound eXchange</source>
+        <translation>SoX - Sound eXchange</translation>
     </message>
     <message>
-        <source>GnuPG &amp;minus; The GNU Privacy Guard</source>
-        <translation>GnuPG &amp;minus; Guardián de privacidad GNU</translation>
+        <source>GnuPG - The GNU Privacy Guard</source>
+        <translation>GnuPG - Guardián de privacidad GNU</translation>
     </message>
     <message>
-        <source>Silk Icons &amp;minus; Over 700  icons in PNG format</source>
-        <translation>Silk Icons &amp;minus; Más de 700 iconos en formato PNG</translation>
+        <source>Silk Icons - Over 700  icons in PNG format</source>
+        <translation>Silk Icons - Más de 700 iconos en formato PNG</translation>
     </message>
     <message>
         <source>Nero AAC Reference MPEG-4 Encoder</source>
         <translation>Codificador MPEG-4 Nero AAC</translation>
     </message>
     <message>
-        <source>Musepack &amp;minus; Living Audio Compression</source>
-        <translation>Musepack &amp;minus; Compresór de audio con pérdida</translation>
+        <source>Musepack - Living Audio Compression</source>
+        <translation>Musepack - Compresór de audio con pérdida</translation>
     </message>
     <message>
-        <source>Shorten &amp;minus; Lossless Audio Compressor</source>
-        <translation>Shorten &amp;minus; Compresór de audio con pérdida</translation>
+        <source>Shorten - Lossless Audio Compressor</source>
+        <translation>Shorten - Compresór de audio con pérdida</translation>
     </message>
     <message>
-        <source>Speex &amp;minus; Free Codec For Free Speech</source>
-        <translation>Speex &amp;minus; Códec libre para libre expresión</translation>
+        <source>Speex - Free Codec For Free Speech</source>
+        <translation>Speex - Códec libre para libre expresión</translation>
     </message>
     <message>
         <source>Open Source patent-free audio format designed for speech.</source>
         <translation>Patente de formato de audio de código abierto diseñado para expresión.</translation>
     </message>
     <message>
-        <source>GNU Wget &amp;minus; Software for retrieving files using HTTP</source>
-        <translation>GNU Wget &amp;minus; Software para descarga de archivos mediante HTTP</translation>
+        <source>GNU Wget - Software for retrieving files using HTTP</source>
+        <translation>GNU Wget - Software para descarga de archivos mediante HTTP</translation>
     </message>
     <message>
         <source>Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.</source>
         <translation>Nota: Esta es una versión demo (preliminar) de LameXP que expirará el %1. %2 días restantes.</translation>
     </message>
     <message>
-        <source>Aften &amp;minus; A/52 audio encoder</source>
-        <translation>Codificador de audio Aften &amp;minus; A/52</translation>
+        <source>Aften - A/52 audio encoder</source>
+        <translation>Codificador de audio Aften - A/52</translation>
     </message>
     <message>
         <source>ALAC Decoder</source>
@@ -213,19 +213,19 @@
     </message>
     <message>
         <source>Copyright (c) 2011 LoRd_MuldeR &lt;mulder2@gmx.de&gt;. Some rights reserved.</source>
-        <translation type="unfinished"></translation>
+        <translation>Copyright (c) 2011 LoRd_MuldeR &lt;mulder2@gmx.de&gt;. Some rights reserved.</translation>
     </message>
     <message>
         <source>By Jory Stone &lt;jcsston@toughguy.net&gt; and LoRd_MuldeR &lt;mulder2@gmx.de&gt;.</source>
-        <translation type="unfinished"></translation>
+        <translation>By Jory Stone &lt;jcsston@toughguy.net&gt; and LoRd_MuldeR &lt;mulder2@gmx.de&gt;.</translation>
     </message>
     <message>
-        <source>wma2wav &amp;minus; Dump WMA files to Wave Audio</source>
-        <translation type="unfinished"></translation>
+        <source>wma2wav - Dump WMA files to Wave Audio</source>
+        <translation>wma2wav - Conversor de WMA a WAV</translation>
     </message>
     <message>
-        <source>avs2wav &amp;minus; Avisynth to Wave Audio converter</source>
-        <translation type="unfinished"></translation>
+        <source>avs2wav - Avisynth to Wave Audio converter</source>
+        <translation>avs2wav - Conversor de Avisynth a WAV</translation>
     </message>
 </context>
 <context>
@@ -371,7 +371,7 @@
     </message>
     <message>
         <source>Warning: The format of some of the input files could not be determined!</source>
-        <translation>¡Aviso: El formato de algunos archivos de entrada no puede ser determinado!</translation>
+        <translation>Aviso: ¡El formato de algunos archivos de entrada no puede ser determinado!</translation>
     </message>
     <message>
         <source>Continue Anyway</source>
@@ -411,6 +411,10 @@
     <message>
         <source>Missing Source File (Tracks will be skipped!)</source>
         <translation>El archivo de origen no existe (¡Se saltarán pistas!)</translation>
+    </message>
+    <message>
+        <source>Load a different Cue Sheet</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -804,10 +808,6 @@
     <message>
         <source>This usually means the file is damaged or the file format is not supported.</source>
         <translation>Esto suele significar que están corruptos o tienen un formato no soportado.</translation>
-    </message>
-    <message>
-        <source>DEMO VERSION</source>
-        <translation>VERSIÓN PRELIMINAR</translation>
     </message>
     <message>
         <source>You can drop in audio files here!</source>
@@ -1283,7 +1283,7 @@
     </message>
     <message>
         <source>Warning: Custom parameters won&apos;t be checked at all. Use them at your own risk !!!</source>
-        <translation>Aviso: Los parámetros personalizados no se comprobarán en absoluto. ¡¡¡ Úselos bajo su propio riesgo !!!</translation>
+        <translation>Aviso: ¡¡¡ Los parámetros personalizados no se comprobarán en absoluto. Úselos bajo su propio riesgo !!!</translation>
     </message>
     <message>
         <source> Multi-Threading </source>
@@ -1342,8 +1342,8 @@
         <translation>Es recomendable usar %1 para este proposito.</translation>
     </message>
     <message>
-        <source>Sorry, LameXP cannot extract audio tracks from an Audio&amp;minus;CD at present.</source>
-        <translation>Disculpe, LameXP no puede extraer las pistas del CD&amp;minus;Audio.</translation>
+        <source>Sorry, LameXP cannot extract audio tracks from an Audio-CD at present.</source>
+        <translation>Disculpe, LameXP no puede extraer las pistas del CD-Audio.</translation>
     </message>
     <message>
         <source>Frequently Asked Questions</source>
@@ -1527,126 +1527,146 @@
     </message>
     <message>
         <source>It seems that a bogus anti-virus software is slowing down the startup of LameXP.</source>
-        <translation type="unfinished"></translation>
+        <translation>Parece que un falso anti-virus está ralentizando el inicio de LameXP.</translation>
     </message>
     <message>
         <source>Please refer to the %1 document for details and solutions!</source>
-        <translation type="unfinished"></translation>
+        <translation>¡Por favor, consulte el documento%1 para ver detalles y soluciones!</translation>
     </message>
     <message>
         <source>Slow Startup</source>
-        <translation type="unfinished"></translation>
+        <translation>Inicio ralentizado</translation>
     </message>
     <message>
         <source>Disable Slow Startup Notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>Deshabilitar notificaciones de Inicio ralentizado</translation>
     </message>
     <message>
         <source>Slow Startup Notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>Notificaciones de Inicio ralentizado</translation>
     </message>
     <message>
         <source>Do you really want to disable the slow startup notifications?</source>
-        <translation type="unfinished"></translation>
+        <translation>¿Seguro que desea deshabilitar las notificaciones de Inicio ralentizado?</translation>
     </message>
     <message>
         <source>The slow startup notifications have been disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Notificaciones de Inicio ralentizado deshabilitadas.</translation>
     </message>
     <message>
         <source>The slow startup notifications have been re-enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Notificaciones de Inicio ralentizado habilitadas.</translation>
     </message>
     <message>
         <source> Rename Output Files </source>
-        <translation type="unfinished"></translation>
+        <translation>Renombrado de archivos de salida</translation>
     </message>
     <message>
         <source>Rename Output Files</source>
-        <translation type="unfinished"></translation>
+        <translation>Renombrar archivos de salida</translation>
     </message>
     <message>
         <source>Track number with leading zero</source>
-        <translation type="unfinished"></translation>
+        <translation>Número de pista con cero a la izquierda</translation>
     </message>
     <message>
         <source>Track title</source>
-        <translation type="unfinished"></translation>
+        <translation>Título de la pista</translation>
     </message>
     <message>
         <source>Artist name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre del artista</translation>
     </message>
     <message>
         <source>Album name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre del álbum</translation>
     </message>
     <message>
         <source>Year with (at least) four digits</source>
-        <translation type="unfinished"></translation>
+        <translation>Año con (al menos) cuatro dígitos</translation>
     </message>
     <message>
         <source>Comment</source>
-        <translation type="unfinished">Comentarios</translation>
+        <translation>Comentarios</translation>
     </message>
     <message>
         <source>Rename Macros</source>
-        <translation type="unfinished"></translation>
+        <translation>Macros de renombrado</translation>
     </message>
     <message>
         <source>You can eneter custom parameters here!</source>
-        <translation type="unfinished"></translation>
+        <translation>¡Aquí puede introducir parámetros personalizados!</translation>
     </message>
     <message>
-        <source>Entere the pattern to rename the output files here!</source>
-        <translation type="unfinished"></translation>
+        <source>Enter the pattern to rename the output files here!</source>
+        <translation>¡Introduzca aquí los patrones de renombrado para los archivos de salida!</translation>
     </message>
     <message>
         <source>&lt;a href=&quot;reset&quot;&gt;Reset&lt;/a&gt; &amp;nbsp; &lt;a href=&quot;#&quot;&gt;Show List of Macros&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;reset&quot;&gt;Reiniciar&lt;/a&gt; &amp;nbsp; &lt;a href=&quot;#&quot;&gt;Mostrar lista de macros&lt;/a&gt;</translation>
     </message>
     <message>
         <source>File name without extension</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de archivo sin extensión</translation>
     </message>
     <message>
         <source>Rename Pattern:</source>
-        <translation type="unfinished"></translation>
+        <translation>Patrón de renombrado:</translation>
     </message>
     <message>
         <source>Example File Name:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ejemplo de nombre de archivo:</translation>
     </message>
     <message>
         <source>Characters forbidden in file names:</source>
-        <translation type="unfinished"></translation>
+        <translation>Caracteres prohibidos en el nombre del archivo:</translation>
     </message>
     <message>
         <source>Enforce Stereo Downmix of Surround (Multi-Channel) Sources</source>
-        <translation type="unfinished"></translation>
+        <translation>Forzar mezcla estéreo para archivos de entrada Surround (Multi-canal)</translation>
     </message>
     <message>
         <source>Bookmark Current Output Folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Marcar la carpeta de salida actual</translation>
     </message>
     <message>
         <source>MPEG-4 AAC</source>
-        <translation type="unfinished"></translation>
+        <translation>MPEG-4 AAC</translation>
     </message>
     <message>
         <source>AAC Encoder-Options</source>
-        <translation type="unfinished"></translation>
+        <translation>Opciones AAC</translation>
     </message>
     <message>
         <source>MPEG-4 AAC:</source>
-        <translation type="unfinished"></translation>
+        <translation>MPEG-4 AAC:</translation>
     </message>
     <message>
         <source>Warning: Audio quality will be very poor. Please do &lt;u&gt;not&lt;/u&gt; complain about audio quality!</source>
-        <translation type="unfinished"></translation>
+        <translation>Aviso: ¡La calidad del audio será muy pobre. Por favor, &lt;u&gt;no&lt;/u&gt; se queje de la calidad del audio!</translation>
     </message>
     <message>
         <source>Warning: Processing speed will be very slow. Please do &lt;u&gt;not&lt;/u&gt; complain about processing speed!</source>
+        <translation>Aviso: ¡La velocidad de proceso será muy lenta. Por favor, &lt;u&gt;no&lt;/u&gt; se queje de la velocidad de proceso!</translation>
+    </message>
+    <message>
+        <source>Peak Level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RMS Level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Equalization Mode:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DEMO VERSION</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1939,23 +1959,23 @@
     </message>
     <message>
         <source>Unknown File Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de archivo desconocido</translation>
     </message>
     <message>
         <source>Unknown Title</source>
-        <translation type="unfinished">Título desconocido</translation>
+        <translation>Título desconocido</translation>
     </message>
     <message>
         <source>Unknown Artist</source>
-        <translation type="unfinished">Artista desconocido</translation>
+        <translation>Artista desconocido</translation>
     </message>
     <message>
         <source>Unknown Album</source>
-        <translation type="unfinished"></translation>
+        <translation>Álbum desconocido</translation>
     </message>
     <message>
         <source>Unknown Comment</source>
-        <translation type="unfinished"></translation>
+        <translation>Comentario desconocido</translation>
     </message>
 </context>
 <context>
@@ -2092,7 +2112,7 @@
     </message>
     <message>
         <source>Executable &apos;%1&apos; requires Windows 2000 or later.</source>
-        <translation type="unfinished"></translation>
+        <translation>El ejecutable &apos;%1&apos;requiere Windows 2000 o superior.</translation>
     </message>
 </context>
 <context>
