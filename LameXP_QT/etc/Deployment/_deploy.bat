@@ -81,6 +81,7 @@ REM ------------------------------------------
 REM :: DELETE OLD OUTPUT FILE ::
 REM ------------------------------------------
 del "%OUT_FILE%.exe"
+del "%OUT_FILE%.sfx"
 del "%OUT_FILE%.zip"
 REM ------------------------------------------
 if exist "%OUT_FILE%.exe" (
@@ -107,12 +108,18 @@ if "%LAMEXP_REDIST%"=="1" (
 	copy "%QTDIR%\plugins\imageformats\q???4.dll" "%TMP_PATH%\imageformats"
 )
 REM ------------------------------------------
+if "%LAMEXP_SKIP_BUILD%"=="YES" (
+	goto SkipPackingThisTime
+)
+REM ------------------------------------------
 for %%f in ("%TMP_PATH%\*.exe") do (
 	"%PATH_UPXBIN%\upx.exe" --best "%%f"
 )
 for %%f in ("%TMP_PATH%\*.dll") do (
 	"%PATH_UPXBIN%\upx.exe" --best "%%f"
 )
+REM ------------------------------------------
+:SkipPackingThisTime
 REM ------------------------------------------
 if exist "%~dp0\_postproc.bat" (
 	call "%~dp0\_postproc.bat" "%TMP_PATH%"
@@ -130,7 +137,8 @@ REM ------------------------------------------
 REM :: CREATE PACKAGES ::
 REM ------------------------------------------
 "%PATH_SEVENZ%\7z.exe" a -tzip -r "%OUT_FILE%.zip" "%TMP_PATH%\*"
-"%PATH_MKNSIS%\makensis.exe" "/DLAMEXP_SOURCE_PATH=%TMP_PATH%" "/DLAMEXP_OUTPUT_FILE=%OUT_FILE%.exe" "/DLAMEXP_UPX_PATH=%PATH_UPXBIN%" "/DLAMEXP_DATE=%ISO_DATE%" "/DLAMEXP_VERSION=%VER_LAMEXP_MAJOR%.%VER_LAMEXP_MINOR_HI%%VER_LAMEXP_MINOR_LO%" "/DLAMEXP_BUILD=%VER_LAMEXP_BUILD%" "/DLAMEXP_INSTTYPE=%VER_LAMEXP_TYPE%" "/DLAMEXP_PATCH=%VER_LAMEXP_PATCH%" "%~dp0\..\NSIS\setup.nsi"
+"%PATH_MKNSIS%\makensis.exe" "/DLAMEXP_UPX_PATH=%PATH_UPXBIN%" "/DLAMEXP_DATE=%ISO_DATE%" "/DLAMEXP_VERSION=%VER_LAMEXP_MAJOR%.%VER_LAMEXP_MINOR_HI%%VER_LAMEXP_MINOR_LO%" "/DLAMEXP_BUILD=%VER_LAMEXP_BUILD%" "/DLAMEXP_INSTTYPE=%VER_LAMEXP_TYPE%" "/DLAMEXP_PATCH=%VER_LAMEXP_PATCH%" "/DLAMEXP_OUTPUT_FILE=%OUT_FILE%.sfx" "/DLAMEXP_SOURCE_PATH=%TMP_PATH%" "%~dp0\..\NSIS\setup.nsi"
+"%PATH_MKNSIS%\makensis.exe" "/DLAMEXP_UPX_PATH=%PATH_UPXBIN%" "/DLAMEXP_DATE=%ISO_DATE%" "/DLAMEXP_VERSION=%VER_LAMEXP_MAJOR%.%VER_LAMEXP_MINOR_HI%%VER_LAMEXP_MINOR_LO%" "/DLAMEXP_BUILD=%VER_LAMEXP_BUILD%" "/DLAMEXP_INSTTYPE=%VER_LAMEXP_TYPE%" "/DLAMEXP_PATCH=%VER_LAMEXP_PATCH%" "/DLAMEXP_OUTPUT_FILE=%OUT_FILE%.exe" "/DLAMEXP_SOURCE_FILE=%OUT_FILE%.sfx" "%~dp0\..\NSIS\wrapper.nsi"
 rd /S /Q "%TMP_PATH%"
 REM ------------------------------------------
 if not exist "%OUT_FILE%.zip" (
@@ -143,6 +151,7 @@ if not exist "%OUT_FILE%.exe" (
 )
 REM ------------------------------------------
 attrib +R "%OUT_FILE%.zip"
+attrib +R "%OUT_FILE%.sfx"
 attrib +R "%OUT_FILE%.exe"
 REM ------------------------------------------
 REM :: CREATE SIGNATURE ::

@@ -49,6 +49,8 @@
 #include "LockedFile.h"
 
 //CRT includes
+#include <iostream>
+#include <fstream>
 #include <io.h>
 #include <fcntl.h>
 #include <intrin.h>
@@ -64,7 +66,6 @@
 
 //Initialize static Qt plugins
 #ifdef QT_NODLL
-Q_IMPORT_PLUGIN(qgif)
 Q_IMPORT_PLUGIN(qico)
 Q_IMPORT_PLUGIN(qsvg)
 #endif
@@ -317,6 +318,28 @@ const QDate &lamexp_version_date(void)
 }
 
 /*
+ * Get the native operating system version
+ */
+static DWORD lamexp_get_os_version(void)
+{
+	OSVERSIONINFO osVerInfo;
+	memset(&osVerInfo, 0, sizeof(OSVERSIONINFO));
+	osVerInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	DWORD version = 0;
+	
+	if(GetVersionEx(&osVerInfo) == TRUE)
+	{
+		if(osVerInfo.dwPlatformId != VER_PLATFORM_WIN32_NT)
+		{
+			throw "Ouuups: Not running under Windows NT. This is not supposed to happen!";
+		}
+		version = (DWORD)((osVerInfo.dwMajorVersion << 16) | (osVerInfo.dwMinorVersion & 0xffff));
+	}
+
+	return version;
+}
+
+/*
  * Global exception handler
  */
 LONG WINAPI lamexp_exception_handler(__in struct _EXCEPTION_POINTERS *ExceptionInfo)
@@ -366,17 +389,14 @@ static void lamexp_console_color(FILE* file, WORD attributes)
 void lamexp_message_handler(QtMsgType type, const char *msg)
 {
 	static const char *GURU_MEDITATION = "\n\nGURU MEDITATION !!!\n\n";
-
-	const char *text = msg;
-	const char *buffer = NULL;
 	
 	QMutexLocker lock(&g_lamexp_message_mutex);
 
-	if((strlen(msg) > 8) && (_strnicmp(msg, "@BASE64@", 8) == 0))
-	{
-		buffer = _strdup(QByteArray::fromBase64(msg + 8).constData());
-		if(buffer) text = buffer;
-	}
+	//if((strlen(msg) > 8) && (_strnicmp(msg, "@BASE64@", 8) == 0))
+	//{
+	//	buffer = _strdup(QByteArray::fromBase64(msg + 8).constData());
+	//	if(buffer) text = buffer;
+	//}
 
 	if(g_lamexp_console_attached)
 	{
@@ -391,17 +411,17 @@ void lamexp_message_handler(QtMsgType type, const char *msg)
 			fflush(stderr);
 			lamexp_console_color(stderr, FOREGROUND_RED | FOREGROUND_INTENSITY);
 			fprintf(stderr, GURU_MEDITATION);
-			fprintf(stderr, "%s\n", text);
+			fprintf(stderr, "%s\n", msg);
 			fflush(stderr);
 			break;
 		case QtWarningMsg:
 			lamexp_console_color(stderr, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
-			fprintf(stderr, "%s\n", text);
+			fprintf(stderr, "%s\n", msg);
 			fflush(stderr);
 			break;
 		default:
 			lamexp_console_color(stderr, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY);
-			fprintf(stderr, "%s\n", text);
+			fprintf(stderr, "%s\n", msg);
 			fflush(stderr);
 			break;
 		}
@@ -411,42 +431,33 @@ void lamexp_message_handler(QtMsgType type, const char *msg)
 	}
 	else
 	{
-		char temp[1024] = {'\0'};
+		QString temp("[LameXP][%1] %2");
 		
 		switch(type)
 		{
 		case QtCriticalMsg:
 		case QtFatalMsg:
-			_snprintf_s(temp, 1024, _TRUNCATE, "[LameXP][C] %s", text);
+			temp = temp.arg("C", QString::fromUtf8(msg));
 			break;
 		case QtWarningMsg:
-			_snprintf_s(temp, 1024, _TRUNCATE, "[LameXP][C] %s", text);
+			temp = temp.arg("W", QString::fromUtf8(msg));
 			break;
 		default:
-			_snprintf_s(temp, 1024, _TRUNCATE, "[LameXP][C] %s", text);
+			temp = temp.arg("I", QString::fromUtf8(msg));
 			break;
 		}
 
-		char *ptr = strchr(temp, '\n');
-		while(ptr != NULL)
-		{
-			*ptr = '\t';
-			ptr = strchr(temp, '\n');
-		}
-		
-		strncat_s(temp, 1024, "\n", _TRUNCATE);
-		OutputDebugStringA(temp);
+		temp.replace("\n", "\t").append("\n");
+		OutputDebugStringA(temp.toLatin1().constData());
 	}
 
 	if(type == QtCriticalMsg || type == QtFatalMsg)
 	{
 		lock.unlock();
-		MessageBoxW(NULL, QWCHAR(QString::fromUtf8(text)), L"LameXP - GURU MEDITATION", MB_ICONERROR | MB_TOPMOST | MB_TASKMODAL);
+		MessageBoxW(NULL, QWCHAR(QString::fromUtf8(msg)), L"LameXP - GURU MEDITATION", MB_ICONERROR | MB_TOPMOST | MB_TASKMODAL);
 		FatalAppExit(0, L"The application has encountered a critical error and will exit now!");
 		TerminateProcess(GetCurrentProcess(), -1);
 	}
-
-	LAMEXP_SAFE_FREE(buffer);
 }
 
 /*
@@ -492,10 +503,10 @@ void lamexp_init_console(int argc, char* argv[])
 			const int flags = _O_WRONLY | _O_U8TEXT;
 			int hCrtStdOut = _open_osfhandle((intptr_t) GetStdHandle(STD_OUTPUT_HANDLE), flags);
 			int hCrtStdErr = _open_osfhandle((intptr_t) GetStdHandle(STD_ERROR_HANDLE), flags);
-			FILE *hfStdOut = (hCrtStdOut >= 0) ? _fdopen(hCrtStdOut, "w") : NULL;
-			FILE *hfStderr = (hCrtStdErr >= 0) ? _fdopen(hCrtStdErr, "w") : NULL;
-			if(hfStdOut) *stdout = *hfStdOut;
-			if(hfStderr) *stderr = *hfStderr;
+			FILE *hfStdOut = (hCrtStdOut >= 0) ? _fdopen(hCrtStdOut, "wb") : NULL;
+			FILE *hfStdErr = (hCrtStdErr >= 0) ? _fdopen(hCrtStdErr, "wb") : NULL;
+			if(hfStdOut) { *stdout = *hfStdOut; std::cout.rdbuf(new std::filebuf(hfStdOut)); }
+			if(hfStdErr) { *stderr = *hfStdErr; std::cerr.rdbuf(new std::filebuf(hfStdErr)); }
 		}
 
 		HWND hwndConsole = GetConsoleWindow();
@@ -516,7 +527,7 @@ void lamexp_init_console(int argc, char* argv[])
 /*
  * Detect CPU features
  */
-lamexp_cpu_t lamexp_detect_cpu_features(void)
+lamexp_cpu_t lamexp_detect_cpu_features(int argc, char **argv)
 {
 	typedef BOOL (WINAPI *IsWow64ProcessFun)(__in HANDLE hProcess, __out PBOOL Wow64Process);
 	typedef VOID (WINAPI *GetNativeSystemInfoFun)(__out LPSYSTEM_INFO lpSystemInfo);
@@ -610,6 +621,29 @@ lamexp_cpu_t lamexp_detect_cpu_features(void)
 	features.count = systemInfo.dwNumberOfProcessors;
 	features.x64 = true;
 #endif
+	
+	//Hack to disable x64 on the Windows 8 Developer Preview
+	if(features.x64)
+	{
+		DWORD osVerNo = lamexp_get_os_version();
+		if((HIWORD(osVerNo) == 6) && (LOWORD(osVerNo) == 2))
+		{
+			qWarning("Windows 8 (x64) detected. Going to disable all x64 support for now!\n");
+			features.x64 = false;
+		}
+	}
+
+	if(argv)
+	{
+		bool flag = false;
+		for(int i = 0; i < argc; i++)
+		{
+			if(!_stricmp("--force-cpu-no-64bit", argv[i])) { flag = true; features.x64 = false; }
+			if(!_stricmp("--force-cpu-no-sse", argv[i])) { flag = true; features.sse = features.sse2 = features.sse3 = features.ssse3 = false; }
+			if(!_stricmp("--force-cpu-no-intel", argv[i])) { flag = true; features.intel = false; }
+		}
+		if(flag) qWarning("CPU flags overwritten by user-defined parameters. Take care!\n");
+	}
 
 	return features;
 }
@@ -752,7 +786,7 @@ bool lamexp_init_qt(int argc, char* argv[])
 	}
 
 	//Check Qt version
-	qDebug("Using Qt Framework v%s, compiled with Qt v%s [%s]", qVersion(), QT_VERSION_STR, QT_PACKAGEDATE_STR);
+	qDebug("Using Qt Framework v%s (%s), compiled with Qt v%s [%s]", qVersion(), (qSharedBuild() ? "DLL" : "Static"), QT_VERSION_STR, QT_PACKAGEDATE_STR);
 	if(_stricmp(qVersion(), QT_VERSION_STR))
 	{
 		qFatal("%s", QApplication::tr("Executable '%1' requires Qt v%2, but found Qt v%3.").arg(QString::fromLatin1(executableName), QString::fromLatin1(QT_VERSION_STR), QString::fromLatin1(qVersion())).toLatin1().constData());
@@ -787,7 +821,10 @@ bool lamexp_init_qt(int argc, char* argv[])
 		lamexp_check_compatibility_mode(NULL, executableName);
 		break;
 	default:
-		qWarning("Running on an unknown/unsupported OS (%d).\n", static_cast<int>(QSysInfo::windowsVersion() & QSysInfo::WV_NT_based));
+		{
+			DWORD osVersionNo = lamexp_get_os_version();
+			qWarning("Running on an unknown/untested WinNT-based OS (v%u.%u).\n", HIWORD(osVersionNo), LOWORD(osVersionNo));
+		}
 		break;
 	}
 
@@ -810,6 +847,9 @@ bool lamexp_init_qt(int argc, char* argv[])
 	application->setOrganizationDomain("mulder.at.gg");
 	application->setWindowIcon((date.month() == 12 && date.day() >= 24 && date.day() <= 26) ? QIcon(":/MainIcon2.png") : QIcon(":/MainIcon.png"));
 	
+	//Set text Codec for locale
+	QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+
 	//Load plugins from application directory
 	QCoreApplication::setLibraryPaths(QStringList() << QApplication::applicationDirPath());
 	qDebug("Library Path:\n%s\n", QApplication::libraryPaths().first().toUtf8().constData());
@@ -1553,6 +1593,7 @@ void lamexp_blink_window(QWidget *poWindow, unsigned int count, unsigned int del
 const QString lamexp_clean_filename(const QString &str)
 {
 	QString newStr(str);
+	
 	newStr.replace("\\", "-");
 	newStr.replace(" / ", ", ");
 	newStr.replace("/", ",");
@@ -1562,7 +1603,8 @@ const QString lamexp_clean_filename(const QString &str)
 	newStr.replace("<", "[");
 	newStr.replace(">", "]");
 	newStr.replace("|", "!");
-	return newStr;
+	
+	return newStr.simplified();
 }
 
 /*

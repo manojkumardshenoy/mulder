@@ -75,15 +75,14 @@
 
 !include `MUI2.nsh`
 !include `WinVer.nsh`
-!include `UAC.nsh`
-!include `parameters.nsh`
+!include `StdUtils.nsh`
 
 
 ;--------------------------------
 ;Installer Attributes
 ;--------------------------------
 
-RequestExecutionLevel user
+RequestExecutionLevel admin
 ShowInstDetails show
 ShowUninstDetails show
 Name "LameXP v${LAMEXP_VERSION} ${LAMEXP_INSTTYPE}-${LAMEXP_PATCH} [Build #${LAMEXP_BUILD}]"
@@ -107,12 +106,16 @@ SetCompressorDictSize 64
 ;Reserved Files
 ;--------------------------------
 
-ReserveFile "${NSISDIR}\Plugins\UAC.dll"
-ReserveFile "${NSISDIR}\Plugins\System.dll"
-ReserveFile "${NSISDIR}\Plugins\nsDialogs.dll"
-ReserveFile "${NSISDIR}\Plugins\StartMenu.dll"
-ReserveFile "${NSISDIR}\Plugins\LockedList.dll"
 ReserveFile "${NSISDIR}\Plugins\Aero.dll"
+ReserveFile "${NSISDIR}\Plugins\LangDLL.dll"
+ReserveFile "${NSISDIR}\Plugins\LockedList.dll"
+ReserveFile "${NSISDIR}\Plugins\nsDialogs.dll"
+ReserveFile "${NSISDIR}\Plugins\nsExec.dll"
+ReserveFile "${NSISDIR}\Plugins\StartMenu.dll"
+ReserveFile "${NSISDIR}\Plugins\StdUtils.dll"
+ReserveFile "${NSISDIR}\Plugins\System.dll"
+ReserveFile "${NSISDIR}\Plugins\UserInfo.dll"
+ReserveFile "checkproc.exe"
 
 
 ;--------------------------------
@@ -170,8 +173,8 @@ VIAddVersionKey "Website" "${MyWebSite}"
 !define MUI_HEADERIMAGE_BITMAP "header.bmp"
 !define MUI_HEADERIMAGE_UNBITMAP "header-un.bmp"
 !define MUI_LANGDLL_ALLLANGUAGES
-!define MUI_CUSTOMFUNCTION_GUIINIT MyUacInit
-!define MUI_CUSTOMFUNCTION_UNGUIINIT un.MyUacInit
+!define MUI_CUSTOMFUNCTION_GUIINIT MyGuiInit
+!define MUI_CUSTOMFUNCTION_UNGUIINIT un.MyGuiInit
 !define MUI_LANGDLL_ALWAYSSHOW
 
 
@@ -180,6 +183,7 @@ VIAddVersionKey "Website" "${MyWebSite}"
 ;--------------------------------
 
 ;Installer
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE CheckForPreRelease
 !define MUI_WELCOMEPAGE_TITLE_3LINES
 !define MUI_FINISHPAGE_TITLE_3LINES
 !insertmacro MUI_PAGE_WELCOME
@@ -194,7 +198,9 @@ Page Custom LockedListShow
 ;Uninstaller
 !define MUI_WELCOMEPAGE_TITLE_3LINES
 !define MUI_FINISHPAGE_TITLE_3LINES
+!define MUI_PAGE_CUSTOMFUNCTION_PRE un.CheckForcedUninstall
 !insertmacro MUI_UNPAGE_WELCOME
+!define MUI_PAGE_CUSTOMFUNCTION_PRE un.CheckForcedUninstall
 !insertmacro MUI_UNPAGE_CONFIRM
 UninstPage Custom un.LockedListShow
 !insertmacro MUI_UNPAGE_INSTFILES
@@ -256,25 +262,27 @@ UninstPage Custom un.LockedListShow
 ;--------------------------------
 
 Function .onInit
-	${If} ${UAC_IsInnerInstance}
-		!insertmacro MUI_LANGDLL_DISPLAY
-	${ElseIf} ${UAC_IsAdmin}
-		!insertmacro MUI_LANGDLL_DISPLAY
-	${Else}
-		System::Call 'kernel32::CreateMutexA(i 0, i 0, t "{2B3D1EBF-B3B6-4E93-92B9-6853029A7162}") i .r1 ?e'
-		Pop $0
-		StrCmp $0 0 +3
+	System::Call 'kernel32::CreateMutexA(i 0, i 0, t "{2B3D1EBF-B3B6-4E93-92B9-6853029A7162}") i .r1 ?e'
+	Pop $0
+	${If} $0 <> 0
 		MessageBox MB_ICONSTOP|MB_TOPMOST "Sorry, the installer is already running!"
 		Quit
 	${EndIf}
 
+	${StdUtils.GetParameter} $R0 "Update" "?"
+	${If} "$R0" == "?"
+		!insertmacro MUI_LANGDLL_DISPLAY
+	${EndIf}
+
+	; --------
+	
 	${IfNot} ${IsNT}
 		MessageBox MB_TOPMOST|MB_ICONSTOP "Sorry, this application does NOT support Windows 9x or Windows ME!"
 		Quit
 	${EndIf}
 
 	${If} ${AtMostWinNT4}
-		!insertmacro GetCommandlineParameter "Update" "?" $R0
+		${StdUtils.GetParameter} $R0 "Update" "?"
 		${If} $R0 == "?"
 			MessageBox MB_TOPMOST|MB_ICONSTOP "Sorry, your platform is not supported anymore. Installation aborted!$\nThe minimum required platform is Windows 2000."
 		${Else}
@@ -282,98 +290,61 @@ Function .onInit
 		${EndIf}
 		Quit
 	${EndIf}
+	
+	; --------
 
-	${If} ${IsWin2000}
-	${AndIf} ${AtMostServicePack} 3
-		MessageBox MB_TOPMOST|MB_ICONEXCLAMATION "This application recommends Windows 2000 with Service Pack 4!"
-		MessageBox MB_TOPMOST|MB_ICONQUESTION|MB_YESNO "Do you want to download Service Pack 4 for Windows 2000 now?" IDNO +2
-		ExecShell "open" "http://www.microsoft.com/download/en/details.aspx?id=4127"
-	${EndIf}
-
-	${If} ${IsWinXP}
-	${AndIf} ${AtMostServicePack} 2
-		MessageBox MB_TOPMOST|MB_ICONEXCLAMATION "This application recommends Windows XP with Service Pack 3!"
-		MessageBox MB_TOPMOST|MB_ICONQUESTION|MB_YESNO "Do you want to download Service Pack 3 for Windows XP now?" IDNO +2
-		ExecShell "open" "http://www.microsoft.com/download/en/details.aspx?id=24"
+	UserInfo::GetAccountType
+	Pop $0
+	${If} $0 != "Admin"
+		MessageBox MB_ICONSTOP|MB_TOPMOST "Your system requires administrative permissions in order to install this software."
+		Quit
 	${EndIf}
 	
+	; --------
+
 	InitPluginsDir
 	File "/oname=$PLUGINSDIR\checkproc.exe" "checkproc.exe"
 	nsExec::Exec /TIMEOUT=5000 '"$PLUGINSDIR\checkproc.exe" Softonic Brothersoft'
+	Pop $0
 FunctionEnd
 
 Function un.onInit
-	${If} ${UAC_IsInnerInstance}
-		!insertmacro MUI_LANGDLL_DISPLAY
-	${ElseIf} ${UAC_IsAdmin}
-		!insertmacro MUI_LANGDLL_DISPLAY
-	${Else}
-		System::Call 'kernel32::CreateMutexA(i 0, i 0, t "{2B3D1EBF-B3B6-4E93-92B9-6853029A7162}") i .r1 ?e'
-		Pop $0
-		StrCmp $0 0 +3
+	System::Call 'kernel32::CreateMutexA(i 0, i 0, t "{2B3D1EBF-B3B6-4E93-92B9-6853029A7162}") i .r1 ?e'
+	Pop $0
+	${If} $0 <> 0
 		MessageBox MB_ICONSTOP|MB_TOPMOST "Sorry, the un-installer is already running!"
 		Quit
-	${EndIf}  
+	${EndIf}
+
+	${StdUtils.GetParameter} $R0 "Force" "?"
+	${If} "$R0" == "?"
+		!insertmacro MUI_LANGDLL_DISPLAY
+	${EndIf}
+	
+	; --------
+
+	UserInfo::GetAccountType
+	Pop $0
+	${If} $0 != "Admin"
+		MessageBox MB_ICONSTOP|MB_TOPMOST "Your system requires administrative permissions in order to install this software."
+		Quit
+	${EndIf}
 FunctionEnd
 
 
 ;--------------------------------
-;UAC initialization
+;GUI initialization
 ;--------------------------------
 
-Function MyUacInit
-	UAC_TryAgain:
-	!insertmacro UAC_RunElevated
-	${Switch} $0
-	${Case} 0
-		${IfThen} $1 = 1 ${|} Quit ${|}
-		${IfThen} $3 <> 0 ${|} ${Break} ${|}
-		${If} $1 = 3
-			MessageBox MB_ICONEXCLAMATION|MB_TOPMOST|MB_SETFOREGROUND|MB_OKCANCEL "This installer requires admin access, please try again!" /SD IDCANCEL IDOK UAC_TryAgain
-		${EndIf}
-	${Case} 1223
-		MessageBox MB_ICONEXCLAMATION|MB_TOPMOST|MB_SETFOREGROUND|MB_OKCANCEL "This installer requires admin privileges, please try again!" /SD IDCANCEL IDOK UAC_TryAgain
-		Quit
-	${Case} 1062
-		MessageBox MB_ICONSTOP|MB_TOPMOST|MB_SETFOREGROUND "Logon service not running, aborting!"
-		Quit
-	${Default}
-		MessageBox MB_ICONSTOP|MB_TOPMOST|MB_SETFOREGROUND "Unable to elevate installer! (Error code: $0)"
-		Quit
-	${EndSwitch}
-	
-	!ifdef LAMEXP_IS_PRERELEASE
-		!insertmacro GetCommandlineParameter "Update" "?" $R0
-		StrCmp $R0 "?" 0 SkipPrereleaseWarning
-		MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_OKCANCEL "$(LAMEXP_LANG_PRERELEASE_WARNING)" /SD IDOK IDOK +2
-		Abort
-		SkipPrereleaseWarning:
-	!endif
-	
+Function MyGuiInit
+	StrCpy $0 $HWNDPARENT
+	System::Call "user32::SetWindowPos(i r0, i -1, i 0, i 0, i 0, i 0, i 3)"
 	Aero::Apply
 FunctionEnd
 
-Function un.MyUacInit
-	UAC_TryAgain:
-	!insertmacro UAC_RunElevated
-	${Switch} $0
-	${Case} 0
-		${IfThen} $1 = 1 ${|} Quit ${|}
-		${IfThen} $3 <> 0 ${|} ${Break} ${|}
-		${If} $1 = 3
-			MessageBox MB_ICONEXCLAMATION|MB_TOPMOST|MB_SETFOREGROUND|MB_OKCANCEL "This un-installer requires admin access, please try again!" /SD IDCANCEL IDOK UAC_TryAgain
-		${EndIf}
-	${Case} 1223
-		MessageBox MB_ICONEXCLAMATION|MB_TOPMOST|MB_SETFOREGROUND|MB_OKCANCEL "This un-installer requires admin privileges, please try again!" /SD IDCANCEL IDOK UAC_TryAgain
-		Quit
-	${Case} 1062
-		MessageBox MB_ICONSTOP|MB_TOPMOST|MB_SETFOREGROUND "Logon service not running, aborting!"
-		Quit
-	${Default}
-		MessageBox MB_ICONSTOP|MB_TOPMOST|MB_SETFOREGROUND "Unable to elevate installer! (Error code: $0)"
-		Quit
-	${EndSwitch}
-	
+Function un.MyGuiInit
+	StrCpy $0 $HWNDPARENT
+	System::Call "user32::SetWindowPos(i r0, i -1, i 0, i 0, i 0, i 0, i 3)"
 	Aero::Apply
 FunctionEnd
 
@@ -413,48 +384,15 @@ Function _CreateWebLink
 	SetFileAttributes "$0" FILE_ATTRIBUTE_READONLY
 FunctionEnd
 
-!macro TrimStr VarName
-	Push ${VarName}
-	Call _TrimStr
-	Pop ${VarName}
+!macro GetExecutableName OutVar
+	${StdUtils.GetParameter} ${OutVar} "Update" ""
+	${StdUtils.TrimStr} ${OutVar}
+	${IfThen} "${OutVar}" == "" ${|} StrCpy ${OutVar} "LameXP.exe" ${|}
 !macroend
 
-Function _TrimStr
-	Exch $R1
-	Push $R2
- 
-	TrimLoop1:
-	StrCpy $R2 "$R1" 1
-	StrCmp "$R2" " " TrimLeft
-	StrCmp "$R2" "$\r" TrimLeft
-	StrCmp "$R2" "$\n" TrimLeft
-	StrCmp "$R2" "$\t" TrimLeft
-	Goto TrimLoop2
-	TrimLeft:	
-	StrCpy $R1 "$R1" "" 1
-	Goto TrimLoop1
- 
-	TrimLoop2:
-	StrCpy $R2 "$R1" 1 -1
-	StrCmp "$R2" " " TrimRight
-	StrCmp "$R2" "$\r" TrimRight
-	StrCmp "$R2" "$\n" TrimRight
-	StrCmp "$R2" "$\t" TrimRight
-	Goto TrimDone
-	TrimRight:	
-	StrCpy $R1 "$R1" -1
-	Goto TrimLoop2
- 
-	TrimDone:
-	Pop $R2
-	Exch $R1
-FunctionEnd
-
-!macro GetExecutableName OutVar
-	!insertmacro GetCommandlineParameter "Update" "LameXP.exe" ${OutVar}
-	!insertmacro TrimStr ${OutVar}
-	StrCmp ${OutVar} "" 0 +2
-	StrCpy ${OutVar} "LameXP.exe"
+!macro DisableNextButton TmpVar
+	GetDlgItem ${TmpVar} $HWNDPARENT 1
+	EnableWindow ${TmpVar} 0
 !macroend
 
 
@@ -533,7 +471,7 @@ SectionEnd
 
 Section "-Finished"
 	!insertmacro PrintProgress "$(MUI_TEXT_FINISH_TITLE)."
-	
+
 	; ---- POLL ----
 	; !insertmacro UAC_AsUser_ExecShell "" "http://mulder.brhack.net/temp/style_poll/" "" "" SW_SHOWNORMAL
 	; ---- POLL ----
@@ -551,6 +489,7 @@ Section "Uninstall"
 	Delete /REBOOTOK "$INSTDIR\LameXP.exe"
 	Delete /REBOOTOK "$INSTDIR\LameXP-Portable.exe"
 	Delete /REBOOTOK "$INSTDIR\LameXP.exe.sig"
+	Delete /REBOOTOK "$INSTDIR\LameXP*"
 	Delete /REBOOTOK "$INSTDIR\Uninstall.exe"
 	Delete /REBOOTOK "$INSTDIR\Changelog.htm"
 	Delete /REBOOTOK "$INSTDIR\Changelog.html"
@@ -591,17 +530,12 @@ SectionEnd
 ;--------------------------------
 
 Function CheckForUpdate
-	!insertmacro GetCommandlineParameter "Update" "?" $R0
-	StrCmp $R0 "?" 0 EnableUpdateMode
+	${StdUtils.GetParameter} $R0 "Update" "?"
+	${IfNotThen} "$R0" == "?" ${|} Goto EnableUpdateMode ${|}
 
-	StrCmp "$INSTDIR" "" 0 +2
-	Return
-	IfFileExists "$INSTDIR\*.*" +2
-	Return
-	StrCmp "$EXEDIR" "$INSTDIR" 0 +2
-	Return
-	IfFileExists "$INSTDIR\LameXP.exe" +2
-	Return
+	${IfThen} "$INSTDIR" == "" ${|} Return ${|}
+	${IfThen} "$INSTDIR" == "$EXEDIR" ${|} Return ${|}
+	${IfNotThen} ${FileExists} "$INSTDIR\LameXP.exe" ${|} Return ${|}
 
 	EnableUpdateMode:
 
@@ -612,6 +546,26 @@ Function CheckForUpdate
 	FindWindow $R0 "#32770" "" $HWNDPARENT
 	GetDlgItem $R1 $R0 1001
 	EnableWindow $R1 0
+FunctionEnd
+
+Function un.CheckForcedUninstall
+	${StdUtils.GetParameter} $R0 "Force" "?"
+	${IfNotThen} "$R0" == "?" ${|} Abort ${|}
+FunctionEnd
+
+
+;--------------------------------
+;Check For Pre-Release
+;--------------------------------
+
+Function CheckForPreRelease
+	!ifdef LAMEXP_IS_PRERELEASE
+		${StdUtils.GetParameter} $R0 "Update" "?"
+		StrCmp $R0 "?" 0 SkipPrereleaseWarning
+		MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_OKCANCEL "$(LAMEXP_LANG_PRERELEASE_WARNING)" /SD IDOK IDOK +2
+		Quit
+		SkipPrereleaseWarning:
+	!endif
 FunctionEnd
 
 
@@ -643,12 +597,13 @@ FunctionEnd
 ;--------------------------------
 
 Function RunAppFunction
+	!insertmacro DisableNextButton $R0
 	!insertmacro GetExecutableName $R0
-	!insertmacro UAC_AsUser_ExecShell "explore" "$INSTDIR" "" "" SW_SHOWNORMAL
-	!insertmacro UAC_AsUser_ExecShell "open" "$INSTDIR\$R0" "" "$INSTDIR" SW_SHOWNORMAL
+	${StdUtils.ExecShellAsUser} $R1 "$INSTDIR" "explore" ""
+	${StdUtils.ExecShellAsUser} $R1 "$INSTDIR\$R0" "open" "--first-run"
 FunctionEnd
 
 Function ShowReadmeFunction
-	!insertmacro UAC_AsUser_ExecShell "open" "$INSTDIR\FAQ.html" "" "" SW_SHOWNORMAL
+	!insertmacro DisableNextButton $R0
+	${StdUtils.ExecShellAsUser} $R1 "$INSTDIR\FAQ.html" "open" ""
 FunctionEnd
-

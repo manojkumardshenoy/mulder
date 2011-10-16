@@ -67,12 +67,14 @@
 
 //System includes
 #include <MMSystem.h>
+#include <ShellAPI.h>
 
 //Helper macros
 #define ABORT_IF_BUSY if(m_banner->isVisible() || m_delayedFileTimer->isActive()) { MessageBeep(MB_ICONEXCLAMATION); return; }
 #define SET_TEXT_COLOR(WIDGET,COLOR) { QPalette _palette = WIDGET->palette(); _palette.setColor(QPalette::WindowText, (COLOR)); _palette.setColor(QPalette::Text, (COLOR)); WIDGET->setPalette(_palette); }
 #define SET_FONT_BOLD(WIDGET,BOLD) { QFont _font = WIDGET->font(); _font.setBold(BOLD); WIDGET->setFont(_font); }
-#define LINK(URL) QString("<a href=\"%1\">%2</a>").arg(URL).arg(URL)
+#define LINK(URL) QString("<a href=\"%1\">%2</a>").arg(URL).arg(QString(URL).replace("-", "&minus;"))
+#define FSLINK(PATH) QString("<a href=\"file:///%1\">%2</a>").arg(PATH).arg(QString(PATH).replace("-", "&minus;"))
 #define TEMP_HIDE_DROPBOX(CMD) { bool __dropBoxVisible = m_dropBox->isVisible(); if(__dropBoxVisible) m_dropBox->hide(); {CMD}; if(__dropBoxVisible) m_dropBox->show(); }
 #define USE_NATIVE_FILE_DIALOG (lamexp_themes_enabled() || ((QSysInfo::windowsVersion() & QSysInfo::WV_NT_based) < QSysInfo::WV_XP))
 
@@ -235,6 +237,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	comboBoxAACProfile->setCurrentIndex(m_settings->aacEncProfile());
 	comboBoxAftenCodingMode->setCurrentIndex(m_settings->aftenAudioCodingMode());
 	comboBoxAftenDRCMode->setCurrentIndex(m_settings->aftenDynamicRangeCompression());
+	comboBoxNormalizationMode->setCurrentIndex(m_settings->normalizationFilterEqualizationMode());
 	while(checkBoxBitrateManagement->isChecked() != m_settings->bitrateManagementEnabled()) checkBoxBitrateManagement->click();
 	while(checkBoxNeroAAC2PassMode->isChecked() != m_settings->neroAACEnable2Pass()) checkBoxNeroAAC2PassMode->click();
 	while(checkBoxAftenFastAllocation->isChecked() != m_settings->aftenFastBitAllocation()) checkBoxAftenFastAllocation->click();
@@ -265,6 +268,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	connect(spinBoxAftenSearchSize, SIGNAL(valueChanged(int)), this, SLOT(aftenSearchSizeChanged(int)));
 	connect(checkBoxAftenFastAllocation, SIGNAL(clicked(bool)), this, SLOT(aftenFastAllocationChanged(bool)));
 	connect(spinBoxNormalizationFilter, SIGNAL(valueChanged(double)), this, SLOT(normalizationMaxVolumeChanged(double)));
+	connect(comboBoxNormalizationMode, SIGNAL(currentIndexChanged(int)), this, SLOT(normalizationModeChanged(int)));
 	connect(spinBoxToneAdjustBass, SIGNAL(valueChanged(double)), this, SLOT(toneAdjustBassChanged(double)));
 	connect(spinBoxToneAdjustTreble, SIGNAL(valueChanged(double)), this, SLOT(toneAdjustTrebleChanged(double)));
 	connect(buttonToneAdjustReset, SIGNAL(clicked()), this, SLOT(toneAdjustTrebleReset()));
@@ -489,19 +493,19 @@ void MainWindow::addFiles(const QStringList &files)
 
 	if(analyzer->filesDenied())
 	{
-		QMessageBox::warning(this, tr("Access Denied"), QString("<nobr>%1<br>%2</nobr>").arg(tr("%1 file(s) have been rejected, because read access was not granted!").arg(analyzer->filesDenied()), tr("This usually means the file is locked by another process.")));
+		QMessageBox::warning(this, tr("Access Denied"), QString("%1<br>%2").arg(NOBR(tr("%1 file(s) have been rejected, because read access was not granted!").arg(analyzer->filesDenied())), NOBR(tr("This usually means the file is locked by another process."))));
 	}
 	if(analyzer->filesDummyCDDA())
 	{
-		QMessageBox::warning(this, tr("CDDA Files"), QString("<nobr>%1<br><br>%2<br>%3</nobr>").arg(tr("%1 file(s) have been rejected, because they are dummy CDDA files!").arg(analyzer->filesDummyCDDA()), tr("Sorry, LameXP cannot extract audio tracks from an Audio&minus;CD at present."), tr("We recommend using %1 for that purpose.").arg("<a href=\"http://www.exactaudiocopy.de/\">Exact Audio Copy</a>")));
+		QMessageBox::warning(this, tr("CDDA Files"), QString("%1<br><br>%2<br>%3").arg(NOBR(tr("%1 file(s) have been rejected, because they are dummy CDDA files!").arg(analyzer->filesDummyCDDA())), NOBR(tr("Sorry, LameXP cannot extract audio tracks from an Audio-CD at present.")), NOBR(tr("We recommend using %1 for that purpose.").arg("<a href=\"http://www.exactaudiocopy.de/\">Exact Audio Copy</a>"))));
 	}
 	if(analyzer->filesCueSheet())
 	{
-		QMessageBox::warning(this, tr("Cue Sheet"), QString("<nobr>%1<br>%2</nobr>").arg(tr("%1 file(s) have been rejected, because they appear to be Cue Sheet images!").arg(analyzer->filesCueSheet()), tr("Please use LameXP's Cue Sheet wizard for importing Cue Sheet files.")));
+		QMessageBox::warning(this, tr("Cue Sheet"), QString("%1<br>%2").arg(NOBR(tr("%1 file(s) have been rejected, because they appear to be Cue Sheet images!").arg(analyzer->filesCueSheet())), NOBR(tr("Please use LameXP's Cue Sheet wizard for importing Cue Sheet files."))));
 	}
 	if(analyzer->filesRejected())
 	{
-		QMessageBox::warning(this, tr("Files Rejected"), QString("<nobr>%1<br>%2</nobr>").arg(tr("%1 file(s) have been rejected, because the file format could not be recognized!").arg(analyzer->filesRejected()), tr("This usually means the file is damaged or the file format is not supported.")));
+		QMessageBox::warning(this, tr("Files Rejected"), QString("%1<br>%2").arg(NOBR(tr("%1 file(s) have been rejected, because the file format could not be recognized!").arg(analyzer->filesRejected())), NOBR(tr("This usually means the file is damaged or the file format is not supported."))));
 	}
 
 	LAMEXP_DELETE(analyzer);
@@ -534,7 +538,7 @@ void MainWindow::addFolder(const QString &path, bool recursive, bool delayed)
 		}
 		
 		QDir currentDir(folderInfoList.takeFirst().canonicalFilePath());
-		QFileInfoList fileInfoList = currentDir.entryInfoList(QDir::Files);
+		QFileInfoList fileInfoList = currentDir.entryInfoList(QDir::Files | QDir::NoSymLinks);
 
 		while(!fileInfoList.isEmpty())
 		{
@@ -655,7 +659,7 @@ void MainWindow::changeEvent(QEvent *e)
 {
 	if(e->type() == QEvent::LanguageChange)
 	{
-		int comboBoxIndex[5];
+		int comboBoxIndex[6];
 		
 		//Backup combobox indices, as retranslateUi() resets
 		comboBoxIndex[0] = comboBoxMP3ChannelMode->currentIndex();
@@ -663,6 +667,7 @@ void MainWindow::changeEvent(QEvent *e)
 		comboBoxIndex[2] = comboBoxAACProfile->currentIndex();
 		comboBoxIndex[3] = comboBoxAftenCodingMode->currentIndex();
 		comboBoxIndex[4] = comboBoxAftenDRCMode->currentIndex();
+		comboBoxIndex[5] = comboBoxNormalizationMode->currentIndex();
 		
 		//Re-translate from UIC
 		Ui::MainWindow::retranslateUi(this);
@@ -673,6 +678,7 @@ void MainWindow::changeEvent(QEvent *e)
 		comboBoxAACProfile->setCurrentIndex(comboBoxIndex[2]);
 		comboBoxAftenCodingMode->setCurrentIndex(comboBoxIndex[3]);
 		comboBoxAftenDRCMode->setCurrentIndex(comboBoxIndex[4]);
+		comboBoxNormalizationMode->setCurrentIndex(comboBoxIndex[5]);
 
 		//Update the window title
 		if(LAMEXP_DEBUG)
@@ -732,28 +738,41 @@ void MainWindow::dropEvent(QDropEvent *event)
 	ABORT_IF_BUSY;
 
 	QStringList droppedFiles;
-	const QList<QUrl> urls = event->mimeData()->urls();
+	QList<QUrl> urls = event->mimeData()->urls();
 
-	for(int i = 0; i < urls.count(); i++)
+	while(!urls.isEmpty())
 	{
-		QFileInfo file(urls.at(i).toLocalFile());
+		QUrl currentUrl = urls.takeFirst();
+		QFileInfo file(currentUrl.toLocalFile());
 		if(!file.exists())
 		{
 			continue;
 		}
 		if(file.isFile())
 		{
-			qDebug64("Dropped File: %1", file.canonicalFilePath());
+			qDebug("Dropped File: %s", file.canonicalFilePath().toUtf8().constData());
 			droppedFiles << file.canonicalFilePath();
 			continue;
 		}
-		else if(file.isDir())
+		if(file.isDir())
 		{
-			qDebug64("Dropped Folder: %1", file.canonicalFilePath());
-			QList<QFileInfo> list = QDir(file.canonicalFilePath()).entryInfoList(QDir::Files);
-			for(int j = 0; j < list.count(); j++)
+			qDebug("Dropped Folder: %s", file.canonicalFilePath().toUtf8().constData());
+			QList<QFileInfo> list = QDir(file.canonicalFilePath()).entryInfoList(QDir::Files | QDir::NoSymLinks);
+			if(list.count() > 0)
 			{
-				droppedFiles << list.at(j).canonicalFilePath();
+				for(int j = 0; j < list.count(); j++)
+				{
+					droppedFiles << list.at(j).canonicalFilePath();
+				}
+			}
+			else
+			{
+				list = QDir(file.canonicalFilePath()).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+				for(int j = 0; j < list.count(); j++)
+				{
+					qDebug("Descending to Folder: %s", list.at(j).canonicalFilePath().toUtf8().constData());
+					urls.prepend(QUrl::fromLocalFile(list.at(j).canonicalFilePath()));
+				}
 			}
 		}
 	}
@@ -884,12 +903,19 @@ void MainWindow::windowShown(void)
 {
 	QStringList arguments = QApplication::arguments();
 
+	//First run?
+	bool firstRun = false;
+	for(int i = 0; i < arguments.count(); i++)
+	{
+		if(!arguments[i].compare("--first-run", Qt::CaseInsensitive)) firstRun = true;
+	}
+
 	//Check license
-	if(m_settings->licenseAccepted() <= 0)
+	if((m_settings->licenseAccepted() <= 0) || firstRun)
 	{
 		int iAccepted = -1;
 
-		if(m_settings->licenseAccepted() == 0)
+		if((m_settings->licenseAccepted() == 0) || firstRun)
 		{
 			AboutDialog *about = new AboutDialog(m_settings, this, true);
 			iAccepted = about->exec();
@@ -902,7 +928,18 @@ void MainWindow::windowShown(void)
 			QApplication::processEvents();
 			PlaySound(MAKEINTRESOURCE(IDR_WAVE_WHAMMY), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
 			QMessageBox::critical(this, tr("License Declined"), tr("You have declined the license. Consequently the application will exit now!"), tr("Goodbye!"));
-			if(!QProcess::startDetached(QString("%1/Uninstall.exe").arg(QApplication::applicationDirPath()), QStringList()))
+			QFileInfo uninstallerInfo = QFileInfo(QString("%1/Uninstall.exe").arg(QApplication::applicationDirPath()));
+			if(uninstallerInfo.exists())
+			{
+				QString uninstallerDir = uninstallerInfo.canonicalPath();
+				QString uninstallerPath = uninstallerInfo.canonicalFilePath();
+				for(int i = 0; i < 3; i++)
+				{
+					HINSTANCE res = ShellExecuteW(this->winId(), L"open", QWCHAR(QDir::toNativeSeparators(uninstallerPath)), L"/Force", QWCHAR(QDir::toNativeSeparators(uninstallerDir)), SW_SHOWNORMAL);
+					if(reinterpret_cast<int>(res) > 32) break;
+				}
+			}
+			else
 			{
 				MoveFileEx(QWCHAR(QDir::toNativeSeparators(QFileInfo(QApplication::applicationFilePath()).canonicalFilePath())), NULL, MOVEFILE_DELAY_UNTIL_REBOOT | MOVEFILE_REPLACE_EXISTING);
 			}
@@ -912,6 +949,7 @@ void MainWindow::windowShown(void)
 		
 		PlaySound(MAKEINTRESOURCE(IDR_WAVE_WOOHOO), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
 		m_settings->licenseAccepted(1);
+		if(lamexp_version_demo()) showAnnounceBox();
 	}
 	
 	//Check for expiration
@@ -921,7 +959,7 @@ void MainWindow::windowShown(void)
 		{
 			qWarning("Binary has expired !!!");
 			PlaySound(MAKEINTRESOURCE(IDR_WAVE_WHAMMY), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
-			if(QMessageBox::warning(this, tr("LameXP - Expired"), QString("<nobr>%1<br>%2</nobr>").arg(tr("This demo (pre-release) version of LameXP has expired at %1.").arg(lamexp_version_expires().toString(Qt::ISODate)), tr("LameXP is free software and release versions won't expire.")), tr("Check for Updates"), tr("Exit Program")) == 0)
+			if(QMessageBox::warning(this, tr("LameXP - Expired"), QString("%1<br>%2").arg(NOBR(tr("This demo (pre-release) version of LameXP has expired at %1.").arg(lamexp_version_expires().toString(Qt::ISODate))), NOBR(tr("LameXP is free software and release versions won't expire."))), tr("Check for Updates"), tr("Exit Program")) == 0)
 			{
 				checkForUpdates();
 			}
@@ -934,8 +972,8 @@ void MainWindow::windowShown(void)
 	if(m_settings->slowStartup() && m_settings->antivirNotificationsEnabled())
 	{
 		QString message;
-		message += QString("<nobr>%1</nobr><br>").arg(tr("It seems that a bogus anti-virus software is slowing down the startup of LameXP.").replace("-", "&minus;"));
-		message += QString("<nobr>%1</nobr><br>").arg(tr("Please refer to the %1 document for details and solutions!").replace("-", "&minus;").arg("<a href=\"http://lamexp.git.sourceforge.net/git/gitweb.cgi?p=lamexp/lamexp;a=blob_plain;f=doc/FAQ.html;hb=HEAD#df406578\">F.A.Q.</a>"));
+		message += NOBR(tr("It seems that a bogus anti-virus software is slowing down the startup of LameXP.")).append("<br>");
+		message += NOBR(tr("Please refer to the %1 document for details and solutions!")).arg("<a href=\"http://lamexp.git.sourceforge.net/git/gitweb.cgi?p=lamexp/lamexp;a=blob_plain;f=doc/FAQ.html;hb=HEAD#df406578\">F.A.Q.</a>").append("<br>");
 		if(QMessageBox::warning(this, tr("Slow Startup"), message, tr("Discard"), tr("Don't Show Again")) == 1)
 		{
 			m_settings->antivirNotificationsEnabled(false);
@@ -947,7 +985,7 @@ void MainWindow::windowShown(void)
 	if(QDate::currentDate() >= lamexp_version_date().addYears(1))
 	{
 		qWarning("Binary is more than a year old, time to update!");
-		if(QMessageBox::warning(this, tr("Urgent Update"), QString("<nobr>%1</nobr>").arg(tr("Your version of LameXP is more than a year old. Time for an update!")), tr("Check for Updates"), tr("Exit Program")) == 0)
+		if(QMessageBox::warning(this, tr("Urgent Update"), NOBR(tr("Your version of LameXP is more than a year old. Time for an update!")), tr("Check for Updates"), tr("Exit Program")) == 0)
 		{
 			if(checkForUpdates())
 			{
@@ -964,9 +1002,9 @@ void MainWindow::windowShown(void)
 	else if(m_settings->autoUpdateEnabled())
 	{
 		QDate lastUpdateCheck = QDate::fromString(m_settings->autoUpdateLastCheck(), Qt::ISODate);
-		if(!lastUpdateCheck.isValid() || QDate::currentDate() >= lastUpdateCheck.addDays(14))
+		if(!firstRun && (!lastUpdateCheck.isValid() || QDate::currentDate() >= lastUpdateCheck.addDays(14)))
 		{
-			if(QMessageBox::information(this, tr("Update Reminder"), QString("<nobr>%1</nobr>").arg(lastUpdateCheck.isValid() ? tr("Your last update check was more than 14 days ago. Check for updates now?") : tr("Your did not check for LameXP updates yet. Check for updates now?")), tr("Check for Updates"), tr("Postpone")) == 0)
+			if(QMessageBox::information(this, tr("Update Reminder"), NOBR(lastUpdateCheck.isValid() ? tr("Your last update check was more than 14 days ago. Check for updates now?") : tr("Your did not check for LameXP updates yet. Check for updates now?")), tr("Check for Updates"), tr("Postpone")) == 0)
 			{
 				if(checkForUpdates())
 				{
@@ -985,10 +1023,10 @@ void MainWindow::windowShown(void)
 			if(lamexp_tool_version("neroAacEnc.exe") < lamexp_toolver_neroaac())
 			{
 				QString messageText;
-				messageText += QString("<nobr>%1<br>").arg(tr("LameXP detected that your version of the Nero AAC encoder is outdated!"));
-				messageText += QString("%1<br><br>").arg(tr("The current version available is %1 (or later), but you still have version %2 installed.").arg(lamexp_version2string("?.?.?.?", lamexp_toolver_neroaac(), tr("n/a")), lamexp_version2string("?.?.?.?", lamexp_tool_version("neroAacEnc.exe"), tr("n/a"))));
-				messageText += QString("%1<br>").arg(tr("You can download the latest version of the Nero AAC encoder from the Nero website at:"));
-				messageText += "<tt>" + LINK(AboutDialog::neroAacUrl) + "</tt><br></nobr>";
+				messageText += NOBR(tr("LameXP detected that your version of the Nero AAC encoder is outdated!")).append("<br>");
+				messageText += NOBR(tr("The current version available is %1 (or later), but you still have version %2 installed.").arg(lamexp_version2string("?.?.?.?", lamexp_toolver_neroaac(), tr("n/a")), lamexp_version2string("?.?.?.?", lamexp_tool_version("neroAacEnc.exe"), tr("n/a")))).append("<br><br>");
+				messageText += NOBR(tr("You can download the latest version of the Nero AAC encoder from the Nero website at:")).append("<br>");
+				messageText += "<nobr><tt>" + LINK(AboutDialog::neroAacUrl) + "</tt></nobr><br>";
 				QMessageBox::information(this, tr("AAC Encoder Outdated"), messageText);
 			}
 		}
@@ -1000,12 +1038,12 @@ void MainWindow::windowShown(void)
 			QString appPath = QDir(QCoreApplication::applicationDirPath()).canonicalPath();
 			if(appPath.isEmpty()) appPath = QCoreApplication::applicationDirPath();
 			QString messageText;
-			messageText += QString("<nobr>%1</nobr><br>").arg(tr("The Nero AAC encoder could not be found. AAC encoding support will be disabled.").replace("-", "&minus;"));
-			messageText += QString("<nobr>%1</nobr><br><br>").arg(tr("Please put 'neroAacEnc.exe', 'neroAacDec.exe' and 'neroAacTag.exe' into the LameXP directory!").replace("-", "&minus;"));
-			messageText += QString("<nobr>%1</nobr><br>").arg(tr("Your LameXP directory is located here:").replace("-", "&minus;"));
-			messageText += QString("<nobr><i><a href=\"file:///%1\">%2</a></i></nobr><br><br>").arg(QDir::toNativeSeparators(appPath), QDir::toNativeSeparators(appPath).replace("-", "&minus;"));
-			messageText += QString("<nobr>%1</nobr><br>").arg(tr("You can download the Nero AAC encoder for free from the official Nero website at:").replace("-", "&minus;"));
-			messageText += "<tt>" + LINK(AboutDialog::neroAacUrl) + "</tt><br></nobr>";
+			messageText += NOBR(tr("The Nero AAC encoder could not be found. AAC encoding support will be disabled.")).append("<br>");
+			messageText += NOBR(tr("Please put 'neroAacEnc.exe', 'neroAacDec.exe' and 'neroAacTag.exe' into the LameXP directory!")).append("<br><br>");
+			messageText += NOBR(tr("Your LameXP directory is located here:")).append("<br>");
+			messageText += QString("<nobr><tt>%1</tt></nobr><br><br>").arg(FSLINK(QDir::toNativeSeparators(appPath)));
+			messageText += NOBR(tr("You can download the Nero AAC encoder for free from the official Nero website at:")).append("<br>");
+			messageText += "<nobr><tt>" + LINK(AboutDialog::neroAacUrl) + "</tt></nobr><br>";
 			if(QMessageBox::information(this, tr("AAC Support Disabled"), messageText, tr("Discard"), tr("Don't Show Again")) == 1)
 			{
 				m_settings->neroAacNotificationsEnabled(false);
@@ -1060,6 +1098,40 @@ void MainWindow::windowShown(void)
 	}
 }
 
+/*
+ * Show announce box
+ */
+void MainWindow::showAnnounceBox(void)
+{
+	const QString announceText = QString("%1<br><br>%2<br><nobr><tt>%3</tt></nobr><br>").arg
+	(
+		NOBR("We are still looking for LameXP translators!"),
+		NOBR("If you are willing to translate LameXP to your language or to complete an existing translation, please refer to:"),
+		LINK("http://mulder.brhack.net/public/doc/lamexp_translate.html")
+	);
+	
+	QMessageBox *announceBox = new QMessageBox(QMessageBox::Warning, "We want you!", announceText, QMessageBox::NoButton, this);
+	announceBox->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+	announceBox->setIconPixmap(QIcon(":/images/Announcement.png").pixmap(64,79));
+	QPushButton *button1 = announceBox->addButton(tr("Discard"), QMessageBox::AcceptRole);
+	QPushButton *button2 = announceBox->addButton(tr("Discard"), QMessageBox::NoRole);
+	button1->setVisible(false);
+	button2->setEnabled(false);
+
+	QTimer *announceTimer = new QTimer(this);
+	announceTimer->setSingleShot(true);
+	announceTimer->setInterval(8000);
+	connect(announceTimer, SIGNAL(timeout()), button1, SLOT(show()));
+	connect(announceTimer, SIGNAL(timeout()), button2, SLOT(hide()));
+	
+	announceTimer->start();
+	while(announceTimer->isActive()) announceBox->exec();
+	announceTimer->stop();
+
+	LAMEXP_DELETE(announceTimer);
+	LAMEXP_DELETE(announceBox);
+}
+
 // =========================================================
 // Main button solots
 // =========================================================
@@ -1077,7 +1149,7 @@ void MainWindow::encodeButtonClicked(void)
 
 	if(m_fileListModel->rowCount() < 1)
 	{
-		QMessageBox::warning(this, tr("LameXP"), QString("<nobr>%1</nobr>").arg(tr("You must add at least one file to the list before proceeding!")));
+		QMessageBox::warning(this, tr("LameXP"), NOBR(tr("You must add at least one file to the list before proceeding!")));
 		tabWidget->setCurrentIndex(0);
 		return;
 	}
@@ -1085,7 +1157,7 @@ void MainWindow::encodeButtonClicked(void)
 	QString tempFolder = m_settings->customTempPathEnabled() ? m_settings->customTempPath() : lamexp_temp_folder2();
 	if(!QFileInfo(tempFolder).exists() || !QFileInfo(tempFolder).isDir())
 	{
-		if(QMessageBox::warning(this, tr("Not Found"), QString("<nobr>%1</nobr><br><nobr>%2</nobr>").arg(tr("Your currently selected TEMP folder does not exist anymore:"), QDir::toNativeSeparators(tempFolder)), tr("Restore Default"), tr("Cancel")) == 0)
+		if(QMessageBox::warning(this, tr("Not Found"), QString("%1<br><tt>%2</tt>").arg(NOBR(tr("Your currently selected TEMP folder does not exist anymore:")), NOBR(QDir::toNativeSeparators(tempFolder))), tr("Restore Default"), tr("Cancel")) == 0)
 		{
 			while(checkBoxUseSystemTempFolder->isChecked() == m_settings->customTempPathEnabledDefault()) checkBoxUseSystemTempFolder->click();
 		}
@@ -1098,7 +1170,14 @@ void MainWindow::encodeButtonClicked(void)
 		QStringList tempFolderParts = tempFolder.split("/", QString::SkipEmptyParts, Qt::CaseInsensitive);
 		tempFolderParts.takeLast();
 		if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_WHAMMY), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
-		switch(QMessageBox::warning(this, tr("Low Diskspace Warning"), QString("<nobr>%1</nobr><br><nobr>%2</nobr><br><br>%3").arg(tr("There are less than %1 GB of free diskspace available on your system's TEMP folder.").arg(QString::number(minimumFreeDiskspaceMultiplier)), tr("It is highly recommend to free up more diskspace before proceeding with the encode!"), tr("Your TEMP folder is located at:")).append("<br><nobr><i><a href=\"file:///%3\">%3</a></i></nobr><br>").arg(tempFolderParts.join("\\")), tr("Abort Encoding Process"), tr("Clean Disk Now"), tr("Ignore")))
+		QString lowDiskspaceMsg = QString("%1<br>%2<br><br>%3<br>%4<br>").arg
+		(
+			NOBR(tr("There are less than %1 GB of free diskspace available on your system's TEMP folder.").arg(QString::number(minimumFreeDiskspaceMultiplier))),
+			NOBR(tr("It is highly recommend to free up more diskspace before proceeding with the encode!")),
+			NOBR(tr("Your TEMP folder is located at:")),
+			QString("<nobr><tt>%1</tt></nobr>").arg(FSLINK(tempFolderParts.join("\\")))
+		);
+		switch(QMessageBox::warning(this, tr("Low Diskspace Warning"), lowDiskspaceMsg, tr("Abort Encoding Process"), tr("Clean Disk Now"), tr("Ignore")))
 		{
 		case 1:
 			QProcess::startDetached(QString("%1/cleanmgr.exe").arg(lamexp_known_folder(lamexp_folder_systemfolder)), QStringList() << "/D" << tempFolderParts.first());
@@ -1517,30 +1596,36 @@ void MainWindow::importCueSheetActionTriggered(bool checked)
 	
 	TEMP_HIDE_DROPBOX
 	(
-		QString selectedCueFile;
+		while(true)
+		{
+			int result = 0;
+			QString selectedCueFile;
 
-		if(USE_NATIVE_FILE_DIALOG)
-		{
-			selectedCueFile = QFileDialog::getOpenFileName(this, tr("Open Cue Sheet"), m_settings->mostRecentInputPath(), QString("%1 (*.cue)").arg(tr("Cue Sheet File")));
-		}
-		else
-		{
-			QFileDialog dialog(this, tr("Open Cue Sheet"));
-			dialog.setFileMode(QFileDialog::ExistingFile);
-			dialog.setNameFilter(QString("%1 (*.cue)").arg(tr("Cue Sheet File")));
-			dialog.setDirectory(m_settings->mostRecentInputPath());
-			if(dialog.exec())
+			if(USE_NATIVE_FILE_DIALOG)
 			{
-				selectedCueFile = dialog.selectedFiles().first();
+				selectedCueFile = QFileDialog::getOpenFileName(this, tr("Open Cue Sheet"), m_settings->mostRecentInputPath(), QString("%1 (*.cue)").arg(tr("Cue Sheet File")));
 			}
-		}
+			else
+			{
+				QFileDialog dialog(this, tr("Open Cue Sheet"));
+				dialog.setFileMode(QFileDialog::ExistingFile);
+				dialog.setNameFilter(QString("%1 (*.cue)").arg(tr("Cue Sheet File")));
+				dialog.setDirectory(m_settings->mostRecentInputPath());
+				if(dialog.exec())
+				{
+					selectedCueFile = dialog.selectedFiles().first();
+				}
+			}
 
-		if(!selectedCueFile.isEmpty())
-		{
-			m_settings->mostRecentInputPath(QFileInfo(selectedCueFile).canonicalPath());
-			CueImportDialog *cueImporter  = new CueImportDialog(this, m_fileListModel, selectedCueFile);
-			cueImporter->exec();
-			LAMEXP_DELETE(cueImporter);
+			if(!selectedCueFile.isEmpty())
+			{
+				m_settings->mostRecentInputPath(QFileInfo(selectedCueFile).canonicalPath());
+				CueImportDialog *cueImporter  = new CueImportDialog(this, m_fileListModel, selectedCueFile);
+				result = cueImporter->exec();
+				LAMEXP_DELETE(cueImporter);
+			}
+
+			if(result != (-1)) break;
 		}
 	)
 }
@@ -2720,6 +2805,14 @@ void MainWindow::normalizationMaxVolumeChanged(double value)
 }
 
 /*
+ * Normalization equalization mode changed
+ */
+void MainWindow::normalizationModeChanged(int mode)
+{
+	m_settings->normalizationFilterEqualizationMode(mode);
+}
+
+/*
  * Tone adjustment has changed (Bass)
  */
 void MainWindow::toneAdjustBassChanged(double value)
@@ -2951,6 +3044,7 @@ void MainWindow::resetAdvancedOptionsButtonClicked(void)
 	comboBoxAACProfile->setCurrentIndex(m_settings->aacEncProfileDefault());
 	comboBoxAftenCodingMode->setCurrentIndex(m_settings->aftenAudioCodingModeDefault());
 	comboBoxAftenDRCMode->setCurrentIndex(m_settings->aftenDynamicRangeCompressionDefault());
+	comboBoxNormalizationMode->setCurrentIndex(m_settings->normalizationFilterEqualizationModeDefault());
 	while(checkBoxBitrateManagement->isChecked() != m_settings->bitrateManagementEnabledDefault()) checkBoxBitrateManagement->click();
 	while(checkBoxNeroAAC2PassMode->isChecked() != m_settings->neroAACEnable2PassDefault()) checkBoxNeroAAC2PassMode->click();
 	while(checkBoxNormalizationFilter->isChecked() != m_settings->normalizationFilterEnabledDefault()) checkBoxNormalizationFilter->click();

@@ -481,7 +481,6 @@ void ProcessingDialog::logViewDoubleClicked(const QModelIndex &index)
 
 void ProcessingDialog::logViewSectionSizeChanged(int logicalIndex, int oldSize, int newSize)
 {
-	qDebug("sectionResized");
 	if(logicalIndex == 1)
 	{
 		if(QHeaderView *hdr = view_log->horizontalHeader())
@@ -693,7 +692,7 @@ void ProcessingDialog::startNextJob(void)
 	}
 	if(m_settings->normalizationFilterEnabled())
 	{
-		thread->addFilter(new NormalizeFilter(m_settings->normalizationFilterMaxVolume()));
+		thread->addFilter(new NormalizeFilter(m_settings->normalizationFilterMaxVolume(), m_settings->normalizationFilterEqualizationMode()));
 	}
 	if(m_settings->renameOutputFilesEnabled() && (!m_settings->renameOutputFilesPattern().simplified().isEmpty()))
 	{
@@ -724,8 +723,11 @@ void ProcessingDialog::writePlayList(void)
 	}
 	
 	//Init local variables
-	const static char *invalidChars = "\\/:*?\"<>|";
 	QStringList list;
+	QRegExp regExp1("\\[\\d\\d\\][^/\\\\]+$", Qt::CaseInsensitive);
+	QRegExp regExp2("\\(\\d\\d\\)[^/\\\\]+$", Qt::CaseInsensitive);
+	QRegExp regExp3("\\d\\d[^/\\\\]+$", Qt::CaseInsensitive);
+	bool usePrefix[3] = {true, true, true};
 	bool useUtf8 = false;
 	int counter = 1;
 
@@ -737,16 +739,25 @@ void ProcessingDialog::writePlayList(void)
 	}
 
 	//Clean playlist name
-	for(int i = 0; invalidChars[i]; i++)
-	{
-		playListName = playListName.replace(invalidChars[i], ' ').simplified();
-	}
+	playListName = lamexp_clean_filename(playListName);
 
 	//Create list of audio files
 	for(int i = 0; i < m_allJobs.count(); i++)
 	{
 		if(!m_succeededJobs.contains(m_allJobs.at(i))) continue;
 		list << QDir::toNativeSeparators(QDir(m_settings->outputDir()).relativeFilePath(m_playList.value(m_allJobs.at(i), "N/A")));
+	}
+
+	//Use prefix?
+	for(int i = 0; i < list.count(); i++)
+	{
+		if(regExp1.indexIn(list.at(i)) < 0) usePrefix[0] = false;
+		if(regExp2.indexIn(list.at(i)) < 0) usePrefix[1] = false;
+		if(regExp3.indexIn(list.at(i)) < 0) usePrefix[2] = false;
+	}
+	if(usePrefix[0] || usePrefix[1] || usePrefix[2])
+	{
+		playListName.prepend(usePrefix[0] ? "[00] " : (usePrefix[1] ? "(00) " : "00 "));
 	}
 
 	//Do we need an UTF-8 playlist?

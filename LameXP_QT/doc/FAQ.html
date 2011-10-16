@@ -16,7 +16,7 @@ a:visited { color: #0000EE; }
 <body>
 <h3>LameXP - Frequently Asked Questions (FAQ)</h3><br>
 
-<a name="6a0b023d"></a><b>Table of contents:</b><br>
+<a name="127191f3"></a><b>Table of contents:</b><br>
 <ul>
 <li><a href="#6a0b023d">What is LameXP ???</a>
 <li><a href="#be0a8459">What platforms does LameXP run on?</a>
@@ -41,6 +41,7 @@ a:visited { color: #0000EE; }
 <li><a href="#d83ab3c6">Why does LameXP use LAME v3.99 rather than v3.98?</a><br>
 <li><a href="#4213adbc">Can LameXP be used to convert/extract tracks from an Audio CD?</a>
 <li><a href="#434f2578">Why is the maximum normalization level limited to -0.5 dB?</a>
+<li><a href="#9f8ff13a">What do the different 'Equalization' modes do?</a>
 <li><a href="#e7c9ae2b">Why do I get the error 'Executable doesn't support Windows compatibility mode' on startup?</a>
 <li><a href="#328b0a18">Why do I get the error 'Executable requires Windows XP or later' on startup?</a>
 <li><a href="#3ffe490e">Why do I get the error 'The procedure entry point De/EncodePointer could not be located' on startup?</a>
@@ -58,14 +59,27 @@ a:visited { color: #0000EE; }
 
 <a name="6a0b023d"></a><b>What is LameXP ???</b><br>
 <br>
-LameXP is a graphical user-interface for a number of audio encoders. It was developed to support a huge<br>
-number of input formats. File formats are detected reliably using MediaInfo. Compressed audio formats are<br>
-decoded to uncompressed Wave files using suitable CLI audio decoders. Furthermore LameXP allows batch<br>
-processing of multiple audio files. Multi-threading is implemented by processing several audio files<br>
-concurrently. All the third-party tools incorporated in LameXP are listed in the "About" dialog. The Nero AAC<br>
-encoder cannot be redistributed due to licensing issues; it is available as a free download from the public<br>
-Nero web-site. Note: LameXP does NOT use/need any "external" audio decoders. It neither requires nor supports<br>
-any ACM Codecs or DirectShow/DMO filters! And it will NOT install anything of that kind on your system.<br><br>
+LameXP is a graphical user-interface (front-end) for various of audio encoders: It allows you convert your<br>
+audio files from one audio format to another one in the most simple way. Despite its name, LameXP is NOT only<br>
+a front-end for the LAME encoder, but supports a wide range of output formats, including MP3, Ogg Vorbis,<br>
+AAC/MP4, FLAC, AC-3 and Wave Audio. The number of supported input formats is even bigger! Furthermore LameXP<br>
+does NOT only run on Windows XP, but also on Windows Vista, Windows 7 and many other operating systems.<br>
+<br>
+As all the encoders and decoders used by LameXP are already "built-in" (with one exception), you do NOT need<br>
+to install any additional software, such as "Codecs", "Filters" or "Plug-ins", on your computer. Everything<br>
+works "out of the box"! You can even use LameXP as a "portable" application, e.g. run it from your USB stick.<br>
+Moreover LameXP was designed for batch processing. This means that you can convert a huge number of audio<br>
+files, e.g. a complete album or even your entire music collection, in a single step. And, as LameXP is able<br>
+to process several audio files in parallel, it takes full advantage of modern multi-core processors! However<br>
+LameXP is NOT only optimized for speed, it also provides excellent sound quality by using the most<br>
+sophisticated encoders available and by giving the user unrestricted control over all encoding parameters.<br>
+<br>
+In addition to that, LameXP provides full support for metadata, including cover art. So when converting your<br>
+audio files, LameXP will retain existing meta tags. But there also is an easy-to-use editor for adding or<br>
+modifying metadata. LameXP supports Unicode for both, meta tags and filenames, so there won't be any problems<br>
+with "foreign" characters. And, thanks to our translators, the user-interface of LameXP is available in<br>
+multiple languages. Last but not least, LameXP supports a number of post-processing filters, including sample<br>
+rate conversion, normalization (gain), tone adjustment and downmixing of multi-channel sources.<br><br>
 
 <br><br>
 
@@ -510,7 +524,6 @@ the '.cda' files directly is destined to fail (as the '.cda' files do NOT actual
 
 <a name="434f2578"></a><b>Why is the maximum normalization level limited to -0.5 dB?</b><br>
 <br>
-
 When an analogue [audio] signal is converted to the digital domain, the signal is sampled at a fixed rate<br>
 (e.g. 44100 samples per second) and each "sample" value is stored with a fixed number of bits (e.g. 16 or 24<br>
 bits per sample). Consequently [uncompressed] digital audio is represented as a sequence of binary sample<br>
@@ -528,7 +541,7 @@ filter will be applied in order to recover a continuous signal from these indivi
 reconstructed analogue signal it is possible to have voltages that are higher than the highest digital sample<br>
 in the audio track! This is illustrated in the following image (samples are represented as tiny squares):<br>
 <br>
-<a target="_blank" href="http://img3.imageshack.us/img3/9153/sine0dbfs.png"><img src="http://img3.imageshack.us/img3/9153/sine0dbfs.th.png" border="0"></a><br>
+<a target="_blank" href="http://img3.imageshack.us/img3/9153/sine0dbfs.png"><img src="http://img3.imageshack.us/img3/9153/sine0dbfs.th.png" border="0" alt="thumb"></a><br>
 <br>
 Consequently normalizing the sample values to 0dBFS is NOT a very good idea, as this may very well result in<br>
 a reconstructed analogue signal which exceeds(!) 0dBFS. And, as the analogue parts of the playback equipment<br>
@@ -540,6 +553,22 @@ no more than 96% [-0.36 dB] as some audio compact disc players have problems acc
 bits that have been processed to 100% (maximum) amplitude [0dBFS].</blockquote>
 For details please refer to the following article:<br><ul>
 <li><a href="http://www.audioholics.com/education/audio-formats-technology/issues-with-0dbfs-levels-on-digital-audio-playback-systems" target="_blank">http://www.audioholics.com/...issues-with-0dbfs-levels-on-digital-audio-playback-systems</a></ul>
+
+<br><br>
+
+<a name="9f8ff13a"></a><b>What do the different 'Equalization' modes do?</b><br>
+<br>
+The "equalization" modes control how the normalization filter will deal with multi-channel input files, i.e.<br>
+everything that is not Mono. The "Peak Level" mode will normalize each channel according to its highest peak<br>
+(maximum sample value). This means that channels with a lower maximum sample value will be amplified stronger<br>
+than channels with a higher maximum sample value. Still all samples in a channel will be amplified by the<br>
+same factor, so dynamic range compression is NOT done. The "RMS Level" mode works similar to the previous<br>
+mode, but the channels are amplified according to their peak RMS level (maximum energy), instead of their<br>
+maximum sample value. This may be used to correct stereo imbalance caused by an imperfect record turntable<br>
+cartridge. Last but not least, the "None" mode will not euqalize the channels at all, i.e. all channles will<br>
+by amplified by the same factor. In the last mode, the highest peak of all(!) channels is used as threshold.<br>
+<br>
+WARNING: The "None" mode appears to be broken with more than two channels! This is a bug in SoX.<br><br>
 
 <br><br>
 
@@ -652,7 +681,7 @@ Also note the following hints:<br><ul>
 In order to use the LameXP deployment scripts you need the following tools:<br><ul>
 <li><a href="http://www.7-zip.org/" target="_blank">7-Zip</a> - file archiver with a high compression ratio
 <li><a href="http://www.scratchpaper.com/" target="_blank">NSIS</a> - Nullsoft Scriptable Install System (Unicode Version)<ul>
-<li><a href="http://nsis.sourceforge.net/UAC_plug-in" target="_blank">UAC plug-in</a>
+<li><a href="http://nsis.sourceforge.net/StdUtils_plug-in" target="_blank">StdUtils plug-in</a>
 <li><a href="http://nsis.sourceforge.net/LockedList_plug-in" target="_blank">LockedList plug-in</a>
 <li><a href="http://nsis.sourceforge.net/Inetc_plug-in" target="_blank">Inetc plug-in</a>
 <li><a href="http://forums.winamp.com/showthread.php?t=329990" target="_blank">Aero plug-in</a></ul>

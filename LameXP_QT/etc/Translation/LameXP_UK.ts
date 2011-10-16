@@ -4,8 +4,8 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <source>LameXP &amp;minus; Audio Encoder Front-end</source>
-        <translation>LameXP &amp;minus; Audio Encoder Front-end</translation>
+        <source>LameXP - Audio Encoder Front-end</source>
+        <translation>LameXP - Audio Encoder Front-end</translation>
     </message>
     <message>
         <source>Please visit %1 for news and updates!</source>
@@ -72,16 +72,16 @@
         <translation>Наступне стороннє ПЗ використовується в LameXP:</translation>
     </message>
     <message>
-        <source>LAME &amp;minus; OpenSource mp3 Encoder</source>
-        <translation>LAME &amp;minus; OpenSource mp3 Encoder</translation>
+        <source>LAME - OpenSource mp3 Encoder</source>
+        <translation>LAME - OpenSource mp3 Encoder</translation>
     </message>
     <message>
         <source>Released under the terms of the GNU Lesser General Public License.</source>
         <translation>Випущено під ліцензією GNU Lesser General Public License.</translation>
     </message>
     <message>
-        <source>OggEnc &amp;minus; Ogg Vorbis Encoder</source>
-        <translation>OggEnc &amp;minus; Ogg Vorbis Encoder</translation>
+        <source>OggEnc - Ogg Vorbis Encoder</source>
+        <translation>OggEnc - Ogg Vorbis Encoder</translation>
     </message>
     <message>
         <source>Completely open and patent-free audio encoding technology.</source>
@@ -100,84 +100,84 @@
         <translation>Доступний на веб-сторінці вендора для безкоштовного завантаження:</translation>
     </message>
     <message>
-        <source>FLAC &amp;minus; Free Lossless Audio Codec</source>
-        <translation>FLAC &amp;minus; Free Lossless Audio Codec</translation>
+        <source>FLAC - Free Lossless Audio Codec</source>
+        <translation>FLAC - Free Lossless Audio Codec</translation>
     </message>
     <message>
         <source>Open and patent-free lossless audio compression technology.</source>
         <translation>Відкрита і вільна від патентних зборів технологія кодування аудіо без втрат.</translation>
     </message>
     <message>
-        <source>mpg123 &amp;minus; Fast Console MPEG Audio Player/Decoder</source>
-        <translation>mpg123 &amp;minus; Fast Console MPEG Audio Player/Decoder</translation>
+        <source>mpg123 - Fast Console MPEG Audio Player/Decoder</source>
+        <translation>mpg123 - Fast Console MPEG Audio Player/Decoder</translation>
     </message>
     <message>
-        <source>FAAD &amp;minus; OpenSource MPEG-4 and MPEG-2 AAC Decoder</source>
-        <translation>FAAD &amp;minus; OpenSource MPEG-4 and MPEG-2 AAC Decoder</translation>
+        <source>FAAD - OpenSource MPEG-4 and MPEG-2 AAC Decoder</source>
+        <translation>FAAD - OpenSource MPEG-4 and MPEG-2 AAC Decoder</translation>
     </message>
     <message>
         <source>Released under the terms of the GNU General Public License.</source>
         <translation>Випущено під ліцензією GNU Lesser General Public License.</translation>
     </message>
     <message>
-        <source>AC3Filter Tools &amp;minus; AC3/DTS Decoder</source>
-        <translation>AC3Filter Tools &amp;minus; AC3/DTS Decoder</translation>
+        <source>AC3Filter Tools - AC3/DTS Decoder</source>
+        <translation>AC3Filter Tools - AC3/DTS Decoder</translation>
     </message>
     <message>
-        <source>WavPack &amp;minus; Hybrid Lossless Compression</source>
-        <translation>WavPack &amp;minus; Hybrid Lossless Compression</translation>
+        <source>WavPack - Hybrid Lossless Compression</source>
+        <translation>WavPack - Hybrid Lossless Compression</translation>
     </message>
     <message>
         <source>Completely open audio compression format.</source>
         <translation>Повністю відкритий формат стиснення аудіо.</translation>
     </message>
     <message>
-        <source>Musepack &amp;minus; Living Audio Compression</source>
-        <translation>Musepack &amp;minus; Living Audio Compression</translation>
+        <source>Musepack - Living Audio Compression</source>
+        <translation>Musepack - Living Audio Compression</translation>
     </message>
     <message>
-        <source>Monkey&apos;s Audio &amp;minus; Lossless Audio Compressor</source>
-        <translation>Monkey&apos;s Audio &amp;minus; Lossless Audio Compressor</translation>
+        <source>Monkey&apos;s Audio - Lossless Audio Compressor</source>
+        <translation>Monkey&apos;s Audio - Lossless Audio Compressor</translation>
     </message>
     <message>
         <source>Freely available source code, simple SDK and non-restrictive licensing.</source>
         <translation>Відкритий програмний код, простий SDK і ліцензія без обмежень.</translation>
     </message>
     <message>
-        <source>Shorten &amp;minus; Lossless Audio Compressor</source>
-        <translation>Shorten &amp;minus; Lossless Audio Compressor</translation>
+        <source>Shorten - Lossless Audio Compressor</source>
+        <translation>Shorten - Lossless Audio Compressor</translation>
     </message>
     <message>
-        <source>Speex &amp;minus; Free Codec For Free Speech</source>
-        <translation>Speex &amp;minus; Free Codec For Free Speech</translation>
+        <source>Speex - Free Codec For Free Speech</source>
+        <translation>Speex - Free Codec For Free Speech</translation>
     </message>
     <message>
         <source>Open Source patent-free audio format designed for speech.</source>
         <translation>Відкритий і вільний від патентних зборів формат аудіо, призначений для обробки розмовного звукового матеріалу.</translation>
     </message>
     <message>
-        <source>The True Audio &amp;minus; Lossless Audio Codec</source>
-        <translation>The True Audio &amp;minus; Lossless Audio Codec</translation>
+        <source>The True Audio - Lossless Audio Codec</source>
+        <translation>The True Audio - Lossless Audio Codec</translation>
     </message>
     <message>
-        <source>MediaInfo &amp;minus; Media File Analysis Tool</source>
-        <translation>MediaInfo &amp;minus; Media File Analysis Tool</translation>
+        <source>MediaInfo - Media File Analysis Tool</source>
+        <translation>MediaInfo - Media File Analysis Tool</translation>
     </message>
     <message>
-        <source>SoX &amp;minus; Sound eXchange</source>
-        <translation>SoX &amp;minus; Sound eXchange</translation>
+        <source>SoX - Sound eXchange</source>
+        <translation>SoX - Sound eXchange</translation>
     </message>
     <message>
-        <source>GnuPG &amp;minus; The GNU Privacy Guard</source>
-        <translation>GnuPG &amp;minus; The GNU Privacy Guard</translation>
+        <source>GnuPG - The GNU Privacy Guard</source>
+        <translation>GnuPG - The GNU Privacy Guard</translation>
     </message>
     <message>
-        <source>GNU Wget &amp;minus; Software for retrieving files using HTTP</source>
-        <translation>GNU Wget &amp;minus; Software for retrieving files using HTTP</translation>
+        <source>GNU Wget - Software for retrieving files using HTTP</source>
+        <translation>GNU Wget - Software for retrieving files using HTTP</translation>
     </message>
     <message>
-        <source>Silk Icons &amp;minus; Over 700  icons in PNG format</source>
-        <translation>Silk Icons &amp;minus; Більш ніж 700 іконок в форматі PNG</translation>
+        <source>Silk Icons - Over 700  icons in PNG format</source>
+        <translation>Silk Icons - Більш ніж 700 іконок в форматі PNG</translation>
     </message>
     <message>
         <source>By Mark James, released under the Creative Commons &apos;by&apos; License.</source>
@@ -185,7 +185,7 @@
     </message>
     <message>
         <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of thrird-party software used in LameXP belongs to the individual authors.</source>
-        <translation>Всі права на LameXP належать LoRd_MuldeR. Права на стороннє ПЗ, що використовується в LameXP, належить авторам цього ПЗ.</translation>
+        <translation>Всі права на LameXP належать LoRd_MuldeR. Права на стороннє ПЗ, що використовується в LameXP, належать авторам цього ПЗ.</translation>
     </message>
     <message>
         <source>About Third-party Software</source>
@@ -200,9 +200,9 @@
         <translation>Примітка: Строк дії цієї демо (тестової) версії LameXP закінчиться %1. Ще %2 днів.</translation>
     </message>
     <message>
-        <source>Aften &amp;minus; A/52 audio encoder</source>
-        <translatorcomment>Aften &amp;minus; A/52 audio encoder</translatorcomment>
-        <translation>Aften &amp;minus; A/52 audio encoder</translation>
+        <source>Aften - A/52 audio encoder</source>
+        <translatorcomment>Aften - A/52 audio encoder</translatorcomment>
+        <translation>Aften - A/52 audio encoder</translation>
     </message>
     <message>
         <source>ALAC Decoder</source>
@@ -221,12 +221,12 @@
         <translation>За участі Jory Stone &lt;jcsston@toughguy.net&gt; і LoRd_MuldeR &lt;mulder2@gmx.de&gt;.</translation>
     </message>
     <message>
-        <source>wma2wav &amp;minus; Dump WMA files to Wave Audio</source>
-        <translation>wma2wav &amp;minus; Декодує файли WMA у Wave аудіо</translation>
+        <source>wma2wav - Dump WMA files to Wave Audio</source>
+        <translation>wma2wav - Декодує файли WMA у Wave аудіо</translation>
     </message>
     <message>
-        <source>avs2wav &amp;minus; Avisynth to Wave Audio converter</source>
-        <translation>avs2wav &amp;minus; аудіоконвертер у Wave аудіо, що базується на Avisynth</translation>
+        <source>avs2wav - Avisynth to Wave Audio converter</source>
+        <translation>avs2wav - аудіоконвертер у Wave аудіо, що базується на Avisynth</translation>
     </message>
 </context>
 <context>
@@ -272,7 +272,7 @@
     <name>CueImportDialog</name>
     <message>
         <source>Import Cue Sheet</source>
-        <translation>Імпортувати список Cue</translation>
+        <translation>Імпорт списку Cue</translation>
     </message>
     <message>
         <source>The following Cue Sheet will be split and imported into LameXP.</source>
@@ -380,18 +380,18 @@
     </message>
     <message>
         <source>Imported %1 track(s) from the Cue Sheet and skipped %2 track(s).</source>
-        <translation>Імпортовано %1 доріжку(-и, -ок) зі списку Cue і пропущено %2 доріжку(-и, -ок).</translation>
+        <translation>Імпортовано %1 доріжок(-и, -у) зі списку Cue і пропущено %2 доріжку(-и, -ок).</translation>
     </message>
     <message>
         <source>Cue Sheet Completed</source>
-        <translation>Обробку списків Cue завершено</translation>
+        <translation>Обробку списку Cue завершено</translation>
     </message>
 </context>
 <context>
     <name>CueSheetImport</name>
     <message>
         <source>Import Cue Sheet</source>
-        <translation>Імпортувати список Cue</translation>
+        <translation>Імпорт списку Cue</translation>
     </message>
     <message>
         <source>Existing Source File</source>
@@ -399,7 +399,7 @@
     </message>
     <message>
         <source>Missing Source File (Tracks will be skipped!)</source>
-        <translation>Втрачено вхідний файл (Доріжки буде пропущено!)</translation>
+        <translation>Вхідний файл втрачено (Доріжки буде пропущено!)</translation>
     </message>
     <message>
         <source> Output Directory </source>
@@ -412,6 +412,10 @@
     <message>
         <source>Discard</source>
         <translation>Відмінити</translation>
+    </message>
+    <message>
+        <source>Load a different Cue Sheet</source>
+        <translation>Обрати інший список CUE</translation>
     </message>
 </context>
 <context>
@@ -588,7 +592,7 @@
     </message>
     <message>
         <source> Meta Information </source>
-        <translation>Метаінформація</translation>
+        <translation>Метадані</translation>
     </message>
     <message>
         <source>Edit</source>
@@ -596,7 +600,7 @@
     </message>
     <message>
         <source>Note: Meta information you enter here will &lt;u&gt;supersede&lt;/u&gt; data from the source!</source>
-        <translation>Зверніть увагу: Метаінформація, введена вами тут, буде &lt;u&gt;заміщати&lt;/u&gt; дані оригінального файла!</translation>
+        <translation>Зверніть увагу: Метадані, введені вами тут, будуть &lt;u&gt;заміщати&lt;/u&gt; дані оригінального файла!</translation>
     </message>
     <message>
         <source>Reset</source>
@@ -612,7 +616,7 @@
     </message>
     <message>
         <source>Write meta information to encoded files</source>
-        <translation>Записувати метаінформацію до файлів, що кодуються</translation>
+        <translation>Записувати метадані до файлів, що кодуються</translation>
     </message>
     <message>
         <source>Compression</source>
@@ -961,10 +965,6 @@
     <message>
         <source>Postpone</source>
         <translation>Відхилити</translation>
-    </message>
-    <message>
-        <source>DEMO VERSION</source>
-        <translation>ДЕМО ВЕРСІЯ</translation>
     </message>
     <message>
         <source>You can drop in audio files here!</source>
@@ -1339,8 +1339,8 @@
         <translation>%1 файл(и, ів) було пропущено, тому що вони є фіктивними файлами CDDA!</translation>
     </message>
     <message>
-        <source>Sorry, LameXP cannot extract audio tracks from an Audio&amp;minus;CD at present.</source>
-        <translation>Вибачте, але LameXP наразі не може витягнути аудіодоріжки з Audio&amp;minus;CD.</translation>
+        <source>Sorry, LameXP cannot extract audio tracks from an Audio-CD at present.</source>
+        <translation>Вибачте, але LameXP наразі не може витягнути аудіодоріжки з Audio-CD.</translation>
     </message>
     <message>
         <source>We recommend using %1 for that purpose.</source>
@@ -1472,7 +1472,7 @@
     </message>
     <message>
         <source>Import Cue Sheet</source>
-        <translation>Імпортувати список Cue</translation>
+        <translation>Імпорт списку Cue</translation>
     </message>
     <message>
         <source>CDDA Files</source>
@@ -1599,7 +1599,7 @@
         <translation>Можна вводити користувацькі параметри тут!</translation>
     </message>
     <message>
-        <source>Entere the pattern to rename the output files here!</source>
+        <source>Enter the pattern to rename the output files here!</source>
         <translation>Вводьте шаблони для перейменовування вихідних файлів тут!</translation>
     </message>
     <message>
@@ -1649,6 +1649,26 @@
     <message>
         <source>Warning: Processing speed will be very slow. Please do &lt;u&gt;not&lt;/u&gt; complain about processing speed!</source>
         <translation>Попередження: Швидкість обробки буде дуже низькою. Будь ласка, &lt;u&gt;не&lt;/u&gt; жалійтеся потім на швидкість обробки!</translation>
+    </message>
+    <message>
+        <source>Peak Level</source>
+        <translation>Піковий рівень</translation>
+    </message>
+    <message>
+        <source>RMS Level</source>
+        <translation>Ефективний рівень</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Не задано</translation>
+    </message>
+    <message>
+        <source>Equalization Mode:</source>
+        <translation>Режим балансування:</translation>
+    </message>
+    <message>
+        <source>DEMO VERSION</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
