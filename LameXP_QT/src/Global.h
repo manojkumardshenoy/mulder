@@ -83,6 +83,7 @@ unsigned int lamexp_toolver_neroaac(void);
 unsigned int lamexp_toolver_fhgaacenc(void);
 const char *lamexp_website_url(void);
 const char *lamexp_support_url(void);
+DWORD lamexp_get_os_version(void);
 
 //Public functions
 void lamexp_init_console(int argc, char* argv[]);
@@ -102,7 +103,8 @@ void lamexp_ipc_read(unsigned int *command, char* message, size_t buffSize);
 void lamexp_ipc_send(unsigned int command, const char* message);
 lamexp_cpu_t lamexp_detect_cpu_features(int argc = 0, char **argv = NULL);
 bool lamexp_portable_mode(void);
-bool lamexp_shutdown_computer(const QString &message, const unsigned long timeout = 30, const bool forceShutdown = true);
+bool lamexp_shutdown_computer(const QString &message, const unsigned long timeout = 30, const bool forceShutdown = true, const bool hibernate = false);
+bool lamexp_is_hibernation_supported(void);
 
 //Translation support
 QStringList lamexp_query_translations(void);
@@ -117,7 +119,7 @@ static const char* LAMEXP_DEFAULT_LANGID = "en";
 bool lamexp_clean_folder(const QString &folderPath);
 const QString lamexp_version2string(const QString &pattern, unsigned int version, const QString &defaultText);
 QString lamexp_known_folder(lamexp_known_folder_t folder_id);
-__int64 lamexp_free_diskspace(const QString &path);
+unsigned __int64 lamexp_free_diskspace(const QString &path, bool *ok = NULL);
 bool lamexp_remove_file(const QString &filename);
 bool lamexp_themes_enabled(void);
 void lamexp_blink_window(QWidget *poWindow, unsigned int count = 10, unsigned int delay = 150);

@@ -33,7 +33,16 @@ class ProcessThread;
 class FileListModel;
 class AudioFileModel;
 class SettingsModel;
+class CPUObserverThread;
+class RAMObserverThread;
 class DiskObserverThread;
+
+enum shutdownFlag_t
+{
+	shutdownFlag_None = 0,
+	shutdownFlag_TurnPowerOff = 1,
+	shutdownFlag_Hibernate = 2
+};
 
 class ProcessingDialog : public QDialog, private Ui::ProcessingDialog
 {
@@ -43,7 +52,7 @@ public:
 	ProcessingDialog(FileListModel *fileListModel, AudioFileModel *metaInfo, SettingsModel *settings, QWidget *parent = 0);
 	~ProcessingDialog(void);
 	
-	bool getShutdownFlag(void) { return m_shutdownFlag; }
+	int getShutdownFlag(void) { return m_shutdownFlag; }
 
 private slots:
 	void initEncoding(void);
@@ -57,11 +66,15 @@ private slots:
 	void contextMenuDetailsActionTriggered(void);
 	void contextMenuShowFileActionTriggered(void);
 	void systemTrayActivated(QSystemTrayIcon::ActivationReason reason);
+	void cpuUsageHasChanged(const double val);
+	void ramUsageHasChanged(const double val);
+	void diskUsageHasChanged(const quint64 val);
 
 protected:
 	void showEvent(QShowEvent *event);
 	void closeEvent(QCloseEvent *event);
 	bool eventFilter(QObject *obj, QEvent *event);
+	bool winEvent(MSG *message, long *result);
 
 private:
 	void setCloseButtonEnabled(bool enabled);
@@ -85,6 +98,8 @@ private:
 	QList<QUuid> m_failedJobs;
 	bool m_userAborted;
 	QSystemTrayIcon *m_systemTray;
-	bool m_shutdownFlag;
+	int m_shutdownFlag;
+	CPUObserverThread *m_cpuObserver;
+	RAMObserverThread *m_ramObserver;
 	DiskObserverThread *m_diskObserver;
 };

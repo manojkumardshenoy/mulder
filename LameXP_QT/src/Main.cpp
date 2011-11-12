@@ -30,6 +30,7 @@
 #include "Model_FileList.h"
 #include "Model_AudioFile.h"
 #include "Encoder_Abstract.h"
+#include "WinSevenTaskbar.h"
 
 //Qt includes
 #include <QApplication>
@@ -46,15 +47,15 @@
 static int lamexp_main(int argc, char* argv[])
 {
 	int iResult = -1;
+	int iShutdown = shutdownFlag_None;
 	bool bAccepted = true;
-	bool bShutdown = false;
 	
 	//Init console
 	lamexp_init_console(argc, argv);
 
 	//Print version info
 	qDebug("LameXP - Audio Encoder Front-End v%d.%02d %s (Build #%03d)", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build());
-	qDebug("Copyright (c) 2004-%04d LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved.", max(lamexp_version_date().year(),QDate::currentDate().year()));
+	qDebug("Copyright (c) 2004-%04d LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved.", qMax(lamexp_version_date().year(),QDate::currentDate().year()));
 	qDebug("Built on %s at %s with %s for Win-%s.\n", lamexp_version_date().toString(Qt::ISODate).toLatin1().constData(), lamexp_version_time(), lamexp_version_compiler(), lamexp_version_arch());
 	
 	//print license info
@@ -121,6 +122,15 @@ static int lamexp_main(int argc, char* argv[])
 		}
 	}
 	
+	//Self-test
+	if(LAMEXP_DEBUG)
+	{
+		InitializationThread::selfTest();
+	}
+
+	//Taskbar init
+	WinSevenTaskbar::init();
+
 	//Create models
 	FileListModel *fileListModel = new FileListModel();
 	AudioFileModel *metaInfo = new AudioFileModel();
@@ -139,7 +149,7 @@ static int lamexp_main(int argc, char* argv[])
 	MainWindow *poMainWindow = new MainWindow(fileListModel, metaInfo, settingsModel);
 	
 	//Main application loop
-	while(bAccepted && !bShutdown)
+	while(bAccepted && (iShutdown <= shutdownFlag_None))
 	{
 		//Show main window
 		poMainWindow->show();
@@ -151,7 +161,7 @@ static int lamexp_main(int argc, char* argv[])
 		{
 			ProcessingDialog *processingDialog = new ProcessingDialog(fileListModel, metaInfo, settingsModel);
 			processingDialog->exec();
-			bShutdown = processingDialog->getShutdownFlag();
+			iShutdown = processingDialog->getShutdownFlag();
 			LAMEXP_DELETE(processingDialog);
 		}
 	}
@@ -162,13 +172,16 @@ static int lamexp_main(int argc, char* argv[])
 	LAMEXP_DELETE(metaInfo);
 	LAMEXP_DELETE(settingsModel);
 
+	//Taskbar un-init
+	WinSevenTaskbar::uninit();
+
 	//Final clean-up
 	qDebug("Shutting down, please wait...\n");
 
 	//Shotdown computer
-	if(bShutdown)
+	if(iShutdown > shutdownFlag_None)
 	{
-		if(!lamexp_shutdown_computer(QApplication::applicationFilePath(), 12))
+		if(!lamexp_shutdown_computer(QApplication::applicationFilePath(), 12, true, (iShutdown == shutdownFlag_Hibernate)))
 		{
 			QMessageBox messageBox(QMessageBox::Critical, "LameXP", "Sorry, LameXP was unable to shutdown your computer!", QMessageBox::NoButton, NULL, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
 		}

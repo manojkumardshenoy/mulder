@@ -27,6 +27,8 @@
 #include "Model_Progress.h"
 #include "Model_Settings.h"
 #include "Thread_Process.h"
+#include "Thread_CPUObserver.h"
+#include "Thread_RAMObserver.h"
 #include "Thread_DiskObserver.h"
 #include "Dialog_LogView.h"
 #include "Encoder_MP3.h"
@@ -64,10 +66,10 @@
 ////////////////////////////////////////////////////////////
 
 //Maximum number of parallel instances
-#define MAX_INSTANCES 16
+#define MAX_INSTANCES 16U
 
 //Maximum number of CPU cores for auto-detection
-#define MAX_CPU_COUNT 4
+#define MAX_CPU_COUNT 4U
 
 ////////////////////////////////////////////////////////////
 
@@ -85,6 +87,7 @@
 }
 
 #define SET_FONT_BOLD(WIDGET,BOLD) { QFont _font = WIDGET->font(); _font.setBold(BOLD); WIDGET->setFont(_font); }
+#define UPDATE_MIN_WIDTH(WIDGET) { if(WIDGET->width() > WIDGET->minimumWidth()) WIDGET->setMinimumWidth(WIDGET->width()); }
 
 ////////////////////////////////////////////////////////////
 // Constructor
@@ -96,8 +99,10 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 	m_systemTray(new QSystemTrayIcon(QIcon(":/icons/cd_go.png"), this)),
 	m_settings(settings),
 	m_metaInfo(metaInfo),
-	m_shutdownFlag(false),
-	m_diskObserver(NULL)
+	m_shutdownFlag(shutdownFlag_None),
+	m_diskObserver(NULL),
+	m_cpuObserver(NULL),
+	m_ramObserver(NULL)
 {
 	//Init the dialog, from the .ui file
 	setupUi(this);
@@ -188,7 +193,29 @@ ProcessingDialog::~ProcessingDialog(void)
 	if(m_diskObserver)
 	{
 		m_diskObserver->stop();
-		m_diskObserver->wait(15000);
+		if(!m_diskObserver->wait(15000))
+		{
+			m_diskObserver->terminate();
+			m_diskObserver->wait();
+		}
+	}
+	if(m_cpuObserver)
+	{
+		m_cpuObserver->stop();
+		if(!m_cpuObserver->wait(15000))
+		{
+			m_cpuObserver->terminate();
+			m_cpuObserver->wait();
+		}
+	}
+	if(m_ramObserver)
+	{
+		m_ramObserver->stop();
+		if(!m_ramObserver->wait(15000))
+		{
+			m_ramObserver->terminate();
+			m_ramObserver->wait();
+		}
 	}
 
 	LAMEXP_DELETE(m_progressIndicator);
@@ -196,6 +223,8 @@ ProcessingDialog::~ProcessingDialog(void)
 	LAMEXP_DELETE(m_contextMenu);
 	LAMEXP_DELETE(m_systemTray);
 	LAMEXP_DELETE(m_diskObserver);
+	LAMEXP_DELETE(m_cpuObserver);
+	LAMEXP_DELETE(m_ramObserver);
 
 	WinSevenTaskbar::setOverlayIcon(this, NULL);
 	WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNoState);
@@ -215,6 +244,8 @@ ProcessingDialog::~ProcessingDialog(void)
 
 void ProcessingDialog::showEvent(QShowEvent *event)
 {
+	static const char *NA = " N/A";
+
 	setCloseButtonEnabled(false);
 	button_closeDialog->setEnabled(false);
 	button_AbortProcess->setEnabled(false);
@@ -224,6 +255,10 @@ void ProcessingDialog::showEvent(QShowEvent *event)
 	{
 		SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 	}
+
+	label_cpu->setText(NA);
+	label_disk->setText(NA);
+	label_ram->setText(NA);
 
 	QTimer::singleShot(1000, this, SLOT(initEncoding()));
 }
@@ -269,6 +304,11 @@ bool ProcessingDialog::eventFilter(QObject *obj, QEvent *event)
 	return false;
 }
 
+bool ProcessingDialog::winEvent(MSG *message, long *result)
+{
+	return WinSevenTaskbar::handleWinEvent(message, result);
+}
+
 ////////////////////////////////////////////////////////////
 // SLOTS
 ////////////////////////////////////////////////////////////
@@ -293,7 +333,6 @@ void ProcessingDialog::initEncoding(void)
 	checkBox_shutdownComputer->setEnabled(true);
 	checkBox_shutdownComputer->setChecked(false);
 
-	WinSevenTaskbar::initTaskbar();
 	WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNormalState);
 	WinSevenTaskbar::setTaskbarProgress(this, 0, m_pendingJobs.count());
 	WinSevenTaskbar::setOverlayIcon(this, &QIcon(":/icons/control_play_blue.png"));
@@ -302,23 +341,36 @@ void ProcessingDialog::initEncoding(void)
 	{
 		m_diskObserver = new DiskObserverThread(m_settings->customTempPathEnabled() ? m_settings->customTempPath() : lamexp_temp_folder2());
 		connect(m_diskObserver, SIGNAL(messageLogged(QString,bool)), m_progressModel, SLOT(addSystemMessage(QString,bool)), Qt::QueuedConnection);
+		connect(m_diskObserver, SIGNAL(freeSpaceChanged(quint64)), this, SLOT(diskUsageHasChanged(quint64)), Qt::QueuedConnection);
 		m_diskObserver->start();
 	}
+	if(!m_cpuObserver)
+	{
+		m_cpuObserver = new CPUObserverThread();
+		connect(m_cpuObserver, SIGNAL(currentUsageChanged(double)), this, SLOT(cpuUsageHasChanged(double)), Qt::QueuedConnection);
+		m_cpuObserver->start();
+	}
+	if(!m_ramObserver)
+	{
+		m_ramObserver = new RAMObserverThread();
+		connect(m_ramObserver, SIGNAL(currentUsageChanged(double)), this, SLOT(ramUsageHasChanged(double)), Qt::QueuedConnection);
+		m_ramObserver->start();
+	}
 	
-	int maximumInstances = max(min(m_settings->maximumInstances(), MAX_INSTANCES), 0);
+	unsigned int maximumInstances = qBound(0U, m_settings->maximumInstances(), MAX_INSTANCES);
 	if(maximumInstances < 1)
 	{
 		lamexp_cpu_t cpuFeatures = lamexp_detect_cpu_features();
-		maximumInstances = max(min(cpuFeatures.count, MAX_CPU_COUNT), 1);
+		maximumInstances = qBound(1U, static_cast<unsigned int>(cpuFeatures.count), MAX_CPU_COUNT);
 	}
 
-	int parallelThreadCount = max(min(maximumInstances, m_pendingJobs.count()), 1);
+	unsigned int parallelThreadCount = qBound(1U, maximumInstances, static_cast<unsigned int>(m_pendingJobs.count()));
 	if(parallelThreadCount > 1)
 	{
 		m_progressModel->addSystemMessage(tr("Multi-threading enabled: Running %1 instances in parallel!").arg(QString::number(parallelThreadCount)));
 	}
 
-	for(int i = 0; i < parallelThreadCount; i++)
+	for(unsigned int i = 0; i < parallelThreadCount; i++)
 	{
 		startNextJob();
 	}
@@ -431,7 +483,7 @@ void ProcessingDialog::doneEncoding(void)
 	{
 		if(shutdownComputer())
 		{
-			m_shutdownFlag = true;
+			m_shutdownFlag = m_settings->hibernateComputer() ? shutdownFlag_Hibernate : shutdownFlag_TurnPowerOff;
 			accept();
 		}
 	}
@@ -485,7 +537,7 @@ void ProcessingDialog::logViewSectionSizeChanged(int logicalIndex, int oldSize, 
 	{
 		if(QHeaderView *hdr = view_log->horizontalHeader())
 		{
-			hdr->setMinimumSectionSize(max(hdr->minimumSectionSize(), hdr->sectionSize(1)));
+			hdr->setMinimumSectionSize(qMax(hdr->minimumSectionSize(), hdr->sectionSize(1)));
 		}
 	}
 }
@@ -503,13 +555,13 @@ void ProcessingDialog::contextMenuTriggered(const QPoint &pos)
 
 void ProcessingDialog::contextMenuDetailsActionTriggered(void)
 {
-	QModelIndex index = view_log->indexAt(view_log->mapFromGlobal(m_contextMenu->pos()));
+	QModelIndex index = view_log->indexAt(view_log->viewport()->mapFromGlobal(m_contextMenu->pos()));
 	logViewDoubleClicked(index.isValid() ? index : view_log->currentIndex());
 }
 
 void ProcessingDialog::contextMenuShowFileActionTriggered(void)
 {
-	QModelIndex index = view_log->indexAt(view_log->mapFromGlobal(m_contextMenu->pos()));
+	QModelIndex index = view_log->indexAt(view_log->viewport()->mapFromGlobal(m_contextMenu->pos()));
 	const QUuid &jobId = m_progressModel->getJobId(index.isValid() ? index : view_log->currentIndex());
 	QString filePath = m_playList.value(jobId, QString());
 
@@ -671,7 +723,7 @@ void ProcessingDialog::startNextJob(void)
 		(m_settings->outputToSourceDir() ? QFileInfo(currentFile.filePath()).absolutePath() : m_settings->outputDir()),
 		(m_settings->customTempPathEnabled() ? m_settings->customTempPath() : lamexp_temp_folder2()),
 		encoder,
-		m_settings->prependRelativeSourcePath()
+		m_settings->prependRelativeSourcePath() && (!m_settings->outputToSourceDir())
 	);
 
 	//Add audio filters
@@ -831,9 +883,39 @@ void ProcessingDialog::systemTrayActivated(QSystemTrayIcon::ActivationReason rea
 	}
 }
 
+void ProcessingDialog::cpuUsageHasChanged(const double val)
+{
+	
+	this->label_cpu->setText(QString().sprintf(" %d%%", qRound(val * 100.0)));
+	UPDATE_MIN_WIDTH(label_cpu);
+}
+
+void ProcessingDialog::ramUsageHasChanged(const double val)
+{
+	
+	this->label_ram->setText(QString().sprintf(" %d%%", qRound(val * 100.0)));
+	UPDATE_MIN_WIDTH(label_ram);
+}
+
+void ProcessingDialog::diskUsageHasChanged(const quint64 val)
+{
+	int postfix = 0;
+	const char *postfixStr[6] = {"B", "KB", "MB", "GB", "TB", "PB"};
+	double space = static_cast<double>(val);
+
+	while((space >= 1000.0) && (postfix < 5))
+	{
+		space = space / 1024.0;
+		postfix++;
+	}
+
+	this->label_disk->setText(QString().sprintf(" %3.1f %s", space, postfixStr[postfix]));
+	UPDATE_MIN_WIDTH(label_disk);
+}
+
 bool ProcessingDialog::shutdownComputer(void)
 {
-	const int iTimeout = 30;
+	const int iTimeout = m_settings->hibernateComputer() ? 10 : 30;
 	const Qt::WindowFlags flags = Qt::WindowStaysOnTopHint | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowSystemMenuHint;
 	const QString text = QString("%1%2%1").arg(QString().fill(' ', 18), tr("Warning: Computer will shutdown in %1 seconds..."));
 	
