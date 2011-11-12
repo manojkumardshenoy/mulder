@@ -1670,6 +1670,30 @@
         <source>DEMO VERSION</source>
         <translation></translation>
     </message>
+    <message>
+        <source>Hibernate Computer On Shutdown</source>
+        <translation>Computer in den Ruhezustand versetzen</translation>
+    </message>
+    <message>
+        <source>Hibernate Computer</source>
+        <translation>Ruhezustand</translation>
+    </message>
+    <message>
+        <source>Do you really want the computer to be hibernated on shutdown?</source>
+        <translation>Sind Sie sicher, dass der Computer in den Ruhezustand versetzt werden soll?</translation>
+    </message>
+    <message>
+        <source>LameXP will hibernate the computer on shutdown from now on.</source>
+        <translation>LameXP wird den Computer fortan in den Ruhezustand versetzen.</translation>
+    </message>
+    <message>
+        <source>LameXP will &lt;i&gt;not&lt;/i&gt; hibernate the computer on shutdown from now on.</source>
+        <translation>LameXP wird den Computer fortan &lt;i&gt;nicht&lt;/i&gt; in den Ruhezustand versetzen.</translation>
+    </message>
+    <message>
+        <source>(Hint: Please ignore the name of the downloaded ZIP file and check the included &apos;changelog.txt&apos; instead!)</source>
+        <translation>(Hinweis: Bitte beachten Sie die enthaltene &apos;changelog.txt&apos; Datei anstelle des Dateinames der ZIP-Datei!)</translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -2088,6 +2112,18 @@
     <message>
         <source>Cancel Shutdown</source>
         <translation>Herunterfahren abbrechen</translation>
+    </message>
+    <message>
+        <source>CPU Usage (Overall)</source>
+        <translation>Prozessorauslastung (insgesamt)</translation>
+    </message>
+    <message>
+        <source>Physical RAM Usage</source>
+        <translation>Speicherauslastung (physikalischer Arbeitsspeicher)</translation>
+    </message>
+    <message>
+        <source>Free Disk Space (Temp Folder)</source>
+        <translation>Freier Festplattenspeicher (Temp Ordner)</translation>
     </message>
 </context>
 <context>

@@ -58,6 +58,7 @@
 
 //COM includes
 #include <Objbase.h>
+#include <PowrProf.h>
 
 //Debug only includes
 #if LAMEXP_DEBUG
@@ -320,7 +321,7 @@ const QDate &lamexp_version_date(void)
 /*
  * Get the native operating system version
  */
-static DWORD lamexp_get_os_version(void)
+DWORD lamexp_get_os_version(void)
 {
 	OSVERSIONINFO osVerInfo;
 	memset(&osVerInfo, 0, sizeof(OSVERSIONINFO));
@@ -568,7 +569,7 @@ lamexp_cpu_t lamexp_detect_cpu_features(int argc, char **argv)
 	}
 
 	__cpuid(CPUInfo, 0x80000000);
-	int nExIds = max(min(CPUInfo[0], 0x80000004), 0x80000000);
+	int nExIds = qMax<int>(qMin<int>(CPUInfo[0], 0x80000004), 0x80000000);
 
 	for(int i = 0x80000002; i <= nExIds; ++i)
 	{
@@ -621,19 +622,8 @@ lamexp_cpu_t lamexp_detect_cpu_features(int argc, char **argv)
 	features.count = systemInfo.dwNumberOfProcessors;
 	features.x64 = true;
 #endif
-	
-	//Hack to disable x64 on the Windows 8 Developer Preview
-	if(features.x64)
-	{
-		DWORD osVerNo = lamexp_get_os_version();
-		if((HIWORD(osVerNo) == 6) && (LOWORD(osVerNo) == 2))
-		{
-			qWarning("Windows 8 (x64) detected. Going to disable all x64 support for now!\n");
-			features.x64 = false;
-		}
-	}
 
-	if(argv)
+	if((argv != NULL) && (argc > 0))
 	{
 		bool flag = false;
 		for(int i = 0; i < argc; i++)
@@ -1496,23 +1486,43 @@ bool lamexp_themes_enabled(void)
 /*
  * Get number of free bytes on disk
  */
-__int64 lamexp_free_diskspace(const QString &path)
+unsigned __int64 lamexp_free_diskspace(const QString &path, bool *ok)
 {
 	ULARGE_INTEGER freeBytesAvailable, totalNumberOfBytes, totalNumberOfFreeBytes;
 	if(GetDiskFreeSpaceExW(reinterpret_cast<const wchar_t*>(QDir::toNativeSeparators(path).utf16()), &freeBytesAvailable, &totalNumberOfBytes, &totalNumberOfFreeBytes))
 	{
+		if(ok) *ok = true;
 		return freeBytesAvailable.QuadPart;
 	}
 	else
 	{
+		if(ok) *ok = false;
 		return 0;
 	}
 }
 
 /*
+ * Check if computer does support hibernation
+ */
+bool lamexp_is_hibernation_supported(void)
+{
+	bool hibernationSupported = false;
+
+	SYSTEM_POWER_CAPABILITIES pwrCaps;
+	SecureZeroMemory(&pwrCaps, sizeof(SYSTEM_POWER_CAPABILITIES));
+	
+	if(GetPwrCapabilities(&pwrCaps))
+	{
+		hibernationSupported = pwrCaps.SystemS4 && pwrCaps.HiberFilePresent;
+	}
+
+	return hibernationSupported;
+}
+
+/*
  * Shutdown the computer
  */
-bool lamexp_shutdown_computer(const QString &message, const unsigned long timeout, const bool forceShutdown)
+bool lamexp_shutdown_computer(const QString &message, const unsigned long timeout, const bool forceShutdown, const bool hibernate)
 {
 	HANDLE hToken = NULL;
 
@@ -1527,8 +1537,15 @@ bool lamexp_shutdown_computer(const QString &message, const unsigned long timeou
 		{
 			if(AdjustTokenPrivileges(hToken, FALSE, &privileges, NULL, NULL, NULL))
 			{
+				if(hibernate)
+				{
+					if(SetSuspendState(TRUE, TRUE, TRUE))
+					{
+						return true;
+					}
+				}
 				const DWORD reason = SHTDN_REASON_MAJOR_APPLICATION | SHTDN_REASON_FLAG_PLANNED;
-				return InitiateSystemShutdownEx(NULL, const_cast<wchar_t*>(QWCHAR(message)), timeout, forceShutdown, FALSE, reason);
+				return InitiateSystemShutdownEx(NULL, const_cast<wchar_t*>(QWCHAR(message)), timeout, forceShutdown ? TRUE : FALSE, FALSE, reason);
 			}
 		}
 	}

@@ -414,7 +414,7 @@
     </message>
     <message>
         <source>Load a different Cue Sheet</source>
-        <translation type="unfinished"></translation>
+        <translation>Cargar otro Cue sheet</translation>
     </message>
 </context>
 <context>
@@ -1651,23 +1651,47 @@
     </message>
     <message>
         <source>Peak Level</source>
-        <translation type="unfinished"></translation>
+        <translation>Nivel de pico</translation>
     </message>
     <message>
         <source>RMS Level</source>
-        <translation type="unfinished"></translation>
+        <translation>Nivel RMS</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Ninguno</translation>
     </message>
     <message>
         <source>Equalization Mode:</source>
-        <translation type="unfinished"></translation>
+        <translation>Modo de equalización:</translation>
     </message>
     <message>
         <source>DEMO VERSION</source>
-        <translation type="unfinished"></translation>
+        <translation>VERSIÓN DEMO</translation>
+    </message>
+    <message>
+        <source>Hibernate Computer On Shutdown</source>
+        <translation>Hibernar equipo al cerrar el sistema</translation>
+    </message>
+    <message>
+        <source>Hibernate Computer</source>
+        <translation>Hibernar equipo</translation>
+    </message>
+    <message>
+        <source>Do you really want the computer to be hibernated on shutdown?</source>
+        <translation>¿Seguro que desea que el equipo hiberne al cerrar el sistema?</translation>
+    </message>
+    <message>
+        <source>LameXP will hibernate the computer on shutdown from now on.</source>
+        <translation>LameXP hibernará el equipo al cerrar el sistema a partir de ahora.</translation>
+    </message>
+    <message>
+        <source>LameXP will &lt;i&gt;not&lt;/i&gt; hibernate the computer on shutdown from now on.</source>
+        <translation>LameXP &lt;i&gt;no&lt;/i&gt; hibernará el equipo al cerrar el sistema a partir de ahora.</translation>
+    </message>
+    <message>
+        <source>(Hint: Please ignore the name of the downloaded ZIP file and check the included &apos;changelog.txt&apos; instead!)</source>
+        <translation>(Sugerencia: ¡Por favor, ignore el nombre del archivo ZIP descargado y compruebe el archivo &apos;changelog.txt&apos; en su lugar!)</translation>
     </message>
 </context>
 <context>
@@ -2087,6 +2111,18 @@
     <message>
         <source>Cancel Shutdown</source>
         <translation>Cancelar apagado</translation>
+    </message>
+    <message>
+        <source>CPU Usage (Overall)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Physical RAM Usage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Free Disk Space (Temp Folder)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

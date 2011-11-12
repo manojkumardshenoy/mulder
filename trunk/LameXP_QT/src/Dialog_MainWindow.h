@@ -87,6 +87,7 @@ private slots:
 	void gotoHomeFolderButtonClicked(void);
 	void gotoMusicFolderButtonClicked(void);
 	void handleDelayedFiles(void);
+	void hibernateComputerActionTriggered(bool checked);
 	void importCueSheetActionTriggered(bool checked);
 	void initOutputFolderModel(void);
 	void languageActionActivated(QAction *action);
@@ -145,6 +146,7 @@ protected:
 	bool eventFilter(QObject *obj, QEvent *event);
 	void resizeEvent(QResizeEvent *event);
 	void showEvent(QShowEvent *event);
+	bool winEvent(MSG *message, long *result);
 
 private:
 	void addFiles(const QStringList &files);
