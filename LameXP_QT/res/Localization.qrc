@@ -15,7 +15,11 @@
     <file>localization/LameXP_PL.qm.txt</file>
     <file>localization/LameXP_RU.qm</file>
     <file>localization/LameXP_RU.qm.txt</file>
+    <file>localization/LameXP_TW.qm</file>
+    <file>localization/LameXP_TW.qm.txt</file>
     <file>localization/LameXP_UK.qm</file>
     <file>localization/LameXP_UK.qm.txt</file>
+    <file>localization/LameXP_ZH.qm</file>
+    <file>localization/LameXP_ZH.qm.txt</file>
   </qresource>
 </RCC>

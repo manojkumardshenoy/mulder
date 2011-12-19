@@ -27,17 +27,19 @@
 
 #define VER_LAMEXP_MAJOR					4
 #define VER_LAMEXP_MINOR_HI					0
-#define VER_LAMEXP_MINOR_LO					3
-#define VER_LAMEXP_TYPE						Final
-#define VER_LAMEXP_PATCH					2
-#define VER_LAMEXP_BUILD					774
+#define VER_LAMEXP_MINOR_LO					4
+#define VER_LAMEXP_TYPE						Alpha
+#define VER_LAMEXP_PATCH					10
+#define VER_LAMEXP_BUILD					820
 
 ///////////////////////////////////////////////////////////////////////////////
-// Tools versions
+// Tool versions (minimum expected versions!)
 ///////////////////////////////////////////////////////////////////////////////
 
 #define VER_LAMEXP_TOOL_NEROAAC				1540
 #define VER_LAMEXP_TOOL_FHGAACENC			20110822
+#define VER_LAMEXP_TOOL_QAAC				105
+#define VER_LAMEXP_TOOL_COREAUDIO			7710
 
 ///////////////////////////////////////////////////////////////////////////////
 // Helper macros (aka: having fun with the C pre-processor)

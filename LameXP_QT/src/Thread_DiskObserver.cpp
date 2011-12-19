@@ -22,6 +22,7 @@
 #include "Thread_DiskObserver.h"
 
 #include "Global.h"
+#include "Model_Progress.h"
 
 #include <QDir>
 
@@ -35,7 +36,6 @@ DiskObserverThread::DiskObserverThread(const QString &path)
 :
 	m_path(makeRootDir(path))
 {
-	m_terminated = false;
 }
 
 DiskObserverThread::~DiskObserverThread(void)
@@ -49,7 +49,6 @@ DiskObserverThread::~DiskObserverThread(void)
 void DiskObserverThread::run(void)
 {
 	qDebug("DiskSpace observer started!");
-	m_terminated = false;
 
 	try
 	{
@@ -63,6 +62,8 @@ void DiskObserverThread::run(void)
 		FatalAppExit(0, L"Unhandeled exception error, application will exit!");
 		TerminateProcess(GetCurrentProcess(), -1);
 	}
+
+	while(m_semaphore.available()) m_semaphore.tryAcquire();
 }
 
 void DiskObserverThread::observe(void)
@@ -71,7 +72,7 @@ void DiskObserverThread::observe(void)
 	unsigned __int64 freeSpace, previousSpace = 0ui64;
 	bool ok = false;
 
-	while(!m_terminated)
+	forever
 	{
 		freeSpace = lamexp_free_diskspace(m_path, &ok);
 		if(ok)
@@ -79,7 +80,7 @@ void DiskObserverThread::observe(void)
 			if(freeSpace < minimumSpace)
 			{
 				qWarning("Free diskspace on '%s' dropped below %s MB, only %s MB free!", m_path.toUtf8().constData(), QString::number(minimumSpace / 1048576ui64).toUtf8().constData(), QString::number(freeSpace / 1048576ui64).toUtf8().constData());
-				emit messageLogged(tr("Low diskspace on drive '%1' detected (only %2 MB are free), problems can occur!").arg(QDir::toNativeSeparators(m_path), QString::number(freeSpace / 1048576ui64)), true);
+				emit messageLogged(tr("Low diskspace on drive '%1' detected (only %2 MB are free), problems can occur!").arg(QDir::toNativeSeparators(m_path), QString::number(freeSpace / 1048576ui64)), ProgressModel::SysMsg_Warning);
 				minimumSpace = qMin(freeSpace, (minimumSpace >> 1));
 			}
 			if(freeSpace != previousSpace)
@@ -88,7 +89,7 @@ void DiskObserverThread::observe(void)
 				previousSpace = freeSpace;
 			}
 		}
-		msleep(1000);
+		if(m_semaphore.tryAcquire(1, 2000)) break;
 	}
 }
 

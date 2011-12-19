@@ -29,6 +29,7 @@
 #include <QDate>
 #include <QTime>
 #include <QDebug>
+#include <QTextCodec>
 
 //Un-escape XML characters
 static const struct
@@ -85,6 +86,13 @@ bool PlaylistImporter::importPlaylist(QStringList &fileList, const QString &play
 		return false;
 	}
 
+	//Skip very large files (parsing could take very long)
+	if(data.size() >= 10485760i64)
+	{
+		qWarning("File is very big. Probably not a Playlist. Rejecting...");
+		return false;
+	}
+
 	//Parse playlist depending on type
 	switch(playlistType)
 	{
@@ -131,38 +139,87 @@ PlaylistImporter::playlist_t PlaylistImporter::isPlaylist(const QString &fileNam
 
 bool PlaylistImporter::parsePlaylist_m3u(QFile &data, QStringList &fileList, const QDir &baseDir, const QDir &rootDir)
 {
-	QByteArray line = data.readLine();
+	const QTextCodec *codec = QTextCodec::codecForName("System");
+	const bool preferUTF8 = data.fileName().endsWith(".m3u8", Qt::CaseInsensitive);
+	bool foundAtLeastOneFile = false;
 	
-	while(line.size() > 0)
+	data.reset();
+
+	while(!data.atEnd())
 	{
-		QFileInfo filename1(QDir::fromNativeSeparators(QString::fromUtf8(line.constData(), line.size()).trimmed()));
-		QFileInfo filename2(QDir::fromNativeSeparators(QString::fromLatin1(line.constData(), line.size()).trimmed()));
+		QString filePath[3];
+		QByteArray line = data.readLine();
 
-		filename1.setCaching(false);
-		filename2.setCaching(false);
-
-		if(!(filename1.filePath().startsWith("#") || filename2.filePath().startsWith("#")))
+		if(preferUTF8)
 		{
-			fixFilePath(filename1, baseDir, rootDir);
-			fixFilePath(filename2, baseDir, rootDir);
+			filePath[0] = QString(QDir::fromNativeSeparators(QString::fromUtf8(line.constData(), line.size()).trimmed()));
+			filePath[1] = QString(QDir::fromNativeSeparators(codec->toUnicode(line.constData(), line.size()).trimmed()));
+			filePath[2] = QString(QDir::fromNativeSeparators(QString::fromLatin1(line.constData(), line.size()).trimmed()));
+		}
+		else
+		{
+			filePath[0] = QString(QDir::fromNativeSeparators(codec->toUnicode(line.constData(), line.size()).trimmed()));
+			filePath[1] = QString(QDir::fromNativeSeparators(QString::fromLatin1(line.constData(), line.size()).trimmed()));
+			filePath[2] = QString(QDir::fromNativeSeparators(QString::fromUtf8(line.constData(), line.size()).trimmed()));
+		}
 
-			if(filename1.exists())
+		for(size_t i = 0; i < 3; i++)
+		{
+			if(!(filePath[i].isEmpty() || filePath[i].startsWith("#") || filePath[i].contains(QChar(QChar::ReplacementCharacter))))
 			{
-				if(isPlaylist(filename1.canonicalFilePath()) == notPlaylist)
+				QFileInfo filename(filePath[i]);
+				filename.setCaching(false);
+				fixFilePath(filename, baseDir, rootDir);
+
+				if(filename.exists() && filename.isFile())
 				{
-					fileList << filename1.canonicalFilePath();
-				}
-			}
-			else if(filename2.exists())
-			{
-				if(isPlaylist(filename2.canonicalFilePath()) == notPlaylist)
-				{
-					fileList << filename2.canonicalFilePath();
+					qDebug("Found: \"%s\"", filePath[i].toUtf8().constData());
+					if(isPlaylist(filename.canonicalFilePath()) == notPlaylist)
+					{
+						fileList << filename.canonicalFilePath();
+					}
+					foundAtLeastOneFile = true;
+					break;
 				}
 			}
 		}
+	}
 
-		line = data.readLine();
+	//If we did not find any files yet, try UTF-16 now
+	if(!foundAtLeastOneFile)
+	{
+		const char* codecs[2] = {"UTF-16LE", "UTF-16BE"};
+
+		for(size_t i = 0; i < 2; i++)
+		{
+			QTextStream stream(&data);
+			stream.setAutoDetectUnicode(false);
+			stream.setCodec(codecs[i]);
+			stream.seek(0i64);
+
+			while(!stream.atEnd())
+			{
+				QString filePath = stream.readLine().trimmed();
+
+				if(!(filePath.isEmpty() || filePath.startsWith("#") || filePath.contains(QChar(QChar::ReplacementCharacter))))
+				{
+					QFileInfo filename(filePath);
+					filename.setCaching(false);
+					fixFilePath(filename, baseDir, rootDir);
+
+					if(filename.exists() && filename.isFile())
+					{
+						if(isPlaylist(filename.canonicalFilePath()) == notPlaylist)
+						{
+							fileList << filename.canonicalFilePath();
+						}
+						foundAtLeastOneFile = true;
+					}
+				}
+			}
+
+			if(foundAtLeastOneFile) break;
+		}
 	}
 
 	return true;
@@ -171,48 +228,82 @@ bool PlaylistImporter::parsePlaylist_m3u(QFile &data, QStringList &fileList, con
 bool PlaylistImporter::parsePlaylist_pls(QFile &data, QStringList &fileList, const QDir &baseDir, const QDir &rootDir)
 {
 	QRegExp plsEntry("File(\\d+)=(.+)", Qt::CaseInsensitive);
-	QByteArray line = data.readLine();
-	
-	while(line.size() > 0)
+	const QTextCodec *codec = QTextCodec::codecForName("System");
+	bool foundAtLeastOneFile = false;
+
+	data.reset();
+
+	while(!data.atEnd())
 	{
-		bool flag = false;
+		QString filePath[3];
+		QByteArray line = data.readLine();
+
+		filePath[0] = QString(QDir::fromNativeSeparators(codec->toUnicode(line.constData(), line.size()).trimmed()));
+		filePath[1] = QString(QDir::fromNativeSeparators(QString::fromLatin1(line.constData(), line.size()).trimmed()));
+		filePath[2] = QString(QDir::fromNativeSeparators(QString::fromUtf8(line.constData(), line.size()).trimmed()));
 		
-		QString temp1(QDir::fromNativeSeparators(QString::fromUtf8(line.constData(), line.size()).trimmed()));
-		QString temp2(QDir::fromNativeSeparators(QString::fromLatin1(line.constData(), line.size()).trimmed()));
-
-		if(!flag && plsEntry.indexIn(temp1) >= 0)
+		for(size_t i = 0; i < 3; i++)
 		{
-			QFileInfo filename(QDir::fromNativeSeparators(plsEntry.cap(2)).trimmed());
-			filename.setCaching(false);
-			fixFilePath(filename, baseDir, rootDir);
-
-			if(filename.exists())
+			if(!filePath[i].contains(QChar(QChar::ReplacementCharacter)))
 			{
-				if(isPlaylist(filename.canonicalFilePath()) == notPlaylist)
+				if(plsEntry.indexIn(filePath[i]) >= 0)
 				{
-					fileList << filename.canonicalFilePath();
+					QFileInfo filename(QDir::fromNativeSeparators(plsEntry.cap(2)).trimmed());
+					filename.setCaching(false);
+					fixFilePath(filename, baseDir, rootDir);
+
+					if(filename.exists() && filename.isFile())
+					{
+						if(isPlaylist(filename.canonicalFilePath()) == notPlaylist)
+						{
+							fileList << filename.canonicalFilePath();
+						}
+						foundAtLeastOneFile = true;
+						break;
+					}
 				}
-				flag = true;
 			}
 		}
-		
-		if(!flag && plsEntry.indexIn(temp2) >= 0)
+	}
+
+	//If we did not find any files yet, try UTF-16 now
+	if(!foundAtLeastOneFile)
+	{
+		const char* codecs[2] = {"UTF-16LE", "UTF-16BE"};
+
+		for(size_t i = 0; i < 2; i++)
 		{
-			QFileInfo filename(QDir::fromNativeSeparators(plsEntry.cap(2)).trimmed());
-			filename.setCaching(false);
-			fixFilePath(filename, baseDir, rootDir);
+			QTextStream stream(&data);
+			stream.setAutoDetectUnicode(false);
+			stream.setCodec(codecs[i]);
+			stream.seek(0i64);
 
-			if(filename.exists())
+			while(!stream.atEnd())
 			{
-				if(isPlaylist(filename.canonicalFilePath()) == notPlaylist)
-				{
-					fileList << filename.canonicalFilePath();
-				}
-				flag = true;
-			}
-		}
+				QString filePath = stream.readLine().trimmed();
 
-		line = data.readLine();
+				if(!filePath.contains(QChar(QChar::ReplacementCharacter)))
+				{
+					if(plsEntry.indexIn(filePath) >= 0)
+					{
+						QFileInfo filename(QDir::fromNativeSeparators(plsEntry.cap(2)).trimmed());
+						filename.setCaching(false);
+						fixFilePath(filename, baseDir, rootDir);
+
+						if(filename.exists() && filename.isFile())
+						{
+							if(isPlaylist(filename.canonicalFilePath()) == notPlaylist)
+							{
+								fileList << filename.canonicalFilePath();
+							}
+							foundAtLeastOneFile = true;
+						}
+					}
+				}
+			}
+
+			if(foundAtLeastOneFile) break;
+		}
 	}
 
 	return true;
@@ -244,7 +335,7 @@ bool PlaylistImporter::parsePlaylist_wpl(QFile &data, QStringList &fileList, con
 		filename.setCaching(false);
 		fixFilePath(filename, baseDir, rootDir);
 
-		if(filename.exists())
+		if(filename.exists() && filename.isFile())
 		{
 			if(isPlaylist(filename.canonicalFilePath()) == notPlaylist)
 			{

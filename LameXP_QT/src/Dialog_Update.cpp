@@ -61,61 +61,90 @@ static const char *update_mirrors_prim[] =
 	"http://mulder.bplaced.net/",
 	"http://lamexp.sourceforge.net/",
 	"http://free.pages.at/borschdfresser/",
+	"http://www.tricksoft.de/",
 	NULL
 };
 
 static const char *update_mirrors_back[] =
 {
 	"http://mplayer.savedonthe.net/",
-	"http://www.tricksoft.de/",
 	"http://mulder.dummwiedeutsch.de/",
 	"http://mplayer.somestuff.org/",
 	NULL
 };
 
-static const char *known_hosts[] =
+static const char *known_hosts[] =		//Taken form: http://www.alexa.com/topsites
 {
+	"http://www.163.com/",
+	"http://www.360buy.com/",
 	"http://www.amazon.com/",
 	"http://www.aol.com/",
 	"http://www.apache.org/",
+	"http://www.apple.com/",
+	"http://www.adobe.com/",
 	"http://www.avidemux.org/",
+	"http://www.babylon.com/",
+	"http://www.baidu.com/",
 	"http://www.bbc.co.uk/",
 	"http://www.bing.com/",
+	"http://www.cnet.com/",
+	"http://cnzz.com/",
 	"http://www.ebay.com/",
 	"http://www.equation.com/",
+	"http://fc2.com/",
 	"http://www.ffmpeg.org/",
+	"http://www.flickr.com/",
 	"http://www.gitorious.org/",
 	"http://www.gnome.org/",
 	"http://www.gnu.org/",
+	"http://go.com/",
 	"http://code.google.com/",
-	"http://haali.su/mkv/",
 	"http://www.heise.de/",
+	"http://www.huffingtonpost.co.uk/",
 	"http://www.iana.org/",
+	"http://www.imdb.com/",
 	"http://www.imgburn.com/",
+	"http://imgur.com/",
 	"http://www.kernel.org/",
 	"http://www.libav.org/",
+	"http://www.linkedin.com/",
+	"http://www.livedoor.com/",
+	"http://www.livejournal.com/",
+	"http://mail.ru/",
+	"http://www.mediafire.com/",
 	"http://www.mozilla.org/",
 	"http://mplayerhq.hu/",
 	"http://www.msn.com/?st=1",
 	"http://oss.netfarm.it/",
+	"http://www.nytimes.com/",
 	"http://www.opera.com/",
 	"http://www.quakelive.com/",
 	"http://www.seamonkey-project.org/",
+	"http://www.sina.com.cn/",
+	"http://www.sohu.com/",
+	"http://www.soso.com/",
 	"http://sourceforge.net/",
 	"http://www.spiegel.de/",
 	"http://tdm-gcc.tdragon.net/",
 	"http://www.tdrsmusic.com/",
+	"http://www.ubuntu.com/",
+	"http://twitter.com/",
+	"http://www.uol.com.br/",
 	"http://www.videohelp.com/",
 	"http://www.videolan.org/",
+	"http://www.weibo.com/",
 	"http://www.wikipedia.org/",
-	"http://www.yahoo.com/",
+	"http://wordpress.com/",
+	"http://us.yahoo.com/",
+	"http://www.yandex.ru/",
 	"http://www.youtube.com/",
+	"http://www.zedo.com/",
 	NULL
 };
 
-static const int MIN_CONNSCORE = 3;
+static const int MIN_CONNSCORE = 8;
 static const int VERSION_INFO_EXPIRES_MONTHS = 6;
-static char *USER_AGENT_STR = "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.12) Gecko/20101101 IceCat/3.6.12 (like Firefox/3.6.12)";
+static char *USER_AGENT_STR = "Mozilla/5.0 (X11; Linux i686; rv:7.0.1) Gecko/20111106 IceCat/7.0.1";
 
 static BOOL getInternetConnectedState(void)
 {
@@ -229,8 +258,7 @@ void UpdateDialog::showEvent(QShowEvent *event)
 	hintIcon->hide();
 	frameAnimation->hide();
 	
-	int counter = 2;
-	for(int i = 0; known_hosts[i]; i++) counter++;
+	int counter = MIN_CONNSCORE + 2;
 	for(int i = 0; update_mirrors_prim[i]; i++) counter++;
 	for(int i = 0; update_mirrors_back[i]; i++) counter++;
 
@@ -258,6 +286,14 @@ void UpdateDialog::keyPressEvent(QKeyEvent *e)
 	if(e->key() == Qt::Key_F11)
 	{
 		if(closeButton->isEnabled()) logButtonClicked();
+	}
+	else if((e->key() == Qt::Key_F12) && e->modifiers().testFlag(Qt::ControlModifier))
+	{
+		if(closeButton->isEnabled())
+		{
+			testKnownWebSites();
+			logButtonClicked();
+		}
 	}
 	else
 	{
@@ -339,6 +375,9 @@ void UpdateDialog::checkForUpdates(void)
 		return;
 	}
 	
+	progressBar->setValue(1);
+	QApplication::processEvents();
+
 	// ----- Test Known Hosts Connectivity ----- //
 
 	QStringList hostList;
@@ -350,22 +389,27 @@ void UpdateDialog::checkForUpdates(void)
 	qsrand(time(NULL));
 	while(!hostList.isEmpty())
 	{
-		progressBar->setValue(progressBar->value() + 1);
 		QString currentHost = hostList.takeAt(qrand() % hostList.count());
 		if(connectionScore < MIN_CONNSCORE)
 		{
 			m_logFile->append(QStringList() << "" << "Testing host:" << currentHost << "");
 			QString outFile = QString("%1/%2.htm").arg(lamexp_temp_folder2(), lamexp_rand_str());
-			if(getFile(currentHost, outFile, 0))
+			bool httpOk = false;
+			if(getFile(currentHost, outFile, 0, &httpOk))
 			{
 				connectionScore++;
+				progressBar->setValue(qBound(1, connectionScore + 1, MIN_CONNSCORE + 1));
+				QApplication::processEvents();
+				Sleep(125);
+			}
+			if(httpOk)
+			{
+				connectionScore++;
+				progressBar->setValue(qBound(1, connectionScore + 1, MIN_CONNSCORE + 1));
+				QApplication::processEvents();
+				Sleep(125);
 			}
 			QFile::remove(outFile);
-		}
-		else
-		{
-			QApplication::processEvents();
-			Sleep(15);
 		}
 	}
 
@@ -404,7 +448,7 @@ void UpdateDialog::checkForUpdates(void)
 	}
 
 	qsrand(time(NULL));
-	for(int i = 0; i < 64; i++)
+	for(int i = 0; i < 4375; i++)
 	{
 		mirrorList.swap(i % mirrorList.count(), qrand() % mirrorList.count());
 	}
@@ -430,7 +474,7 @@ void UpdateDialog::checkForUpdates(void)
 		else
 		{
 			QApplication::processEvents();
-			Sleep(15);
+			Sleep(125);
 		}
 	}
 	
@@ -547,10 +591,11 @@ bool UpdateDialog::tryUpdateMirror(UpdateInfo *updateInfo, const QString &url)
 	return success;
 }
 
-bool UpdateDialog::getFile(const QString &url, const QString &outFile, unsigned int maxRedir)
+bool UpdateDialog::getFile(const QString &url, const QString &outFile, unsigned int maxRedir, bool *httpOk)
 {
 	QFileInfo output(outFile);
 	output.setCaching(false);
+	if(httpOk) *httpOk = false;
 
 	if(output.exists())
 	{
@@ -578,9 +623,11 @@ bool UpdateDialog::getFile(const QString &url, const QString &outFile, unsigned 
 
 	QTimer timer;
 	timer.setSingleShot(true);
-	timer.setInterval(15000);
+	timer.setInterval(25000);
 	connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
 
+	const QRegExp httpResponseOK("200 OK$");
+	
 	process.start(m_binaryWGet, args);
 	
 	if(!process.waitForStarted())
@@ -593,17 +640,24 @@ bool UpdateDialog::getFile(const QString &url, const QString &outFile, unsigned 
 	while(process.state() == QProcess::Running)
 	{
 		loop.exec();
-		if(!timer.isActive())
+		bool bTimeOut = (!timer.isActive());
+		while(process.canReadLine())
+		{
+			QString line = QString::fromLatin1(process.readLine()).simplified();
+			if(line.contains(httpResponseOK))
+			{
+				line.append(" [OK]");
+				if(httpOk) *httpOk = true;
+			}
+			m_logFile->append(line);
+		}
+		if(bTimeOut)
 		{
 			qWarning("WGet process timed out <-- killing!");
 			process.kill();
 			process.waitForFinished();
-			m_logFile->append("TIMEOUT !!!");
+			m_logFile->append("!!! TIMEOUT !!!");
 			return false;
-		}
-		while(process.canReadLine())
-		{
-			m_logFile->append(QString::fromLatin1(process.readLine()).simplified());
 		}
 	}
 	
@@ -843,4 +897,143 @@ void UpdateDialog::logButtonClicked(void)
 void UpdateDialog::progressBarValueChanged(int value)
 {
 	WinSevenTaskbar::setTaskbarProgress(this->parentWidget(), value, progressBar->maximum());
+}
+
+void UpdateDialog::testKnownWebSites(void)
+{
+	int connectionScore = 0;
+
+	// ----- Initialization ----- //
+
+	progressBar->setValue(0);
+	WinSevenTaskbar::setTaskbarState(this->parentWidget(), WinSevenTaskbar::WinSevenTaskbarNormalState);
+	WinSevenTaskbar::setOverlayIcon(this->parentWidget(), &QIcon(":/icons/transmit_blue.png"));
+	installButton->setEnabled(false);
+	closeButton->setEnabled(false);
+	retryButton->setEnabled(false);
+	logButton->setEnabled(false);
+	if(infoLabel->isVisible()) infoLabel->hide();
+	if(hintLabel->isVisible()) hintLabel->hide();
+	if(hintIcon->isVisible()) hintIcon->hide();
+	frameAnimation->show();
+
+	QApplication::processEvents();
+	QApplication::setOverrideCursor(Qt::WaitCursor);
+
+	// ----- Test Internet Connection ----- //
+
+	statusLabel->setText("Testing all known hosts, this may take a few minutes...");
+
+	m_logFile->clear();
+	m_logFile->append("Checking internet connection...");
+	
+	QFuture<BOOL> connectedState = QtConcurrent::run(getInternetConnectedState);
+	while(!connectedState.isFinished())
+	{
+		QApplication::processEvents(QEventLoop::WaitForMoreEvents);
+	}
+
+	if(!connectedState.result())
+	{
+		m_logFile->append(QStringList() << "" << "Operating system reports that the computer is currently offline !!!");
+		if(!retryButton->isVisible()) retryButton->show();
+		if(!logButton->isVisible()) logButton->show();
+		closeButton->setEnabled(true);
+		retryButton->setEnabled(true);
+		logButton->setEnabled(true);
+		if(frameAnimation->isVisible()) frameAnimation->hide();
+		statusLabel->setText(tr("It appears that the computer currently is offline!"));
+		progressBar->setValue(progressBar->maximum());
+		hintIcon->setPixmap(QIcon(":/icons/network_error.png").pixmap(16,16));
+		hintLabel->setText(tr("Please make sure your computer is connected to the internet and try again."));
+		hintIcon->show();
+		hintLabel->show();
+		LAMEXP_DELETE(m_updateInfo);
+		if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_ERROR), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+		QApplication::restoreOverrideCursor();
+		progressBar->setValue(progressBar->maximum());
+		WinSevenTaskbar::setTaskbarState(this->parentWidget(), WinSevenTaskbar::WinSevenTaskbarErrorState);
+		WinSevenTaskbar::setOverlayIcon(this->parentWidget(), &QIcon(":/icons/exclamation.png"));
+		return;
+	}
+	
+	// ----- Test Known Hosts Connectivity ----- //
+
+	QStringList hostList;
+	for(int i = 0; known_hosts[i]; i++)
+	{
+		hostList << QString::fromLatin1(known_hosts[i]);
+	}
+
+	qDebug("[Known Hosts]");
+
+	int hostCount = hostList.count();
+	while(!hostList.isEmpty())
+	{
+		QString currentHost = hostList.takeFirst();
+		progressBar->setValue(qRound((static_cast<double>(progressBar->maximum() - 1) / static_cast<double>(hostCount)) * static_cast<double>(connectionScore)) + 1);
+		qDebug("Testing: %s", currentHost.toLatin1().constData());
+		m_logFile->append(QStringList() << "" << "Testing host:" << currentHost << "");
+		QString outFile = QString("%1/%2.htm").arg(lamexp_temp_folder2(), lamexp_rand_str());
+		bool httpOk = false;
+		if(getFile(currentHost, outFile, 0, &httpOk))
+		{
+			connectionScore++;
+		}
+		else
+		{
+			if(httpOk)
+			{
+				qWarning("\nConnectivity test was SLOW on the following site:\n%s\n", currentHost.toLatin1().constData());
+				connectionScore++;
+			}
+			else
+			{
+				qWarning("\nConnectivity test FAILED on the following site:\n%s\n", currentHost.toLatin1().constData());
+			}
+		}
+		QFile::remove(outFile);
+	}
+
+	if(connectionScore < hostCount)
+	{
+		if(!retryButton->isVisible()) retryButton->show();
+		if(!logButton->isVisible()) logButton->show();
+		closeButton->setEnabled(true);
+		retryButton->setEnabled(true);
+		logButton->setEnabled(true);
+		if(frameAnimation->isVisible()) frameAnimation->hide();
+		statusLabel->setText("At least one host could not be reached!");
+		progressBar->setValue(progressBar->maximum());
+		hintIcon->setPixmap(QIcon(":/icons/network_error.png").pixmap(16,16));
+		hintLabel->setText("Please make sure your internet connection is working properly and try again.");
+		hintIcon->show();
+		hintLabel->show();
+		LAMEXP_DELETE(m_updateInfo);
+		if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_ERROR), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+		QApplication::restoreOverrideCursor();
+		progressBar->setValue(progressBar->maximum());
+		WinSevenTaskbar::setTaskbarState(this->parentWidget(), WinSevenTaskbar::WinSevenTaskbarErrorState);
+		WinSevenTaskbar::setOverlayIcon(this->parentWidget(), &QIcon(":/icons/exclamation.png"));
+		return;
+	}
+
+	// ----- Done ----- //
+	
+	QApplication::restoreOverrideCursor();
+	progressBar->setValue(progressBar->maximum());
+
+	statusLabel->setText("Test completed.");
+	hintIcon->setPixmap(QIcon(":/icons/shield_green.png").pixmap(16,16));
+	hintLabel->setText("Congratulations, the test has completed.");
+	if(frameAnimation->isVisible()) frameAnimation->hide();
+	hintIcon->show();
+	hintLabel->show();
+	WinSevenTaskbar::setOverlayIcon(this->parentWidget(), &QIcon(":/icons/shield_green.png"));
+	MessageBeep(MB_ICONINFORMATION);
+
+	closeButton->setEnabled(true);
+	if(retryButton->isVisible()) retryButton->hide();
+	if(logButton->isVisible()) logButton->hide();
+	if(frameAnimation->isVisible()) frameAnimation->hide();
 }

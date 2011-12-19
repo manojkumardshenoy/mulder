@@ -34,14 +34,17 @@ a:visited { color: #0000EE; }
 <li><a href="#9fd53558">How can I use LameXP as a "portable" application?</a>
 <li><a href="#3d6684e9">Is there a way to use custom tools (binaries) with LameXP instead of the "built-in" ones?</a>
 <li><a href="#df406578">The LameXP startup (splash screen) takes very long on my system. What can I do?</a>
+<li><a href="#a923d407">Why is there a time limit in my version of LameXP?</a>
 <li><a href="#900a2a6c">Is there a way to hide/show the LameXP console ("DOS Box") window?</a>
 <li><a href="#9b0a5c32">Why does application 'xyz' not open the Wave files created by LameXP?</a>
-<li><a href="#89cbd3d0">Why does LameXP run only 'n' parallel instances/threads on my computer?</a>
+<li><a href="#89cbd3d0">Why does LameXP run (only) N instances/threads in parallel on my computer?</a>
+<li><a href="#454e51dd">Why does LameXP try to connect to the web-server at 'xyz.com' secretly?</a>
 <li><a href="#12d077d5">How can I force LameXP to create ID3 version 2 (ID3v2) tags?</a>
 <li><a href="#d83ab3c6">Why does LameXP use LAME v3.99 rather than v3.98?</a><br>
 <li><a href="#4213adbc">Can LameXP be used to convert/extract tracks from an Audio CD?</a>
 <li><a href="#434f2578">Why is the maximum normalization level limited to -0.5 dB?</a>
 <li><a href="#9f8ff13a">What do the different 'Equalization' modes do?</a>
+<li><a href="#c6d9dfed">Why does my encoded file come out slightly longer than the original?</a>
 <li><a href="#ed4d30ed">Why is the Hibernation option disabled (greyed out) on my system?</a>
 <li><a href="#e7c9ae2b">Why do I get the error 'Executable doesn't support Windows compatibility mode' on startup?</a>
 <li><a href="#328b0a18">Why do I get the error 'Executable requires Windows XP or later' on startup?</a>
@@ -304,6 +307,7 @@ the same directory where your LameXP executable ('LameXP.exe') is located. For u
 use any suitable archiver, such as <a href="http://rarlabs.com/download.htm" target="_blank">WinRAR</a> or <a href="http://sevenzip.sourceforge.net/" target="_blank">7-Zip</a>. Once the required Nero encoder binaries are located in<br>
 the LameXP directory, the AAC encoding option should be "enabled" on the next startup of LameXP.<br>
 <br>
+<br>
 Optionally LameXP also supports the FHG AAC Encoder now. Just like the Nero encoder, the FHG encoder can NOT<br>
 be redistributed along with LameXP. However the FHG AAC Encoder is included with Winamp v5.62, which is<br>
 available as a free download (you don't need to buy the "Pro" version!) from the official Winamp web-site at:<br><ul>
@@ -320,7 +324,17 @@ In order to enable the FHG AAC Encoder support you will also need the 'FHG AAC E
 <li><a href="http://uploaded.to/file/0h0c7qf6" target="_blank">http://uploaded.to/file/0h0c7qf6</a></ul>
 <br>
 Please follow the install instructions that are included with the 'FHG AAC Encoder Add-in' download package!<br>
-Note that you do NOT need to install the Add-in, if you only want to use the Nero AAC Encoder.<br><br>
+Note that you do NOT need to install the Add-in, if you only want to use the Nero AAC Encoder.<br>
+<br>
+<br>
+As a third option, LameXP supports the QAAC encoder, i.e. the AAC encoder of QuickTime/iTunes. Just like the<br>
+other two AAC encoders, the QAAC encoder can NOT be redistributed along with LameXP. Thus if you want to use<br>
+the QAAC encoder, then you have to install QuickTime v7.7.1 (or newer). Alternatively iTunes v10.5 (or newer)<br>
+can be installed. Both, QuickTime and iTunes, can be <a href="http://www.apple.com/quicktime/download/" target="_blank">downloaded for free</a> from the official Apple web-site.<br>
+<br>
+In addition to installing QuickTime/iTunes, you must download the QAAC encoder from <a href="http://sites.google.com/site/qaacpage/" target="_blank">this</a> web-site. Then put<br>
+'qaac.exe' and 'libsoxrate.dll' as well as 'msvcr100.dll' and 'msvcp100.dll' into the same directory where<br>
+your LameXP executable ('LameXP.exe') is located. QAAC will then be "enabled" on the next startup of LameXP.<br><br>
 
 <br><br>
 
@@ -332,12 +346,15 @@ MP4 (MPEG-4 Part 14) container - in almost any case that is exactly what you wan
 used to indicate "audio-only" MP4 files. Even worse: There are some buggy (hardware) players that will<br>
 recognize MP4 audio file only with the "incorrect" .m4a extension, but NOT with the "correct" .mp4 extension.<br>
 Of course LameXP will save your MP4 files with the "correct" .mp4 extension. But if you need your MP4 files<br>
-with an .m4a extension for some reason, you can simply rename(!) these files. This isn't more or less<br>
+with an .m4a extension for some reason, you can simply rename(!) these files. Renaming isn't more or less<br>
 "incorrect" than saving the files as .m4a directly. After all, an MP4 file remains an MP4 file.<br>
 <br>
-Having said that, you should NOT rename any .mp4 or .m4a files to .aac, because these are MP4 files and NOT<br>
-"raw" AAC streams. The Nero AAC encoder has NO option to output "raw" AAC streams and usually you don't need<br>
-such streams. Still, if you want to extract the "raw" AAC stream from an MP4 file, you can use <a href="http://www.videohelp.com/tools/mp4box" target="_blank">MP4Box</a>.<br><br>
+Warning: While renaming .mp4 files to .m4a (or vice versa) is safe, because both file extensions refer to MP4<br>
+files, you must NOT rename any .mp4/.m4a files to .aac (or the other way around). That's because the '.aac'<br>
+extension is used with "raw" AAC streams (ADTS format), i.e. AAC streams that are explicitly NOT stored in an<br>
+MP4 container! Unfortunately the Nero AAC encoder has NO option to output "raw" AAC streams. And usually you<br>
+don't need such streams. Still, if you really need to extract the "raw" AAC stream (.aac) from an MP4 file,<br>
+you can simply use <a href="http://www.videohelp.com/tools/mp4box" target="_blank">MP4Box</a> for that purpose. Please note that <a href="http://yamb.unite-video.com/">YAMB</a> is a great MP4Box GUI created by Kurtnoise.<br><br>
 
 <br><br>
 
@@ -410,6 +427,20 @@ the developer of the anti-virus software. And, if they don't fix the problem, sw
 
 <br><br>
 
+<a name="a923d407"></a><b>Why is there a time limit in my version of LameXP?</b><br>
+<br>
+LameXP is free software, released under the GPL. This means that you may use LameXP for free and without any<br>
+restrictions. More specifically, there is NO time limit in "Release" versions of LameXP! Nonetheless, "Beta"<br>
+(pre-release) versions of LameXP are limited to 30 days, starting at the build date. That's because these<br>
+"Beta" versions are intended for testing and evaluation only - they are NOT intended for productive use. Also<br>
+there will be frequent updates for "Beta" versions. Usually a new build will be available even before the<br>
+previous build has expired. So if you are not willing to update regularly, stick with the "Release" version.<br>
+<br>
+Note: We are well aware that the expiration mechanism implemented in LameXP can be circumvented quite easily,<br>
+if you really want to. But implementing a "better" mechanism is pointless for an OpenSource software ;-)<br><br>
+
+<br><br>
+
 <a name="900a2a6c"></a><b>Is there a way to hide/show the LameXP console ("DOS Box") window?</b><br>
 <br>
 It is common for many people to run an alleged "DOS" program inside Windows, using a so-called "DOS Box".<br>
@@ -453,24 +484,66 @@ You can use a command-line like this:<br>
 
 <br><br>
 
-<a name="89cbd3d0"></a><b>Why does LameXP run only 'n' parallel instances/threads on my computer?</b><br>
+<a name="89cbd3d0"></a><b>Why does LameXP run (only) N instances/threads in parallel on my computer?</b><br>
 <br>
-By default LameXP will detect the number of CPU cores that are available on your system and run as many<br>
-encoder/decoder instances in parallel as CPU cores are available. This is done in order to maximize the CPU<br>
-usage on modern multi-core processors and thus speed up the overall encoding process. However be aware that<br>
-the number of instances that can run in parallel is also limited by the number of files you are converting.<br>
-Consequently the number of instances that will run in parallel is the minimum(!) of the number of CPU cores<br>
-and the number of files to convert. Moreover the number of parallel instances is currently bounded at four!<br>
+LameXP is able to run multiple instances of the encoder or decoder in parallel. This is done in order to<br>
+maximize the CPU utilization on modern "multi-core" processors, which will significantly speed up the overall<br>
+encoding process. However be aware that LameXP uses file-based parallelization. This means that the maximum<br>
+number of instances that can run in parallel is limited by the number of files that are processed. If, for<br>
+example, you convert only a single file, then NO parallelization will be possible. If, instead, you convert<br>
+multiple files at once, then LameXP can run as many instances in parallel as files are being converted.<br>
 <br>
-Limiting the maximum number of parallel instances to exactly four might seem somewhat arbitrary. But the more<br>
-instances are running in parallel, the more instances will be competing for the hard disk. At some point this<br>
-will result in "HDD trashing" and actually slow down the encoding process! The limit will prevent this<br>
-situation on computers with a lot of CPU cores. If, however, you want to use even more (or fewer) instances,<br>
-then you can use LameXP's option to manually overwrite the maximum number of parallel instances/threads.<br>
+Within the aforementioned limitations, LameXP will selected the number of parallel instances based on the<br>
+number of available processors (CPU cores) on the individual system. However LameXP will NOT use a one-to-one<br>
+mapping! Instead a custom-made 'cubic spline' function is used to map the number of CPU cores to the maximum<br>
+number of instances. This function has the following properties: On systems with at most four CPU cores, the<br>
+maximum number of parallel instances will be identical to the number of CPU cores. On systems with eight CPU<br>
+cores, the maximum number of parallel instances is six. On systems with 16 cores, the maximum number of<br>
+parallel instances is eight. On systems with 32 cores, the maximum number of parallel instances is eleven.<br>
+And on systems with 64 cores, the maximum number of parallel instances is 16. 16 is the upper limit.<br>
 <br>
-Also be aware that LameXP only controls the number of instances that will run in parallel, but it does NOT<br>
+<a href="http://img853.imageshack.us/img853/1428/corestoinstancesbig.png" target="_blank"><img src="http://img853.imageshack.us/img853/1428/corestoinstancesbig.th.png" border="0" alt="thumb"></a><br>
+<br>
+You may wonder why LameXP doesn't always create one instance for each CPU core. In theory, the more instances<br>
+we run in parallel, the more CPU cores can be utilized - until all CPU cores are busy and the overall CPU<br>
+usage approaches 100%. In reality, however, there are some "shared" resources on each computer. And, the more<br>
+instances we run in parallel, the more processes will be competing for these shared resources! Specifically,<br>
+the amount of main memory (RAM) is limited. Creating a huge number of instances in parallel can easily use up<br>
+all RAM, which will then cause the operating system to make heavy use of the page file. This can result in<br>
+HDD thrashing and hence may significantly hurt the overall performance! But even in case there is enough RAM<br>
+available on the system, each encoder or decoder instance needs to access the HDD quite frequently, e.g. for<br>
+reading from the input file and for writing to the output file. Thus running too many instances will generate<br>
+more I/O operations than the HDD can handle, which will result in an I/O bottleneck. In this situation the<br>
+processes will spend more and more time waiting for I/O operations to finish - rather then doing useful work.<br>
+<br>
+In other words: There will always be some point at which creating even more instances will actually slow down<br>
+the overall process! On systems with many CPU cores, this point might be reached BEFORE all cores are busy.<br>
+Even on the Quadcore computer, which is used to develop/test LameXP and which runs "only" four instances in<br>
+parallel, we sporadically notice significant drops of the CPU usage, obviously caused by HDD overstressing.<br>
+If, however, you think that LameXP's choice of the number of parallel instances is too conservative, you may<br>
+overwrite the number of parallel instances on the "Advanced Options" tab - the upper limit is 16 for now.<br>
+Finally, note that LameXP only controls the number of instances that will run in parallel, but it does NOT<br>
 control how many threads an individual instance will create! Some encoders use "built-in" multi-threading and<br>
 thus a single encoder instance may create several threads - LameXP has no control over that.<br><br>
+
+<br><br>
+
+<a name="454e51dd"></a><b>Why does LameXP try to connect to the web-server at 'xyz.com' secretly?</b><br>
+<br>
+LameXP does NOT connect to any web-server secretly! Of course the 'Auto Update' feature of LameXP unavoidably<br>
+has to connect to one of our update servers. However in no event LameXP will search for updates without your<br>
+agreement. Also LameXP will NOT send any personal information to the update server. It won't even send your<br>
+program version to the server. Instead the latest version number will be downloaded from the server first and<br>
+will then be compared to your current version number on the local computer. Moreover all information obtained<br>
+from the update server are protected with a digital signature (GnuPG) in order to prevent spoofing attacks.<br>
+<br>
+Note: As LameXP is a non-profit project, we cannot afford a huge server infrastructure. Therefore the update<br>
+server may be overstrained or unavailable once in a while. As we need to be able to distinguish the case in<br>
+which our server is failing from the case in which your local internet connection has a problem, LameXP will<br>
+run a short connectivity test on your local system first. For this purpose LameXP contains a list of 64 known<br>
+hosts, taken (mostly) from the well-known Alexa 'top 500 sites on the web' listing. LameXP will assume that<br>
+your internet connection is working properly if a certain minimum number (currently four) of the known hosts<br>
+is reachable. That's also the reason why you may notice LameXP is trying to connect to a "random" web-site.<br><br>
 
 <br><br>
 
@@ -573,6 +646,42 @@ by amplified by the same factor. In the last mode, the highest peak of all(!) ch
 <br>
 WARNING: The "None" mode appears to be broken with more than two channels! This is a bug in SoX.<br><br>
 
+<br><br>
+
+<a name="c6d9dfed"></a><b>Why does my encoded file come out slightly longer than the original?</b><br>
+<br>
+Because of the way most (lossy) audio compressors work, a number of "silent" samples have to be prepended to<br>
+the first input sample. Also a number of silent samples may be appended to the last input sample. Obviously<br>
+these additional "padding" samples will make the encoded file longer than the original input. If the decoder<br>
+does not compensate for the padding samples that have been added by the encoder, the padding samples at the<br>
+beginning of the encoded file will cause a certain delay/shift, compared to the (uncompressed) original file.<br>
+Another effect is that there will be a "gap" between the files, when playing multiple files in sequence.<br>
+<br>
+It has to be noted that the padding is an inherent property of the audio compressor that can not be avoided.<br>
+But, as mentioned before, the padding samples can be removed by the decoder. In that case, the decoded output<br>
+will have the exactly same length (in samples) as the original file. However this can only be done, if the<br>
+decoder is able to determine the exact number of padding samples that had been added. While the Vorbis audio<br>
+format stores the number of padding samples in the stream and thus any compliant decoder will remove them,<br>
+the MP3 and AAC audio formats do NOT define an "official" way to store the the number of padding samples!<br>
+<br>
+Nonetheless, the LAME MP3 encoder, which is used by LameXP, uses its own "non-standard" way to indicate the<br>
+exact number of padding samples. This is done by adding a so-called "LAME header" to the MP3 file. Hence MP3<br>
+decoders, which recognize the LAME header, will be able to remove the padding samples. This feature often is<br>
+referred to as "gapless" decoding/playback. The 'mpg123' decoder, which is used by LameXP, does support the<br>
+gapless decoding. This means that if you encode MP3 files with LameXP/LAME, then gapless decoding will be<br>
+possible. And if you decode these files with LameXP/mpg123 again, they will come out at the original length.<br>
+<br>
+Still you have to be aware that NOT all MP3 decoders support the LAME header. So if you encode MP3 files with<br>
+LameXP and then decode them with an arbitrary MP3 decoder, they may come out at a "wrong" length. And there<br>
+is absoloutely nothing that LameXP could do about that! Furthermore, if you decode a MP3 file in LameXP that<br>
+has been created with some MP3 decoder which did not add a LAME header, then it is impossible to remove the<br>
+padding samples. That's because in this situation there is NO way to know the number of padding samples!<br>
+<br>
+Some more info on this topic can be found here:<br><ul>
+<li><a href="http://en.wikipedia.org/wiki/Gapless_playback" target="_blank">http://en.wikipedia.org/wiki/Gapless_playback</a>
+<li><a href="http://lame.sourceforge.net/tech-FAQ.txt" target="_blank">http://lame.sourceforge.net/tech-FAQ.txt</a>
+<li><a href="http://cas.web.cern.ch/cas/Denmark-2010/Caspers/Tektronix%20%20primer%20on%20overlapping%20FFT%20signals%202009%20CAS2010.pdf" target="_blank">Understanding FFT Overlap Processing
+Fundamental</a></ul>
 <br><br>
 
 <a name="ed4d30ed"></a><b>Why is the Hibernation option disabled (greyed out) on my system?</b><br>

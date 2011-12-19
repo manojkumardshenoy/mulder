@@ -184,7 +184,7 @@
         <translation>Створено Mark James, випущено під ліцензією Creative Commons &apos;by&apos; License.</translation>
     </message>
     <message>
-        <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of thrird-party software used in LameXP belongs to the individual authors.</source>
+        <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</source>
         <translation>Всі права на LameXP належать LoRd_MuldeR. Права на стороннє ПЗ, що використовується в LameXP, належать авторам цього ПЗ.</translation>
     </message>
     <message>
@@ -386,6 +386,30 @@
         <source>Cue Sheet Completed</source>
         <translation>Обробку списку Cue завершено</translation>
     </message>
+    <message>
+        <source>(System Default)</source>
+        <translation>(Типово для ОС)</translation>
+    </message>
+    <message>
+        <source>Select ANSI Codepage for Cue Sheet file:</source>
+        <translation>Оберіть набір символів ANSI для файлу списку Cue:</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Ок</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Відмінити</translation>
+    </message>
+    <message>
+        <source>Unknown Artist</source>
+        <translation>Невідомий виконавець</translation>
+    </message>
+    <message>
+        <source>Unknown Album</source>
+        <translation>Невідомий альбом</translation>
+    </message>
 </context>
 <context>
     <name>CueSheetImport</name>
@@ -416,6 +440,14 @@
     <message>
         <source>Load a different Cue Sheet</source>
         <translation>Обрати інший список CUE</translation>
+    </message>
+    <message>
+        <source>Artist:</source>
+        <translation>Виконавець:</translation>
+    </message>
+    <message>
+        <source>Album:</source>
+        <translation>Альбом:</translation>
     </message>
 </context>
 <context>
@@ -1595,7 +1627,7 @@
         <translation>Макроси для перейменовування</translation>
     </message>
     <message>
-        <source>You can eneter custom parameters here!</source>
+        <source>You can enter custom parameters here!</source>
         <translation>Можна вводити користувацькі параметри тут!</translation>
     </message>
     <message>
@@ -1694,6 +1726,10 @@
         <source>(Hint: Please ignore the name of the downloaded ZIP file and check the included &apos;changelog.txt&apos; instead!)</source>
         <translation>(Підказка: Будь ласка, не звертайте увагу на назву завантаженого файла ZIP, натомість перевіряйте також присутній в архіві  &apos;changelog.txt&apos;!)</translation>
     </message>
+    <message>
+        <source>Skipping update check this time, please be patient...</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -1755,6 +1791,10 @@
     <message>
         <source>Clear all Meta Info</source>
         <translation>Очистити всі метадані</translation>
+    </message>
+    <message>
+        <source>Meta Information: %1</source>
+        <translation>Метадані: %1</translation>
     </message>
 </context>
 <context>
@@ -2125,6 +2165,26 @@
         <source>Free Disk Space (Temp Folder)</source>
         <translation>Вільне місце на диску (тека тимчасових файлів)</translation>
     </message>
+    <message>
+        <source>Process finished after %1.</source>
+        <translation>Процес тривав %1.</translation>
+    </message>
+    <message>
+        <source>hour(s)</source>
+        <translation>годин(-у, -и)</translation>
+    </message>
+    <message>
+        <source>minute(s)</source>
+        <translation>хвилин(-у, -и)</translation>
+    </message>
+    <message>
+        <source>second(s)</source>
+        <translation>секунд(-у, -и)</translation>
+    </message>
+    <message>
+        <source>millisecond(s)</source>
+        <translation>мілісекунд(-у, -и)</translation>
+    </message>
 </context>
 <context>
     <name>ProgressModel</name>
@@ -2150,6 +2210,10 @@
     <message>
         <source>Executable &apos;%1&apos; requires Windows 2000 or later.</source>
         <translation>Додаток &apos;%1&apos; вимагає для роботи Windows 2000 або пізніші версії ОС.</translation>
+    </message>
+    <message>
+        <source>Executable &apos;%1&apos; was built for Qt &apos;%2&apos;, but found Qt &apos;%3&apos;.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
