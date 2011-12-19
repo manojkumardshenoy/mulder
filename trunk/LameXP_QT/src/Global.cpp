@@ -43,6 +43,7 @@
 #include <QTranslator>
 #include <QEventLoop>
 #include <QTimer>
+#include <QLibraryInfo>
 
 //LameXP includes
 #include "Resource.h"
@@ -169,6 +170,8 @@ static const char *g_lamexp_support_url = "http://forum.doom9.org/showthread.php
 //Tool versions (expected versions!)
 static const unsigned int g_lamexp_toolver_neroaac = VER_LAMEXP_TOOL_NEROAAC;
 static const unsigned int g_lamexp_toolver_fhgaacenc = VER_LAMEXP_TOOL_FHGAACENC;
+static const unsigned int g_lamexp_toolver_qaacenc = VER_LAMEXP_TOOL_QAAC;
+static const unsigned int g_lamexp_toolver_coreaudio = VER_LAMEXP_TOOL_COREAUDIO;
 
 //Special folders
 static QString g_lamexp_temp_folder;
@@ -183,6 +186,7 @@ static struct
 	QMap<QString, QString> files;
 	QMap<QString, QString> names;
 	QMap<QString, unsigned int> sysid;
+	QMap<QString, unsigned int> cntry;
 }
 g_lamexp_translation;
 
@@ -239,6 +243,8 @@ const char *lamexp_version_compiler(void) { return g_lamexp_version_compiler; }
 const char *lamexp_version_arch(void) { return g_lamexp_version_arch; }
 unsigned int lamexp_toolver_neroaac(void) { return g_lamexp_toolver_neroaac; }
 unsigned int lamexp_toolver_fhgaacenc(void) { return g_lamexp_toolver_fhgaacenc; }
+unsigned int lamexp_toolver_qaacenc(void) { return g_lamexp_toolver_qaacenc; }
+unsigned int lamexp_toolver_coreaudio(void) { return g_lamexp_toolver_coreaudio; }
 
 /*
  * URL getters
@@ -616,7 +622,7 @@ lamexp_cpu_t lamexp_detect_cpu_features(int argc, char **argv)
 	{
 		GetSystemInfo(&systemInfo);
 	}
-	features.count = systemInfo.dwNumberOfProcessors;
+	features.count = qBound(1UL, systemInfo.dwNumberOfProcessors, 64UL);
 #else
 	GetNativeSystemInfo(&systemInfo);
 	features.count = systemInfo.dwNumberOfProcessors;
@@ -776,10 +782,16 @@ bool lamexp_init_qt(int argc, char* argv[])
 	}
 
 	//Check Qt version
-	qDebug("Using Qt Framework v%s (%s), compiled with Qt v%s [%s]", qVersion(), (qSharedBuild() ? "DLL" : "Static"), QT_VERSION_STR, QT_PACKAGEDATE_STR);
+	qDebug("Using Qt v%s [%s], %s, %s", qVersion(), QLibraryInfo::buildDate().toString(Qt::ISODate).toLatin1().constData(), (qSharedBuild() ? "DLL" : "Static"), QLibraryInfo::buildKey().toLatin1().constData());
+	qDebug("Compiled with Qt v%s [%s], %s\n", QT_VERSION_STR, QT_PACKAGEDATE_STR, QT_BUILD_KEY);
 	if(_stricmp(qVersion(), QT_VERSION_STR))
 	{
 		qFatal("%s", QApplication::tr("Executable '%1' requires Qt v%2, but found Qt v%3.").arg(QString::fromLatin1(executableName), QString::fromLatin1(QT_VERSION_STR), QString::fromLatin1(qVersion())).toLatin1().constData());
+		return false;
+	}
+	if(QLibraryInfo::buildKey().compare(QString::fromLatin1(QT_BUILD_KEY), Qt::CaseInsensitive))
+	{
+		qFatal("%s", QApplication::tr("Executable '%1' was built for Qt '%2', but found Qt '%3'.").arg(QString::fromLatin1(executableName), QString::fromLatin1(QT_BUILD_KEY), QLibraryInfo::buildKey()).toLatin1().constData());
 		return false;
 	}
 
@@ -1240,7 +1252,7 @@ const QString lamexp_version2string(const QString &pattern, unsigned int version
 /*
  * Register a new translation
  */
-bool lamexp_translation_register(const QString &langId, const QString &qmFile, const QString &langName, unsigned int &systemId)
+bool lamexp_translation_register(const QString &langId, const QString &qmFile, const QString &langName, unsigned int &systemId, unsigned int &country)
 {
 	if(qmFile.isEmpty() || langName.isEmpty() || systemId < 1)
 	{
@@ -1250,6 +1262,7 @@ bool lamexp_translation_register(const QString &langId, const QString &qmFile, c
 	g_lamexp_translation.files.insert(langId, qmFile);
 	g_lamexp_translation.names.insert(langId, langName);
 	g_lamexp_translation.sysid.insert(langId, systemId);
+	g_lamexp_translation.cntry.insert(langId, country);
 
 	return true;
 }
@@ -1276,6 +1289,14 @@ QString lamexp_translation_name(const QString &langId)
 unsigned int lamexp_translation_sysid(const QString &langId)
 {
 	return g_lamexp_translation.sysid.value(langId.toLower(), 0);
+}
+
+/*
+ * Get translation script id
+ */
+unsigned int lamexp_translation_country(const QString &langId)
+{
+	return g_lamexp_translation.cntry.value(langId.toLower(), 0);
 }
 
 /*
@@ -1637,6 +1658,35 @@ const QString lamexp_clean_filepath(const QString &str)
 	}
 
 	return parts.join("/");
+}
+
+/*
+ * Get a list of all available Qt Text Codecs
+ */
+QStringList lamexp_available_codepages(bool noAliases)
+{
+	QStringList codecList;
+	
+	QList<QByteArray> availableCodecs = QTextCodec::availableCodecs();
+	while(!availableCodecs.isEmpty())
+	{
+		QByteArray current = availableCodecs.takeFirst();
+		if(!(current.startsWith("system") || current.startsWith("System")))
+		{
+			codecList << QString::fromLatin1(current.constData(), current.size());
+			if(noAliases)
+			{
+				if(QTextCodec *currentCodec = QTextCodec::codecForName(current.constData()))
+				{
+					
+					QList<QByteArray> aliases = currentCodec->aliases();
+					while(!aliases.isEmpty()) availableCodecs.removeAll(aliases.takeFirst());
+				}
+			}
+		}
+	}
+
+	return codecList;
 }
 
 /*

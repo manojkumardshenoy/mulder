@@ -112,7 +112,7 @@
         <translation>Veröffentlicht unter den Bestimmungen der GNU General Public License.</translation>
     </message>
     <message>
-        <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of thrird-party software used in LameXP belongs to the individual authors.</source>
+        <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</source>
         <translation>Das Urheberrecht an LameXP liegt bei LoRd_MuldeR. Das Urheberrecht an der eingesetzten Drittsoftware liegt bei den jeweiligen Autoren.</translation>
     </message>
     <message>
@@ -385,6 +385,30 @@
         <source>Process was aborted by the user after %1 track(s)!</source>
         <translation>Der Vorgang wurde vom Benutzter nach %1 Track(s) abgebrochen!</translation>
     </message>
+    <message>
+        <source>(System Default)</source>
+        <translation>(Systemstandard)</translation>
+    </message>
+    <message>
+        <source>Select ANSI Codepage for Cue Sheet file:</source>
+        <translation>ANSI Codepage für Cuesheet Datei auswählen:</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>Unknown Artist</source>
+        <translation>Unbekannter Künstler</translation>
+    </message>
+    <message>
+        <source>Unknown Album</source>
+        <translation>Unbekanntes Album</translation>
+    </message>
 </context>
 <context>
     <name>CueSheetImport</name>
@@ -415,6 +439,14 @@
     <message>
         <source>Load a different Cue Sheet</source>
         <translation>Ein anderes Cuesheet laden</translation>
+    </message>
+    <message>
+        <source>Artist:</source>
+        <translation>Künstler:</translation>
+    </message>
+    <message>
+        <source>Album:</source>
+        <translation>Album:</translation>
     </message>
 </context>
 <context>
@@ -1595,7 +1627,7 @@
         <translation>Platzhalter</translation>
     </message>
     <message>
-        <source>You can eneter custom parameters here!</source>
+        <source>You can enter custom parameters here!</source>
         <translation>Sie können hier Parameter eingeben!</translation>
     </message>
     <message>
@@ -1694,6 +1726,10 @@
         <source>(Hint: Please ignore the name of the downloaded ZIP file and check the included &apos;changelog.txt&apos; instead!)</source>
         <translation>(Hinweis: Bitte beachten Sie die enthaltene &apos;changelog.txt&apos; Datei anstelle des Dateinames der ZIP-Datei!)</translation>
     </message>
+    <message>
+        <source>Skipping update check this time, please be patient...</source>
+        <translation>Update-Überprüfung wird übersprungen, bitte warten...</translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -1755,6 +1791,10 @@
     <message>
         <source>Clear all Meta Info</source>
         <translation>Metainformationen löschen</translation>
+    </message>
+    <message>
+        <source>Meta Information: %1</source>
+        <translation>Metainformationen: %1</translation>
     </message>
 </context>
 <context>
@@ -2125,6 +2165,26 @@
         <source>Free Disk Space (Temp Folder)</source>
         <translation>Freier Festplattenspeicher (Temp Ordner)</translation>
     </message>
+    <message>
+        <source>Process finished after %1.</source>
+        <translation>Vorgang abgeschlossen nach %1.</translation>
+    </message>
+    <message>
+        <source>hour(s)</source>
+        <translation>Stunde(n)</translation>
+    </message>
+    <message>
+        <source>minute(s)</source>
+        <translation>Minute(n)</translation>
+    </message>
+    <message>
+        <source>second(s)</source>
+        <translation>Sekunde(n)</translation>
+    </message>
+    <message>
+        <source>millisecond(s)</source>
+        <translation>Millisekunde(n)</translation>
+    </message>
 </context>
 <context>
     <name>ProgressModel</name>
@@ -2150,6 +2210,10 @@
     <message>
         <source>Executable &apos;%1&apos; requires Windows 2000 or later.</source>
         <translation>Programm &apos;%1&apos; benötigt Windows 2000 oder neuer.</translation>
+    </message>
+    <message>
+        <source>Executable &apos;%1&apos; was built for Qt &apos;%2&apos;, but found Qt &apos;%3&apos;.</source>
+        <translation>Programm &apos;%1&apos; wurde für Qt &apos;%2&apos; erzeugt, aber Qt &apos;%3&apos; gefunden.</translation>
     </message>
 </context>
 <context>

@@ -45,6 +45,7 @@ private:
 	void initTranslations(void);
 	void initNeroAac(void);
 	void initFhgAac(void);
+	void initQAac(void);
 
 	bool m_bSuccess;
 	lamexp_cpu_t m_cpuFeatures;

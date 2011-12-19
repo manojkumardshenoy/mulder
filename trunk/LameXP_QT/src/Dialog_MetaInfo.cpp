@@ -80,6 +80,9 @@ MetaInfoDialog::MetaInfoDialog(QWidget *parent)
 	connect(loadArtworkAction, SIGNAL(triggered(bool)), this, SLOT(editButtonClicked()));
 	connect(clearArtworkAction, SIGNAL(triggered(bool)), this, SLOT(clearArtworkActionTriggered()));
 
+	//Install event filter
+	labelArtwork->installEventFilter(this);
+
 	//Translate
 	labelHeaderText->setText(QString("<b>%1</b><br>%2").arg(tr("Meta Information"), tr("The following meta information have been extracted from the original file.")));
 }
@@ -100,7 +103,7 @@ int MetaInfoDialog::exec(AudioFileModel &audioFile, bool allowUp, bool allowDown
 	tableView->setModel(model);
 	tableView->show();
 	frameArtwork->hide();
-	setWindowTitle(QString("Meta Information: %1").arg(QFileInfo(audioFile.filePath()).fileName()));
+	setWindowTitle(tr("Meta Information: %1").arg(QFileInfo(audioFile.filePath()).fileName()));
 	editButton->setEnabled(true);
 	upButton->setEnabled(allowUp);
 	downButton->setEnabled(allowDown);
@@ -220,4 +223,15 @@ void MetaInfoDialog::clearArtworkActionTriggered(void)
 {
 	labelArtwork->setPixmap(QPixmap::fromImage(QImage(":/images/CD.png")));
 	dynamic_cast<MetaInfoModel*>(tableView->model())->editArtwork(QString());
+}
+
+bool MetaInfoDialog::eventFilter(QObject *obj, QEvent *event)
+{
+	if((obj == labelArtwork) && (event->type() == QEvent::MouseButtonDblClick))
+	{
+		editButtonClicked();
+		return true;
+	}
+
+	return QDialog::eventFilter(obj, event);
 }

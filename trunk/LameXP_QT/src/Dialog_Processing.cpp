@@ -35,6 +35,7 @@
 #include "Encoder_Vorbis.h"
 #include "Encoder_AAC.h"
 #include "Encoder_AAC_FHG.h"
+#include "Encoder_AAC_QAAC.h"
 #include "Encoder_AC3.h"
 #include "Encoder_FLAC.h"
 #include "Encoder_Wave.h"
@@ -60,16 +61,19 @@
 #include <QSystemTrayIcon>
 #include <QProcess>
 #include <QProgressDialog>
+#include <QTime>
 
 #include <MMSystem.h>
+#include <math.h>
+#include <float.h>
 
 ////////////////////////////////////////////////////////////
 
 //Maximum number of parallel instances
 #define MAX_INSTANCES 16U
 
-//Maximum number of CPU cores for auto-detection
-#define MAX_CPU_COUNT 4U
+//Function to calculate the number of instances
+static int cores2instances(int cores);
 
 ////////////////////////////////////////////////////////////
 
@@ -126,6 +130,8 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 	
 	//Init progress indicator
 	m_progressIndicator = new QMovie(":/images/Working.gif");
+	m_progressIndicator->setCacheMode(QMovie::CacheAll);
+	m_progressIndicator->setSpeed(50);
 	label_headerWorking->setMovie(m_progressIndicator);
 	progressBar->setValue(0);
 
@@ -175,6 +181,7 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 	m_succeededJobs.clear();
 	m_failedJobs.clear();
 	m_userAborted = false;
+	m_timerStart = 0I64;
 }
 
 ////////////////////////////////////////////////////////////
@@ -340,7 +347,7 @@ void ProcessingDialog::initEncoding(void)
 	if(!m_diskObserver)
 	{
 		m_diskObserver = new DiskObserverThread(m_settings->customTempPathEnabled() ? m_settings->customTempPath() : lamexp_temp_folder2());
-		connect(m_diskObserver, SIGNAL(messageLogged(QString,bool)), m_progressModel, SLOT(addSystemMessage(QString,bool)), Qt::QueuedConnection);
+		connect(m_diskObserver, SIGNAL(messageLogged(QString,int)), m_progressModel, SLOT(addSystemMessage(QString,int)), Qt::QueuedConnection);
 		connect(m_diskObserver, SIGNAL(freeSpaceChanged(quint64)), this, SLOT(diskUsageHasChanged(quint64)), Qt::QueuedConnection);
 		m_diskObserver->start();
 	}
@@ -361,18 +368,24 @@ void ProcessingDialog::initEncoding(void)
 	if(maximumInstances < 1)
 	{
 		lamexp_cpu_t cpuFeatures = lamexp_detect_cpu_features();
-		maximumInstances = qBound(1U, static_cast<unsigned int>(cpuFeatures.count), MAX_CPU_COUNT);
+		maximumInstances = cores2instances(qBound(1, cpuFeatures.count, 64));
 	}
 
-	unsigned int parallelThreadCount = qBound(1U, maximumInstances, static_cast<unsigned int>(m_pendingJobs.count()));
-	if(parallelThreadCount > 1)
+	maximumInstances = qBound(1U, maximumInstances, static_cast<unsigned int>(m_pendingJobs.count()));
+	if(maximumInstances > 1)
 	{
-		m_progressModel->addSystemMessage(tr("Multi-threading enabled: Running %1 instances in parallel!").arg(QString::number(parallelThreadCount)));
+		m_progressModel->addSystemMessage(tr("Multi-threading enabled: Running %1 instances in parallel!").arg(QString::number(maximumInstances)));
 	}
 
-	for(unsigned int i = 0; i < parallelThreadCount; i++)
+	for(unsigned int i = 0; i < maximumInstances; i++)
 	{
 		startNextJob();
+	}
+
+	LARGE_INTEGER counter;
+	if(QueryPerformanceCounter(&counter))
+	{
+		m_timerStart = counter.QuadPart;
 	}
 }
 
@@ -442,6 +455,16 @@ void ProcessingDialog::doneEncoding(void)
 	}
 	else
 	{
+		LARGE_INTEGER counter, frequency;
+		if(QueryPerformanceCounter(&counter) && QueryPerformanceFrequency(&frequency))
+		{
+			if((m_timerStart > 0I64) && (frequency.QuadPart > 0I64) && (m_timerStart < counter.QuadPart))
+			{
+				double timeElapsed = static_cast<double>(counter.QuadPart - m_timerStart) / static_cast<double>(frequency.QuadPart);
+				m_progressModel->addSystemMessage(tr("Process finished after %1.").arg(time2text(timeElapsed)), ProgressModel::SysMsg_Performance);
+			}
+		}
+
 		if(m_failedJobs.count() > 0)
 		{
 			CHANGE_BACKGROUND_COLOR(frame_header, QColor("#FFBABA"));
@@ -661,7 +684,16 @@ void ProcessingDialog::startNextJob(void)
 		break;
 	case SettingsModel::AACEncoder:
 		{
-			if(lamexp_check_tool("fhgaacenc.exe") && lamexp_check_tool("enc_fhgaac.dll"))
+			if(lamexp_check_tool("qaac.exe") && lamexp_check_tool("libsoxrate.dll"))
+			{
+				QAACEncoder *aacEncoder = new QAACEncoder();
+				aacEncoder->setBitrate(m_settings->compressionBitrate());
+				aacEncoder->setRCMode(m_settings->compressionRCMode());
+				aacEncoder->setProfile(m_settings->aacEncProfile());
+				aacEncoder->setCustomParams(m_settings->customParametersAacEnc());
+				encoder = aacEncoder;
+			}
+			else if(lamexp_check_tool("fhgaacenc.exe") && lamexp_check_tool("enc_fhgaac.dll"))
 			{
 				FHGAACEncoder *aacEncoder = new FHGAACEncoder();
 				aacEncoder->setBitrate(m_settings->compressionBitrate());
@@ -965,4 +997,65 @@ bool ProcessingDialog::shutdownComputer(void)
 	
 	progressDialog.close();
 	return true;
+}
+
+QString ProcessingDialog::time2text(const double timeVal) const
+{
+	double intPart = 0;
+	double frcPart = modf(timeVal, &intPart);
+	int x = 0, y = 0; QString a, b;
+
+	QTime time = QTime().addSecs(qRound(intPart)).addMSecs(qRound(frcPart * 1000.0));
+
+	if(time.hour() > 0)
+	{
+		x = time.hour();   a = tr("hour(s)");
+		y = time.minute(); b = tr("minute(s)");
+	}
+	else if(time.minute() > 0)
+	{
+		x = time.minute(); a = tr("minute(s)");
+		y = time.second(); b = tr("second(s)");
+	}
+	else
+	{
+		x = time.second(); a = tr("second(s)");
+		y = time.msec();   b = tr("millisecond(s)");
+	}
+
+	return QString("%1 %2, %3 %4").arg(QString::number(x), a, QString::number(y), b);
+}
+
+////////////////////////////////////////////////////////////
+// HELPER FUNCTIONS
+////////////////////////////////////////////////////////////
+
+static int cores2instances(int cores)
+{
+	//This function is a "cubic spline" with sampling points at:
+	//(1,1); (2,2); (4,4); (8,6); (16,8); (32,11); (64,16)
+	static const double LUT[8][5] =
+	{
+		{ 1.0,  0.014353554, -0.043060662, 1.028707108,  0.000000000},
+		{ 2.0, -0.028707108,  0.215303309, 0.511979167,  0.344485294},
+		{ 4.0,  0.010016468, -0.249379596, 2.370710784, -2.133823529},
+		{ 8.0,  0.000282437, -0.015762868, 0.501776961,  2.850000000},
+		{16.0,  0.000033270, -0.003802849, 0.310416667,  3.870588235},
+		{32.0,  0.000006343, -0.001217831, 0.227696078,  4.752941176},
+		{64.0,  0.000000000,  0.000000000, 0.000000000, 16.000000000},
+		{DBL_MAX, 0.0, 0.0, 0.0, 0.0}
+	};
+
+	double x = abs(static_cast<double>(cores)), y = 1.0;
+	
+	for(size_t i = 0; i < 7; i++)
+	{
+		if((x >= LUT[i][0]) && (x < LUT[i+1][0]))
+		{
+			y = (((((LUT[i][1] * x) + LUT[i][2]) * x) + LUT[i][3]) * x) + LUT[i][4];
+			break;
+		}
+	}
+
+	return qRound(y);
 }

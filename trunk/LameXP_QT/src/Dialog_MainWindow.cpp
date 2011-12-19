@@ -90,6 +90,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	m_settings(settingsModel),
 	m_neroEncoderAvailable(lamexp_check_tool("neroAacEnc.exe") && lamexp_check_tool("neroAacDec.exe") && lamexp_check_tool("neroAacTag.exe")),
 	m_fhgEncoderAvailable(lamexp_check_tool("fhgaacenc.exe") && lamexp_check_tool("enc_fhgaac.dll") && lamexp_check_tool("nsutil.dll") && lamexp_check_tool("libmp4v2.dll")),
+	m_qaacEncoderAvailable(lamexp_check_tool("qaac.exe") && lamexp_check_tool("libsoxrate.dll")),
 	m_accepted(false),
 	m_firstTimeShown(true),
 	m_OutputFolderViewInitialized(false)
@@ -207,10 +208,10 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	m_modeButtonGroup->addButton(radioButtonModeQuality, SettingsModel::VBRMode);
 	m_modeButtonGroup->addButton(radioButtonModeAverageBitrate, SettingsModel::ABRMode);
 	m_modeButtonGroup->addButton(radioButtonConstBitrate, SettingsModel::CBRMode);
-	radioButtonEncoderAAC->setEnabled(m_neroEncoderAvailable || m_fhgEncoderAvailable);
+	radioButtonEncoderAAC->setEnabled(m_neroEncoderAvailable || m_fhgEncoderAvailable || m_qaacEncoderAvailable);
 	radioButtonEncoderMP3->setChecked(m_settings->compressionEncoder() == SettingsModel::MP3Encoder);
 	radioButtonEncoderVorbis->setChecked(m_settings->compressionEncoder() == SettingsModel::VorbisEncoder);
-	radioButtonEncoderAAC->setChecked((m_settings->compressionEncoder() == SettingsModel::AACEncoder) && (m_neroEncoderAvailable || m_fhgEncoderAvailable));
+	radioButtonEncoderAAC->setChecked((m_settings->compressionEncoder() == SettingsModel::AACEncoder) && (m_neroEncoderAvailable || m_fhgEncoderAvailable || m_qaacEncoderAvailable));
 	radioButtonEncoderAC3->setChecked(m_settings->compressionEncoder() == SettingsModel::AC3Encoder);
 	radioButtonEncoderFLAC->setChecked(m_settings->compressionEncoder() == SettingsModel::FLACEncoder);
 	radioButtonEncoderPCM->setChecked(m_settings->compressionEncoder() == SettingsModel::PCMEncoder);
@@ -246,7 +247,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	while(checkBoxUseSystemTempFolder->isChecked() == m_settings->customTempPathEnabled()) checkBoxUseSystemTempFolder->click();
 	while(checkBoxRenameOutput->isChecked() != m_settings->renameOutputFilesEnabled()) checkBoxRenameOutput->click();
 	while(checkBoxForceStereoDownmix->isChecked() != m_settings->forceStereoDownmix()) checkBoxForceStereoDownmix->click();
-	checkBoxNeroAAC2PassMode->setEnabled(!m_fhgEncoderAvailable);
+	checkBoxNeroAAC2PassMode->setEnabled(!(m_fhgEncoderAvailable || m_qaacEncoderAvailable));
 	lineEditCustomParamLAME->setText(m_settings->customParametersLAME());
 	lineEditCustomParamOggEnc->setText(m_settings->customParametersOggEnc());
 	lineEditCustomParamNeroAAC->setText(m_settings->customParametersAacEnc());
@@ -847,7 +848,9 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 		case QEvent::MouseButtonPress:
 			if(dynamic_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
 			{
-				QDesktopServices::openUrl(QString("file:///%1").arg(outputFolderLabel->text()));
+				QString path = outputFolderLabel->text();
+				if(!path.endsWith(QDir::separator())) path.append(QDir::separator());
+				ShellExecuteW(this->winId(), L"explore", QWCHAR(path), NULL, NULL, SW_SHOW);
 			}
 			break;
 		case QEvent::Enter:
@@ -888,7 +891,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 		}
 	}
 
-	return false;
+	return QMainWindow::eventFilter(obj, event);
 }
 
 bool MainWindow::winEvent(MSG *message, long *result)
@@ -993,18 +996,24 @@ void MainWindow::windowShown(void)
 	if(QDate::currentDate() >= lamexp_version_date().addYears(1))
 	{
 		qWarning("Binary is more than a year old, time to update!");
-		if(QMessageBox::warning(this, tr("Urgent Update"), NOBR(tr("Your version of LameXP is more than a year old. Time for an update!")), tr("Check for Updates"), tr("Exit Program")) == 0)
+		int ret = QMessageBox::warning(this, tr("Urgent Update"), NOBR(tr("Your version of LameXP is more than a year old. Time for an update!")), tr("Check for Updates"), tr("Exit Program"), tr("Ignore"));
+		switch(ret)
 		{
+		case 0:
 			if(checkForUpdates())
 			{
 				QApplication::quit();
 				return;
 			}
-		}
-		else
-		{
+			break;
+		case 1:
 			QApplication::quit();
 			return;
+		default:
+			QEventLoop loop; QTimer::singleShot(7000, &loop, SLOT(quit()));
+			PlaySound(MAKEINTRESOURCE(IDR_WAVE_WAITING), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+			m_banner->show(tr("Skipping update check this time, please be patient..."), &loop);
+			break;
 		}
 	}
 	else if(m_settings->autoUpdateEnabled())
@@ -1042,7 +1051,7 @@ void MainWindow::windowShown(void)
 	}
 	else
 	{
-		if(m_settings->neroAacNotificationsEnabled() && (!m_fhgEncoderAvailable))
+		if(m_settings->neroAacNotificationsEnabled() && (!(m_fhgEncoderAvailable || m_qaacEncoderAvailable)))
 		{
 			QString appPath = QDir(QCoreApplication::applicationDirPath()).canonicalPath();
 			if(appPath.isEmpty()) appPath = QCoreApplication::applicationDirPath();
@@ -1949,6 +1958,8 @@ void MainWindow::showDetailsButtonClicked(void)
 	}
 
 	LAMEXP_DELETE(metaInfoDialog);
+	QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+	sourceFilesScrollbarMoved(0);
 }
 
 /*
@@ -2333,7 +2344,9 @@ void MainWindow::outputFolderContextMenu(const QPoint &pos)
  */
 void MainWindow::showFolderContextActionTriggered(void)
 {
-	QDesktopServices::openUrl(QUrl::fromLocalFile(m_fileSystemModel->filePath(outputFolderView->currentIndex())));
+	QString path = QDir::toNativeSeparators(m_fileSystemModel->filePath(outputFolderView->currentIndex()));
+	if(!path.endsWith(QDir::separator())) path.append(QDir::separator());
+	ShellExecuteW(this->winId(), L"explore", QWCHAR(path), NULL, NULL, SW_SHOW);
 }
 
 /*

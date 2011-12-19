@@ -32,6 +32,7 @@
 #include <QLibrary>
 #include <QResource>
 #include <QTime>
+#include <QTextStream>
 
 /* helper macros */
 #define PRINT_CPU_TYPE(X) case X: qDebug("Selected CPU is: " #X)
@@ -202,11 +203,10 @@ void InitializationThread::run()
 	//Register all translations
 	initTranslations();
 
-	//Look for Nero AAC encoder
+	//Look for AAC encoders
 	initNeroAac();
-
-	//Look for FHG AAC encoder
 	initFhgAac();
+	initQAac();
 
 	delay();
 	m_bSuccess = true;
@@ -246,33 +246,43 @@ void InitializationThread::initTranslations(void)
 	while(!qmFiles.isEmpty())
 	{
 		QString langId, langName;
-		unsigned int systemId = 0;
+		unsigned int systemId = 0, country = 0;
 		QString qmFile = qmFiles.takeFirst();
 		
 		QRegExp langIdExp("LameXP_(\\w\\w)\\.qm", Qt::CaseInsensitive);
 		if(langIdExp.indexIn(qmFile) >= 0)
 		{
 			langId = langIdExp.cap(1).toLower();
-		}
-
-		QResource langRes = (QString(":/localization/%1.txt").arg(qmFile));
-		if(langRes.isValid() && langRes.size() > 0)
-		{
-			QStringList langInfo = QString::fromUtf8(reinterpret_cast<const char*>(langRes.data()), langRes.size()).simplified().split(",", QString::SkipEmptyParts);
-			if(langInfo.count() == 2)
+			QResource langRes = QResource(QString(":/localization/%1.txt").arg(qmFile));
+			if(langRes.isValid() && langRes.size() > 0)
 			{
-				systemId = langInfo.at(0).toUInt();
-				langName = langInfo.at(1);
+				QByteArray data = QByteArray::fromRawData(reinterpret_cast<const char*>(langRes.data()), langRes.size());
+				QTextStream stream(&data, QIODevice::ReadOnly);
+				stream.setAutoDetectUnicode(false); stream.setCodec("UTF-8");
+				while(!stream.atEnd())
+				{
+					QStringList langInfo = stream.readLine().simplified().split(",", QString::SkipEmptyParts);
+					if(langInfo.count() == 3)
+					{
+						systemId = langInfo.at(0).trimmed().toUInt();
+						country  = langInfo.at(1).trimmed().toUInt();
+						langName = langInfo.at(2).trimmed();
+						break;
+					}
+				}
 			}
 		}
-		
-		if(lamexp_translation_register(langId, qmFile, langName, systemId))
+
+		if(!(langId.isEmpty() || langName.isEmpty() || systemId == 0))
 		{
-			qDebug("Registering translation: %s = %s (%u)", qmFile.toUtf8().constData(), langName.toUtf8().constData(), systemId);
-		}
-		else
-		{
-			qWarning("Failed to register: %s", qmFile.toLatin1().constData());
+			if(lamexp_translation_register(langId, qmFile, langName, systemId, country))
+			{
+				qDebug("Registering translation: %s = %s (%u) [%u]", qmFile.toUtf8().constData(), langName.toUtf8().constData(), systemId, country);
+			}
+			else
+			{
+				qWarning("Failed to register: %s", qmFile.toLatin1().constData());
+			}
 		}
 	}
 
@@ -480,6 +490,137 @@ void InitializationThread::initFhgAac(void)
 	{
 		lamexp_register_tool(fhgFileInfo[i].fileName(), fhgBin[i], fhgVersion);
 	}
+}
+
+void InitializationThread::initQAac(void)
+{
+	const QString appPath = QDir(QCoreApplication::applicationDirPath()).canonicalPath();
+
+	QFileInfo qaacFileInfo[2];
+	qaacFileInfo[0] = QFileInfo(QString("%1/qaac.exe").arg(appPath));
+	qaacFileInfo[1] = QFileInfo(QString("%1/libsoxrate.dll").arg(appPath));
+	
+	bool qaacFilesFound = true;
+	for(int i = 0; i < 2; i++)	{ if(!qaacFileInfo[i].exists()) qaacFilesFound = false; }
+
+	//Lock the QAAC binaries
+	if(!qaacFilesFound)
+	{
+		qDebug("QAAC binaries not found -> QAAC support will be disabled!\n");
+		return;
+	}
+
+	qDebug("Found QAAC encoder:\n%s\n", qaacFileInfo[0].canonicalFilePath().toUtf8().constData());
+
+	LockedFile *qaacBin[2];
+	for(int i = 0; i < 2; i++) qaacBin[i] = NULL;
+
+	try
+	{
+		for(int i = 0; i < 2; i++)
+		{
+			qaacBin[i] = new LockedFile(qaacFileInfo[i].canonicalFilePath());
+		}
+	}
+	catch(...)
+	{
+		for(int i = 0; i < 2; i++) LAMEXP_DELETE(qaacBin[i]);
+		qWarning("Failed to get excluive lock to QAAC binary -> QAAC support will be disabled!");
+		return;
+	}
+
+	QProcess process;
+	process.setProcessChannelMode(QProcess::MergedChannels);
+	process.setReadChannel(QProcess::StandardOutput);
+	process.start(qaacFileInfo[0].canonicalFilePath(), QStringList() << "--check");
+
+	if(!process.waitForStarted())
+	{
+		qWarning("QAAC process failed to create!");
+		qWarning("Error message: \"%s\"\n", process.errorString().toLatin1().constData());
+		process.kill();
+		process.waitForFinished(-1);
+		for(int i = 0; i < 2; i++) LAMEXP_DELETE(qaacBin[i]);
+		return;
+	}
+
+	QRegExp qaacEncSig("qaac (\\d)\\.(\\d)(\\d)", Qt::CaseInsensitive);
+	QRegExp coreEncSig("CoreAudioToolbox (\\d)\\.(\\d)\\.(\\d)\\.(\\d)", Qt::CaseInsensitive);
+	unsigned int qaacVersion = 0;
+	unsigned int coreVersion = 0;
+
+	while(process.state() != QProcess::NotRunning)
+	{
+		process.waitForReadyRead();
+		if(!process.bytesAvailable() && process.state() == QProcess::Running)
+		{
+			qWarning("QAAC process time out -> killing!");
+			process.kill();
+			process.waitForFinished(-1);
+		for(int i = 0; i < 2; i++) LAMEXP_DELETE(qaacBin[i]);
+			return;
+		}
+		while(process.bytesAvailable() > 0)
+		{
+			QString line = QString::fromUtf8(process.readLine().constData()).simplified();
+			if(qaacEncSig.lastIndexIn(line) >= 0)
+			{
+				unsigned int tmp[3] = {0, 0, 0};
+				bool ok[3] = {false, false, false};
+				tmp[0] = qaacEncSig.cap(1).toUInt(&ok[0]);
+				tmp[1] = qaacEncSig.cap(2).toUInt(&ok[1]);
+				tmp[2] = qaacEncSig.cap(3).toUInt(&ok[2]);
+				if(ok[0] && ok[1] && ok[2])
+				{
+					qaacVersion = (qBound(0U, tmp[0], 9U) * 100) + (qBound(0U, tmp[1], 9U) * 10) + qBound(0U, tmp[2], 9U);
+				}
+			}
+			if(coreEncSig.lastIndexIn(line) >= 0)
+			{
+				unsigned int tmp[4] = {0, 0, 0, 0};
+				bool ok[4] = {false, false, false, false};
+				tmp[0] = coreEncSig.cap(1).toUInt(&ok[0]);
+				tmp[1] = coreEncSig.cap(2).toUInt(&ok[1]);
+				tmp[2] = coreEncSig.cap(3).toUInt(&ok[2]);
+				tmp[3] = coreEncSig.cap(4).toUInt(&ok[3]);
+				if(ok[0] && ok[1] && ok[2] && ok[3])
+				{
+					coreVersion = (qBound(0U, tmp[0], 9U) * 1000) + (qBound(0U, tmp[1], 9U) * 100) + (qBound(0U, tmp[2], 9U) * 10) + qBound(0U, tmp[3], 9U);
+				}
+			}
+		}
+	}
+
+	//qDebug("qaac %d, CoreAudioToolbox %d", qaacVersion, coreVersion);
+
+	if(!(qaacVersion > 0))
+	{
+		qWarning("QAAC version couldn't be determined -> QAAC support will be disabled!");
+		for(int i = 0; i < 2; i++) LAMEXP_DELETE(qaacBin[i]);
+		return;
+	}
+	else if(qaacVersion < lamexp_toolver_qaacenc())
+	{
+		qWarning("QAAC version is too much outdated (%s) -> QAAC support will be disabled!", lamexp_version2string("v?.??", qaacVersion, "N/A").toLatin1().constData());
+		for(int i = 0; i < 2; i++) LAMEXP_DELETE(qaacBin[i]);
+		return;
+	}
+
+	if(!(coreVersion > 0))
+	{
+		qWarning("CoreAudioToolbox version couldn't be determined -> QAAC support will be disabled!");
+		for(int i = 0; i < 2; i++) LAMEXP_DELETE(qaacBin[i]);
+		return;
+	}
+	else if(coreVersion < lamexp_toolver_coreaudio())
+	{
+		qWarning("CoreAudioToolbox version is too much outdated (%s) -> QAAC support will be disabled!", lamexp_version2string("v?.?.?.?", coreVersion, "N/A").toLatin1().constData());
+		for(int i = 0; i < 2; i++) LAMEXP_DELETE(qaacBin[i]);
+		return;
+	}
+
+	lamexp_register_tool(qaacFileInfo[0].fileName(), qaacBin[0], qaacVersion);
+	lamexp_register_tool(qaacFileInfo[1].fileName(), qaacBin[1], qaacVersion);
 }
 
 void InitializationThread::selfTest(void)

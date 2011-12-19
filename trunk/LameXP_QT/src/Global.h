@@ -29,6 +29,7 @@
 #include <tchar.h>
 
 //Windows includes
+#define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
@@ -81,6 +82,8 @@ const char *lamexp_version_arch(void);
 QDate lamexp_version_expires(void);
 unsigned int lamexp_toolver_neroaac(void);
 unsigned int lamexp_toolver_fhgaacenc(void);
+unsigned int lamexp_toolver_qaacenc(void);
+unsigned int lamexp_toolver_coreaudio(void);
 const char *lamexp_website_url(void);
 const char *lamexp_support_url(void);
 DWORD lamexp_get_os_version(void);
@@ -108,11 +111,13 @@ bool lamexp_is_hibernation_supported(void);
 
 //Translation support
 QStringList lamexp_query_translations(void);
-bool lamexp_translation_register(const QString &langId, const QString &qmFile, const QString &langName, unsigned int &systemId);
+bool lamexp_translation_register(const QString &langId, const QString &qmFile, const QString &langName, unsigned int &systemId, unsigned int &country);
 QString lamexp_translation_name(const QString &language);
 unsigned int lamexp_translation_sysid(const QString &langId);
+unsigned int lamexp_translation_country(const QString &langId);
 bool lamexp_install_translator_from_file(const QString &qmFile);
 bool lamexp_install_translator(const QString &language);
+QStringList lamexp_available_codepages(bool noAliases = true);
 static const char* LAMEXP_DEFAULT_LANGID = "en";
 
 //Auxiliary functions
