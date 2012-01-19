@@ -1,6 +1,6 @@
 ﻿///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -146,7 +146,7 @@ AboutDialog::AboutDialog(SettingsModel *settings, QWidget *parent, bool firstSta
 	aboutText += QString("%1<br>").arg(NOBR(tr("Special thanks go out to \"John33\" from %1 for his continuous support.")).arg(LINK("http://www.rarewares.org/")));
 
 	setText(aboutText);
-	setIconPixmap(dynamic_cast<QApplication*>(QApplication::instance())->windowIcon().pixmap(QSize(64,64)));
+	setIconPixmap(lamexp_app_icon().pixmap(QSize(72,72)));
 	setWindowTitle(tr("About LameXP"));
 
 	if(firstStart)
@@ -430,7 +430,7 @@ void AboutDialog::showMoreAbout(void)
 		);
 		moreAboutText += QString
 		(
-			"</ul></td><td><ul>"
+			"</ul></td><td><ul>" /* ----------------------------------------- */
 		);
 		moreAboutText += makeToolText
 		(
@@ -476,6 +476,13 @@ void AboutDialog::showMoreAbout(void)
 		);
 		moreAboutText += makeToolText
 		(
+			tr("dcaenc"),
+			"dcaenc.exe", "????-??-??",
+			tr("Copyright (c) 2008-2011 Alexander E. Patrakov. Distributed under the LGPL."),
+			"http://gitorious.org/dtsenc/dtsenc/trees/master"
+		);
+		moreAboutText += makeToolText
+		(
 			tr("MediaInfo - Media File Analysis Tool"),
 			"mediainfo.exe", "v?.?.??",
 			tr("Released under the terms of the GNU Lesser General Public License."),
@@ -502,13 +509,13 @@ void AboutDialog::showMoreAbout(void)
 			tr("Released under the terms of the GNU Lesser General Public License."),
 			"http://www.gnu.org/software/wget/"
 		);
-		moreAboutText += makeToolText
-		(
-			tr("Silk Icons - Over 700  icons in PNG format"),
-			QString(), "v1.3",
-			tr("By Mark James, released under the Creative Commons 'by' License."),
-			"http://www.famfamfam.com/lab/icons/silk/"
-		);
+		//moreAboutText += makeToolText
+		//(
+		//	tr("Silk Icons - Over 700  icons in PNG format"),
+		//	QString(), "v1.3",
+		//	tr("By Mark James, released under the Creative Commons 'by' License."),
+		//	"http://www.famfamfam.com/lab/icons/silk/"
+		//);
 		moreAboutText += QString("</ul></td><td>&nbsp;</td></tr></table></div><i>%1</i><br>").arg
 		(
 			NOBR(tr("LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors."))

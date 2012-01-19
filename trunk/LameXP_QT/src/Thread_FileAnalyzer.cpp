@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -36,6 +36,10 @@
 
 #include <math.h>
 
+#define IS_KEY(KEY) (key.compare(KEY, Qt::CaseInsensitive) == 0)
+#define IS_SEC(SEC) (key.startsWith((SEC "_"), Qt::CaseInsensitive))
+#define FIRST_TOK(STR) (STR.split(" ", QString::SkipEmptyParts).first())
+
 ////////////////////////////////////////////////////////////
 // Constructor
 ////////////////////////////////////////////////////////////
@@ -45,6 +49,7 @@ FileAnalyzer::FileAnalyzer(const QStringList &inputFiles)
 	m_inputFiles(inputFiles),
 	m_mediaInfoBin(lamexp_lookup_tool("mediainfo.exe")),
 	m_avs2wavBin(lamexp_lookup_tool("avs2wav.exe")),
+	m_templateFile(NULL),
 	m_abortFlag(false)
 {
 	m_bSuccess = false;
@@ -61,6 +66,54 @@ FileAnalyzer::FileAnalyzer(const QStringList &inputFiles)
 	m_filesDummyCDDA = 0;
 	m_filesCueSheet = 0;
 }
+
+FileAnalyzer::~FileAnalyzer(void)
+{
+	if(m_templateFile)
+	{
+		QString templatePath = m_templateFile->filePath();
+		LAMEXP_DELETE(m_templateFile);
+		if(QFile::exists(templatePath)) QFile::remove(templatePath);
+	}
+}
+
+////////////////////////////////////////////////////////////
+// Static data
+////////////////////////////////////////////////////////////
+
+const char *FileAnalyzer::g_tags_gen[] =
+{
+	"ID",
+	"Format",
+	"Format_Profile",
+	"Format_Version",
+	"Duration",
+	"Title", "Track",
+	"Track/Position",
+	"Artist", "Performer",
+	"Album",
+	"Genre",
+	"Released_Date", "Recorded_Date",
+	"Comment",
+	"Cover",
+	"Cover_Type",
+	"Cover_Mime",
+	"Cover_Data",
+	NULL
+};
+
+const char *FileAnalyzer::g_tags_aud[] =
+{
+	"ID",
+	"Format",
+	"Format_Profile",
+	"Format_Version",
+	"Channel(s)",
+	"SamplingRate",
+	"BitRate",
+	"BitRate_Mode",
+	NULL
+};
 
 ////////////////////////////////////////////////////////////
 // Thread Main
@@ -80,6 +133,15 @@ void FileAnalyzer::run()
 	m_inputFiles.sort();
 	m_recentlyAdded.clear();
 	m_abortFlag = false;
+
+	if(!m_templateFile)
+	{
+		if(!createTemplate())
+		{
+			qWarning("Failed to create template file!");
+			return;
+		}
+	}
 
 	while(!m_inputFiles.isEmpty())
 	{
@@ -165,8 +227,6 @@ const AudioFileModel FileAnalyzer::analyzeFile(const QString &filePath, int *typ
 	*type = fileTypeNormal;
 	
 	AudioFileModel audioFile(filePath);
-	m_currentSection = sectionOther;
-	m_currentCover = coverNone;
 
 	if(m_recentlyAdded.contains(filePath, Qt::CaseInsensitive))
 	{
@@ -180,19 +240,26 @@ const AudioFileModel FileAnalyzer::analyzeFile(const QString &filePath, int *typ
 		*type = fileTypeDenied;
 		return audioFile;
 	}
-	
 	if(checkFile_CDDA(readTest))
 	{
 		*type = fileTypeCDDA;
 		return audioFile;
 	}
-	
 	readTest.close();
 
+	bool skipNext = false;
+	unsigned int id_val[2] = {UINT_MAX, UINT_MAX};
+	cover_t coverType = coverNone;
+	QByteArray coverData;
+
+	QStringList params;
+	params << QString("--Inform=file://%1").arg(QDir::toNativeSeparators(m_templateFile->filePath()));
+	params << QDir::toNativeSeparators(filePath);
+	
 	QProcess process;
 	process.setProcessChannelMode(QProcess::MergedChannels);
 	process.setReadChannel(QProcess::StandardOutput);
-	process.start(m_mediaInfoBin, QStringList() << QDir::toNativeSeparators(filePath));
+	process.start(m_mediaInfoBin, params);
 		
 	if(!process.waitForStarted())
 	{
@@ -230,19 +297,17 @@ const AudioFileModel FileAnalyzer::analyzeFile(const QString &filePath, int *typ
 			QString line = QString::fromUtf8(process.readLine().constData()).simplified();
 			if(!line.isEmpty())
 			{
-				int index = line.indexOf(':');
+				//qDebug("Line:%s", line.toUtf8().constData());
+				
+				int index = line.indexOf('=');
 				if(index > 0)
 				{
-					QString key = line.left(index-1).trimmed();
+					QString key = line.left(index).trimmed();
 					QString val = line.mid(index+1).trimmed();
-					if(!key.isEmpty() && !val.isEmpty())
+					if(!key.isEmpty())
 					{
-						updateInfo(audioFile, key, val);
+						updateInfo(audioFile, &skipNext, id_val, &coverType, &coverData, key, val);
 					}
-				}
-				else
-				{
-					updateSection(line);
 				}
 			}
 		}
@@ -276,228 +341,185 @@ const AudioFileModel FileAnalyzer::analyzeFile(const QString &filePath, int *typ
 		process.waitForFinished(-1);
 	}
 
-	if(m_currentCover != coverNone)
+	if((coverType != coverNone) && (!coverData.isEmpty()))
 	{
-		retrieveCover(audioFile, filePath);
+		retrieveCover(audioFile, coverType, coverData);
 	}
 
 	return audioFile;
 }
 
-void FileAnalyzer::updateSection(const QString &section)
+void FileAnalyzer::updateInfo(AudioFileModel &audioFile, bool *skipNext, unsigned int *id_val, cover_t *coverType, QByteArray *coverData, const QString &key, const QString &value)
 {
-	if(section.startsWith("General", Qt::CaseInsensitive))
+	//qWarning("'%s' -> '%s'", key.toUtf8().constData(), value.toUtf8().constData());
+	
+	/*New Stream*/
+	if(IS_KEY("Gen_ID") || IS_KEY("Aud_ID"))
 	{
-		m_currentSection = sectionGeneral;
-	}
-	else if(!section.compare("Audio", Qt::CaseInsensitive) || section.startsWith("Audio #1", Qt::CaseInsensitive))
-	{
-		m_currentSection = sectionAudio;
-	}
-	else if(section.startsWith("Audio", Qt::CaseInsensitive) || section.startsWith("Video", Qt::CaseInsensitive) || section.startsWith("Text", Qt::CaseInsensitive) ||
-		section.startsWith("Menu", Qt::CaseInsensitive) || section.startsWith("Image", Qt::CaseInsensitive) || section.startsWith("Chapters", Qt::CaseInsensitive))
-	{
-		m_currentSection = sectionOther;
-	}
-	else
-	{
-		m_currentSection = sectionOther;
-		qWarning("Unknown section: %s", section.toUtf8().constData());
-	}
-}
-
-void FileAnalyzer::updateInfo(AudioFileModel &audioFile, const QString &key, const QString &value)
-{
-	switch(m_currentSection)
-	{
-	case sectionGeneral:
-		if(!key.compare("Title", Qt::CaseInsensitive) || !key.compare("Track", Qt::CaseInsensitive) || !key.compare("Track Name", Qt::CaseInsensitive))
+		if(value.isEmpty())
 		{
-			if(audioFile.fileName().isEmpty()) audioFile.setFileName(value);
-		}
-		else if(!key.compare("Duration", Qt::CaseInsensitive))
-		{
-			if(!audioFile.fileDuration()) audioFile.setFileDuration(parseDuration(value));
-		}
-		else if(!key.compare("Artist", Qt::CaseInsensitive) || !key.compare("Performer", Qt::CaseInsensitive))
-		{
-			if(audioFile.fileArtist().isEmpty()) audioFile.setFileArtist(value);
-		}
-		else if(!key.compare("Album", Qt::CaseInsensitive))
-		{
-			if(audioFile.fileAlbum().isEmpty()) audioFile.setFileAlbum(value);
-		}
-		else if(!key.compare("Genre", Qt::CaseInsensitive))
-		{
-			if(audioFile.fileGenre().isEmpty()) audioFile.setFileGenre(value);
-		}
-		else if(!key.compare("Year", Qt::CaseInsensitive) || !key.compare("Recorded Date", Qt::CaseInsensitive) || !key.compare("Encoded Date", Qt::CaseInsensitive))
-		{
-			if(!audioFile.fileYear()) audioFile.setFileYear(parseYear(value));
-		}
-		else if(!key.compare("Comment", Qt::CaseInsensitive))
-		{
-			if(audioFile.fileComment().isEmpty()) audioFile.setFileComment(value);
-		}
-		else if(!key.compare("Track Name/Position", Qt::CaseInsensitive))
-		{
-			if(!audioFile.filePosition()) audioFile.setFilePosition(value.toInt());
-		}
-		else if(!key.compare("Format", Qt::CaseInsensitive))
-		{
-			if(audioFile.formatContainerType().isEmpty()) audioFile.setFormatContainerType(value);
-		}
-		else if(!key.compare("Format Profile", Qt::CaseInsensitive))
-		{
-			if(audioFile.formatContainerProfile().isEmpty()) audioFile.setFormatContainerProfile(value);
-		}
-		else if(!key.compare("Cover", Qt::CaseInsensitive) || !key.compare("Cover type", Qt::CaseInsensitive))
-		{
-			if(m_currentCover == coverNone) m_currentCover = coverJpeg;
-		}
-		else if(!key.compare("Cover MIME", Qt::CaseInsensitive))
-		{
-			QString temp = value.split(" ", QString::SkipEmptyParts, Qt::CaseInsensitive).first();
-			if(!temp.compare("image/jpeg", Qt::CaseInsensitive))
-			{
-				m_currentCover = coverJpeg;
-			}
-			else if(!temp.compare("image/png", Qt::CaseInsensitive))
-			{
-				m_currentCover = coverPng;
-			}
-			else if(!temp.compare("image/gif", Qt::CaseInsensitive))
-			{
-				m_currentCover = coverGif;
-			}
-		}
-		break;
-
-	case sectionAudio:
-		if(!key.compare("Year", Qt::CaseInsensitive) || !key.compare("Recorded Date", Qt::CaseInsensitive) || !key.compare("Encoded Date", Qt::CaseInsensitive))
-		{
-			if(!audioFile.fileYear()) audioFile.setFileYear(parseYear(value));
-		}
-		else if(!key.compare("Format", Qt::CaseInsensitive))
-		{
-			if(audioFile.formatAudioType().isEmpty()) audioFile.setFormatAudioType(value);
-		}
-		else if(!key.compare("Format Profile", Qt::CaseInsensitive))
-		{
-			if(audioFile.formatAudioProfile().isEmpty()) audioFile.setFormatAudioProfile(value);
-		}
-		else if(!key.compare("Format Version", Qt::CaseInsensitive))
-		{
-			if(audioFile.formatAudioVersion().isEmpty()) audioFile.setFormatAudioVersion(value);
-		}
-		else if(!key.compare("Channel(s)", Qt::CaseInsensitive))
-		{
-			if(!audioFile.formatAudioChannels()) audioFile.setFormatAudioChannels(value.split(" ", QString::SkipEmptyParts).first().toUInt());
-		}
-		else if(!key.compare("Sampling rate", Qt::CaseInsensitive))
-		{
-			if(!audioFile.formatAudioSamplerate())
-			{
-				bool ok = false;
-				float fTemp = abs(value.split(" ", QString::SkipEmptyParts).first().toFloat(&ok));
-				if(ok) audioFile.setFormatAudioSamplerate(static_cast<unsigned int>(floor(fTemp * 1000.0f + 0.5f)));
-			}
-		}
-		else if(!key.compare("Bit depth", Qt::CaseInsensitive))
-		{
-			if(!audioFile.formatAudioBitdepth()) audioFile.setFormatAudioBitdepth(value.split(" ", QString::SkipEmptyParts).first().toUInt());
-		}
-		else if(!key.compare("Duration", Qt::CaseInsensitive))
-		{
-			if(!audioFile.fileDuration()) audioFile.setFileDuration(parseDuration(value));
-		}
-		else if(!key.compare("Bit rate", Qt::CaseInsensitive))
-		{
-			if(!audioFile.formatAudioBitrate())
-			{
-				bool ok = false;
-				unsigned int uiTemp = value.split(" ", QString::SkipEmptyParts).first().toUInt(&ok);
-				if(ok)
-				{
-					audioFile.setFormatAudioBitrate(uiTemp);
-				}
-				else
-				{
-					float fTemp = abs(value.split(" ", QString::SkipEmptyParts).first().toFloat(&ok));
-					if(ok) audioFile.setFormatAudioBitrate(static_cast<unsigned int>(floor(fTemp + 0.5f)));
-				}
-			}
-		}
-		else if(!key.compare("Bit rate mode", Qt::CaseInsensitive))
-		{
-			if(audioFile.formatAudioBitrateMode() == AudioFileModel::BitrateModeUndefined)
-			{
-				if(!value.compare("Constant", Qt::CaseInsensitive)) audioFile.setFormatAudioBitrateMode(AudioFileModel::BitrateModeConstant);
-				if(!value.compare("Variable", Qt::CaseInsensitive)) audioFile.setFormatAudioBitrateMode(AudioFileModel::BitrateModeVariable);
-			}
-		}
-		break;
-	}
-}
-
-unsigned int FileAnalyzer::parseYear(const QString &str)
-{
-	if(str.startsWith("UTC", Qt::CaseInsensitive))
-	{
-		QDate date = QDate::fromString(str.mid(3).trimmed().left(10), "yyyy-MM-dd");
-		if(date.isValid())
-		{
-			return date.year();
+			*skipNext = false;
 		}
 		else
 		{
-			return 0;
+			//We ignore all ID's, except for the lowest one!
+			bool ok = false;
+			unsigned int id = value.toUInt(&ok);
+			if(ok)
+			{
+				if(IS_KEY("Gen_ID")) { id_val[0] = qMin(id_val[0], id); *skipNext = (id > id_val[0]); }
+				if(IS_KEY("Aud_ID")) { id_val[1] = qMin(id_val[1], id); *skipNext = (id > id_val[1]); }
+			}
+			else
+			{
+				*skipNext = true;
+			}
 		}
-	}
-	else
-	{
-		bool ok = false;
-		int year = str.toInt(&ok);
-		if(ok && year > 0)
+		if(*skipNext)
 		{
-			return year;
+			qWarning("Skipping info for non-primary stream!");
+		}
+		return;
+	}
+
+	/*Skip?*/
+	if((*skipNext) || value.isEmpty())
+	{
+		return;
+	}
+
+	/*General Section*/
+	if(IS_SEC("Gen"))
+	{
+		if(IS_KEY("Gen_Format"))
+		{
+			audioFile.setFormatContainerType(value);
+		}
+		else if(IS_KEY("Gen_Format_Profile"))
+		{
+			audioFile.setFormatContainerProfile(value);
+		}
+		else if(IS_KEY("Gen_Title") || IS_KEY("Gen_Track"))
+		{
+			audioFile.setFileName(value);
+		}
+		else if(IS_KEY("Gen_Duration"))
+		{
+			unsigned int tmp = parseDuration(value);
+			if(tmp > 0) audioFile.setFileDuration(tmp);
+		}
+		else if(IS_KEY("Gen_Artist") || IS_KEY("Gen_Performer"))
+		{
+			audioFile.setFileArtist(value);
+		}
+		else if(IS_KEY("Gen_Album"))
+		{
+			audioFile.setFileAlbum(value);
+		}
+		else if(IS_KEY("Gen_Genre"))
+		{
+			audioFile.setFileGenre(value);
+		}
+		else if(IS_KEY("Gen_Released_Date") || IS_KEY("Gen_Recorded_Date"))
+		{
+			unsigned int tmp = parseYear(value);
+			if(tmp > 0) audioFile.setFileYear(tmp);
+		}
+		else if(IS_KEY("Gen_Comment"))
+		{
+			audioFile.setFileComment(value);
+		}
+		else if(IS_KEY("Gen_Track/Position"))
+		{
+			bool ok = false;
+			unsigned int tmp = value.toUInt(&ok);
+			if(ok) audioFile.setFilePosition(tmp);
+		}
+		else if(IS_KEY("Gen_Cover") || IS_KEY("Gen_Cover_Type"))
+		{
+			if(*coverType == coverNone)
+			{
+				*coverType = coverJpeg;
+			}
+		}
+		else if(IS_KEY("Gen_Cover_Mime"))
+		{
+			QString temp = FIRST_TOK(value);
+			if(!temp.compare("image/jpeg", Qt::CaseInsensitive)) *coverType = coverJpeg;
+			else if(!temp.compare("image/png", Qt::CaseInsensitive)) *coverType = coverPng;
+			else if(!temp.compare("image/gif", Qt::CaseInsensitive)) *coverType = coverGif;
+		}
+		else if(IS_KEY("Gen_Cover_Data"))
+		{
+			if(!coverData->isEmpty()) coverData->clear();
+			coverData->append(QByteArray::fromBase64(FIRST_TOK(value).toLatin1()));
 		}
 		else
 		{
-			return 0;
+			qWarning("Unknown key '%s' with value '%s' found!", key.toUtf8().constData(), value.toUtf8().constData());
 		}
+		return;
 	}
-}
 
-unsigned int FileAnalyzer::parseDuration(const QString &str)
-{
-	QTime time;
-
-	time = QTime::fromString(str, "z'ms'");
-	if(time.isValid())
+	/*Audio Section*/
+	if(IS_SEC("Aud"))
 	{
-		return qMax(1, (time.hour() * 60 * 60) + (time.minute() * 60) + time.second());
+
+		if(IS_KEY("Aud_Format"))
+		{
+			audioFile.setFormatAudioType(value);
+		}
+		else if(IS_KEY("Aud_Format_Profile"))
+		{
+			audioFile.setFormatAudioProfile(value);
+		}
+		else if(IS_KEY("Aud_Format_Version"))
+		{
+			audioFile.setFormatAudioVersion(value);
+		}
+		else if(IS_KEY("Aud_Channel(s)"))
+		{
+			bool ok = false;
+			unsigned int tmp = value.toUInt(&ok);
+			if(ok) audioFile.setFormatAudioChannels(tmp);
+		}
+		else if(IS_KEY("Aud_SamplingRate"))
+		{
+			bool ok = false;
+			unsigned int tmp = value.toUInt(&ok);
+			if(ok) audioFile.setFormatAudioSamplerate(tmp);
+		}
+		else if(IS_KEY("Aud_BitDepth"))
+		{
+			bool ok = false;
+			unsigned int tmp = value.toUInt(&ok);
+			if(ok) audioFile.setFormatAudioBitdepth(tmp);
+		}
+		else if(IS_KEY("Aud_Duration"))
+		{
+			unsigned int tmp = parseDuration(value);
+			if(tmp > 0) audioFile.setFileDuration(tmp);
+		}
+		else if(IS_KEY("Aud_BitRate"))
+		{
+			bool ok = false;
+			unsigned int tmp = value.toUInt(&ok);
+			if(ok) audioFile.setFormatAudioBitrate(tmp/1000);
+		}
+		else if(IS_KEY("Aud_BitRate_Mode"))
+		{
+			if(!value.compare("CBR", Qt::CaseInsensitive)) audioFile.setFormatAudioBitrateMode(AudioFileModel::BitrateModeConstant);
+			if(!value.compare("VBR", Qt::CaseInsensitive)) audioFile.setFormatAudioBitrateMode(AudioFileModel::BitrateModeVariable);
+		}
+		else
+		{
+			qWarning("Unknown key '%s' with value '%s' found!", key.toUtf8().constData(), value.toUtf8().constData());
+		}
+		return;
 	}
 
-	time = QTime::fromString(str, "s's 'z'ms'");
-	if(time.isValid())
-	{
-		return qMax(1, (time.hour() * 60 * 60) + (time.minute() * 60) + time.second());
-	}
-
-	time = QTime::fromString(str, "m'mn 's's'");
-	if(time.isValid())
-	{
-		return qMax(1, (time.hour() * 60 * 60) + (time.minute() * 60) + time.second());
-	}
-
-	time = QTime::fromString(str, "h'h 'm'mn'");
-	if(time.isValid())
-	{
-		return qMax(1, (time.hour() * 60 * 60) + (time.minute() * 60) + time.second());
-	}
-
-	return 0;
+	/*Section not recognized*/
+	qWarning("Unknown section: %s", key.toUtf8().constData());
 }
 
 bool FileAnalyzer::checkFile_CDDA(QFile &file)
@@ -512,12 +534,12 @@ bool FileAnalyzer::checkFile_CDDA(QFile &file)
 	return ((i >= 0) && (j >= 0) && (k >= 0) && (k > j) && (j > i));
 }
 
-void FileAnalyzer::retrieveCover(AudioFileModel &audioFile, const QString &filePath)
+void FileAnalyzer::retrieveCover(AudioFileModel &audioFile, cover_t coverType, const QByteArray &coverData)
 {
-	qDebug("Retrieving cover from: %s", filePath.toUtf8().constData());
+	qDebug("Retrieving cover!");
 	QString extension;
 
-	switch(m_currentCover)
+	switch(coverType)
 	{
 	case coverPng:
 		extension = QString::fromLatin1("png");
@@ -530,86 +552,19 @@ void FileAnalyzer::retrieveCover(AudioFileModel &audioFile, const QString &fileP
 		break;
 	}
 	
-	QProcess process;
-	process.setProcessChannelMode(QProcess::MergedChannels);
-	process.setReadChannel(QProcess::StandardOutput);
-	process.start(m_mediaInfoBin, QStringList() << "-f" << QDir::toNativeSeparators(filePath));
-	
-	if(!process.waitForStarted())
+	if(!(QImage::fromData(coverData, extension.toUpper().toLatin1().constData()).isNull()))
 	{
-		qWarning("MediaInfo process failed to create!");
-		qWarning("Error message: \"%s\"\n", process.errorString().toLatin1().constData());
-		process.kill();
-		process.waitForFinished(-1);
-		return;
-	}
-
-	while(process.state() != QProcess::NotRunning)
-	{
-		if(m_abortFlag)
+		QFile coverFile(QString("%1/%2.%3").arg(lamexp_temp_folder2(), lamexp_rand_str(), extension));
+		if(coverFile.open(QIODevice::WriteOnly))
 		{
-			process.kill();
-			qWarning("Process was aborted on user request!");
-			break;
-		}
-		
-		if(!process.waitForReadyRead())
-		{
-			if(process.state() == QProcess::Running)
-			{
-				qWarning("MediaInfo time out. Killing process and skipping file!");
-				process.kill();
-				process.waitForFinished(-1);
-				return;
-			}
-		}
-
-		while(process.canReadLine())
-		{
-			QString line = QString::fromUtf8(process.readLine().constData()).simplified();
-			if(!line.isEmpty())
-			{
-				int index = line.indexOf(':');
-				if(index > 0)
-				{
-					QString key = line.left(index-1).trimmed();
-					QString val = line.mid(index+1).trimmed();
-					if(!key.isEmpty() && !val.isEmpty())
-					{
-						if(!key.compare("Cover_Data", Qt::CaseInsensitive))
-						{
-							if(val.indexOf(" ") > 0)
-							{
-								val = val.split(" ", QString::SkipEmptyParts, Qt::CaseInsensitive).first();
-							}
-							QByteArray coverData = QByteArray::fromBase64(val.toLatin1());
-							if(!(QImage::fromData(coverData, extension.toUpper().toLatin1().constData()).isNull()))
-							{
-								QFile coverFile(QString("%1/%2.%3").arg(lamexp_temp_folder2(), lamexp_rand_str(), extension));
-								if(coverFile.open(QIODevice::WriteOnly))
-								{
-									coverFile.write(coverData);
-									coverFile.close();
-									audioFile.setFileCover(coverFile.fileName(), true);
-								}
-							}
-							else
-							{
-								qWarning("Image data seems to be invalid :-(");
-							}
-							break;
-						}
-					}
-				}
-			}
+			coverFile.write(coverData);
+			coverFile.close();
+			audioFile.setFileCover(coverFile.fileName(), true);
 		}
 	}
-
-	process.waitForFinished();
-	if(process.state() != QProcess::NotRunning)
+	else
 	{
-		process.kill();
-		process.waitForFinished(-1);
+		qWarning("Image data seems to be invalid :-(");
 	}
 }
 
@@ -728,6 +683,94 @@ bool FileAnalyzer::analyzeAvisynthFile(const QString &filePath, AudioFileModel &
 		return false;
 		break;
 	}
+}
+
+bool FileAnalyzer::createTemplate(void)
+{
+	if(m_templateFile)
+	{
+		qWarning("Template file already exists!");
+		return true;
+	}
+	
+	QString templatePath = QString("%1/%2.txt").arg(lamexp_temp_folder2(), lamexp_rand_str());
+
+	QFile templateFile(templatePath);
+	if(!templateFile.open(QIODevice::WriteOnly))
+	{
+		return false;
+	}
+
+	templateFile.write("General;");
+	for(size_t i = 0; g_tags_gen[i]; i++)
+	{
+		templateFile.write(QString("Gen_%1=%%1%\\n").arg(g_tags_gen[i]).toLatin1().constData());
+	}
+	templateFile.write("\\n\r\n");
+
+	templateFile.write("Audio;");
+	for(size_t i = 0; g_tags_aud[i]; i++)
+	{
+		templateFile.write(QString("Aud_%1=%%1%\\n").arg(g_tags_aud[i]).toLatin1().constData());
+	}
+	templateFile.write("\\n\r\n");
+
+	bool success = (templateFile.error() == QFile::NoError);
+	templateFile.close();
+	
+	if(!success)
+	{
+		QFile::remove(templatePath);
+		return false;
+	}
+
+	try
+	{
+		m_templateFile = new LockedFile(templatePath);
+	}
+	catch(...)
+	{
+		qWarning("Failed to lock template file!");
+		return false;
+	}
+
+	return true;
+}
+
+unsigned int FileAnalyzer::parseYear(const QString &str)
+{
+	if(str.startsWith("UTC", Qt::CaseInsensitive))
+	{
+		QDate date = QDate::fromString(str.mid(3).trimmed().left(10), "yyyy-MM-dd");
+		if(date.isValid())
+		{
+			return date.year();
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		bool ok = false;
+		int year = str.toInt(&ok);
+		if(ok && year > 0)
+		{
+			return year;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+}
+
+unsigned int FileAnalyzer::parseDuration(const QString &str)
+{
+	bool ok = false;
+	unsigned int value = str.toUInt(&ok);
+	return ok ? (value/1000) : 0;
 }
 
 ////////////////////////////////////////////////////////////

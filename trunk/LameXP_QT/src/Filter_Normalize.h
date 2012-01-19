@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ public:
 	NormalizeFilter(int peakVolume = -50, int equalizationMode = 0);
 	~NormalizeFilter(void);
 
-	virtual bool apply(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag);
+	virtual bool apply(const QString &sourceFile, const QString &outputFile, AudioFileModel *formatInfo, volatile bool *abortFlag);
 
 private:
 	const QString m_binary;

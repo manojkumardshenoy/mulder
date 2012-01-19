@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -78,10 +78,11 @@ void WorkingBanner::show(const QString &text)
 	QApplication::processEvents();
 }
 
-void WorkingBanner::close(void)
+bool WorkingBanner::close(void)
 {
 	m_canClose = true;
-	QDialog::close();
+	emit userAbort();
+	return QDialog::close();
 }
 
 void WorkingBanner::show(const QString &text, QThread *thread)

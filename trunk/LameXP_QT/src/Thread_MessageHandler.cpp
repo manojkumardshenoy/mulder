@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -91,7 +91,7 @@ void MessageHandlerThread::stop(void)
 	if(!m_aborted)
 	{
 		m_aborted = true;
-		lamexp_ipc_send(0, "");
+		lamexp_ipc_send(0, NULL);
 	}
 }
 

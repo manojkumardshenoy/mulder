@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -75,16 +75,16 @@ void InitializationThread::run()
 		cpuSupport = m_cpuFeatures.x64 ? CPU_TYPE_X64_GEN : CPU_TYPE_X86_GEN;
 	}
 
-	//Hack to disable x64 on the Windows 8 Developer Preview
-	if(cpuSupport & CPU_TYPE_X64_ALL)
-	{
-		DWORD osVerNo = lamexp_get_os_version();
-		if((HIWORD(osVerNo) == 6) && (LOWORD(osVerNo) == 2))
-		{
-			qWarning("Windows 8 (x64) developer preview detected. Going to disable all x64 support!\n");
-			cpuSupport = (cpuSupport == CPU_TYPE_X64_SSE) ? CPU_TYPE_X86_SSE : CPU_TYPE_X86_GEN;
-		}
-	}
+	//Hack to disable x64 on the Windows 8 Developer Preview (not required anymore)
+	//if(cpuSupport & CPU_TYPE_X64_ALL)
+	//{
+	//	DWORD osVerNo = lamexp_get_os_version();
+	//	if((HIWORD(osVerNo) == 6) && (LOWORD(osVerNo) == 2))
+	//	{
+	//		qWarning("Windows 8 (x64) developer preview detected. Going to disable all x64 support!\n");
+	//		cpuSupport = (cpuSupport == CPU_TYPE_X64_SSE) ? CPU_TYPE_X86_SSE : CPU_TYPE_X86_GEN;
+	//	}
+	//}
 
 	//Print selected CPU type
 	switch(cpuSupport)
@@ -650,7 +650,7 @@ void InitializationThread::selfTest(void)
 				qDebug("%02i -> %s", ++n, g_lamexp_tools[i].pcName);
 			}
 		}
-		if(n != 24)
+		if(n != 25)
 		{
 			qFatal("Tool count mismatch !!!");
 		}

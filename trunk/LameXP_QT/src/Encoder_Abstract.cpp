@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -47,13 +47,19 @@ void AbstractEncoder::setCustomParams(const QString &customParams) { m_configCus
  */
 
 // Does encoder require the input to be downmixed to stereo?
-bool AbstractEncoder::requiresDownmix(void)
+const unsigned int *AbstractEncoder::supportedChannelCount(void)
 {
-	return false;
+	return NULL;
 }
 
 // Does encoder require the input to be downsampled? (NULL-terminated array of supported sampling rates)
-const unsigned int *AbstractEncoder::requiresDownsample(void)
+const unsigned int *AbstractEncoder::supportedSamplerates(void)
+{
+	return NULL;
+}
+
+// What bitdepths does the encoder support as input? (NULL-terminated array of supported bits per sample)
+const unsigned int *AbstractEncoder::supportedBitdepths(void)
 {
 	return NULL;
 }

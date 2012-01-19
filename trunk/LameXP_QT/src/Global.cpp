@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@
 #include <QEventLoop>
 #include <QTimer>
 #include <QLibraryInfo>
+#include <QEvent>
 
 //LameXP includes
 #include "Resource.h"
@@ -56,6 +57,7 @@
 #include <fcntl.h>
 #include <intrin.h>
 #include <math.h>
+#include <time.h>
 
 //COM includes
 #include <Objbase.h>
@@ -76,13 +78,24 @@ Q_IMPORT_PLUGIN(qsvg)
 // TYPES
 ///////////////////////////////////////////////////////////////////////////////
 
+static const size_t g_lamexp_ipc_slots = 128;
+
 typedef struct
 {
 	unsigned int command;
 	unsigned int reserved_1;
 	unsigned int reserved_2;
 	char parameter[4096];
-} lamexp_ipc_t;
+}
+lamexp_ipc_data_t;
+
+typedef struct
+{
+	unsigned int pos_write;
+	unsigned int pos_read;
+	lamexp_ipc_data_t data[g_lamexp_ipc_slots];
+}
+lamexp_ipc_t;
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBAL VARS
@@ -198,19 +211,25 @@ static const struct
 {
 	char *sharedmem;
 	char *semaphore_read;
+	char *semaphore_read_mutex;
 	char *semaphore_write;
+	char *semaphore_write_mutex;
 }
 g_lamexp_ipc_uuid =
 {
 	"{21A68A42-6923-43bb-9CF6-64BF151942EE}",
 	"{7A605549-F58C-4d78-B4E5-06EFC34F405B}",
-	"{60AA8D04-F6B8-497d-81EB-0F600F4A65B5}"
+	"{60AA8D04-F6B8-497d-81EB-0F600F4A65B5}",
+	"{726061D5-1615-4B82-871C-75FD93458E46}",
+	"{1A616023-AA6A-4519-8AF3-F7736E899977}"
 };
 static struct
 {
 	QSharedMemory *sharedmem;
 	QSystemSemaphore *semaphore_read;
+	QSystemSemaphore *semaphore_read_mutex;
 	QSystemSemaphore *semaphore_write;
+	QSystemSemaphore *semaphore_write_mutex;
 }
 g_lamexp_ipc_ptr =
 {
@@ -226,6 +245,8 @@ static QMutex g_lamexp_message_mutex;
 //Main thread ID
 static const DWORD g_main_thread_id = GetCurrentThreadId();
 
+//Log file
+static FILE *g_lamexp_log_file = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBAL FUNCTIONS
@@ -285,39 +306,30 @@ const QDate &lamexp_version_date(void)
 {
 	if(!g_lamexp_version_date.isValid())
 	{
-		char temp[32];
-		int date[3];
+		int date[3] = {0, 0, 0}; char temp[12] = {'\0'};
+		strncpy_s(temp, 12, g_lamexp_version_raw_date, _TRUNCATE);
 
-		char *this_token = NULL;
-		char *next_token = NULL;
-
-		strncpy_s(temp, 32, g_lamexp_version_raw_date, _TRUNCATE);
-		this_token = strtok_s(temp, " ", &next_token);
-
-		for(int i = 0; i < 3; i++)
+		if(strlen(temp) == 11)
 		{
-			date[i] = -1;
-			if(this_token)
+			temp[3] = temp[6] = '\0';
+			date[2] = atoi(&temp[4]);
+			date[0] = atoi(&temp[7]);
+			
+			for(int j = 0; j < 12; j++)
 			{
-				for(int j = 0; j < 12; j++)
+				if(!_strcmpi(&temp[0], g_lamexp_months[j]))
 				{
-					if(!_strcmpi(this_token, g_lamexp_months[j]))
-					{
-						date[i] = j+1;
-						break;
-					}
+					date[1] = j+1;
+					break;
 				}
-				if(date[i] < 0)
-				{
-					date[i] = atoi(this_token);
-				}
-				this_token = strtok_s(NULL, " ", &next_token);
 			}
+
+			g_lamexp_version_date = QDate(date[0], date[1], date[2]);
 		}
 
-		if(date[0] >= 0 && date[1] >= 0 && date[2] >= 0)
+		if(!g_lamexp_version_date.isValid())
 		{
-			g_lamexp_version_date = QDate(date[2], date[0], date[1]);
+			qFatal("Internal error: Date format could not be recognized!");
 		}
 	}
 
@@ -399,11 +411,15 @@ void lamexp_message_handler(QtMsgType type, const char *msg)
 	
 	QMutexLocker lock(&g_lamexp_message_mutex);
 
-	//if((strlen(msg) > 8) && (_strnicmp(msg, "@BASE64@", 8) == 0))
-	//{
-	//	buffer = _strdup(QByteArray::fromBase64(msg + 8).constData());
-	//	if(buffer) text = buffer;
-	//}
+	if(g_lamexp_log_file)
+	{
+		static char prefix[] = "DWCF";
+		int index = qBound(0, static_cast<int>(type), 3);
+		unsigned int timestamp = static_cast<unsigned int>(_time64(NULL) % 3600I64);
+		QString str = QString::fromUtf8(msg).trimmed().replace('\n', '\t');
+		fprintf(g_lamexp_log_file, "[%c][%04u] %s\r\n", prefix[index], timestamp, str.toUtf8().constData());
+		fflush(g_lamexp_log_file);
+	}
 
 	if(g_lamexp_console_attached)
 	{
@@ -473,6 +489,25 @@ void lamexp_message_handler(QtMsgType type, const char *msg)
 void lamexp_init_console(int argc, char* argv[])
 {
 	bool enableConsole = lamexp_version_demo();
+
+	if(_environ)
+	{
+		wchar_t *logfile = NULL;
+		size_t logfile_len = 0;
+		if(!_wdupenv_s(&logfile, &logfile_len, L"LAMEXP_LOGFILE"))
+		{
+			if(logfile && (logfile_len > 0))
+			{
+				FILE *temp = NULL;
+				if(!_wfopen_s(&temp, logfile, L"wb"))
+				{
+					fprintf(temp, "%c%c%c", 0xEF, 0xBB, 0xBF);
+					g_lamexp_log_file = temp;
+				}
+				free(logfile);
+			}
+		}
+	}
 
 	if(!LAMEXP_DEBUG)
 	{
@@ -707,6 +742,155 @@ static bool lamexp_check_compatibility_mode(const char *exportName, const char *
 }
 
 /*
+ * Computus according to H. Lichtenberg
+ */
+static bool lamexp_computus(const QDate &date)
+{
+	int X = date.year();
+	int A = X % 19;
+	int K = X / 100;
+	int M = 15 + (3*K + 3) / 4 - (8*K + 13) / 25;
+	int D = (19*A + M) % 30;
+	int S = 2 - (3*K + 3) / 4;
+	int R = D / 29 + (D / 28 - D / 29) * (A / 11);
+	int OG = 21 + D - R;
+	int SZ = 7 - (X + X / 4 + S) % 7;
+	int OE = 7 - (OG - SZ) % 7;
+	int OS = (OG + OE);
+
+	if(OS > 31)
+	{
+		return (date.month() == 4) && (date.day() == (OS - 31));
+	}
+	else
+	{
+		return (date.month() == 3) && (date.day() == OS);
+	}
+}
+
+/*
+ * Check for Thanksgiving
+ */
+static bool lamexp_thanksgiving(const QDate &date)
+{
+	int day = 0;
+
+	switch(QDate(date.year(), 11, 1).dayOfWeek())
+	{
+		case 1: day = 25; break; 
+		case 2: day = 24; break; 
+		case 3: day = 23; break; 
+		case 4: day = 22; break; 
+		case 5: day = 28; break; 
+		case 6: day = 27; break; 
+		case 7: day = 26; break;
+	}
+
+	return (date.month() == 11) && (date.day() == day);
+}
+
+/*
+ * Initialize app icon
+ */
+QIcon lamexp_app_icon(const QDate *date, const QTime *time)
+{
+	QDate currentDate = (date) ? QDate(*date) : QDate::currentDate();
+	QTime currentTime = (time) ? QTime(*time) : QTime::currentTime();
+	
+	if(lamexp_thanksgiving(currentDate))
+	{
+		return QIcon(":/MainIcon6.png");
+	}
+	else if(((currentDate.month() == 12) && (currentDate.day() == 31) && (currentTime.hour() >= 20)) || ((currentDate.month() == 1) && (currentDate.day() == 1)  && (currentTime.hour() <= 19)))
+	{
+		return QIcon(":/MainIcon5.png");
+	}
+	else if(((currentDate.month() == 10) && (currentDate.day() == 31) && (currentTime.hour() >= 12)) || ((currentDate.month() == 11) && (currentDate.day() == 1)  && (currentTime.hour() <= 11)))
+	{
+		return QIcon(":/MainIcon4.png");
+	}
+	else if((currentDate.month() == 12) && (currentDate.day() >= 24) && (currentDate.day() <= 26))
+	{
+		return QIcon(":/MainIcon3.png");
+	}
+	else if(lamexp_computus(currentDate))
+	{
+		return QIcon(":/MainIcon2.png");
+	}
+	else
+	{
+		return QIcon(":/MainIcon1.png");
+	}
+}
+
+/*
+ * Broadcast event to all windows
+ */
+static bool lamexp_broadcast(int eventType, bool onlyToVisible)
+{
+	if(QApplication *app = dynamic_cast<QApplication*>(QApplication::instance()))
+	{
+		qDebug("Broadcasting %d", eventType);
+		
+		bool allOk = true;
+		QEvent poEvent(static_cast<QEvent::Type>(eventType));
+		QWidgetList list = app->topLevelWidgets();
+
+		while(!list.isEmpty())
+		{
+			QWidget *widget = list.takeFirst();
+			if(!onlyToVisible || widget->isVisible())
+			{
+				if(!app->sendEvent(widget, &poEvent))
+				{
+					allOk = false;
+				}
+			}
+		}
+
+		qDebug("Broadcast %d done (%s)", eventType, (allOk ? "OK" : "Stopped"));
+		return allOk;
+	}
+	else
+	{
+		qWarning("Broadcast failed, could not get QApplication instance!");
+		return false;
+	}
+}
+
+/*
+ * Qt event filter
+ */
+static bool lamexp_event_filter(void *message, long *result)
+{
+	switch(reinterpret_cast<MSG*>(message)->message)
+	{
+	case WM_QUERYENDSESSION:
+		qWarning("WM_QUERYENDSESSION message received!");
+		*result = lamexp_broadcast(lamexp_event_queryendsession, false) ? TRUE : FALSE;
+		return true;
+	case WM_ENDSESSION:
+		qWarning("WM_ENDSESSION message received!");
+		if(reinterpret_cast<MSG*>(message)->wParam == TRUE)
+		{
+			lamexp_broadcast(lamexp_event_endsession, false);
+			if(QApplication *app = reinterpret_cast<QApplication*>(QApplication::instance()))
+			{
+				app->closeAllWindows();
+				app->quit();
+			}
+			lamexp_finalization();
+			exit(1);
+		}
+		*result = 0;
+		return true;
+	default:
+		/*ignore this message and let Qt handle it*/
+		return false;
+	}
+}
+
+/*
  * Check for process elevation
  */
 static bool lamexp_check_elevation(void)
@@ -841,14 +1025,14 @@ bool lamexp_init_qt(int argc, char* argv[])
 	}
 
 	//Create Qt application instance and setup version info
-	QDate date = QDate::currentDate();
 	QApplication *application = new QApplication(argc, argv);
 	application->setApplicationName("LameXP - Audio Encoder Front-End");
 	application->setApplicationVersion(QString().sprintf("%d.%02d.%04d", lamexp_version_major(), lamexp_version_minor(), lamexp_version_build())); 
 	application->setOrganizationName("LoRd_MuldeR");
 	application->setOrganizationDomain("mulder.at.gg");
-	application->setWindowIcon((date.month() == 12 && date.day() >= 24 && date.day() <= 26) ? QIcon(":/MainIcon2.png") : QIcon(":/MainIcon.png"));
-	
+	application->setWindowIcon(lamexp_app_icon());
+	application->setEventFilter(lamexp_event_filter);
+
 	//Set text Codec for locale
 	QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
@@ -903,19 +1087,23 @@ bool lamexp_init_qt(int argc, char* argv[])
  */
 int lamexp_init_ipc(void)
 {
-	if(g_lamexp_ipc_ptr.sharedmem && g_lamexp_ipc_ptr.semaphore_read && g_lamexp_ipc_ptr.semaphore_write)
+	if(g_lamexp_ipc_ptr.sharedmem && g_lamexp_ipc_ptr.semaphore_read && g_lamexp_ipc_ptr.semaphore_write && g_lamexp_ipc_ptr.semaphore_read_mutex && g_lamexp_ipc_ptr.semaphore_write_mutex)
 	{
 		return 0;
 	}
 
 	g_lamexp_ipc_ptr.semaphore_read = new QSystemSemaphore(QString(g_lamexp_ipc_uuid.semaphore_read), 0);
 	g_lamexp_ipc_ptr.semaphore_write = new QSystemSemaphore(QString(g_lamexp_ipc_uuid.semaphore_write), 0);
+	g_lamexp_ipc_ptr.semaphore_read_mutex = new QSystemSemaphore(QString(g_lamexp_ipc_uuid.semaphore_read_mutex), 0);
+	g_lamexp_ipc_ptr.semaphore_write_mutex = new QSystemSemaphore(QString(g_lamexp_ipc_uuid.semaphore_write_mutex), 0);
 
 	if(g_lamexp_ipc_ptr.semaphore_read->error() != QSystemSemaphore::NoError)
 	{
 		QString errorMessage = g_lamexp_ipc_ptr.semaphore_read->errorString();
 		LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_read);
 		LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_write);
+		LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_read_mutex);
+		LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_write_mutex);
 		qFatal("Failed to create system smaphore: %s", errorMessage.toUtf8().constData());
 		return -1;
 	}
@@ -924,6 +1112,28 @@ int lamexp_init_ipc(void)
 		QString errorMessage = g_lamexp_ipc_ptr.semaphore_write->errorString();
 		LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_read);
 		LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_write);
+		LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_read_mutex);
+		LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_write_mutex);
+		qFatal("Failed to create system smaphore: %s", errorMessage.toUtf8().constData());
+		return -1;
+	}
+	if(g_lamexp_ipc_ptr.semaphore_read_mutex->error() != QSystemSemaphore::NoError)
+	{
+		QString errorMessage = g_lamexp_ipc_ptr.semaphore_read_mutex->errorString();
+		LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_read);
+		LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_write);
+		LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_read_mutex);
+		LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_write_mutex);
+		qFatal("Failed to create system smaphore: %s", errorMessage.toUtf8().constData());
+		return -1;
+	}
+	if(g_lamexp_ipc_ptr.semaphore_write_mutex->error() != QSystemSemaphore::NoError)
+	{
+		QString errorMessage = g_lamexp_ipc_ptr.semaphore_write_mutex->errorString();
+		LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_read);
+		LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_write);
+		LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_read_mutex);
+		LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_write_mutex);
 		qFatal("Failed to create system smaphore: %s", errorMessage.toUtf8().constData());
 		return -1;
 	}
@@ -942,6 +1152,7 @@ int lamexp_init_ipc(void)
 			else
 			{
 				QString errorMessage = g_lamexp_ipc_ptr.sharedmem->errorString();
+				LAMEXP_DELETE(g_lamexp_ipc_ptr.sharedmem);
 				qFatal("Failed to attach to shared memory: %s", errorMessage.toUtf8().constData());
 				return -1;
 			}
@@ -949,13 +1160,16 @@ int lamexp_init_ipc(void)
 		else
 		{
 			QString errorMessage = g_lamexp_ipc_ptr.sharedmem->errorString();
+			LAMEXP_DELETE(g_lamexp_ipc_ptr.sharedmem);
 			qFatal("Failed to create shared memory: %s", errorMessage.toUtf8().constData());
 			return -1;
 		}
 	}
 
 	memset(g_lamexp_ipc_ptr.sharedmem->data(), 0, sizeof(lamexp_ipc_t));
-	g_lamexp_ipc_ptr.semaphore_write->release();
+	g_lamexp_ipc_ptr.semaphore_write->release(g_lamexp_ipc_slots);
+	g_lamexp_ipc_ptr.semaphore_read_mutex->release();
+	g_lamexp_ipc_ptr.semaphore_write_mutex->release();
 
 	return 0;
 }
@@ -965,26 +1179,31 @@ int lamexp_init_ipc(void)
  */
 void lamexp_ipc_send(unsigned int command, const char* message)
 {
-	if(!g_lamexp_ipc_ptr.sharedmem || !g_lamexp_ipc_ptr.semaphore_read || !g_lamexp_ipc_ptr.semaphore_write)
+	if(!g_lamexp_ipc_ptr.sharedmem || !g_lamexp_ipc_ptr.semaphore_read || !g_lamexp_ipc_ptr.semaphore_write || !g_lamexp_ipc_ptr.semaphore_read_mutex || !g_lamexp_ipc_ptr.semaphore_write_mutex)
 	{
 		throw "Shared memory for IPC not initialized yet.";
 	}
 
-	lamexp_ipc_t *lamexp_ipc = new lamexp_ipc_t;
-	memset(lamexp_ipc, 0, sizeof(lamexp_ipc_t));
-	lamexp_ipc->command = command;
+	lamexp_ipc_data_t ipc_data;
+	memset(&ipc_data, 0, sizeof(lamexp_ipc_data_t));
+	ipc_data.command = command;
+	
 	if(message)
 	{
-		strncpy_s(lamexp_ipc->parameter, 4096, message, _TRUNCATE);
+		strncpy_s(ipc_data.parameter, 4096, message, _TRUNCATE);
 	}
 
 	if(g_lamexp_ipc_ptr.semaphore_write->acquire())
 	{
-		memcpy(g_lamexp_ipc_ptr.sharedmem->data(), lamexp_ipc, sizeof(lamexp_ipc_t));
-		g_lamexp_ipc_ptr.semaphore_read->release();
+		if(g_lamexp_ipc_ptr.semaphore_write_mutex->acquire())
+		{
+			lamexp_ipc_t *ptr = reinterpret_cast<lamexp_ipc_t*>(g_lamexp_ipc_ptr.sharedmem->data());
+			memcpy(&ptr->data[ptr->pos_write], &ipc_data, sizeof(lamexp_ipc_data_t));
+			ptr->pos_write = (ptr->pos_write + 1) % g_lamexp_ipc_slots;
+			g_lamexp_ipc_ptr.semaphore_read->release();
+			g_lamexp_ipc_ptr.semaphore_write_mutex->release();
+		}
 	}
-
-	LAMEXP_DELETE(lamexp_ipc);
 }
 
 /*
@@ -995,31 +1214,35 @@ void lamexp_ipc_read(unsigned int *command, char* message, size_t buffSize)
 	*command = 0;
 	message[0] = '\0';
 	
-	if(!g_lamexp_ipc_ptr.sharedmem || !g_lamexp_ipc_ptr.semaphore_read || !g_lamexp_ipc_ptr.semaphore_write)
+	if(!g_lamexp_ipc_ptr.sharedmem || !g_lamexp_ipc_ptr.semaphore_read || !g_lamexp_ipc_ptr.semaphore_write || !g_lamexp_ipc_ptr.semaphore_read_mutex || !g_lamexp_ipc_ptr.semaphore_write_mutex)
 	{
 		throw "Shared memory for IPC not initialized yet.";
 	}
 
-	lamexp_ipc_t *lamexp_ipc = new lamexp_ipc_t;
-	memset(lamexp_ipc, 0, sizeof(lamexp_ipc_t));
+	lamexp_ipc_data_t ipc_data;
+	memset(&ipc_data, 0, sizeof(lamexp_ipc_data_t));
 
 	if(g_lamexp_ipc_ptr.semaphore_read->acquire())
 	{
-		memcpy(lamexp_ipc, g_lamexp_ipc_ptr.sharedmem->data(), sizeof(lamexp_ipc_t));
-		g_lamexp_ipc_ptr.semaphore_write->release();
+		if(g_lamexp_ipc_ptr.semaphore_read_mutex->acquire())
+		{
+			lamexp_ipc_t *ptr = reinterpret_cast<lamexp_ipc_t*>(g_lamexp_ipc_ptr.sharedmem->data());
+			memcpy(&ipc_data, &ptr->data[ptr->pos_read], sizeof(lamexp_ipc_data_t));
+			ptr->pos_read = (ptr->pos_read + 1) % g_lamexp_ipc_slots;
+			g_lamexp_ipc_ptr.semaphore_write->release();
+			g_lamexp_ipc_ptr.semaphore_read_mutex->release();
 
-		if(!(lamexp_ipc->reserved_1 || lamexp_ipc->reserved_2))
-		{
-			*command = lamexp_ipc->command;
-			strncpy_s(message, buffSize, lamexp_ipc->parameter, _TRUNCATE);
-		}
-		else
-		{
-			qWarning("Malformed IPC message, will be ignored");
+			if(!(ipc_data.reserved_1 || ipc_data.reserved_2))
+			{
+				*command = ipc_data.command;
+				strncpy_s(message, buffSize, ipc_data.parameter, _TRUNCATE);
+			}
+			else
+			{
+				qWarning("Malformed IPC message, will be ignored");
+			}
 		}
 	}
-
-	LAMEXP_DELETE(lamexp_ipc);
 }
 
 /*
@@ -1694,6 +1917,8 @@ QStringList lamexp_available_codepages(bool noAliases)
  */
 void lamexp_finalization(void)
 {
+	qDebug("lamexp_finalization()");
+	
 	//Free all tools
 	if(!g_lamexp_tool_registry.isEmpty())
 	{
@@ -1738,6 +1963,13 @@ void lamexp_finalization(void)
 	LAMEXP_DELETE(g_lamexp_ipc_ptr.sharedmem);
 	LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_read);
 	LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_write);
+
+	//Close log file
+	if(g_lamexp_log_file)
+	{
+		fclose(g_lamexp_log_file);
+		g_lamexp_log_file = NULL;
+	}
 }
 
 /*

@@ -88,10 +88,6 @@
         <translation>Offene und patentfreie Technlogie zur verlustfreien Audiokompression.</translation>
     </message>
     <message>
-        <source>By Mark James, released under the Creative Commons &apos;by&apos; License.</source>
-        <translation>Von Mark James, veröffentlicht unter der Creative Commons &apos;by&apos; Lizenz.</translation>
-    </message>
-    <message>
         <source>About Third-party Software</source>
         <translation>Über Drittsoftware</translation>
     </message>
@@ -192,10 +188,6 @@
         <translation>GNU Wget - Software für den Datei-Download über HTTP</translation>
     </message>
     <message>
-        <source>Silk Icons - Over 700  icons in PNG format</source>
-        <translation>Silk Icons - Über 700 Symbole im PNG Format</translation>
-    </message>
-    <message>
         <source>Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.</source>
         <translation>Hinweise: Diese Demo (Test) Version von LameXP läuft am %1 ab. Noch %2 Tage übrig.</translation>
     </message>
@@ -226,6 +218,14 @@
     <message>
         <source>avs2wav - Avisynth to Wave Audio converter</source>
         <translation>avs2wav - Avisynth zu Wave Audio Konverter</translation>
+    </message>
+    <message>
+        <source>dcaenc</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Copyright (c) 2008-2011 Alexander E. Patrakov. Distributed under the LGPL.</source>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -535,6 +535,22 @@
     <message>
         <source>Full Path</source>
         <translation>Dateipfad</translation>
+    </message>
+    <message>
+        <source>(System Default)</source>
+        <translation>(Systemstandard)</translation>
+    </message>
+    <message>
+        <source>Select ANSI Codepage for CSV file:</source>
+        <translation>ANSI Codepage für CSV Datei auswählen:</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
     </message>
 </context>
 <context>
@@ -1730,6 +1746,74 @@
         <source>Skipping update check this time, please be patient...</source>
         <translation>Update-Überprüfung wird übersprungen, bitte warten...</translation>
     </message>
+    <message>
+        <source>DCA Enc</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Export Meta Tags to CSV File</source>
+        <translation>Metatags als CSV-Datei exportieren</translation>
+    </message>
+    <message>
+        <source>Import Meta Tags from CSV File</source>
+        <translation>Metatags aus CSV-Datei importieren</translation>
+    </message>
+    <message>
+        <source>Save CSV file</source>
+        <translation>CSV-Datei speichern</translation>
+    </message>
+    <message>
+        <source>CSV File</source>
+        <translation>CSV Datei</translation>
+    </message>
+    <message>
+        <source>CSV Export</source>
+        <translation>CSV Export</translation>
+    </message>
+    <message>
+        <source>Sorry, there are no meta tags that can be exported!</source>
+        <translation>Keine Metatags gefunden, die exportiert werden können!</translation>
+    </message>
+    <message>
+        <source>Sorry, failed to open CSV file for writing!</source>
+        <translation>Die CSV-Datei konnte nicht zum Schreiben geöffnet werden!</translation>
+    </message>
+    <message>
+        <source>Sorry, failed to write to the CSV file!</source>
+        <translation>Beim Schreiben der CSV-Datei ist ein Fehler aufgetreten!</translation>
+    </message>
+    <message>
+        <source>The CSV files was created successfully!</source>
+        <translation>Die CSV-Datei wurde erfolgreich erzeugt!</translation>
+    </message>
+    <message>
+        <source>Open CSV file</source>
+        <translation>CSV-Datei öffnen</translation>
+    </message>
+    <message>
+        <source>Sorry, failed to open CSV file for reading!</source>
+        <translation>Die CSV-Datei konnte nicht zum Lesen geöffnet werden!</translation>
+    </message>
+    <message>
+        <source>Sorry, failed to read from the CSV file!</source>
+        <translation>Beim Lesen der CSV-Datei ist ein Fehler aufgetreten!</translation>
+    </message>
+    <message>
+        <source>Sorry, the CSV file does not contain any known fields!</source>
+        <translation>Die CSV-Datei enthält keine unterstützten Datenfelder!</translation>
+    </message>
+    <message>
+        <source>CSV file is incomplete. Not all files were updated!</source>
+        <translation>Die CSV-Datei ist unvollständig. Nicht alle Dateien wurden aktualisiert!</translation>
+    </message>
+    <message>
+        <source>The CSV files was imported successfully!</source>
+        <translation>Die CSV-Datei wurde erfolgreich importiert!</translation>
+    </message>
+    <message>
+        <source>CSV Import</source>
+        <translation>CSV Import</translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -2041,6 +2125,10 @@
     <message>
         <source>Unknown Comment</source>
         <translation>Unbekannter Kommentar</translation>
+    </message>
+    <message>
+        <source>Analyzing</source>
+        <translation>Prüfe</translation>
     </message>
 </context>
 <context>
