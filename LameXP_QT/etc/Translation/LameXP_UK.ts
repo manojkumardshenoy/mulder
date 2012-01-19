@@ -176,14 +176,6 @@
         <translation>GNU Wget - Software for retrieving files using HTTP</translation>
     </message>
     <message>
-        <source>Silk Icons - Over 700  icons in PNG format</source>
-        <translation>Silk Icons - Більш ніж 700 іконок в форматі PNG</translation>
-    </message>
-    <message>
-        <source>By Mark James, released under the Creative Commons &apos;by&apos; License.</source>
-        <translation>Створено Mark James, випущено під ліцензією Creative Commons &apos;by&apos; License.</translation>
-    </message>
-    <message>
         <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</source>
         <translation>Всі права на LameXP належать LoRd_MuldeR. Права на стороннє ПЗ, що використовується в LameXP, належать авторам цього ПЗ.</translation>
     </message>
@@ -227,6 +219,14 @@
     <message>
         <source>avs2wav - Avisynth to Wave Audio converter</source>
         <translation>avs2wav - аудіоконвертер у Wave аудіо, що базується на Avisynth</translation>
+    </message>
+    <message>
+        <source>dcaenc</source>
+        <translation>dcaenc</translation>
+    </message>
+    <message>
+        <source>Copyright (c) 2008-2011 Alexander E. Patrakov. Distributed under the LGPL.</source>
+        <translation>Всі права належать 2008-2011 Alexander E. Patrakov. Розповсюджується під ліцензією LGPL.</translation>
     </message>
 </context>
 <context>
@@ -535,6 +535,22 @@
     <message>
         <source>Full Path</source>
         <translation>Повний шлях</translation>
+    </message>
+    <message>
+        <source>(System Default)</source>
+        <translation>(Типово для ОС)</translation>
+    </message>
+    <message>
+        <source>Select ANSI Codepage for CSV file:</source>
+        <translation>Оберіть набір символів ANSI для файла CSV:</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>ОК</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Відмінити</translation>
     </message>
 </context>
 <context>
@@ -1728,7 +1744,75 @@
     </message>
     <message>
         <source>Skipping update check this time, please be patient...</source>
-        <translation type="unfinished"></translation>
+        <translation>Наразі йде переривання перевірки оновлень, будь ласка, зачекайте...</translation>
+    </message>
+    <message>
+        <source>DCA Enc</source>
+        <translation>DCA Enc</translation>
+    </message>
+    <message>
+        <source>Export Meta Tags to CSV File</source>
+        <translation>Експортувати метадані до файлу CSV</translation>
+    </message>
+    <message>
+        <source>Import Meta Tags from CSV File</source>
+        <translation>Імпортувати метадані з файлу CSV</translation>
+    </message>
+    <message>
+        <source>Save CSV file</source>
+        <translation>Збереження файла CSV</translation>
+    </message>
+    <message>
+        <source>CSV File</source>
+        <translation>Файл CSV</translation>
+    </message>
+    <message>
+        <source>CSV Export</source>
+        <translation>Експорт CSV</translation>
+    </message>
+    <message>
+        <source>Sorry, there are no meta tags that can be exported!</source>
+        <translation>Вибачте, але немає жодного метатегу для витягнення!</translation>
+    </message>
+    <message>
+        <source>Sorry, failed to open CSV file for writing!</source>
+        <translation>Вибачте, не вдалося відкрити файл CSV для запису!</translation>
+    </message>
+    <message>
+        <source>Sorry, failed to write to the CSV file!</source>
+        <translation>Вибачте, не вдалося провести запис до файла CSV!</translation>
+    </message>
+    <message>
+        <source>The CSV files was created successfully!</source>
+        <translation>Файл CSV було успішно створено!</translation>
+    </message>
+    <message>
+        <source>Open CSV file</source>
+        <translation>Відкриття файла CSV</translation>
+    </message>
+    <message>
+        <source>Sorry, failed to open CSV file for reading!</source>
+        <translation>Вибачте, не вдалося відкрити файл CSV для читання!</translation>
+    </message>
+    <message>
+        <source>Sorry, failed to read from the CSV file!</source>
+        <translation>Вибачте, не вдалося провести зчитування з файла CSV!</translation>
+    </message>
+    <message>
+        <source>Sorry, the CSV file does not contain any known fields!</source>
+        <translation>Вибачте, файл CSV не містить жодного відомого поля!</translation>
+    </message>
+    <message>
+        <source>CSV file is incomplete. Not all files were updated!</source>
+        <translation>Файл CSV є неповним. Не всі файли були оновлені!</translation>
+    </message>
+    <message>
+        <source>The CSV files was imported successfully!</source>
+        <translation>Файл CSV було успішно імпортовано!</translation>
+    </message>
+    <message>
+        <source>CSV Import</source>
+        <translation>Імпорт CSV</translation>
     </message>
 </context>
 <context>
@@ -2042,6 +2126,10 @@
         <source>Unknown Comment</source>
         <translation>Невідомий коментар</translation>
     </message>
+    <message>
+        <source>Analyzing</source>
+        <translation>Аналізування</translation>
+    </message>
 </context>
 <context>
     <name>ProcessingDialog</name>
@@ -2213,7 +2301,7 @@
     </message>
     <message>
         <source>Executable &apos;%1&apos; was built for Qt &apos;%2&apos;, but found Qt &apos;%3&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Додаток &apos;%1&apos; був створений для Qt &apos;%2&apos;, але знайдено Qt &apos;%3&apos;.</translation>
     </message>
 </context>
 <context>

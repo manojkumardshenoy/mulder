@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -47,6 +47,4 @@ private:
 	const QString m_binary_sox;
 	int m_configProfile;
 	bool m_configEnable2Pass;
-
-	unsigned int detectLength(const QString &sourceFile, volatile bool *abortFlag);
 };

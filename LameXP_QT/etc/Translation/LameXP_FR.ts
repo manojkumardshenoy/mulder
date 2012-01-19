@@ -89,10 +89,6 @@
         <translation>Technologie de compression audio sans perte ouverte et libre de brevets.</translation>
     </message>
     <message>
-        <source>By Mark James, released under the Creative Commons &apos;by&apos; License.</source>
-        <translation>Par Mark James, publié sous licence Creative Commons.</translation>
-    </message>
-    <message>
         <source>About Third-party Software</source>
         <translation>A propos des logiciels tiers</translation>
     </message>
@@ -172,10 +168,6 @@
         <translation>GnuPG - The GNU Privacy Guard</translation>
     </message>
     <message>
-        <source>Silk Icons - Over 700  icons in PNG format</source>
-        <translation>Silk Icons - Plus de 700  icônes au format PNG</translation>
-    </message>
-    <message>
         <source>Nero AAC Reference MPEG-4 Encoder</source>
         <translation>Encodeur de référence MPEG-4 Nero AAC</translation>
     </message>
@@ -229,6 +221,14 @@
     </message>
     <message>
         <source>avs2wav - Avisynth to Wave Audio converter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dcaenc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copyright (c) 2008-2011 Alexander E. Patrakov. Distributed under the LGPL.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -538,6 +538,22 @@
     <message>
         <source>Full Path</source>
         <translation>Chemin complet</translation>
+    </message>
+    <message>
+        <source>(System Default)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select ANSI Codepage for CSV file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation type="unfinished">OK</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">Annuler</translation>
     </message>
 </context>
 <context>
@@ -1739,6 +1755,74 @@ Ouvrir le dossier récursivement...</translation>
         <source>Skipping update check this time, please be patient...</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>DCA Enc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Export Meta Tags to CSV File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Import Meta Tags from CSV File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save CSV file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CSV File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CSV Export</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sorry, there are no meta tags that can be exported!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sorry, failed to open CSV file for writing!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sorry, failed to write to the CSV file!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The CSV files was created successfully!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open CSV file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sorry, failed to open CSV file for reading!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sorry, failed to read from the CSV file!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sorry, the CSV file does not contain any known fields!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CSV file is incomplete. Not all files were updated!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The CSV files was imported successfully!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CSV Import</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -2049,6 +2133,10 @@ Ouvrir le dossier récursivement...</translation>
     </message>
     <message>
         <source>Unknown Comment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analyzing</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -125,6 +125,9 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	m_showDetailsContextAction = m_sourceFilesContextMenu->addAction(QIcon(":/icons/zoom.png"), "N/A");
 	m_previewContextAction = m_sourceFilesContextMenu->addAction(QIcon(":/icons/sound.png"), "N/A");
 	m_findFileContextAction = m_sourceFilesContextMenu->addAction(QIcon(":/icons/folder_go.png"), "N/A");
+	m_sourceFilesContextMenu->addSeparator();
+	m_exportCsvContextAction = m_sourceFilesContextMenu->addAction(QIcon(":/icons/table_save.png"), "N/A");
+	m_importCsvContextAction = m_sourceFilesContextMenu->addAction(QIcon(":/icons/folder_table.png"), "N/A");
 	SET_FONT_BOLD(m_showDetailsContextAction, true);
 	connect(buttonAddFiles, SIGNAL(clicked()), this, SLOT(addFilesButtonClicked()));
 	connect(buttonRemoveFile, SIGNAL(clicked()), this, SLOT(removeFileButtonClicked()));
@@ -141,6 +144,9 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	connect(m_showDetailsContextAction, SIGNAL(triggered(bool)), this, SLOT(showDetailsButtonClicked()));
 	connect(m_previewContextAction, SIGNAL(triggered(bool)), this, SLOT(previewContextActionTriggered()));
 	connect(m_findFileContextAction, SIGNAL(triggered(bool)), this, SLOT(findFileContextActionTriggered()));
+	connect(m_exportCsvContextAction, SIGNAL(triggered(bool)), this, SLOT(exportCsvContextActionTriggered()));
+	connect(m_importCsvContextAction, SIGNAL(triggered(bool)), this, SLOT(importCsvContextActionTriggered()));
+	
 
 	//Setup "Output" tab
 	m_fileSystemModel = new QFileSystemModelEx();
@@ -203,6 +209,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	m_encoderButtonGroup->addButton(radioButtonEncoderAAC, SettingsModel::AACEncoder);
 	m_encoderButtonGroup->addButton(radioButtonEncoderAC3, SettingsModel::AC3Encoder);
 	m_encoderButtonGroup->addButton(radioButtonEncoderFLAC, SettingsModel::FLACEncoder);
+	m_encoderButtonGroup->addButton(radioButtonEncoderDCA, SettingsModel::DCAEncoder);
 	m_encoderButtonGroup->addButton(radioButtonEncoderPCM, SettingsModel::PCMEncoder);
 	m_modeButtonGroup = new QButtonGroup(this);
 	m_modeButtonGroup->addButton(radioButtonModeQuality, SettingsModel::VBRMode);
@@ -214,6 +221,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	radioButtonEncoderAAC->setChecked((m_settings->compressionEncoder() == SettingsModel::AACEncoder) && (m_neroEncoderAvailable || m_fhgEncoderAvailable || m_qaacEncoderAvailable));
 	radioButtonEncoderAC3->setChecked(m_settings->compressionEncoder() == SettingsModel::AC3Encoder);
 	radioButtonEncoderFLAC->setChecked(m_settings->compressionEncoder() == SettingsModel::FLACEncoder);
+	radioButtonEncoderDCA->setChecked(m_settings->compressionEncoder() == SettingsModel::DCAEncoder);
 	radioButtonEncoderPCM->setChecked(m_settings->compressionEncoder() == SettingsModel::PCMEncoder);
 	radioButtonModeQuality->setChecked(m_settings->compressionRCMode() == SettingsModel::VBRMode);
 	radioButtonModeAverageBitrate->setChecked(m_settings->compressionRCMode() == SettingsModel::ABRMode);
@@ -444,7 +452,7 @@ MainWindow::~MainWindow(void)
 	if(m_messageHandler && m_messageHandler->isRunning())
 	{
 		m_messageHandler->stop();
-		if(!m_messageHandler->wait(10000))
+		if(!m_messageHandler->wait(2500))
 		{
 			m_messageHandler->terminate();
 			m_messageHandler->wait();
@@ -701,6 +709,8 @@ void MainWindow::changeEvent(QEvent *e)
 		m_findFileContextAction->setText(tr("Browse File Location"));
 		m_showFolderContextAction->setText(tr("Browse Selected Folder"));
 		m_addFavoriteFolderAction->setText(tr("Bookmark Current Output Folder"));
+		m_exportCsvContextAction->setText(tr("Export Meta Tags to CSV File"));
+		m_importCsvContextAction->setText(tr("Import Meta Tags from CSV File"));
 
 		//Force GUI update
 		m_metaInfoModel->clearData();
@@ -892,6 +902,31 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 	}
 
 	return QMainWindow::eventFilter(obj, event);
+}
+
+bool MainWindow::event(QEvent *e)
+{
+	switch(e->type())
+	{
+	case lamexp_event_queryendsession:
+		qWarning("System is shutting down, main window prepares to close...");
+		if(m_banner->isVisible()) m_banner->close();
+		if(m_delayedFileTimer->isActive()) m_delayedFileTimer->stop();
+		return true;
+	case lamexp_event_endsession:
+		qWarning("System is shutting down, main window will close now...");
+		if(isVisible())
+		{
+			while(!close())
+			{
+				QApplication::processEvents(QEventLoop::WaitForMoreEvents & QEventLoop::ExcludeUserInputEvents);
+			}
+		}
+		m_fileListModel->clearFiles();
+		return true;
+	default:
+		return QMainWindow::event(e);
+	}
 }
 
 bool MainWindow::winEvent(MSG *message, long *result)
@@ -1217,6 +1252,7 @@ void MainWindow::encodeButtonClicked(void)
 	case SettingsModel::AACEncoder:
 	case SettingsModel::AC3Encoder:
 	case SettingsModel::FLACEncoder:
+	case SettingsModel::DCAEncoder:
 	case SettingsModel::PCMEncoder:
 		break;
 	default:
@@ -2100,6 +2136,112 @@ void MainWindow::handleDelayedFiles(void)
 }
 
 /*
+ * Export Meta tags to CSV file
+ */
+void MainWindow::exportCsvContextActionTriggered(void)
+{
+	TEMP_HIDE_DROPBOX
+	(
+		QString selectedCsvFile;
+	
+		if(USE_NATIVE_FILE_DIALOG)
+		{
+			selectedCsvFile = QFileDialog::getSaveFileName(this, tr("Save CSV file"), m_settings->mostRecentInputPath(), QString("%1 (*.csv)").arg(tr("CSV File")));
+		}
+		else
+		{
+			QFileDialog dialog(this, tr("Save CSV file"));
+			dialog.setFileMode(QFileDialog::AnyFile);
+			dialog.setAcceptMode(QFileDialog::AcceptSave);
+			dialog.setNameFilter(QString("%1 (*.csv)").arg(tr("CSV File")));
+			dialog.setDirectory(m_settings->mostRecentInputPath());
+			if(dialog.exec())
+			{
+				selectedCsvFile = dialog.selectedFiles().first();
+			}
+		}
+
+		if(!selectedCsvFile.isEmpty())
+		{
+			m_settings->mostRecentInputPath(QFileInfo(selectedCsvFile).canonicalPath());
+			switch(m_fileListModel->exportToCsv(selectedCsvFile))
+			{
+			case FileListModel::CsvError_NoTags:
+				QMessageBox::critical(this, tr("CSV Export"), NOBR(tr("Sorry, there are no meta tags that can be exported!")));
+				break;
+			case FileListModel::CsvError_FileOpen:
+				QMessageBox::critical(this, tr("CSV Export"), NOBR(tr("Sorry, failed to open CSV file for writing!")));
+				break;
+			case FileListModel::CsvError_FileWrite:
+				QMessageBox::critical(this, tr("CSV Export"), NOBR(tr("Sorry, failed to write to the CSV file!")));
+				break;
+			case FileListModel::CsvError_OK:
+				QMessageBox::information(this, tr("CSV Export"), NOBR(tr("The CSV files was created successfully!")));
+				break;
+			default:
+				qWarning("exportToCsv: Unknown return code!");
+			}
+		}
+	)
+}
+
+
+/*
+ * Import Meta tags from CSV file
+ */
+void MainWindow::importCsvContextActionTriggered(void)
+{
+	TEMP_HIDE_DROPBOX
+	(
+		QString selectedCsvFile;
+	
+		if(USE_NATIVE_FILE_DIALOG)
+		{
+			selectedCsvFile = QFileDialog::getOpenFileName(this, tr("Open CSV file"), m_settings->mostRecentInputPath(), QString("%1 (*.csv)").arg(tr("CSV File")));
+		}
+		else
+		{
+			QFileDialog dialog(this, tr("Open CSV file"));
+			dialog.setFileMode(QFileDialog::ExistingFile);
+			dialog.setNameFilter(QString("%1 (*.csv)").arg(tr("CSV File")));
+			dialog.setDirectory(m_settings->mostRecentInputPath());
+			if(dialog.exec())
+			{
+				selectedCsvFile = dialog.selectedFiles().first();
+			}
+		}
+
+		if(!selectedCsvFile.isEmpty())
+		{
+			m_settings->mostRecentInputPath(QFileInfo(selectedCsvFile).canonicalPath());
+			switch(m_fileListModel->importFromCsv(this, selectedCsvFile))
+			{
+			case FileListModel::CsvError_FileOpen:
+				QMessageBox::critical(this, tr("CSV Import"), NOBR(tr("Sorry, failed to open CSV file for reading!")));
+				break;
+			case FileListModel::CsvError_FileRead:
+				QMessageBox::critical(this, tr("CSV Import"), NOBR(tr("Sorry, failed to read from the CSV file!")));
+				break;
+			case FileListModel::CsvError_NoTags:
+				QMessageBox::critical(this, tr("CSV Import"), NOBR(tr("Sorry, the CSV file does not contain any known fields!")));
+				break;
+			case FileListModel::CsvError_Incomplete:
+				QMessageBox::warning(this, tr("CSV Import"), NOBR(tr("CSV file is incomplete. Not all files were updated!")));
+				break;
+			case FileListModel::CsvError_OK:
+				QMessageBox::information(this, tr("CSV Import"), NOBR(tr("The CSV files was imported successfully!")));
+				break;
+			case FileListModel::CsvError_Aborted:
+				/* User aborted, ignore! */
+				break;
+			default:
+				qWarning("exportToCsv: Unknown return code!");
+			}
+		}
+	)
+}
+
+/*
  * Show or hide Drag'n'Drop notice after model reset
  */
 void MainWindow::sourceModelChanged(void)
@@ -2481,6 +2623,13 @@ void MainWindow::updateEncoder(int id)
 		radioButtonConstBitrate->setEnabled(true);
 		sliderBitrate->setEnabled(true);
 		break;
+	case SettingsModel::DCAEncoder:
+		radioButtonModeQuality->setEnabled(false);
+		radioButtonModeAverageBitrate->setEnabled(false);
+		radioButtonConstBitrate->setEnabled(true);
+		radioButtonConstBitrate->setChecked(true);
+		sliderBitrate->setEnabled(true);
+		break;
 	default:
 		radioButtonModeQuality->setEnabled(true);
 		radioButtonModeAverageBitrate->setEnabled(true);
@@ -2556,6 +2705,10 @@ void MainWindow::updateRCMode(int id)
 	case SettingsModel::FLACEncoder:
 		sliderBitrate->setMinimum(0);
 		sliderBitrate->setMaximum(8);
+		break;
+	case SettingsModel::DCAEncoder:
+		sliderBitrate->setMinimum(1);
+		sliderBitrate->setMaximum(128);
 		break;
 	case SettingsModel::PCMEncoder:
 		sliderBitrate->setMinimum(0);
@@ -2637,6 +2790,9 @@ void MainWindow::updateBitrate(int value)
 			break;
 		case SettingsModel::AC3Encoder:
 			labelBitrate->setText(QString("%1 kbps").arg(SettingsModel::ac3Bitrates[value]));
+			break;
+		case SettingsModel::DCAEncoder:
+			labelBitrate->setText(QString("%1 kbps").arg(value * 32));
 			break;
 		case SettingsModel::PCMEncoder:
 			labelBitrate->setText(tr("Uncompressed"));

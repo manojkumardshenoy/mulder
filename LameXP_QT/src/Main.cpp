@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -88,6 +88,10 @@ static int lamexp_main(int argc, char* argv[])
 	//Check for expiration
 	if(lamexp_version_demo())
 	{
+		if(QDate::currentDate().addDays(1) < lamexp_version_date())
+		{
+			qFatal("System's date (%s) is before LameXP build date (%s). Huh?", QDate::currentDate().toString(Qt::ISODate).toLatin1().constData(), lamexp_version_date().toString(Qt::ISODate).toLatin1().constData());
+		}
 		qWarning(QString("Note: This demo (pre-release) version of LameXP will expire at %1.\n").arg(lamexp_version_expires().toString(Qt::ISODate)).toLatin1().constData());
 	}
 
@@ -157,7 +161,7 @@ static int lamexp_main(int argc, char* argv[])
 		bAccepted = poMainWindow->isAccepted();
 
 		//Show processing dialog
-		if(bAccepted && fileListModel->rowCount() > 0)
+		if(bAccepted && (fileListModel->rowCount() > 0))
 		{
 			ProcessingDialog *processingDialog = new ProcessingDialog(fileListModel, metaInfo, settingsModel);
 			processingDialog->exec();

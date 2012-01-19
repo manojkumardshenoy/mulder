@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -40,8 +40,9 @@ public:
 	virtual bool encode(const QString &sourceFile, const AudioFileModel &metaInfo, const QString &outputFile, volatile bool *abortFlag) = 0;
 	virtual bool isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion) = 0;
 	virtual QString extension(void) = 0;
-	virtual bool requiresDownmix(void);
-	virtual const unsigned int *requiresDownsample(void);
+	virtual const unsigned int *supportedSamplerates(void);
+	virtual const unsigned int *supportedChannelCount(void);
+	virtual const unsigned int *supportedBitdepths(void);
 
 	//Common setter methods
 	void setBitrate(int bitrate);

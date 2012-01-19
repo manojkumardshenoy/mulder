@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 
 #include "Tool_Abstract.h"
 
+class AudioFileModel;
+
 class AbstractFilter : public AbstractTool
 {
 	Q_OBJECT
@@ -32,6 +34,6 @@ public:
 	~AbstractFilter(void);
 
 	//Internal decoder API
-	virtual bool apply(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag) = 0;
+	virtual bool apply(const QString &sourceFile, const QString &outputFile, AudioFileModel *formatInfo, volatile bool *abortFlag) = 0;
 };
 

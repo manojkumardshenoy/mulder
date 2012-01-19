@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,12 +22,18 @@
 #include "Filter_Resample.h"
 
 #include "Global.h"
+#include "Model_AudioFile.h"
 
 #include <QDir>
 #include <QProcess>
 #include <QRegExp>
 
-ResampleFilter::ResampleFilter(int samplingRate)
+static __inline int multipleOf(int value, int base)
+{
+	return qRound(static_cast<double>(value) / static_cast<double>(base)) * base;
+}
+
+ResampleFilter::ResampleFilter(int samplingRate, int bitDepth)
 :
 	m_binary(lamexp_lookup_tool("sox.exe"))
 {
@@ -36,26 +42,56 @@ ResampleFilter::ResampleFilter(int samplingRate)
 		throw "Error initializing SoX filter. Tool 'sox.exe' is not registred!";
 	}
 
-	m_samplingRate = qMin(192000, qMax(8000, samplingRate));
+	m_samplingRate = (samplingRate > 0) ? qBound(8000, samplingRate, 192000) : 0;
+	m_bitDepth = (bitDepth > 0) ? qBound(8, multipleOf(bitDepth, 8), 32) : 0;
+
+	if((m_samplingRate == 0) && (m_bitDepth == 0))
+	{
+		qWarning("ResampleFilter: Nothing to do, filter will be NOP!");
+	}
 }
 
 ResampleFilter::~ResampleFilter(void)
 {
 }
 
-bool ResampleFilter::apply(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag)
+bool ResampleFilter::apply(const QString &sourceFile, const QString &outputFile, AudioFileModel *formatInfo, volatile bool *abortFlag)
 {
 	QProcess process;
 	QStringList args;
+
+	if((m_samplingRate == formatInfo->formatAudioSamplerate()) && (m_bitDepth == formatInfo->formatAudioBitdepth()))
+	{
+		messageLogged("Skipping resample filter!");
+		qDebug("Resampling filter target samplerate/bitdepth is equals to the format of the input file, skipping!");
+		return true;
+	}
 
 	process.setWorkingDirectory(QFileInfo(outputFile).canonicalPath());
 
 	args << "-V3" << "-S";
 	args << "--guard" << "--temp" << ".";
 	args << QDir::toNativeSeparators(sourceFile);
+
+	if(m_bitDepth)
+	{
+		args << "-b" << QString::number(m_bitDepth);
+	}
+
 	args << QDir::toNativeSeparators(outputFile);
-	args << "rate";
-	args << "-h" << QString::number(m_samplingRate);
+
+	if(m_samplingRate)
+	{
+		args << "rate";
+		args << ((m_bitDepth > 16) ? "-v" : "-h");			//if resampling at/to > 16 bit depth (i.e. most commonly 24-bit), use VHQ (-v), otherwise, use HQ (-h)
+		args << ((m_samplingRate > 40000) ? "-L" : "-I");	//if resampling to < 40k, use intermediate phase (-I), otherwise use linear phase (-L)
+		args << QString::number(m_samplingRate);
+	}
+
+	if((m_bitDepth || m_samplingRate) && (m_bitDepth <= 16))
+	{
+		args << "dither" << "-s";					//if you're mastering to 16-bit, you also need to add 'dither' (and in most cases noise-shaping) after the rate
+	}
 
 	if(!startProcess(process, m_binary, args))
 	{
@@ -112,10 +148,13 @@ bool ResampleFilter::apply(const QString &sourceFile, const QString &outputFile,
 	emit statusUpdated(100);
 	emit messageLogged(QString().sprintf("\nExited with code: 0x%04X", process.exitCode()));
 
-	if(bTimeout || bAborted || process.exitStatus() != QProcess::NormalExit || QFileInfo(outputFile).size() == 0)
+	if(bTimeout || bAborted || process.exitCode() != EXIT_SUCCESS || QFileInfo(outputFile).size() == 0)
 	{
 		return false;
 	}
 	
+	if(m_samplingRate) formatInfo->setFormatAudioSamplerate(m_samplingRate);
+	if(m_bitDepth) formatInfo->setFormatAudioBitdepth(m_bitDepth);
+
 	return true;
 }

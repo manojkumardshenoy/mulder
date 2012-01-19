@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@ class SettingsModel;
 class CPUObserverThread;
 class RAMObserverThread;
 class DiskObserverThread;
+class AbstractEncoder;
 
 enum shutdownFlag_t
 {
@@ -57,7 +58,7 @@ public:
 private slots:
 	void initEncoding(void);
 	void doneEncoding(void);
-	void abortEncoding(void);
+	void abortEncoding(bool force = false);
 	void processFinished(const QUuid &jobId, const QString &outFileName, bool success);
 	void progressModelChanged(void);
 	void logViewDoubleClicked(const QModelIndex &index);
@@ -74,11 +75,13 @@ protected:
 	void showEvent(QShowEvent *event);
 	void closeEvent(QCloseEvent *event);
 	bool eventFilter(QObject *obj, QEvent *event);
-	bool winEvent(MSG *message, long *result);
+	virtual bool event(QEvent *e);
+	virtual bool winEvent(MSG *message, long *result);
 
 private:
 	void setCloseButtonEnabled(bool enabled);
 	void startNextJob(void);
+	AbstractEncoder *makeEncoder(bool *nativeResampling);
 	AudioFileModel updateMetaInfo(const AudioFileModel &audioFile);
 	void writePlayList(void);
 	bool shutdownComputer(void);
@@ -98,6 +101,7 @@ private:
 	QList<QUuid> m_succeededJobs;
 	QList<QUuid> m_failedJobs;
 	bool m_userAborted;
+	bool m_forcedAbort;
 	QSystemTrayIcon *m_systemTray;
 	int m_shutdownFlag;
 	CPUObserverThread *m_cpuObserver;

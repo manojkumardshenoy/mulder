@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -37,6 +37,8 @@
 class QString;
 class QStringList;
 class QDate;
+class QTime;
+class QIcon;
 class QWidget;
 class LockedFile;
 enum QtMsgType;
@@ -68,6 +70,15 @@ typedef enum
 	lamexp_folder_systemfolder = 3
 }
 lamexp_known_folder_t;
+
+//LameXP user-defined events
+typedef enum
+{
+	lamexp_event = 1000,           /*QEvent::User*/
+	lamexp_event_queryendsession = lamexp_event + 666,
+	lamexp_event_endsession      = lamexp_event + 667
+}
+lamexp_event_t;
 
 //LameXP version info
 unsigned int lamexp_version_major(void);
@@ -108,6 +119,7 @@ lamexp_cpu_t lamexp_detect_cpu_features(int argc = 0, char **argv = NULL);
 bool lamexp_portable_mode(void);
 bool lamexp_shutdown_computer(const QString &message, const unsigned long timeout = 30, const bool forceShutdown = true, const bool hibernate = false);
 bool lamexp_is_hibernation_supported(void);
+QIcon lamexp_app_icon(const QDate *date = NULL, const QTime *time = NULL);
 
 //Translation support
 QStringList lamexp_query_translations(void);
@@ -136,6 +148,7 @@ SIZE_T lamexp_dbg_private_bytes(void);
 
 //Helper macros
 #define LAMEXP_DELETE(PTR) if(PTR) { delete PTR; PTR = NULL; }
+#define LAMEXP_DELETE_ARRAY(PTR) if(PTR) { delete [] PTR; PTR = NULL; }
 #define LAMEXP_SAFE_FREE(PTR) if(PTR) { free((void*) PTR); PTR = NULL; }
 #define LAMEXP_CLOSE(HANDLE) if(HANDLE != NULL && HANDLE != INVALID_HANDLE_VALUE) { CloseHandle(HANDLE); HANDLE = NULL; }
 #define QWCHAR(STR) reinterpret_cast<const wchar_t*>(STR.utf16())

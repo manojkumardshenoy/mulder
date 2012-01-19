@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -146,7 +146,7 @@ bool AC3Encoder::encode(const QString &sourceFile, const AudioFileModel &metaInf
 	emit statusUpdated(100);
 	emit messageLogged(QString().sprintf("\nExited with code: 0x%04X", process.exitCode()));
 
-	if(bTimeout || bAborted || process.exitStatus() != QProcess::NormalExit)
+	if(bTimeout || bAborted || process.exitCode() != EXIT_SUCCESS)
 	{
 		return false;
 	}
@@ -179,7 +179,13 @@ QString AC3Encoder::extension(void)
 	return "ac3";
 }
 
-const unsigned int *AC3Encoder::requiresDownsample(void)
+const unsigned int *AC3Encoder::supportedChannelCount(void)
+{
+	static const unsigned int supportedChannels[] = {1, 2, 3, 4, 5, 6, NULL};
+	return supportedChannels;
+}
+
+const unsigned int *AC3Encoder::supportedSamplerates(void)
 {
 	static const unsigned int supportedRates[] = {48000, 44100, 32000, NULL};
 	return supportedRates;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -78,6 +78,7 @@ private slots:
 	void documentActionActivated(void);
 	void editMetaButtonClicked(void);
 	void encodeButtonClicked(void);
+	void exportCsvContextActionTriggered(void);
 	void fileDownButtonClicked(void);
 	void fileUpButtonClicked(void);
 	void findFileContextActionTriggered(void);
@@ -89,6 +90,7 @@ private slots:
 	void handleDelayedFiles(void);
 	void hibernateComputerActionTriggered(bool checked);
 	void importCueSheetActionTriggered(bool checked);
+	void importCsvContextActionTriggered(void);
 	void initOutputFolderModel(void);
 	void languageActionActivated(QAction *action);
 	void languageFromFileActionActivated(bool checked);
@@ -139,14 +141,15 @@ private slots:
 	void windowShown(void);
 
 protected:
-	void changeEvent(QEvent *e);
-	void closeEvent(QCloseEvent *event);
-	void dragEnterEvent(QDragEnterEvent *event);
-	void dropEvent(QDropEvent *event);
-	bool eventFilter(QObject *obj, QEvent *event);
-	void resizeEvent(QResizeEvent *event);
-	void showEvent(QShowEvent *event);
-	bool winEvent(MSG *message, long *result);
+	virtual void changeEvent(QEvent *e);
+	virtual void closeEvent(QCloseEvent *event);
+	virtual void dragEnterEvent(QDragEnterEvent *event);
+	virtual void dropEvent(QDropEvent *event);
+	virtual bool eventFilter(QObject *obj, QEvent *event);
+	virtual void resizeEvent(QResizeEvent *event);
+	virtual void showEvent(QShowEvent *event);
+	virtual bool event(QEvent *e);
+	virtual bool winEvent(MSG *message, long *result);
 
 private:
 	void addFiles(const QStringList &files);
@@ -182,6 +185,8 @@ private:
 	QAction *m_showDetailsContextAction;
 	QAction *m_showFolderContextAction;
 	QAction *m_addFavoriteFolderAction;
+	QAction *m_exportCsvContextAction;
+	QAction *m_importCsvContextAction;
 	QActionGroup *m_languageActionGroup;
 	QActionGroup *m_styleActionGroup;
 	QActionGroup *m_tabActionGroup;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -391,7 +391,7 @@ void CueSplitter::splitFile(const QString &output, const int trackNo, const QStr
 		process.waitForFinished(-1);
 	}
 
-	if(process.exitStatus() != QProcess::NormalExit || QFileInfo(output).size() == 0)
+	if(process.exitCode() != EXIT_SUCCESS || QFileInfo(output).size() == 0)
 	{
 		qWarning("Splitting has failed !!!");
 		m_nTracksSkipped++;

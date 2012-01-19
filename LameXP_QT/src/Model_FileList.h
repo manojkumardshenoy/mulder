@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -48,6 +48,23 @@ public:
 	bool setFile(const QModelIndex &index, const AudioFileModel &audioFile);
 	AudioFileModel &operator[] (const QModelIndex &index);
 
+	//CSV export/import
+	int exportToCsv(const QString &outFile);
+	int importFromCsv(QWidget *parent, const QString &inFile);
+
+	//Public types
+	enum
+	{
+		CsvError_OK = 0,
+		CsvError_NoTags = 1,
+		CsvError_FileOpen = 2,
+		CsvError_FileRead = 3,
+		CsvError_FileWrite = 4,
+		CsvError_Incomplete = 5,
+		CsvError_Aborted = 6
+	}
+	CsvError;
+
 public slots:
 	void addFile(const QString &filePath);
 	void addFile(const AudioFileModel &file);
@@ -55,4 +72,6 @@ public slots:
 private:
 	QList<AudioFileModel> m_fileList;
 	const QIcon m_fileIcon;
+
+	static bool checkArray(const bool *a, const bool val, size_t len);
 };

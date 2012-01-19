@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2011 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -38,7 +38,6 @@ public:
 	void show(const QString &text);
 	void show(const QString &text, QThread *thread);
 	void show(const QString &text, QEventLoop *loop);
-	void close(void);
 
 private:
 	QMovie *m_working;
@@ -46,6 +45,7 @@ private:
 
 public slots:
 	void setText(const QString &text);
+	bool close(void);
 
 signals:
 	void userAbort(void);

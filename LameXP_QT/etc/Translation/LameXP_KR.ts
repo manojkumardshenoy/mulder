@@ -176,14 +176,6 @@
         <translation type="unfinished">GNU Wget - HTTP를 사용하여 파일을 검색하기 위한 소프트웨어</translation>
     </message>
     <message>
-        <source>Silk Icons - Over 700  icons in PNG format</source>
-        <translation type="unfinished">Silk Icons - PNG 형식의 700 이상의 아이콘 </translation>
-    </message>
-    <message>
-        <source>By Mark James, released under the Creative Commons &apos;by&apos; License.</source>
-        <translation type="unfinished">By Mark James, 크리에이티브 커먼즈 &apos;by&apos; 라이센스 하에 출시됨.</translation>
-    </message>
-    <message>
         <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</source>
         <translation type="unfinished">LameXP 전체는 LoRd_MuldeR에게 저작권이 있습니다. LameXP에 사용된 타사 소프트웨어는 각 소프트웨어의 저작자에게 저작권이 있습니다.</translation>
     </message>
@@ -225,6 +217,14 @@
     </message>
     <message>
         <source>avs2wav - Avisynth to Wave Audio converter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>dcaenc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copyright (c) 2008-2011 Alexander E. Patrakov. Distributed under the LGPL.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -534,6 +534,22 @@
     <message>
         <source>Full Path</source>
         <translation type="unfinished">전체 경로</translation>
+    </message>
+    <message>
+        <source>(System Default)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select ANSI Codepage for CSV file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation type="unfinished">확인</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">취소</translation>
     </message>
 </context>
 <context>
@@ -1729,6 +1745,74 @@
         <source>Skipping update check this time, please be patient...</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>DCA Enc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Export Meta Tags to CSV File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Import Meta Tags from CSV File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save CSV file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CSV File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CSV Export</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sorry, there are no meta tags that can be exported!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sorry, failed to open CSV file for writing!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sorry, failed to write to the CSV file!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The CSV files was created successfully!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open CSV file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sorry, failed to open CSV file for reading!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sorry, failed to read from the CSV file!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sorry, the CSV file does not contain any known fields!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CSV file is incomplete. Not all files were updated!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The CSV files was imported successfully!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CSV Import</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -2039,6 +2123,10 @@
     </message>
     <message>
         <source>Unknown Comment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analyzing</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
