@@ -67,14 +67,15 @@ static const unsigned int REV_MULT = 10000;
 // Constructor & Destructor
 ///////////////////////////////////////////////////////////////////////////////
 
-EncodeThread::EncodeThread(const QString &sourceFileName, const QString &outputFileName, const OptionsModel *options, const QString &binDir, bool x64)
+EncodeThread::EncodeThread(const QString &sourceFileName, const QString &outputFileName, const OptionsModel *options, const QString &binDir, bool x264_x64, bool avs2yuv_x64)
 :
 	m_jobId(QUuid::createUuid()),
 	m_sourceFileName(sourceFileName),
 	m_outputFileName(outputFileName),
 	m_options(new OptionsModel(*options)),
 	m_binDir(binDir),
-	m_x64(x64),
+	m_x264_x64(x264_x64),
+	m_avs2yuv_x64(avs2yuv_x64),
 	m_handle_jobObject(NULL),
 	m_semaphorePaused(0)
 {
@@ -186,14 +187,14 @@ void EncodeThread::encode(void)
 	log(tr("\n--- CHECK VERSION ---\n"));
 	unsigned int revision_x264 = UINT_MAX;
 	bool x264_modified = false;
-	ok = ((revision_x264 = checkVersionX264(m_x64, x264_modified)) != UINT_MAX);
+	ok = ((revision_x264 = checkVersionX264(m_x264_x64, x264_modified)) != UINT_MAX);
 	CHECK_STATUS(m_abort, ok);
 	
 	//Checking avs2yuv version
 	unsigned int revision_avs2yuv = UINT_MAX;
 	if(usePipe)
 	{
-		ok = ((revision_avs2yuv = checkVersionAvs2yuv()) != UINT_MAX);
+		ok = ((revision_avs2yuv = checkVersionAvs2yuv(m_avs2yuv_x64)) != UINT_MAX);
 		CHECK_STATUS(m_abort, ok);
 	}
 
@@ -213,7 +214,7 @@ void EncodeThread::encode(void)
 		log(tr("\nWARNING: Your revision of x264 uses an unsupported core (API) version, take care!"));
 		log(tr("This application works best with x264 core (API) version %2.").arg(QString::number(VER_X264_CURRENT_API)));
 	}
-	if((revision_avs2yuv != UINT_MAX) && ((revision_avs2yuv % REV_MULT) != VER_x264_AVS2YUV_VER))
+	if((revision_avs2yuv != UINT_MAX) && ((revision_avs2yuv % REV_MULT) != VER_X264_AVS2YUV_VER))
 	{
 		log(tr("\nERROR: Your version of avs2yuv is unsupported (Required version: v0.24 BugMaster's mod 2)"));
 		log(tr("You can find the required version at: http://komisar.gin.by/tools/avs2yuv/"));
@@ -225,7 +226,7 @@ void EncodeThread::encode(void)
 	if(usePipe)
 	{
 		log(tr("\n--- AVS INFO ---\n"));
-		ok = checkProperties(frames);
+		ok = checkProperties(m_avs2yuv_x64, frames);
 		CHECK_STATUS(m_abort, ok);
 	}
 
@@ -245,17 +246,17 @@ void EncodeThread::encode(void)
 		}
 		
 		log(tr("\n--- PASS 1 ---\n"));
-		ok = runEncodingPass(m_x64, usePipe, frames, indexFile, 1, passLogFile);
+		ok = runEncodingPass(m_x264_x64, m_avs2yuv_x64, usePipe, frames, indexFile, 1, passLogFile);
 		CHECK_STATUS(m_abort, ok);
 
 		log(tr("\n--- PASS 2 ---\n"));
-		ok = runEncodingPass(m_x64, usePipe, frames, indexFile, 2, passLogFile);
+		ok = runEncodingPass(m_x264_x64, m_avs2yuv_x64, usePipe, frames, indexFile, 2, passLogFile);
 		CHECK_STATUS(m_abort, ok);
 	}
 	else
 	{
 		log(tr("\n--- ENCODING ---\n"));
-		ok = runEncodingPass(m_x64, usePipe, frames, indexFile);
+		ok = runEncodingPass(m_x264_x64, m_avs2yuv_x64, usePipe, frames, indexFile);
 		CHECK_STATUS(m_abort, ok);
 	}
 
@@ -266,7 +267,7 @@ void EncodeThread::encode(void)
 	setStatus(JobStatus_Completed);
 }
 
-bool EncodeThread::runEncodingPass(bool x64, bool usePipe, unsigned int frames, const QString &indexFile, int pass, const QString &passLogFile)
+bool EncodeThread::runEncodingPass(bool x264_x64, bool avs2yuv_x64, bool usePipe, unsigned int frames, const QString &indexFile, int pass, const QString &passLogFile)
 {
 	QProcess processEncode, processAvisynth;
 	
@@ -278,7 +279,7 @@ bool EncodeThread::runEncodingPass(bool x64, bool usePipe, unsigned int frames, 
 		processAvisynth.setStandardOutputProcess(&processEncode);
 
 		log("Creating Avisynth process:");
-		if(!startProcess(processAvisynth, QString("%1/avs2yuv.exe").arg(m_binDir), cmdLine_Avisynth, false))
+		if(!startProcess(processAvisynth, QString("%1/%2.exe").arg(m_binDir, avs2yuv_x64 ? "avs2yuv_x64" : "avs2yuv"), cmdLine_Avisynth, false))
 		{
 			return false;
 		}
@@ -287,7 +288,7 @@ bool EncodeThread::runEncodingPass(bool x64, bool usePipe, unsigned int frames, 
 	QStringList cmdLine_Encode = buildCommandLine(usePipe, frames, indexFile, pass, passLogFile);
 
 	log("Creating x264 process:");
-	if(!startProcess(processEncode, QString("%1/%2.exe").arg(m_binDir, x64 ? "x264_x64" : "x264"), cmdLine_Encode))
+	if(!startProcess(processEncode, QString("%1/%2.exe").arg(m_binDir, x264_x64 ? "x264_x64" : "x264"), cmdLine_Encode))
 	{
 		return false;
 	}
@@ -465,14 +466,16 @@ bool EncodeThread::runEncodingPass(bool x64, bool usePipe, unsigned int frames, 
 QStringList EncodeThread::buildCommandLine(bool usePipe, unsigned int frames, const QString &indexFile, int pass, const QString &passLogFile)
 {
 	QStringList cmdLine;
+	double crf_int = 0.0, crf_frc = 0.0;
 
 	switch(m_options->rcMode())
 	{
-	case OptionsModel::RCMode_CRF:
-		cmdLine << "--crf" << QString::number(m_options->quantizer());
-		break;
 	case OptionsModel::RCMode_CQ:
-		cmdLine << "--qp" << QString::number(m_options->quantizer());
+		cmdLine << "--qp" << QString::number(qRound(m_options->quantizer()));
+		break;
+	case OptionsModel::RCMode_CRF:
+		crf_frc = modf(m_options->quantizer(), &crf_int);
+		cmdLine << "--crf" << QString("%1.%2").arg(QString::number(qRound(crf_int)), QString::number(qRound(crf_frc * 10.0)));
 		break;
 	case OptionsModel::RCMode_2Pass:
 	case OptionsModel::RCMode_ABR:
@@ -622,12 +625,12 @@ unsigned int EncodeThread::checkVersionX264(bool x64, bool &modified)
 	return (coreVers * REV_MULT) + (revision % REV_MULT);
 }
 
-unsigned int EncodeThread::checkVersionAvs2yuv(void)
+unsigned int EncodeThread::checkVersionAvs2yuv(bool x64)
 {
 	QProcess process;
 
 	log("\nCreating process:");
-	if(!startProcess(process, QString("%1/avs2yuv.exe").arg(m_binDir), QStringList()))
+	if(!startProcess(process, QString("%1/%2.exe").arg(m_binDir, x64 ? "avs2yuv_x64" : "avs2yuv"), QStringList()))
 	{
 		return false;;
 	}
@@ -722,7 +725,7 @@ unsigned int EncodeThread::checkVersionAvs2yuv(void)
 	return (ver_maj * REV_MULT) + ((ver_min % REV_MULT) * 10) + (ver_mod % 10);
 }
 
-bool EncodeThread::checkProperties(unsigned int &frames)
+bool EncodeThread::checkProperties(bool x64, unsigned int &frames)
 {
 	QProcess process;
 	
@@ -730,7 +733,7 @@ bool EncodeThread::checkProperties(unsigned int &frames)
 	cmdLine << QDir::toNativeSeparators(m_sourceFileName) << "NUL";
 
 	log("Creating process:");
-	if(!startProcess(process, QString("%1/avs2yuv.exe").arg(m_binDir), cmdLine))
+	if(!startProcess(process, QString("%1/%2.exe").arg(m_binDir, x64 ? "avs2yuv_x64" : "avs2yuv"), cmdLine))
 	{
 		return false;;
 	}
@@ -805,6 +808,10 @@ bool EncodeThread::checkProperties(unsigned int &frames)
 				if(!text.isEmpty())
 				{
 					log(text);
+				}
+				if(text.contains("failed to load avisynth.dll", Qt::CaseInsensitive))
+				{
+					log(tr("\nWarning: It seems that %1-Bit Avisynth is not currently installed !!!").arg(x64 ? "64" : "32"));
 				}
 			}
 		}

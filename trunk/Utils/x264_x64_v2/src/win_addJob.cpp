@@ -36,21 +36,6 @@
 #include <QInputDialog>
 #include <QSettings>
 
-static const struct
-{
-	const char *name;
-	const char *fext;
-}
-g_filters[] =
-{
-	{"Avisynth Scripts", "avs"},
-	{"Matroska Files", "mkv"},
-	{"MPEG-4 Part 14 Container", "mp4"},
-	{"Audio Video Interleaved", "avi"},
-	{"Flash Video", "flv"},
-	{NULL, NULL}
-};
-
 #define VALID_DIR(PATH) ((!(PATH).isEmpty()) && QFileInfo(PATH).exists() && QFileInfo(PATH).isDir())
 
 #define REMOVE_USAFED_ITEM \
@@ -166,7 +151,7 @@ AddJobDialog::AddJobDialog(QWidget *parent, OptionsModel *options, bool x64suppo
 
 	//Monitor for options changes
 	connect(cbxRateControlMode, SIGNAL(currentIndexChanged(int)), this, SLOT(configurationChanged()));
-	connect(spinQuantizer, SIGNAL(valueChanged(int)), this, SLOT(configurationChanged()));
+	connect(spinQuantizer, SIGNAL(valueChanged(double)), this, SLOT(configurationChanged()));
 	connect(spinBitrate, SIGNAL(valueChanged(int)), this, SLOT(configurationChanged()));
 	connect(cbxPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(configurationChanged()));
 	connect(cbxTuning, SIGNAL(currentIndexChanged(int)), this, SLOT(configurationChanged()));
@@ -305,7 +290,10 @@ void AddJobDialog::browseButtonClicked(void)
 {
 	if(QObject::sender() == buttonBrowseSource)
 	{
-		QString filePath = QFileDialog::getOpenFileName(this, tr("Open Source File"), VALID_DIR(initialDir_src) ? initialDir_src : QDesktopServices::storageLocation(QDesktopServices::MoviesLocation), makeFileFilter(), NULL, QFileDialog::DontUseNativeDialog);
+		QString initDir = VALID_DIR(initialDir_src) ? initialDir_src : QDesktopServices::storageLocation(QDesktopServices::MoviesLocation);
+		if(!editSource->text().isEmpty()) initDir = QString("%1/%2").arg(initDir, QFileInfo(QDir::fromNativeSeparators(editSource->text())).fileName());
+
+		QString filePath = QFileDialog::getOpenFileName(this, tr("Open Source File"), initDir, makeFileFilter(), NULL, QFileDialog::DontUseNativeDialog);
 		if(!(filePath.isNull() || filePath.isEmpty()))
 		{
 			editSource->setText(QDir::toNativeSeparators(filePath));
@@ -315,19 +303,53 @@ void AddJobDialog::browseButtonClicked(void)
 	}
 	else if(QObject::sender() == buttonBrowseOutput)
 	{
-		QString filters;
-		filters += tr("Matroska Files (*.mkv)").append(";;");
-		filters += tr("MPEG-4 Part 14 Container (*.mp4)").append(";;");
-		filters += tr("H.264 Elementary Stream (*.264)");
+		QString selectedType; QStringList types;
+		types << tr("Matroska Files (*.mkv)");
+		types << tr("MPEG-4 Part 14 Container (*.mp4)");
+		types << tr("H.264 Elementary Stream (*.264)");
 
-		QString filePath = QFileDialog::getSaveFileName(this, tr("Choose Output File"), VALID_DIR(initialDir_out) ? initialDir_out : QDesktopServices::storageLocation(QDesktopServices::MoviesLocation), filters, NULL, QFileDialog::DontUseNativeDialog | QFileDialog::DontConfirmOverwrite);
+		QString initDir = VALID_DIR(initialDir_out) ? initialDir_out : QDesktopServices::storageLocation(QDesktopServices::MoviesLocation);
+		if(!editOutput->text().isEmpty()) initDir = QString("%1/%2").arg(initDir, QFileInfo(QDir::fromNativeSeparators(editOutput->text())).completeBaseName());
+
+		QRegExp ext("\\(\\*\\.(.+)\\)");
+		for(int i = 0; i < types.count(); i++)
+		{
+			if(ext.lastIndexIn(types.at(i)) >= 0)
+			{
+				if(QFileInfo(initDir).suffix().compare(ext.cap(1), Qt::CaseInsensitive) == 0)
+				{
+					selectedType = types.at(i);
+					break;
+				}
+			}
+		}
+
+		QString filePath = QFileDialog::getSaveFileName(this, tr("Choose Output File"), initDir, types.join(";;"), &selectedType, QFileDialog::DontUseNativeDialog | QFileDialog::DontConfirmOverwrite);
 
 		if(!(filePath.isNull() || filePath.isEmpty()))
 		{
 			QString suffix = QFileInfo(filePath).suffix();
-			if(suffix.compare("mkv", Qt::CaseInsensitive) && suffix.compare("mp4", Qt::CaseInsensitive) && suffix.compare("264", Qt::CaseInsensitive))
+			bool hasProperExt = false;
+			for(int i = 0; i < types.count(); i++)
 			{
-				filePath = QString("%1.mkv").arg(filePath);
+				if(ext.lastIndexIn(types.at(i)) >= 0)
+				{
+					if(suffix.compare(ext.cap(1), Qt::CaseInsensitive) == 0)
+					{
+						hasProperExt = true;
+						break;
+					}
+				}
+			}
+			if(!hasProperExt)
+			{
+				if(ext.lastIndexIn(selectedType) >= 0)
+				{
+					if(suffix.compare(ext.cap(1), Qt::CaseInsensitive))
+					{
+						filePath = QString("%1.%2").arg(filePath, ext.cap(1));
+					}
+				}
 			}
 			editOutput->setText(QDir::toNativeSeparators(filePath));
 			initialDir_out = QFileInfo(filePath).path();
@@ -364,13 +386,19 @@ void AddJobDialog::saveTemplateButtonClicked(void)
 {
 	qDebug("Saving template");
 	QString name = tr("New Template");
+	int n = 2;
+
+	while(OptionsModel::templateExists(name))
+	{
+		name = tr("New Template (%1)").arg(QString::number(n++));
+	}
 
 	OptionsModel *options = new OptionsModel();
 	saveOptions(options);
 
 	if(options->equals(m_defaults))
 	{
-		QMessageBox::warning (this, tr("Default"), tr("It makes no sense to save the defaults!"));
+		QMessageBox::warning (this, tr("Oups"), tr("<nobr>It makes no sense to save the default settings!</nobr>"));
 		cbxTemplate->blockSignals(true);
 		cbxTemplate->setCurrentIndex(0);
 		cbxTemplate->blockSignals(false);
@@ -386,7 +414,7 @@ void AddJobDialog::saveTemplateButtonClicked(void)
 		{
 			if(options->equals(test))
 			{
-				QMessageBox::warning (this, tr("Oups"), tr("<nobr>There already is a template for the current settings!"));
+				QMessageBox::warning (this, tr("Oups"), tr("<nobr>There already is a template for the current settings!</nobr>"));
 				cbxTemplate->blockSignals(true);
 				cbxTemplate->setCurrentIndex(i);
 				cbxTemplate->blockSignals(false);
@@ -400,7 +428,7 @@ void AddJobDialog::saveTemplateButtonClicked(void)
 	forever
 	{
 		bool ok = false;
-		name = QInputDialog::getText(this, tr("Save Template"), tr("Please enter the name of the template:").leftJustified(160, ' '), QLineEdit::Normal, name, &ok).simplified();
+		name = QInputDialog::getText(this, tr("Save Template"), tr("Please enter the name of the template:").leftJustified(144, ' '), QLineEdit::Normal, name, &ok).simplified();
 		if(!ok)
 		{
 			X264_DELETE(options);
@@ -408,7 +436,7 @@ void AddJobDialog::saveTemplateButtonClicked(void)
 		}
 		if(name.contains('<') || name.contains('>') || name.contains('\\') || name.contains('/') || name.contains('"'))
 		{
-			QMessageBox::warning (this, tr("Invalid Name"), tr("Sorry, the name you have entered is invalid!"));
+			QMessageBox::warning (this, tr("Invalid Name"), tr("<nobr>Sorry, the name you have entered is invalid!</nobr>"));
 			while(name.contains('<')) name.remove('<');
 			while(name.contains('>')) name.remove('>');
 			while(name.contains('\\')) name.remove('\\');
@@ -419,8 +447,11 @@ void AddJobDialog::saveTemplateButtonClicked(void)
 		}
 		if(OptionsModel::templateExists(name))
 		{
-			QMessageBox::warning (this, tr("Already Exists"), tr("Sorry, a template of that name already exists!"));
-			continue;
+			int ret = QMessageBox::warning (this, tr("Already Exists"), tr("<nobr>A template of that name already exists! Overwrite?</nobr>"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+			if(ret != QMessageBox::Yes)
+			{
+				continue;
+			}
 		}
 		break;
 	}
@@ -434,8 +465,22 @@ void AddJobDialog::saveTemplateButtonClicked(void)
 	
 	int index = cbxTemplate->model()->rowCount();
 	cbxTemplate->blockSignals(true);
-	cbxTemplate->insertItem(index, name, QVariant::fromValue<void*>(options));
-	cbxTemplate->setCurrentIndex(index);
+	for(int i = 0; i < cbxTemplate->count(); i++)
+	{
+		if(cbxTemplate->itemText(i).compare(name, Qt::CaseInsensitive) == 0)
+		{
+			index = -1; //Do not append new template
+			OptionsModel *oldItem = reinterpret_cast<OptionsModel*>(cbxTemplate->itemData(i).value<void*>());
+			cbxTemplate->setItemData(i, QVariant::fromValue<void*>(options));
+			cbxTemplate->setCurrentIndex(i);
+			X264_DELETE(oldItem);
+		}
+	}
+	if(index >= 0)
+	{
+		cbxTemplate->insertItem(index, name, QVariant::fromValue<void*>(options));
+		cbxTemplate->setCurrentIndex(index);
+	}
 	cbxTemplate->blockSignals(false);
 
 	REMOVE_USAFED_ITEM;
@@ -446,11 +491,18 @@ void AddJobDialog::deleteTemplateButtonClicked(void)
 	const int index = cbxTemplate->currentIndex();
 	QString name = cbxTemplate->itemText(index);
 
-	if(name.contains('<') || name.contains('>'))
+	if(name.contains('<') || name.contains('>') || name.contains('\\') || name.contains('/'))
 	{
 		QMessageBox::warning (this, tr("Invalid Item"), tr("Sorry, the selected item cannot be deleted!"));
 		return;
 	}
+
+	int ret = QMessageBox::question (this, tr("Delete Template"), tr("<nobr>Do you really want to delete the selected template?</nobr>"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+	if(ret != QMessageBox::Yes)
+	{
+		return;
+	}
+
 
 	OptionsModel::deleteTemplate(name);
 	OptionsModel *item = reinterpret_cast<OptionsModel*>(cbxTemplate->itemData(index).value<void*>());
@@ -555,18 +607,35 @@ void AddJobDialog::saveOptions(OptionsModel *options)
 
 QString AddJobDialog::makeFileFilter(void)
 {
+	static const struct
+	{
+		const char *name;
+		const char *fext;
+	}
+	s_filters[] =
+	{
+		{"Avisynth Scripts", "avs"},
+		{"Matroska Files", "mkv"},
+		{"MPEG-4 Part 14 Container", "mp4"},
+		{"Audio Video Interleaved", "avi"},
+		{"Flash Video", "flv"},
+		{"YUV4MPEG2 Stream", "y4m"},
+		{"Uncompresses YUV Data", "yuv"},
+		{NULL, NULL}
+	};
+
 	QString filters("All supported files (");
 
-	for(size_t index = 0; g_filters[index].name && g_filters[index].fext; index++)
+	for(size_t index = 0; s_filters[index].name && s_filters[index].fext; index++)
 	{
-		filters += QString((index > 0) ? " *.%1" : "*.%1").arg(QString::fromLatin1(g_filters[index].fext));
+		filters += QString((index > 0) ? " *.%1" : "*.%1").arg(QString::fromLatin1(s_filters[index].fext));
 	}
 
 	filters += QString(");;");
 
-	for(size_t index = 0; g_filters[index].name && g_filters[index].fext; index++)
+	for(size_t index = 0; s_filters[index].name && s_filters[index].fext; index++)
 	{
-		filters += QString("%1 (*.%2);;").arg(QString::fromLatin1(g_filters[index].name), QString::fromLatin1(g_filters[index].fext));
+		filters += QString("%1 (*.%2);;").arg(QString::fromLatin1(s_filters[index].name), QString::fromLatin1(s_filters[index].fext));
 	}
 		
 	filters += QString("All files (*.*)");

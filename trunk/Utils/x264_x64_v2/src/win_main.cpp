@@ -151,12 +151,13 @@ MainWindow::~MainWindow(void)
 // Slots
 ///////////////////////////////////////////////////////////////////////////////
 
-void MainWindow::addButtonPressed(const QString &filePath, bool *ok)
+void MainWindow::addButtonPressed(const QString &filePath, int fileNo, int fileTotal, bool *ok)
 {
 	if(ok) *ok = false;
 	
 	AddJobDialog *addDialog = new AddJobDialog(this, m_options, m_x64supported);
 	addDialog->setRunImmediately(countRunningJobs() < (m_preferences.autoRunNextJob ? m_preferences.maxRunningJobCount : 1));
+	if((fileNo >= 0) && (fileTotal > 1)) addDialog->setWindowTitle(addDialog->windowTitle().append(tr(" (File %1 of %2)").arg(QString::number(fileNo+1), QString::number(fileTotal))));
 	if(!filePath.isEmpty()) addDialog->setSourceFile(filePath);
 
 	int result = addDialog->exec();
@@ -168,7 +169,8 @@ void MainWindow::addButtonPressed(const QString &filePath, bool *ok)
 			addDialog->outputFile(),
 			m_options,
 			QString("%1/toolset").arg(m_appDir),
-			m_x64supported
+			m_x64supported,
+			m_x64supported && m_preferences.useAvisyth64Bit
 		);
 
 		QModelIndex newIndex = m_jobList->insertJob(thrd);
@@ -362,7 +364,7 @@ void MainWindow::showWebLink(void)
 
 void MainWindow::showPreferences(void)
 {
-	PreferencesDialog *preferences = new PreferencesDialog(this, &m_preferences);
+	PreferencesDialog *preferences = new PreferencesDialog(this, &m_preferences, m_x64supported);
 	preferences->exec();
 	X264_DELETE(preferences);
 }
@@ -464,7 +466,7 @@ void MainWindow::shutdownComputer(void)
 
 void MainWindow::init(void)
 {
-	static const char *binFiles = "x264.exe:x264_x64.exe:avs2yuv.exe";
+	static const char *binFiles = "x264.exe:x264_x64.exe:avs2yuv.exe:avs2yuv_x64.exe";
 	QStringList binaries = QString::fromLatin1(binFiles).split(":", QString::SkipEmptyParts);
 
 	updateLabel();
@@ -654,13 +656,14 @@ void MainWindow::dropEvent(QDropEvent *event)
 	}
 	
 	droppedFiles.sort();
+	int totalFiles = droppedFiles.count();
 	
-	bool ok = true;
+	bool ok = true; int n = 0;
 	while((!droppedFiles.isEmpty()) && ok)
 	{
 		QString currentFile = droppedFiles.takeFirst();
 		qDebug("Adding file: %s", currentFile.toUtf8().constData());
-		addButtonPressed(currentFile, &ok);
+		addButtonPressed(currentFile, n++, totalFiles, &ok);
 	}
 }
 
