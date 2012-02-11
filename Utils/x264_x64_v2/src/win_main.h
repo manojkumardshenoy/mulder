@@ -24,6 +24,7 @@
 #include "uic_win_main.h"
 #include "thread_encode.h"
 #include "win_preferences.h"
+#include "global.h"
 
 class JobListModel;
 class OptionsModel;
@@ -34,7 +35,7 @@ class MainWindow: public QMainWindow, private Ui::MainWindow
 	Q_OBJECT
 
 public:
-	MainWindow(bool x64supported);
+	MainWindow(const x264_cpu_t *const cpuFeatures);
 	~MainWindow(void);
 
 protected:
@@ -44,6 +45,7 @@ protected:
 	virtual bool eventFilter(QObject *o, QEvent *e);
 	virtual void dragEnterEvent(QDragEnterEvent *event);
 	virtual void dropEvent(QDropEvent *event);
+	virtual bool winEvent(MSG *message, long *result);
 
 private:
 	bool m_firstShow;
@@ -51,14 +53,16 @@ private:
 
 	JobListModel *m_jobList;
 	OptionsModel *m_options;
+	QStringList *m_droppedFiles;
 	QList<QFile*> m_toolsList;
 	
 	PreferencesDialog::Preferences m_preferences;
 
-	const bool m_x64supported;
+	const x264_cpu_t *const m_cpuFeatures;
 	const QString m_appDir;
 	
 	void updateButtons(EncodeThread::JobStatus status);
+	void updateTaskbar(EncodeThread::JobStatus status, const QIcon &icon);
 	unsigned int countPendingJobs(void);
 	unsigned int countRunningJobs(void);
 
@@ -68,6 +72,7 @@ private slots:
 	void browseButtonPressed(void);
 	void deleteButtonPressed(void);
 	void copyLogToClipboard(bool checked);
+	void handleDroppedFiles(void);
 	void init(void);
 	void jobSelected(const QModelIndex & current, const QModelIndex & previous);
 	void jobChangedData(const  QModelIndex &top, const  QModelIndex &bottom);
@@ -79,5 +84,5 @@ private slots:
 	void showWebLink(void);
 	void shutdownComputer(void);
 	void startButtonPressed(void);
-	void updateLabel(void);
+	void updateLabelPos(void);
 };

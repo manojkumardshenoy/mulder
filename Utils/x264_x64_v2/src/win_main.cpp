@@ -21,11 +21,11 @@
 
 #include "win_main.h"
 
-#include "global.h"
 #include "model_jobList.h"
 #include "model_options.h"
 #include "win_addJob.h"
 #include "win_preferences.h"
+#include "taskbar7.h"
 #include "resource.h"
 
 #include <QDate>
@@ -42,6 +42,8 @@
 #include <Mmsystem.h>
 
 const char *home_url = "http://mulder.brhack.net/";
+const char *update_url = "http://code.google.com/p/mulder/downloads/list";
+const char *tpl_last = "<LAST_USED>";
 
 #define SET_FONT_BOLD(WIDGET,BOLD) { QFont _font = WIDGET->font(); _font.setBold(BOLD); WIDGET->setFont(_font); }
 #define SET_TEXT_COLOR(WIDGET,COLOR) { QPalette _palette = WIDGET->palette(); _palette.setColor(QPalette::WindowText, (COLOR)); _palette.setColor(QPalette::Text, (COLOR)); WIDGET->setPalette(_palette); }
@@ -50,10 +52,16 @@ const char *home_url = "http://mulder.brhack.net/";
 // Constructor & Destructor
 ///////////////////////////////////////////////////////////////////////////////
 
-MainWindow::MainWindow(bool x64supported)
+/*
+ * Constructor
+ */
+MainWindow::MainWindow(const x264_cpu_t *const cpuFeatures)
 :
-	m_x64supported(x64supported),
+	m_cpuFeatures(cpuFeatures),
 	m_appDir(QApplication::applicationDirPath()),
+	m_options(NULL),
+	m_jobList(NULL),
+	m_droppedFiles(NULL),
 	m_firstShow(true)
 {
 	//Init the dialog, from the .ui file
@@ -68,6 +76,10 @@ MainWindow::MainWindow(bool x64supported)
 	PreferencesDialog::initPreferences(&m_preferences);
 	PreferencesDialog::loadPreferences(&m_preferences);
 
+	//Create options object
+	m_options = new OptionsModel();
+	OptionsModel::loadTemplate(m_options, QString::fromLatin1(tpl_last));
+
 	//Freeze minimum size
 	setMinimumSize(size());
 	splitter->setSizes(QList<int>() << 16 << 196);
@@ -75,7 +87,7 @@ MainWindow::MainWindow(bool x64supported)
 	//Update title
 	labelBuildDate->setText(tr("Built on %1 at %2").arg(x264_version_date().toString(Qt::ISODate), QString::fromLatin1(x264_version_time())));
 	labelBuildDate->installEventFilter(this);
-	setWindowTitle(QString("%1 (%2 Mode)").arg(windowTitle(), m_x64supported ? "64-Bit" : "32-Bit"));
+	setWindowTitle(QString("%1 (%2 Mode)").arg(windowTitle(), m_cpuFeatures->x64 ? "64-Bit" : "32-Bit"));
 	if(X264_DEBUG)
 	{
 		setWindowTitle(QString("%1 | !!! DEBUG VERSION !!!").arg(windowTitle()));
@@ -131,7 +143,7 @@ MainWindow::MainWindow(bool x64supported)
 	connect(actionPreferences, SIGNAL(triggered()), this, SLOT(showPreferences()));
 
 	//Create floating label
-	m_label = new QLabel(jobsView);
+	m_label = new QLabel(jobsView->viewport());
 	m_label->setText(tr("No job created yet. Please click the 'Add New Job' button!"));
 	m_label->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 	SET_TEXT_COLOR(m_label, Qt::darkGray);
@@ -139,17 +151,20 @@ MainWindow::MainWindow(bool x64supported)
 	m_label->setVisible(true);
 	m_label->setContextMenuPolicy(Qt::ActionsContextMenu);
 	m_label->addActions(jobsView->actions());
-	connect(splitter, SIGNAL(splitterMoved(int, int)), this, SLOT(updateLabel()));
-	updateLabel();
-
-	//Create options object
-	m_options = new OptionsModel();
+	connect(splitter, SIGNAL(splitterMoved(int, int)), this, SLOT(updateLabelPos()));
+	updateLabelPos();
 }
 
+/*
+ * Destructor
+ */
 MainWindow::~MainWindow(void)
 {
+	OptionsModel::saveTemplate(m_options, QString::fromLatin1(tpl_last));
+	
 	X264_DELETE(m_jobList);
 	X264_DELETE(m_options);
+	X264_DELETE(m_droppedFiles);
 	X264_DELETE(m_label);
 
 	while(!m_toolsList.isEmpty())
@@ -163,11 +178,16 @@ MainWindow::~MainWindow(void)
 // Slots
 ///////////////////////////////////////////////////////////////////////////////
 
+/*
+ * The "add" button was clicked
+ */
 void MainWindow::addButtonPressed(const QString &filePath, int fileNo, int fileTotal, bool *ok)
 {
+	qDebug("MainWindow::addButtonPressed");
+	
 	if(ok) *ok = false;
 	
-	AddJobDialog *addDialog = new AddJobDialog(this, m_options, m_x64supported);
+	AddJobDialog *addDialog = new AddJobDialog(this, m_options, m_cpuFeatures->x64);
 	addDialog->setRunImmediately(countRunningJobs() < (m_preferences.autoRunNextJob ? m_preferences.maxRunningJobCount : 1));
 	if((fileNo >= 0) && (fileTotal > 1)) addDialog->setWindowTitle(addDialog->windowTitle().append(tr(" (File %1 of %2)").arg(QString::number(fileNo+1), QString::number(fileTotal))));
 	if(!filePath.isEmpty()) addDialog->setSourceFile(filePath);
@@ -181,8 +201,8 @@ void MainWindow::addButtonPressed(const QString &filePath, int fileNo, int fileT
 			addDialog->outputFile(),
 			m_options,
 			QString("%1/toolset").arg(m_appDir),
-			m_x64supported,
-			m_x64supported && m_preferences.useAvisyth64Bit
+			m_cpuFeatures->x64,
+			m_cpuFeatures->x64 && m_preferences.useAvisyth64Bit
 		);
 
 		QModelIndex newIndex = m_jobList->insertJob(thrd);
@@ -204,22 +224,34 @@ void MainWindow::addButtonPressed(const QString &filePath, int fileNo, int fileT
 	X264_DELETE(addDialog);
 }
 
+/*
+ * The "start" button was clicked
+ */
 void MainWindow::startButtonPressed(void)
 {
 	m_jobList->startJob(jobsView->currentIndex());
 }
 
+/*
+ * The "abort" button was clicked
+ */
 void MainWindow::abortButtonPressed(void)
 {
 	m_jobList->abortJob(jobsView->currentIndex());
 }
 
+/*
+ * The "delete" button was clicked
+ */
 void MainWindow::deleteButtonPressed(void)
 {
 	m_jobList->deleteJob(jobsView->currentIndex());
 	m_label->setVisible(m_jobList->rowCount(QModelIndex()) == 0);
 }
 
+/*
+ * The "browse" button was clicked
+ */
 void MainWindow::browseButtonPressed(void)
 {
 	QString outputFile = m_jobList->getJobOutputFile(jobsView->currentIndex());
@@ -233,6 +265,9 @@ void MainWindow::browseButtonPressed(void)
 	}
 }
 
+/*
+ * The "pause" button was clicked
+ */
 void MainWindow::pauseButtonPressed(bool checked)
 {
 	if(checked)
@@ -245,6 +280,9 @@ void MainWindow::pauseButtonPressed(bool checked)
 	}
 }
 
+/*
+ * Job item selected by user
+ */
 void MainWindow::jobSelected(const QModelIndex & current, const QModelIndex & previous)
 {
 	qDebug("Job selected: %d", current.row());
@@ -260,10 +298,11 @@ void MainWindow::jobSelected(const QModelIndex & current, const QModelIndex & pr
 		connect(logView->model(), SIGNAL(rowsInserted(QModelIndex, int, int)), this, SLOT(jobLogExtended(QModelIndex, int, int)));
 		logView->actions().first()->setEnabled(true);
 		QTimer::singleShot(0, logView, SLOT(scrollToBottom()));
-	
+
 		progressBar->setValue(m_jobList->getJobProgress(current));
 		editDetails->setText(m_jobList->data(m_jobList->index(current.row(), 3, QModelIndex()), Qt::DisplayRole).toString());
 		updateButtons(m_jobList->getJobStatus(current));
+		updateTaskbar(m_jobList->getJobStatus(current), m_jobList->data(m_jobList->index(current.row(), 0, QModelIndex()), Qt::DecorationRole).value<QIcon>());
 	}
 	else
 	{
@@ -272,11 +311,15 @@ void MainWindow::jobSelected(const QModelIndex & current, const QModelIndex & pr
 		progressBar->setValue(0);
 		editDetails->clear();
 		updateButtons(EncodeThread::JobStatus_Undefined);
+		updateTaskbar(EncodeThread::JobStatus_Undefined, QIcon());
 	}
 
 	progressBar->repaint();
 }
 
+/*
+ * Handle update of job info (status, progress, details, etc)
+ */
 void MainWindow::jobChangedData(const QModelIndex &topLeft, const  QModelIndex &bottomRight)
 {
 	int selected = jobsView->currentIndex().row();
@@ -290,6 +333,7 @@ void MainWindow::jobChangedData(const QModelIndex &topLeft, const  QModelIndex &
 			{
 				qDebug("Current job changed status!");
 				updateButtons(status);
+				updateTaskbar(status, m_jobList->data(m_jobList->index(i, 0, QModelIndex()), Qt::DecorationRole).value<QIcon>());
 			}
 			if((status == EncodeThread::JobStatus_Completed) || (status == EncodeThread::JobStatus_Failed))
 			{
@@ -298,18 +342,19 @@ void MainWindow::jobChangedData(const QModelIndex &topLeft, const  QModelIndex &
 			}
 		}
 	}
-	else if(topLeft.column() <= 2 && bottomRight.column() >= 2) /*PROGRESS*/
+	if(topLeft.column() <= 2 && bottomRight.column() >= 2) /*PROGRESS*/
 	{
 		for(int i = topLeft.row(); i <= bottomRight.row(); i++)
 		{
 			if(i == selected)
 			{
 				progressBar->setValue(m_jobList->getJobProgress(m_jobList->index(i, 0, QModelIndex())));
+				WinSevenTaskbar::setTaskbarProgress(this, progressBar->value(), progressBar->maximum());
 				break;
 			}
 		}
 	}
-	else if(topLeft.column() <= 3 && bottomRight.column() >= 3) /*DETAILS*/
+	if(topLeft.column() <= 3 && bottomRight.column() >= 3) /*DETAILS*/
 	{
 		for(int i = topLeft.row(); i <= bottomRight.row(); i++)
 		{
@@ -322,16 +367,22 @@ void MainWindow::jobChangedData(const QModelIndex &topLeft, const  QModelIndex &
 	}
 }
 
+/*
+ * Handle new log file content
+ */
 void MainWindow::jobLogExtended(const QModelIndex & parent, int start, int end)
 {
 	QTimer::singleShot(0, logView, SLOT(scrollToBottom()));
 }
 
+/*
+ * About screen
+ */
 void MainWindow::showAbout(void)
 {
 	QString text;
 
-	text += QString().sprintf("<nobr><tt>Simple x264 Launcher v%u.%02u - use 64-Bit x264 with 32-Bit Avisynth<br>", x264_version_major(), x264_version_minor());
+	text += QString().sprintf("<nobr><tt>Simple x264 Launcher v%u.%02u.%u - use 64-Bit x264 with 32-Bit Avisynth<br>", x264_version_major(), x264_version_minor(), x264_version_build());
 	text += QString().sprintf("Copyright (c) 2004-%04d LoRd_MuldeR &lt;mulder2@gmx.de&gt;. Some rights reserved.<br>", qMax(x264_version_date().year(),QDate::currentDate().year()));
 	text += QString().sprintf("Built on %s at %s with %s for Win-%s.<br><br>", x264_version_date().toString(Qt::ISODate).toLatin1().constData(), x264_version_time(), x264_version_compiler(), x264_version_arch());
 	text += QString().sprintf("This program is free software: you can redistribute it and/or modify<br>");
@@ -339,11 +390,18 @@ void MainWindow::showAbout(void)
 	text += QString().sprintf("Note that this program is distributed with ABSOLUTELY NO WARRANTY.<br><br>");
 	text += QString().sprintf("Please check the web-site at <a href=\"%s\">%s</a> for updates !!!<br></tt></nobr>", home_url, home_url);
 
+	QMessageBox aboutBox(this);
+	aboutBox.setIconPixmap(QIcon(":/images/movie.png").pixmap(64,64));
+	aboutBox.setWindowTitle(tr("About..."));
+	aboutBox.setText(text.replace("-", "&minus;"));
+	aboutBox.addButton(tr("About x264"), QMessageBox::NoRole);
+	aboutBox.addButton(tr("About Qt"), QMessageBox::NoRole);
+	aboutBox.setEscapeButton(aboutBox.addButton(tr("Close"), QMessageBox::NoRole));
+		
 	forever
 	{
-		int ret = QMessageBox::information(this, tr("About..."), text.replace("-", "&minus;"), tr("About x264"), tr("About Qt"), tr("Close"), 0, 2);
-
-		switch(ret)
+		MessageBeep(MB_ICONINFORMATION);
+		switch(aboutBox.exec())
 		{
 		case 0:
 			{
@@ -352,7 +410,14 @@ void MainWindow::showAbout(void)
 				text2 += tr("Free software library for encoding video streams into the H.264/MPEG-4 AVC format.<br>");
 				text2 += tr("Released under the terms of the GNU General Public License.<br><br>");
 				text2 += tr("Please visit <a href=\"%1\">%1</a> for obtaining a <u>commercial</u> x264 license!<br></tt></nobr>").arg("http://x264licensing.com/");
-				QMessageBox::information(this, tr("About x264"), text2.replace("-", "&minus;"), tr("Close"));
+
+				QMessageBox x264Box(this);
+				x264Box.setIconPixmap(QIcon(":/images/x264.png").pixmap(48,48));
+				x264Box.setWindowTitle(tr("About x264"));
+				x264Box.setText(text2.replace("-", "&minus;"));
+				x264Box.setEscapeButton(x264Box.addButton(tr("Close"), QMessageBox::NoRole));
+				MessageBeep(MB_ICONINFORMATION);
+				x264Box.exec();
 			}
 			break;
 		case 1:
@@ -364,6 +429,9 @@ void MainWindow::showAbout(void)
 	}
 }
 
+/*
+ * Open web-link
+ */
 void MainWindow::showWebLink(void)
 {
 	if(QObject::sender() == actionWebMulder)     QDesktopServices::openUrl(QUrl(home_url));
@@ -378,13 +446,19 @@ void MainWindow::showWebLink(void)
 	if(QObject::sender() == actionWebSecret)     QDesktopServices::openUrl(QUrl("http://www.youtube.com/watch_popup?v=AXIeHY-OYNI"));
 }
 
+/*
+ * Pereferences dialog
+ */
 void MainWindow::showPreferences(void)
 {
-	PreferencesDialog *preferences = new PreferencesDialog(this, &m_preferences, m_x64supported);
+	PreferencesDialog *preferences = new PreferencesDialog(this, &m_preferences, m_cpuFeatures->x64);
 	preferences->exec();
 	X264_DELETE(preferences);
 }
 
+/*
+ * Launch next job, after running job has finished
+ */
 void MainWindow::launchNextJob(void)
 {
 	qDebug("launchNextJob(void)");
@@ -417,6 +491,9 @@ void MainWindow::launchNextJob(void)
 	qWarning("No enqueued jobs left!");
 }
 
+/*
+ * Shut down the computer (with countdown)
+ */
 void MainWindow::shutdownComputer(void)
 {
 	qDebug("shutdownComputer(void)");
@@ -480,12 +557,15 @@ void MainWindow::shutdownComputer(void)
 	}
 }
 
+/*
+ * Main initialization function (called only once!)
+ */
 void MainWindow::init(void)
 {
 	static const char *binFiles = "x264.exe:x264_x64.exe:avs2yuv.exe:avs2yuv_x64.exe";
 	QStringList binaries = QString::fromLatin1(binFiles).split(":", QString::SkipEmptyParts);
 
-	updateLabel();
+	updateLabelPos();
 
 	//Check all binaries
 	while(!binaries.isEmpty())
@@ -518,12 +598,44 @@ void MainWindow::init(void)
 		}
 	}
 
+	//Check for portable mode
+	if(x264_portable())
+	{
+		bool ok = false;
+		static const char *data = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
+		QFile writeTest(QString("%1/%2").arg(x264_data_path(), QUuid::createUuid().toString()));
+		if(writeTest.open(QIODevice::WriteOnly))
+		{
+			ok = (writeTest.write(data) == strlen(data));
+			writeTest.remove();
+		}
+		if(!ok)
+		{
+			int val = QMessageBox::warning(this, tr("Write Test Failed"), tr("<nobr>The application was launched in portable mode, but the program path is <b>not</b> writable!</nobr>"), tr("Quit"), tr("Ignore"));
+			if(val != 1) { close(); qApp->exit(-1); return; }
+		}
+	}
+
 	//Pre-release popup
 	if(x264_is_prerelease())
 	{
 		qsrand(time(NULL)); int rnd = qrand() % 3;
 		int val = QMessageBox::information(this, tr("Pre-Release Version"), tr("Note: This is a pre-release version. Please do NOT use for production!<br>Click the button #%1 in order to continue...<br><br>(There will be no such message box in the final version of this application)").arg(QString::number(rnd + 1)), tr("(1)"), tr("(2)"), tr("(3)"), qrand() % 3);
 		if(rnd != val) { close(); qApp->exit(-1); return; }
+	}
+
+	//Make sure this CPU can run x264 (requires MMX + MMXEXT/iSSE to run x264 with ASM enabled, additionally requires SSE1 for most x264 builds)
+	if(!(m_cpuFeatures->mmx && m_cpuFeatures->mmx2))
+	{
+		QMessageBox::critical(this, tr("Unsupported CPU"), tr("<nobr>Sorry, but this machine is <b>not</b> physically capable of running x264 (with assembly).<br>Please get a CPU that supports at least the MMX and MMXEXT instruction sets!</nobr>"), tr("Quit"));
+		qFatal("System does not support MMX and MMXEXT, x264 will not work !!!");
+		close(); qApp->exit(-1); return;
+	}
+	else if(!(m_cpuFeatures->mmx && m_cpuFeatures->sse))
+	{
+		qWarning("WARNING: System does not support SSE1, most x264 builds will not work !!!\n");
+		int val = QMessageBox::warning(this, tr("Unsupported CPU"), tr("<nobr>It appears that this machine does <b>not</b> support the SSE1 instruction set.<br>Thus most builds of x264 will <b>not</b> run on this computer at all.<br><br>Please get a CPU that supports the MMX and SSE1 instruction sets!</nobr>"), tr("Quit"), tr("Ignore"));
+		if(val != 1) { close(); qApp->exit(-1); return; }
 	}
 
 	//Check for Avisynth support
@@ -536,7 +648,7 @@ void MainWindow::init(void)
 	if(!avsAvailable)
 	{
 		avsLib->unload(); X264_DELETE(avsLib);
-		int val = QMessageBox::warning(this, tr("Avisynth Missing"), tr("<nobr>It appears that Avisynth is not currently installed on your computer.<br>Thus Avisynth input will not be working at all!<br><br>Please download and install Avisynth:<br><a href=\"http://sourceforge.net/projects/avisynth2/files/AviSynth%202.5/\">http://sourceforge.net/projects/avisynth2/files/AviSynth 2.5/</a></nobr>").replace("-", "&minus;"), tr("Quit"), tr("Ignore"));
+		int val = QMessageBox::warning(this, tr("Avisynth Missing"), tr("<nobr>It appears that Avisynth is <b>not</b> currently installed on your computer.<br>Thus Avisynth (.avs) input will <b>not</b> be working at all!<br><br>Please download and install Avisynth:<br><a href=\"http://sourceforge.net/projects/avisynth2/files/AviSynth%202.5/\">http://sourceforge.net/projects/avisynth2/files/AviSynth 2.5/</a></nobr>").replace("-", "&minus;"), tr("Quit"), tr("Ignore"));
 		if(val != 1) { close(); qApp->exit(-1); return; }
 	}
 
@@ -544,10 +656,10 @@ void MainWindow::init(void)
 	if(x264_version_date().addMonths(6) < QDate::currentDate())
 	{
 		QMessageBox msgBox(this);
-		msgBox.setIcon(QMessageBox::Information);
+		msgBox.setIconPixmap(QIcon(":/images/update.png").pixmap(56,56));
 		msgBox.setWindowTitle(tr("Update Notification"));
 		msgBox.setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
-		msgBox.setText(tr("<nobr><tt>Oups, this version of 'Simple x264 Launcher' is more than 6 months old.<br><br>Please check the official web-site at <a href=\"%1\">%1</a> for updates!<br></tt></nobr>").replace("-", "&minus;").arg(home_url));
+		msgBox.setText(tr("<nobr><tt>Your version of 'Simple x264 Launcher' is more than 6 months old!<br><br>Please download the most recent version from the official web-site at:<br><a href=\"%1\">%1</a><br></tt></nobr>").replace("-", "&minus;").arg(update_url));
 		QPushButton *btn1 = msgBox.addButton(tr("Discard"), QMessageBox::NoRole);
 		QPushButton *btn2 = msgBox.addButton(tr("Discard"), QMessageBox::AcceptRole);
 		btn1->setEnabled(false);
@@ -568,7 +680,7 @@ void MainWindow::init(void)
 			bAddFile = (current.compare("--add", Qt::CaseInsensitive) == 0);
 			continue;
 		}
-		if(QFileInfo(current).exists() && QFileInfo(current).isFile())
+		if((!current.startsWith("--")) && QFileInfo(current).exists() && QFileInfo(current).isFile())
 		{
 			files << QFileInfo(current).canonicalFilePath();
 		}
@@ -585,11 +697,18 @@ void MainWindow::init(void)
 	}
 }
 
-void MainWindow::updateLabel(void)
+/*
+ * Update the label position
+ */
+void MainWindow::updateLabelPos(void)
 {
-	m_label->setGeometry(0, 0, jobsView->width(), jobsView->height());
+	const QWidget *const viewPort = jobsView->viewport();
+	m_label->setGeometry(0, 0, viewPort->width(), viewPort->height());
 }
 
+/*
+ * Copy the complete log to the clipboard
+ */
 void MainWindow::copyLogToClipboard(bool checked)
 {
 	qDebug("copyLogToClipboard");
@@ -601,10 +720,35 @@ void MainWindow::copyLogToClipboard(bool checked)
 	}
 }
 
+/*
+ * Process the dropped files
+ */
+void MainWindow::handleDroppedFiles(void)
+{
+	qDebug("MainWindow::handleDroppedFiles");
+	if(m_droppedFiles)
+	{
+		QStringList droppedFiles(*m_droppedFiles);
+		m_droppedFiles->clear();
+		int totalFiles = droppedFiles.count();
+		bool ok = true; int n = 0;
+		while((!droppedFiles.isEmpty()) && ok)
+		{
+			QString currentFile = droppedFiles.takeFirst();
+			qDebug("Adding file: %s", currentFile.toUtf8().constData());
+			addButtonPressed(currentFile, n++, totalFiles, &ok);
+		}
+	}
+	qDebug("Leave from MainWindow::handleDroppedFiles!");
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Event functions
 ///////////////////////////////////////////////////////////////////////////////
 
+/*
+ * Window shown event
+ */
 void MainWindow::showEvent(QShowEvent *e)
 {
 	QMainWindow::showEvent(e);
@@ -616,6 +760,9 @@ void MainWindow::showEvent(QShowEvent *e)
 	}
 }
 
+/*
+ * Window close event
+ */
 void MainWindow::closeEvent(QCloseEvent *e)
 {
 	if(countRunningJobs() > 0)
@@ -650,12 +797,18 @@ void MainWindow::closeEvent(QCloseEvent *e)
 	QMainWindow::closeEvent(e);
 }
 
+/*
+ * Window resize event
+ */
 void MainWindow::resizeEvent(QResizeEvent *e)
 {
 	QMainWindow::resizeEvent(e);
-	updateLabel();
+	updateLabelPos();
 }
 
+/*
+ * Event filter
+ */
 bool MainWindow::eventFilter(QObject *o, QEvent *e)
 {
 	if((o == labelBuildDate) && (e->type() == QEvent::MouseButtonPress))
@@ -664,6 +817,14 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
 		return true;
 	}
 	return false;
+}
+
+/*
+ * Win32 message filter
+ */
+bool MainWindow::winEvent(MSG *message, long *result)
+{
+	return WinSevenTaskbar::handleWinEvent(message, result);
 }
 
 /*
@@ -693,20 +854,20 @@ void MainWindow::dropEvent(QDropEvent *event)
 		QFileInfo file(currentUrl.toLocalFile());
 		if(file.exists() && file.isFile())
 		{
-			qDebug("Dropped File: %s", file.canonicalFilePath().toUtf8().constData());
+			qDebug("MainWindow::dropEvent: %s", file.canonicalFilePath().toUtf8().constData());
 			droppedFiles << file.canonicalFilePath();
 		}
 	}
 	
-	droppedFiles.sort();
-	int totalFiles = droppedFiles.count();
-	
-	bool ok = true; int n = 0;
-	while((!droppedFiles.isEmpty()) && ok)
+	if(droppedFiles.count() > 0)
 	{
-		QString currentFile = droppedFiles.takeFirst();
-		qDebug("Adding file: %s", currentFile.toUtf8().constData());
-		addButtonPressed(currentFile, n++, totalFiles, &ok);
+		if(!m_droppedFiles)
+		{
+			m_droppedFiles = new QStringList();
+		}
+		m_droppedFiles->append(droppedFiles);
+		m_droppedFiles->sort();
+		QTimer::singleShot(0, this, SLOT(handleDroppedFiles()));
 	}
 }
 
@@ -714,7 +875,9 @@ void MainWindow::dropEvent(QDropEvent *event)
 // Private functions
 ///////////////////////////////////////////////////////////////////////////////
 
-/*Jobs that are not completed (or failed, or aborted) yet*/
+/*
+ * Jobs that are not completed (or failed, or aborted) yet
+ */
 unsigned int MainWindow::countPendingJobs(void)
 {
 	unsigned int count = 0;
@@ -732,7 +895,9 @@ unsigned int MainWindow::countPendingJobs(void)
 	return count;
 }
 
-/*Jobs that are still active, i.e. not terminated or enqueued*/
+/*
+ * Jobs that are still active, i.e. not terminated or enqueued
+ */
 unsigned int MainWindow::countRunningJobs(void)
 {
 	unsigned int count = 0;
@@ -750,6 +915,9 @@ unsigned int MainWindow::countRunningJobs(void)
 	return count;
 }
 
+/*
+ * Update all buttons with respect to current job status
+ */
 void MainWindow::updateButtons(EncodeThread::JobStatus status)
 {
 	qDebug("MainWindow::updateButtons(void)");
@@ -768,4 +936,49 @@ void MainWindow::updateButtons(EncodeThread::JobStatus status)
 	actionJob_Pause->setChecked(buttonPauseJob->isChecked());
 
 	editDetails->setEnabled(status != EncodeThread::JobStatus_Paused);
+}
+
+/*
+ * Update the taskbar with current job status
+ */
+void MainWindow::updateTaskbar(EncodeThread::JobStatus status, const QIcon &icon)
+{
+	qDebug("MainWindow::updateTaskbar(void)");
+
+	switch(status)
+	{
+	case EncodeThread::JobStatus_Undefined:
+		WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNoState);
+		break;
+	case EncodeThread::JobStatus_Aborting:
+	case EncodeThread::JobStatus_Starting:
+	case EncodeThread::JobStatus_Pausing:
+	case EncodeThread::JobStatus_Resuming:
+		WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarIndeterminateState);
+		break;
+	case EncodeThread::JobStatus_Aborted:
+	case EncodeThread::JobStatus_Failed:
+		WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarErrorState);
+		break;
+	case EncodeThread::JobStatus_Paused:
+		WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarPausedState);
+		break;
+	default:
+		WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNormalState);
+		break;
+	}
+
+	switch(status)
+	{
+	case EncodeThread::JobStatus_Aborting:
+	case EncodeThread::JobStatus_Starting:
+	case EncodeThread::JobStatus_Pausing:
+	case EncodeThread::JobStatus_Resuming:
+		break;
+	default:
+		WinSevenTaskbar::setTaskbarProgress(this, progressBar->value(), progressBar->maximum());
+		break;
+	}
+
+	WinSevenTaskbar::setOverlayIcon(this, icon.isNull() ? NULL : &icon);
 }
