@@ -19,6 +19,8 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
+#pragma once
+
 #include "targetver.h"
 
 //C++ includes
@@ -78,6 +80,7 @@ typedef struct
 	int count;
 	bool x64;
 	bool mmx;
+	bool mmx2;
 	bool sse;
 	bool sse2;
 	bool sse3;
@@ -94,14 +97,17 @@ void x264_invalid_param_handler(const wchar_t*, const wchar_t*, const wchar_t*, 
 void x264_message_handler(QtMsgType type, const char *msg);
 unsigned int x264_version_major(void);
 unsigned int x264_version_minor(void);
+unsigned int x264_version_build(void);
 const QDate &x264_version_date(void);
+bool x264_portable(void);
+const QString &x264_data_path(void);
 bool x264_is_prerelease(void);
 const char *x264_version_time(void);
 const char *x264_version_compiler(void);
 const char *x264_version_arch(void);
 void x264_init_console(int argc, char* argv[]);
 bool x264_init_qt(int argc, char* argv[]);
-x264_cpu_t x264_detect_cpu_features(int argc, char **argv);
+const x264_cpu_t x264_detect_cpu_features(int argc, char **argv);
 bool x264_shutdown_computer(const QString &message, const unsigned long timeout, const bool forceShutdown);
 SIZE_T x264_dbg_private_bytes(void);
 void x264_finalization(void);

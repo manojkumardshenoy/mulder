@@ -21,6 +21,7 @@
 
 #include "global.h"
 #include "win_main.h"
+#include "taskbar7.h"
 
 //Qt includes
 #include <QCoreApplication>
@@ -37,7 +38,7 @@ static int x264_main(int argc, char* argv[])
 	x264_init_console(argc, argv);
 
 	//Print version info
-	qDebug("Simple x264 Launcher v%u.%02u - use 64-Bit x264 with 32-Bit Avisynth", x264_version_major(), x264_version_minor());
+	qDebug("Simple x264 Launcher v%u.%02u.%u - use 64-Bit x264 with 32-Bit Avisynth", x264_version_major(), x264_version_minor(), x264_version_build());
 	qDebug("Copyright (c) 2004-%04d LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved.", qMax(x264_version_date().year(),QDate::currentDate().year()));
 	qDebug("Built on %s at %s with %s for Win-%s.\n", x264_version_date().toString(Qt::ISODate).toLatin1().constData(), x264_version_time(), x264_version_compiler(), x264_version_arch());
 	
@@ -55,34 +56,43 @@ static int x264_main(int argc, char* argv[])
 	}
 
 	//Detect CPU capabilities
-	x264_cpu_t cpuFeatures = x264_detect_cpu_features(argc, argv);
+	const x264_cpu_t cpuFeatures = x264_detect_cpu_features(argc, argv);
 	qDebug("   CPU vendor id  :  %s (Intel: %s)", cpuFeatures.vendor, X264_BOOL(cpuFeatures.intel));
 	qDebug("CPU brand string  :  %s", cpuFeatures.brand);
 	qDebug("   CPU signature  :  Family: %d, Model: %d, Stepping: %d", cpuFeatures.family, cpuFeatures.model, cpuFeatures.stepping);
-	qDebug("CPU capabilities  :  MMX: %s, SSE: %s, SSE2: %s, SSE3: %s, SSSE3: %s, x64: %s", X264_BOOL(cpuFeatures.mmx), X264_BOOL(cpuFeatures.sse), X264_BOOL(cpuFeatures.sse2), X264_BOOL(cpuFeatures.sse3), X264_BOOL(cpuFeatures.ssse3), X264_BOOL(cpuFeatures.x64));
+	qDebug("CPU capabilities  :  MMX=%s, MMXEXT=%s, SSE=%s, SSE2=%s, SSE3=%s, SSSE3=%s, X64=%s", X264_BOOL(cpuFeatures.mmx), X264_BOOL(cpuFeatures.mmx2), X264_BOOL(cpuFeatures.sse), X264_BOOL(cpuFeatures.sse2), X264_BOOL(cpuFeatures.sse3), X264_BOOL(cpuFeatures.ssse3), X264_BOOL(cpuFeatures.x64));
 	qDebug(" Number of CPU's  :  %d\n", cpuFeatures.count);
-	
-	//Make sure this CPU can run x264
-	if(!(cpuFeatures.mmx && cpuFeatures.sse))
-	{
-		qFatal("Sorry, but this machine is not physically capable of running x264. Please get a CPU that supports at least the MMX and ISSE instruction sets!");
-	}
 
 	//Initialize Qt
 	if(!x264_init_qt(argc, argv))
 	{
 		return -1;
 	}
+	
+	//Running in portable mode?
+	if(x264_portable())
+	{
+		qDebug("Application is running in portable mode!\n");
+	}
+
+	//Taskbar init
+	WinSevenTaskbar::init();
 
 	//Set style
-	qApp->setStyle(new QPlastiqueStyle());
+	if(!qApp->arguments().contains("--no-style", Qt::CaseInsensitive))
+	{
+		qApp->setStyle(new QPlastiqueStyle());
+	}
 
 	//Create Main Window
-	MainWindow *mainWin = new MainWindow(cpuFeatures.x64);
+	MainWindow *mainWin = new MainWindow(&cpuFeatures);
 	mainWin->show();
 
 	//Run application
 	int ret = qApp->exec();
+
+	//Taskbar uninit
+	WinSevenTaskbar::init();
 	
 	X264_DELETE(mainWin);
 	return ret;
