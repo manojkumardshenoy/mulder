@@ -21,33 +21,24 @@
 
 #pragma once
 
-#include "uic_win_help.h"
+#include "uic_win_editor.h"
 
 class QProcess;
 
-class HelpDialog : public QDialog, private Ui::HelpDialog
+class EditorDialog : public QDialog, private Ui::EditorDialog
 {
 	Q_OBJECT
 
 public:
-	HelpDialog(QWidget *parent, bool avs2yuv, bool x64supported);
-	~HelpDialog(void);
+	EditorDialog(QWidget *parent);
+	~EditorDialog(void);
 
-private slots:
-	void readyRead(void);
-	void finished(void);
-
-private:
-	const QString m_appDir;
-	QProcess *const m_process;
-
-	bool m_startAgain;
-
-protected:
-	const bool m_avs2yuv;
-	const bool m_x64supported;
-
-	virtual void showEvent(QShowEvent *event);
-	virtual void closeEvent(QCloseEvent *e);
+	QString getEditText(void) { return plainTextEdit->toPlainText().simplified(); }
+	
+	void setEditText(const QString &text)
+	{
+		plainTextEdit->clear();
+		plainTextEdit->appendPlainText(text.simplified());
+	}
 };
 

@@ -27,6 +27,7 @@
 #include "win_preferences.h"
 #include "taskbar7.h"
 #include "resource.h"
+#include "avisynth_c.h"
 
 #include <QDate>
 #include <QTimer>
@@ -38,6 +39,7 @@
 #include <QLibrary>
 #include <QProcess>
 #include <QProgressDialog>
+#include <QScrollBar>
 
 #include <Mmsystem.h>
 
@@ -126,6 +128,7 @@ MainWindow::MainWindow(const x264_cpu_t *const cpuFeatures)
 	connect(buttonAbortJob, SIGNAL(clicked()), this, SLOT(abortButtonPressed()));
 	connect(buttonPauseJob, SIGNAL(toggled(bool)), this, SLOT(pauseButtonPressed(bool)));
 	connect(actionJob_Delete, SIGNAL(triggered()), this, SLOT(deleteButtonPressed()));
+	connect(actionJob_Restart, SIGNAL(triggered()), this, SLOT(restartButtonPressed()));
 	connect(actionJob_Browse, SIGNAL(triggered()), this, SLOT(browseButtonPressed()));
 
 	//Enable menu
@@ -139,6 +142,7 @@ MainWindow::MainWindow(const x264_cpu_t *const cpuFeatures)
 	connect(actionWebAvisynth64, SIGNAL(triggered()), this, SLOT(showWebLink()));
 	connect(actionWebWiki, SIGNAL(triggered()), this, SLOT(showWebLink()));
 	connect(actionWebBluRay, SIGNAL(triggered()), this, SLOT(showWebLink()));
+	connect(actionWebAvsWiki, SIGNAL(triggered()), this, SLOT(showWebLink()));
 	connect(actionWebSecret, SIGNAL(triggered()), this, SLOT(showWebLink()));
 	connect(actionPreferences, SIGNAL(triggered()), this, SLOT(showPreferences()));
 
@@ -181,16 +185,19 @@ MainWindow::~MainWindow(void)
 /*
  * The "add" button was clicked
  */
-void MainWindow::addButtonPressed(const QString &filePath, int fileNo, int fileTotal, bool *ok)
+void MainWindow::addButtonPressed(const QString &filePathIn, const QString &filePathOut, OptionsModel *options, int fileNo, int fileTotal, bool *ok)
 {
 	qDebug("MainWindow::addButtonPressed");
 	
 	if(ok) *ok = false;
-	
-	AddJobDialog *addDialog = new AddJobDialog(this, m_options, m_cpuFeatures->x64);
+
+	AddJobDialog *addDialog = new AddJobDialog(this, options ? options : m_options, m_cpuFeatures->x64);
 	addDialog->setRunImmediately(countRunningJobs() < (m_preferences.autoRunNextJob ? m_preferences.maxRunningJobCount : 1));
+	
+	if(options) addDialog->setWindowTitle(tr("Restart Job"));
 	if((fileNo >= 0) && (fileTotal > 1)) addDialog->setWindowTitle(addDialog->windowTitle().append(tr(" (File %1 of %2)").arg(QString::number(fileNo+1), QString::number(fileTotal))));
-	if(!filePath.isEmpty()) addDialog->setSourceFile(filePath);
+	if(!filePathIn.isEmpty()) addDialog->setSourceFile(filePathIn);
+	if(!filePathOut.isEmpty()) addDialog->setOutputFile(filePathOut);
 
 	int result = addDialog->exec();
 	if(result == QDialog::Accepted)
@@ -199,7 +206,7 @@ void MainWindow::addButtonPressed(const QString &filePath, int fileNo, int fileT
 		(
 			addDialog->sourceFile(),
 			addDialog->outputFile(),
-			m_options,
+			options ? options : m_options,
 			QString("%1/toolset").arg(m_appDir),
 			m_cpuFeatures->x64,
 			m_cpuFeatures->x64 && m_preferences.useAvisyth64Bit
@@ -218,9 +225,10 @@ void MainWindow::addButtonPressed(const QString &filePath, int fileNo, int fileT
 
 			if(ok) *ok = true;
 		}
-	}
 
-	m_label->setVisible(m_jobList->rowCount(QModelIndex()) == 0);
+		m_label->setVisible(m_jobList->rowCount(QModelIndex()) == 0);
+	}
+	
 	X264_DELETE(addDialog);
 }
 
@@ -277,6 +285,25 @@ void MainWindow::pauseButtonPressed(bool checked)
 	else
 	{
 		m_jobList->resumeJob(jobsView->currentIndex());
+	}
+}
+
+/*
+ * The "restart" button was clicked
+ */
+void MainWindow::restartButtonPressed(void)
+{
+	const QModelIndex index = jobsView->currentIndex();
+	
+	const QString &source = m_jobList->getJobSourceFile(index);
+	const QString &output = m_jobList->getJobOutputFile(index);
+	const OptionsModel *options = m_jobList->getJobOptions(index);
+
+	if((options) && (!source.isEmpty()) && (!output.isEmpty()))
+	{
+		OptionsModel *tempOptions = new OptionsModel(*options);
+		addButtonPressed(source, output, tempOptions);
+		X264_DELETE(tempOptions);
 	}
 }
 
@@ -395,6 +422,7 @@ void MainWindow::showAbout(void)
 	aboutBox.setWindowTitle(tr("About..."));
 	aboutBox.setText(text.replace("-", "&minus;"));
 	aboutBox.addButton(tr("About x264"), QMessageBox::NoRole);
+	aboutBox.addButton(tr("About AVS"), QMessageBox::NoRole);
 	aboutBox.addButton(tr("About Qt"), QMessageBox::NoRole);
 	aboutBox.setEscapeButton(aboutBox.addButton(tr("Close"), QMessageBox::NoRole));
 		
@@ -409,7 +437,8 @@ void MainWindow::showAbout(void)
 				text2 += tr("<nobr><tt>x264 - the best H.264/AVC encoder. Copyright (c) 2003-2012 x264 project.<br>");
 				text2 += tr("Free software library for encoding video streams into the H.264/MPEG-4 AVC format.<br>");
 				text2 += tr("Released under the terms of the GNU General Public License.<br><br>");
-				text2 += tr("Please visit <a href=\"%1\">%1</a> for obtaining a <u>commercial</u> x264 license!<br></tt></nobr>").arg("http://x264licensing.com/");
+				text2 += tr("Please visit <a href=\"%1\">%1</a> for obtaining a commercial x264 license.<br>").arg("http://x264licensing.com/");
+				text2 += tr("Read the <a href=\"%1\">user's manual</a> to get started and use the <a href=\"%2\">support forum</a> for help!<br></tt></nobr>").arg("http://mewiki.project357.com/wiki/X264_Settings", "http://forum.doom9.org/forumdisplay.php?f=77");
 
 				QMessageBox x264Box(this);
 				x264Box.setIconPixmap(QIcon(":/images/x264.png").pixmap(48,48));
@@ -421,6 +450,24 @@ void MainWindow::showAbout(void)
 			}
 			break;
 		case 1:
+			{
+				QString text2;
+				text2 += tr("<nobr><tt>Avisynth - powerful video processing scripting language.<br>");
+				text2 += tr("Copyright (c) 2000 Ben Rudiak-Gould and all subsequent developers.<br>");
+				text2 += tr("Released under the terms of the GNU General Public License.<br><br>");
+				text2 += tr("Please visit the web-site <a href=\"%1\">%1</a> for more information.<br>").arg("http://avisynth.org/");
+				text2 += tr("Read the <a href=\"%1\">guide</a> to get started and use the <a href=\"%2\">support forum</a> for help!<br></tt></nobr>").arg("http://avisynth.org/mediawiki/First_script", "http://forum.doom9.org/forumdisplay.php?f=33");
+
+				QMessageBox x264Box(this);
+				x264Box.setIconPixmap(QIcon(":/images/avisynth.png").pixmap(48,67));
+				x264Box.setWindowTitle(tr("About Avisynth"));
+				x264Box.setText(text2.replace("-", "&minus;"));
+				x264Box.setEscapeButton(x264Box.addButton(tr("Close"), QMessageBox::NoRole));
+				MessageBeep(MB_ICONINFORMATION);
+				x264Box.exec();
+			}
+			break;
+		case 2:
 			QMessageBox::aboutQt(this);
 			break;
 		default:
@@ -443,6 +490,7 @@ void MainWindow::showWebLink(void)
 	if(QObject::sender() == actionWebAvisynth64) QDesktopServices::openUrl(QUrl("http://code.google.com/p/avisynth64/downloads/list"));
 	if(QObject::sender() == actionWebWiki)       QDesktopServices::openUrl(QUrl("http://mewiki.project357.com/wiki/X264_Settings"));
 	if(QObject::sender() == actionWebBluRay)     QDesktopServices::openUrl(QUrl("http://www.x264bluray.com/"));
+	if(QObject::sender() == actionWebAvsWiki)    QDesktopServices::openUrl(QUrl("http://avisynth.org/mediawiki/Main_Page#Usage"));
 	if(QObject::sender() == actionWebSecret)     QDesktopServices::openUrl(QUrl("http://www.youtube.com/watch_popup?v=AXIeHY-OYNI"));
 }
 
@@ -639,17 +687,25 @@ void MainWindow::init(void)
 	}
 
 	//Check for Avisynth support
-	bool avsAvailable = false;
-	QLibrary *avsLib = new QLibrary("avisynth.dll");
-	if(avsLib->load())
+	if(!qApp->arguments().contains("--skip-avisynth-check", Qt::CaseInsensitive))
 	{
-		avsAvailable = (avsLib->resolve("avs_create_script_environment") != NULL);
-	}
-	if(!avsAvailable)
-	{
-		avsLib->unload(); X264_DELETE(avsLib);
-		int val = QMessageBox::warning(this, tr("Avisynth Missing"), tr("<nobr>It appears that Avisynth is <b>not</b> currently installed on your computer.<br>Thus Avisynth (.avs) input will <b>not</b> be working at all!<br><br>Please download and install Avisynth:<br><a href=\"http://sourceforge.net/projects/avisynth2/files/AviSynth%202.5/\">http://sourceforge.net/projects/avisynth2/files/AviSynth 2.5/</a></nobr>").replace("-", "&minus;"), tr("Quit"), tr("Ignore"));
-		if(val != 1) { close(); qApp->exit(-1); return; }
+		double avisynthVersion = 0.0;
+		QLibrary *avsLib = new QLibrary("avisynth.dll");
+		if(avsLib->load())
+		{
+			avisynthVersion = detectAvisynthVersion(avsLib);
+			if(avisynthVersion < 0.0)
+			{
+				int val = QMessageBox::critical(this, tr("Avisynth Error"), tr("<nobr>A critical error was encountered while checking your Avisynth version!</nobr>").replace("-", "&minus;"), tr("Quit"), tr("Ignore"));
+				if(val != 1) { close(); qApp->exit(-1); return; }
+			}
+		}
+		if(avisynthVersion < 2.5)
+		{
+			int val = QMessageBox::warning(this, tr("Avisynth Missing"), tr("<nobr>It appears that Avisynth is <b>not</b> currently installed on your computer.<br>Therefore Avisynth (.avs) input will <b>not</b> be working at all!<br><br>Please download and install Avisynth:<br><a href=\"http://sourceforge.net/projects/avisynth2/files/AviSynth%202.5/\">http://sourceforge.net/projects/avisynth2/files/AviSynth 2.5/</a></nobr>").replace("-", "&minus;"), tr("Quit"), tr("Ignore"));
+			avsLib->unload(); X264_DELETE(avsLib);
+			if(val != 1) { close(); qApp->exit(-1); return; }
+		}
 	}
 
 	//Check for expiration
@@ -692,7 +748,7 @@ void MainWindow::init(void)
 		{
 			QString currentFile = files.takeFirst();
 			qDebug("Adding file: %s", currentFile.toUtf8().constData());
-			addButtonPressed(currentFile, n++, totalFiles, &ok);
+			addButtonPressed(currentFile, QString(), NULL, n++, totalFiles, &ok);
 		}
 	}
 }
@@ -736,7 +792,7 @@ void MainWindow::handleDroppedFiles(void)
 		{
 			QString currentFile = droppedFiles.takeFirst();
 			qDebug("Adding file: %s", currentFile.toUtf8().constData());
-			addButtonPressed(currentFile, n++, totalFiles, &ok);
+			addButtonPressed(currentFile, QString(), NULL, n++, totalFiles, &ok);
 		}
 	}
 	qDebug("Leave from MainWindow::handleDroppedFiles!");
@@ -928,6 +984,7 @@ void MainWindow::updateButtons(EncodeThread::JobStatus status)
 	buttonPauseJob->setChecked(status == EncodeThread::JobStatus_Paused || status == EncodeThread::JobStatus_Pausing);
 
 	actionJob_Delete->setEnabled(status == EncodeThread::JobStatus_Completed || status == EncodeThread::JobStatus_Aborted || status == EncodeThread::JobStatus_Failed || status == EncodeThread::JobStatus_Enqueued);
+	actionJob_Restart->setEnabled(status == EncodeThread::JobStatus_Completed || status == EncodeThread::JobStatus_Aborted || status == EncodeThread::JobStatus_Failed || status == EncodeThread::JobStatus_Enqueued);
 	actionJob_Browse->setEnabled(status == EncodeThread::JobStatus_Completed);
 
 	actionJob_Start->setEnabled(buttonStartJob->isEnabled());
@@ -982,3 +1039,56 @@ void MainWindow::updateTaskbar(EncodeThread::JobStatus status, const QIcon &icon
 
 	WinSevenTaskbar::setOverlayIcon(this, icon.isNull() ? NULL : &icon);
 }
+
+/*
+ * Detect Avisynth version
+ */
+double MainWindow::detectAvisynthVersion(QLibrary *avsLib)
+{
+	double version_number = 0.0;
+	
+	__try
+	{
+		avs_create_script_environment_func avs_create_script_environment_ptr = (avs_create_script_environment_func) avsLib->resolve("avs_create_script_environment");
+		avs_invoke_func avs_invoke_ptr = (avs_invoke_func) avsLib->resolve("avs_invoke");
+		avs_function_exists_func avs_function_exists_ptr = (avs_function_exists_func) avsLib->resolve("avs_function_exists");
+		avs_delete_script_environment_func avs_delete_script_environment_ptr = (avs_delete_script_environment_func) avsLib->resolve("avs_delete_script_environment");
+
+		if((avs_create_script_environment_ptr != NULL) && (avs_invoke_ptr != NULL) && (avs_function_exists_ptr != NULL))
+		{
+			AVS_ScriptEnvironment* avs_env = avs_create_script_environment_ptr(AVS_INTERFACE_25);
+			if(avs_env != NULL)
+			{
+				if(avs_function_exists_ptr(avs_env, "VersionNumber"))
+				{
+					AVS_Value avs_version = avs_invoke_ptr(avs_env, "VersionNumber", avs_new_value_array(NULL, 0), NULL);
+					if(!avs_is_error(avs_version))
+					{
+						if(avs_is_float(avs_version))
+						{
+							qDebug("Avisynth version: v%.2f", avs_as_float(avs_version));
+							version_number = avs_as_float(avs_version);
+						}
+					}
+				}
+				if(avs_delete_script_environment_ptr != NULL)
+				{
+					avs_delete_script_environment_ptr(avs_env);
+					avs_env = NULL;
+				}
+			}
+		}
+		else
+		{
+			qWarning("It seems the Avisynth DLL is missing required API functions!");
+		}
+	}
+	__except(1)
+	{
+		qWarning("Exception in Avisynth initialization code!");
+		version_number = -1.0;
+	}
+
+	return version_number;
+}
+

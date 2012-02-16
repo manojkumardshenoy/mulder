@@ -19,35 +19,42 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#include "win_editor.h"
+#include "global.h"
 
-#include "uic_win_help.h"
+#include <QProcess>
+#include <QScrollBar>
+#include <QTimer>
 
-class QProcess;
+///////////////////////////////////////////////////////////////////////////////
+// Constructor & Destructor
+///////////////////////////////////////////////////////////////////////////////
 
-class HelpDialog : public QDialog, private Ui::HelpDialog
+EditorDialog::EditorDialog(QWidget *parent)
+:
+	QDialog(parent)
 {
-	Q_OBJECT
+	//Init the dialog, from the .ui file
+	setupUi(this);
+	setWindowFlags(windowFlags() & (~Qt::WindowContextHelpButtonHint));
 
-public:
-	HelpDialog(QWidget *parent, bool avs2yuv, bool x64supported);
-	~HelpDialog(void);
+	//Fix size
+	setMinimumSize(size());
+}
 
-private slots:
-	void readyRead(void);
-	void finished(void);
+EditorDialog::~EditorDialog(void)
+{
+}
 
-private:
-	const QString m_appDir;
-	QProcess *const m_process;
+///////////////////////////////////////////////////////////////////////////////
+// Events
+///////////////////////////////////////////////////////////////////////////////
 
-	bool m_startAgain;
+/*None*/
 
-protected:
-	const bool m_avs2yuv;
-	const bool m_x64supported;
+///////////////////////////////////////////////////////////////////////////////
+// Slots
+///////////////////////////////////////////////////////////////////////////////
 
-	virtual void showEvent(QShowEvent *event);
-	virtual void closeEvent(QCloseEvent *e);
-};
+/*None*/
 

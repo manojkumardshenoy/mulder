@@ -29,6 +29,7 @@
 class JobListModel;
 class OptionsModel;
 class QFile;
+class QLibrary;
 
 class MainWindow: public QMainWindow, private Ui::MainWindow
 {
@@ -65,9 +66,10 @@ private:
 	void updateTaskbar(EncodeThread::JobStatus status, const QIcon &icon);
 	unsigned int countPendingJobs(void);
 	unsigned int countRunningJobs(void);
+	double detectAvisynthVersion(QLibrary *avsLib);
 
 private slots:
-	void addButtonPressed(const QString &filePath = QString(), int fileNo = -1, int fileTotal = 0, bool *ok = NULL);
+	void addButtonPressed(const QString &filePathIn = QString(), const QString &filePathOut = QString(), OptionsModel *options = NULL, int fileNo = -1, int fileTotal = 0, bool *ok = NULL);
 	void abortButtonPressed(void);
 	void browseButtonPressed(void);
 	void deleteButtonPressed(void);
@@ -79,6 +81,7 @@ private slots:
 	void jobLogExtended(const QModelIndex & parent, int start, int end);
 	void launchNextJob();
 	void pauseButtonPressed(bool checked);
+	void restartButtonPressed(void);
 	void showAbout(void);
 	void showPreferences(void);
 	void showWebLink(void);

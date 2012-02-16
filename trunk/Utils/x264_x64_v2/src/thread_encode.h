@@ -79,7 +79,9 @@ public:
 
 protected:
 	static QMutex m_mutex_startProcess;
-	static const int m_processTimeoutCounter = 24;
+	static const unsigned int m_processTimeoutInterval = 2500;
+	static const unsigned int m_processTimeoutMaxCounter = 120;
+	static const unsigned int m_processTimeoutWarning = 24;
 
 	//Constants
 	const QUuid m_jobId;
@@ -123,10 +125,10 @@ protected:
 	inline void setDetails(const QString &text);
 	bool startProcess(QProcess &process, const QString &program, const QStringList &args, bool mergeChannels = true);
 	QString pathToLocal(const QString &longPath, bool create = false, bool keep = true);
+	QStringList splitParams(const QString &params);
 
 	//Static functions
 	static QString commandline2string(const QString &program, const QStringList &arguments);
-	static QStringList splitParams(const QString &params);
 
 signals:
 	void statusChanged(const QUuid &jobId, EncodeThread::JobStatus newStatus);
