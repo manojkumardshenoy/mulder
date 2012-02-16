@@ -49,12 +49,14 @@ QMutex EncodeThread::m_mutex_startProcess;
 		log("\nPROCESS ABORTED BY USER !!!"); \
 		setStatus(JobStatus_Aborted); \
 		if(QFileInfo(indexFile).exists()) QFile::remove(indexFile); \
+		if(QFileInfo(m_outputFileName).exists() && (QFileInfo(m_outputFileName).size() == 0)) QFile::remove(m_outputFileName); \
 		return; \
 	} \
 	else if(!(OK_FLAG)) \
 	{ \
 		setStatus(JobStatus_Failed); \
 		if(QFileInfo(indexFile).exists()) QFile::remove(indexFile); \
+		if(QFileInfo(m_outputFileName).exists() && (QFileInfo(m_outputFileName).size() == 0)) QFile::remove(m_outputFileName); \
 		return; \
 	} \
 }
@@ -184,7 +186,7 @@ void EncodeThread::encode(void)
 	log(tr("Preset:  %1").arg(m_options->preset()));
 	log(tr("Tuning:  %1").arg(m_options->tune()));
 	log(tr("Profile: %1").arg(m_options->profile()));
-	log(tr("Custom:  %1").arg(m_options->custom().isEmpty() ? tr("(None)") : m_options->custom()));
+	log(tr("Custom:  %1").arg(m_options->customX264().isEmpty() ? tr("(None)") : m_options->customX264()));
 	
 	bool ok = false;
 	unsigned int frames = 0;
@@ -284,6 +286,10 @@ bool EncodeThread::runEncodingPass(bool x264_x64, bool avs2yuv_x64, bool usePipe
 	if(usePipe)
 	{
 		QStringList cmdLine_Avisynth;
+		if(!m_options->customAvs2YUV().isEmpty())
+		{
+			cmdLine_Avisynth.append(splitParams(m_options->customAvs2YUV()));
+		}
 		cmdLine_Avisynth << pathToLocal(QDir::toNativeSeparators(m_sourceFileName));
 		cmdLine_Avisynth << "-";
 		processAvisynth.setStandardOutputProcess(&processEncode);
@@ -345,17 +351,22 @@ bool EncodeThread::runEncodingPass(bool x264_x64, bool avs2yuv_x64, bool usePipe
 				waitCounter = 0;
 				continue;
 			}
-			if(!processEncode.waitForReadyRead(2500))
+			if(!processEncode.waitForReadyRead(m_processTimeoutInterval))
 			{
 				if(processEncode.state() == QProcess::Running)
 				{
-					if(waitCounter++ > m_processTimeoutCounter)
+					if(waitCounter++ > m_processTimeoutMaxCounter)
 					{
 						processEncode.kill();
 						qWarning("x264 process timed out <-- killing!");
 						log("\nPROCESS TIMEOUT !!!");
 						bTimeout = true;
 						break;
+					}
+					else if(waitCounter == m_processTimeoutWarning)
+					{
+						unsigned int timeOut = (waitCounter * m_processTimeoutInterval) / 1000U;
+						log(tr("Warning: x264 did not respond for %1 seconds, potential deadlock...").arg(QString::number(timeOut)));
 					}
 					continue;
 				}
@@ -516,9 +527,9 @@ QStringList EncodeThread::buildCommandLine(bool usePipe, unsigned int frames, co
 		cmdLine << "--profile" << m_options->profile().toLower();
 	}
 
-	if(!m_options->custom().isEmpty())
+	if(!m_options->customX264().isEmpty())
 	{
-		cmdLine.append(splitParams(m_options->custom()));
+		cmdLine.append(splitParams(m_options->customX264()));
 	}
 
 	cmdLine << "--output" << pathToLocal(QDir::toNativeSeparators(m_outputFileName), true);
@@ -739,8 +750,14 @@ unsigned int EncodeThread::checkVersionAvs2yuv(bool x64)
 bool EncodeThread::checkProperties(bool x64, unsigned int &frames)
 {
 	QProcess process;
-	
-	QStringList cmdLine = QStringList() << "-frames" << "1";
+	QStringList cmdLine;
+
+	if(!m_options->customAvs2YUV().isEmpty())
+	{
+		cmdLine.append(splitParams(m_options->customAvs2YUV()));
+	}
+
+	cmdLine << "-frames" << "1";
 	cmdLine << pathToLocal(QDir::toNativeSeparators(m_sourceFileName)) << "NUL";
 
 	log("Creating process:");
@@ -764,6 +781,8 @@ bool EncodeThread::checkProperties(bool x64, unsigned int &frames)
 	unsigned int fSizeW = 0;
 	unsigned int fSizeH = 0;
 	
+	unsigned int waitCounter = 0;
+
 	while(process.state() != QProcess::NotRunning)
 	{
 		if(m_abort)
@@ -772,17 +791,30 @@ bool EncodeThread::checkProperties(bool x64, unsigned int &frames)
 			bAborted = true;
 			break;
 		}
-		if(!process.waitForReadyRead())
+		if(!process.waitForReadyRead(m_processTimeoutInterval))
 		{
 			if(process.state() == QProcess::Running)
 			{
-				process.kill();
-				qWarning("Avs2YUV process timed out <-- killing!");
-				log("\nPROCESS TIMEOUT !!!");
-				bTimeout = true;
-				break;
+				if(waitCounter++ > m_processTimeoutMaxCounter)
+				{
+					process.kill();
+					qWarning("Avs2YUV process timed out <-- killing!");
+					log("\nPROCESS TIMEOUT !!!");
+					log("\nAvisynth has encountered a deadlock or your script takes EXTREMELY long to initialize!");
+					bTimeout = true;
+					break;
+				}
+				else if(waitCounter == m_processTimeoutWarning)
+				{
+					unsigned int timeOut = (waitCounter * m_processTimeoutInterval) / 1000U;
+					log(tr("Warning: Avisynth did not respond for %1 seconds, potential deadlock...").arg(QString::number(timeOut)));
+				}
 			}
+			continue;
 		}
+		
+		waitCounter = 0;
+		
 		while(process.bytesAvailable() > 0)
 		{
 			QList<QByteArray> lines = process.readLine().split('\r');
@@ -825,6 +857,10 @@ bool EncodeThread::checkProperties(bool x64, unsigned int &frames)
 				if(text.contains("failed to load avisynth.dll", Qt::CaseInsensitive))
 				{
 					log(tr("\nWarning: It seems that %1-Bit Avisynth is not currently installed !!!").arg(x64 ? "64" : "32"));
+				}
+				if(text.contains(QRegExp("couldn't convert input clip to (YV16|YV24)", Qt::CaseInsensitive)))
+				{
+					log(tr("\nWarning: YV16 (4:2:2) and YV24 (4:4:4) color-spaces only supported in Avisynth 2.6 !!!"));
 				}
 			}
 		}
@@ -1060,5 +1096,9 @@ QStringList EncodeThread::splitParams(const QString &params)
 	}
 	
 	APPEND_AND_CLEAR(list, temp);
+
+	list.replaceInStrings("$(INPUT)", QDir::toNativeSeparators(m_sourceFileName), Qt::CaseInsensitive);
+	list.replaceInStrings("$(OUTPUT)", QDir::toNativeSeparators(m_outputFileName), Qt::CaseInsensitive);
+
 	return list;
 }

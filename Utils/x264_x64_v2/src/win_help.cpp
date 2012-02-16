@@ -30,10 +30,11 @@
 // Constructor & Destructor
 ///////////////////////////////////////////////////////////////////////////////
 
-HelpDialog::HelpDialog(QWidget *parent, bool x64supported)
+HelpDialog::HelpDialog(QWidget *parent, bool avs2yuv, bool x64supported)
 :
 	QDialog(parent),
 	m_appDir(QApplication::applicationDirPath()),
+	m_avs2yuv(avs2yuv),
 	m_x64supported(x64supported),
 	m_process(new QProcess())
 {
@@ -64,10 +65,21 @@ HelpDialog::~HelpDialog(void)
 
 void HelpDialog::showEvent(QShowEvent *event)
 {
+	logo_x264->setHidden(m_avs2yuv);
+	logo_avisynth->setVisible(m_avs2yuv);
+	
 	QDialog::showEvent(event);
-
+	
 	m_startAgain = true;
-	m_process->start(QString("%1/toolset/%2.exe").arg(m_appDir, m_x64supported ? "x264_x64" : "x264"), QStringList() << "--version");
+
+	if(!m_avs2yuv)
+	{
+		m_process->start(QString("%1/toolset/%2.exe").arg(m_appDir, m_x64supported ? "x264_x64" : "x264"), QStringList() << "--version");
+	}
+	else
+	{
+		m_process->start(QString("%1/toolset/%2.exe").arg(m_appDir, m_x64supported ? "avs2yuv_x64" : "avs2yuv"), QStringList());
+	}
 
 	if(!m_process->waitForStarted())
 	{
@@ -109,12 +121,15 @@ void HelpDialog::finished(void)
 	if(m_startAgain)
 	{
 		m_startAgain = false;
-		m_process->start(QString("%1/toolset/x264.exe").arg(m_appDir), QStringList() << "--fullhelp");
-		plainTextEdit->appendPlainText("\n--------\n");
-
-		if(!m_process->waitForStarted())
+		if(!m_avs2yuv)
 		{
-			plainTextEdit->appendPlainText(tr("Failed to create x264 process :-("));
+			m_process->start(QString("%1/toolset/x264.exe").arg(m_appDir), QStringList() << "--fullhelp");
+			plainTextEdit->appendPlainText("\n--------\n");
+
+			if(!m_process->waitForStarted())
+			{
+				plainTextEdit->appendPlainText(tr("Failed to create x264 process :-("));
+			}
 		}
 	}
 	else

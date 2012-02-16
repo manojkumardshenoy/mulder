@@ -40,10 +40,11 @@ public:
 	QString preset(void) { return cbxPreset->itemText(cbxPreset->currentIndex()); }
 	QString tuning(void) { return cbxTuning->itemText(cbxTuning->currentIndex()); }
 	QString profile(void) { return cbxProfile->itemText(cbxProfile->currentIndex()); }
-	QString params(void) { return editCustomParams->text().simplified(); }
+	QString params(void) { return editCustomX264Params->text().simplified(); }
 	bool runImmediately(void) { return checkBoxRun->isChecked(); }
 	void setRunImmediately(bool run) { checkBoxRun->setChecked(run); }
 	void setSourceFile(const QString &path) { editSource->setText(QDir::toNativeSeparators(path)); }
+	void setOutputFile(const QString &path) { editOutput->setText(QDir::toNativeSeparators(path)); }
 
 protected:
 	OptionsModel *m_options;
@@ -66,6 +67,9 @@ private slots:
 	void templateSelected(void);
 	void saveTemplateButtonClicked(void);
 	void deleteTemplateButtonClicked(void);
+	void editorActionTriggered(void);
+	void copyActionTriggered(void);
+	void pasteActionTriggered(void);
 	
 	virtual void accept(void);
 

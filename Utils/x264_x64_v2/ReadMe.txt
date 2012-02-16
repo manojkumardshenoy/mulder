@@ -101,7 +101,78 @@ Using old/outdated x264 binaries with this application is NOT supported
 or intended. Report bugs rather than reverting to an old version!
 
 
-7. Command-line Syntax
+7. Timeout Warning
+------------------
+
+This application provides "deadlock" prevention. This means that if an
+encoder process (x264 or Avisynth) stopps responding, it will be
+terminated. This is done in order to ensure that the main program as
+well as the other encoder processes can continue properly. More
+specifically, a warning will be raised if the process does not respond
+for one minute. If the process still didn't respond after five minutes,
+it will be terminated and consequently the encoding job is aborted. In
+some rare cases, your Avisynth script may take a very long time to
+initialize and thus the process will be aborted before the encoding can
+start. For example, this can happen if FFMS2/FFVideoSource takes a very
+long time to index the source file. In that case, we recommend to index
+the source file beforehand, e.g. by using the 'ffmsindex' tool.
+
+
+8. Color Spaces / Chroma Subsampling
+------------------------------------
+
+Avs2YUV converts the output of your Avisynth script to the YV12 format,
+i.e. YUV data with 4:2:0 chroma subsampling and 8-Bit precision.
+Usually this is exactly what you want/need. If, however, your Avisynth
+script outputs image data with a higher chroma resolution, e.g. YUY2
+(4:2:2), then the conversion to YV12 (4:2:0) will discard some of the
+information. In that case, and if you want/need to keep the full chroma
+resolution of your Avisynth script's output, you will have to pass the
+"-csp" switch to Avs2YUV as a custom parameter! Use "-csp I422" for
+YUV 4:2:2 (YV16) and use "-csp I444" for YUV 4:4:4 (YV24). Please note
+that Avs2YUV can NOT pass through the "packed" YUY2 format. Thus it has
+to be converted to the "planar" YV16 format. As both, YUY2 and YV16,
+are YUV 4:2:2 formats, converting from YUY2 to YV16 is a lossless
+operation. Note, however, that Avisynth 2.5 did NOT support YV16/YV24,
+so you need to use Avisynth 2.6; otherwise Avs2YUV will fail to do the
+conversion! Also be aware that the x264 encoder itself will convert any
+YV16 or YV24 input back to the YV12 format, if you don't pass the
+suitable "--output-csp i422/i444" switch to x264 as a custom parameter!
+In short, to encode YUY2 from Avisynth, you have to pass "-csp I422" to
+Avs2YUV and "--output-csp i422" to x264 to avoid 4:2:0 downsampling.
+
+
+9. Audio Processing/Encoding
+----------------------------
+
+This application is a front-end to the x264 encoder. And, as x264 does
+NOT support audio processing/encoding yet, there is NO explicit support
+for audio encoding in this application. Thus, if you want to create a
+video file *with* audio, you will have to add the audio stream to the
+encoded video file afterwards. This process is called 'multiplexing' or
+just 'muxing'. In case you are dealing with Matroska (MKV) files, then
+"MKVMerge GUI" from the "MKVToolNix" package is the right tool for this
+task. If, instead, you are dealing with MP4 files, then you may use
+"MP4Box" or the "YAMB" front-end for muxing the audio stream.
+
+Having said all that, there now is an unofficial "Audio" branch of x264
+available. If you are using one of the patched x264 builds with "audio
+support" patch (e.g. those provided by JEEB), you can process the audio
+with x264 and skip the additional muxing step. Basically the new audio
+patch adds a new "--acodec" switch, which you can pass the x264 as a
+custom parameter. For example you can pass "--acodec aac" for encoding
+the audio to the AAC format (recommended for AAC files). Or you can
+pass "--acodec vorbis" for encoding the audio to the Ogg/Vorbis format
+(recommended for MKV files). Please be aware that audio encoding will
+work only, if your input file contains an audio stream! When using the
+built-in LAVF/FFMS input of x264, the audio can be encoded straight
+from the input file. This does NOT work with Avisynth input! Instead,
+if you want to encode audio from an Avisynth script, you must pass the
+"--audiofile <path_to_avs_file>" switch to x264 as a custom parameter.
+For convenience, the "--audiofile $(INPUT)" parameter may be used.
+
+
+10. Command-line Syntax
 ----------------------
 
 The following command-line switches are available:
@@ -110,11 +181,12 @@ The following command-line switches are available:
 --console ............... Show the "debug" console
 --no-console ............ Don't show the "debug" console
 --no-style .............. Don't use the Qt "Plastique" style
+--skip-avisynth-check ... Skip Avisynth check (not recommended!)
 --force-cpu-no-64bit .... Forcefully disable 64-Bit support
 
 
-8. Help & Support
------------------
+11. Help & Support
+------------------
 
 For help and support, please join the discussion at:
 http://forum.doom9.org/showthread.php?t=144140
