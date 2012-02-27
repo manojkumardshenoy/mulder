@@ -72,6 +72,7 @@ MainWindow::MainWindow(const x264_cpu_t *const cpuFeatures)
 
 	//Register meta types
 	qRegisterMetaType<QUuid>("QUuid");
+	qRegisterMetaType<QUuid>("DWORD");
 	qRegisterMetaType<EncodeThread::JobStatus>("EncodeThread::JobStatus");
 
 	//Load preferences
@@ -81,6 +82,10 @@ MainWindow::MainWindow(const x264_cpu_t *const cpuFeatures)
 	//Create options object
 	m_options = new OptionsModel();
 	OptionsModel::loadTemplate(m_options, QString::fromLatin1(tpl_last));
+
+	//Create IPC thread object
+	m_ipcThread = new IPCThread();
+	connect(m_ipcThread, SIGNAL(instanceCreated(DWORD)), this, SLOT(instanceCreated(DWORD)), Qt::QueuedConnection);
 
 	//Freeze minimum size
 	setMinimumSize(size());
@@ -144,6 +149,7 @@ MainWindow::MainWindow(const x264_cpu_t *const cpuFeatures)
 	connect(actionWebBluRay, SIGNAL(triggered()), this, SLOT(showWebLink()));
 	connect(actionWebAvsWiki, SIGNAL(triggered()), this, SLOT(showWebLink()));
 	connect(actionWebSecret, SIGNAL(triggered()), this, SLOT(showWebLink()));
+	connect(actionWebSupport, SIGNAL(triggered()), this, SLOT(showWebLink()));
 	connect(actionPreferences, SIGNAL(triggered()), this, SLOT(showPreferences()));
 
 	//Create floating label
@@ -176,6 +182,18 @@ MainWindow::~MainWindow(void)
 		QFile *temp = m_toolsList.takeFirst();
 		X264_DELETE(temp);
 	}
+
+	if(m_ipcThread->isRunning())
+	{
+		m_ipcThread->setAbort();
+		if(!m_ipcThread->wait(5000))
+		{
+			m_ipcThread->terminate();
+			m_ipcThread->wait();
+		}
+	}
+
+	X264_DELETE(m_ipcThread);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -491,6 +509,7 @@ void MainWindow::showWebLink(void)
 	if(QObject::sender() == actionWebWiki)       QDesktopServices::openUrl(QUrl("http://mewiki.project357.com/wiki/X264_Settings"));
 	if(QObject::sender() == actionWebBluRay)     QDesktopServices::openUrl(QUrl("http://www.x264bluray.com/"));
 	if(QObject::sender() == actionWebAvsWiki)    QDesktopServices::openUrl(QUrl("http://avisynth.org/mediawiki/Main_Page#Usage"));
+	if(QObject::sender() == actionWebSupport)    QDesktopServices::openUrl(QUrl("http://forum.doom9.org/showthread.php?t=144140"));
 	if(QObject::sender() == actionWebSecret)     QDesktopServices::openUrl(QUrl("http://www.youtube.com/watch_popup?v=AXIeHY-OYNI"));
 }
 
@@ -614,6 +633,23 @@ void MainWindow::init(void)
 	QStringList binaries = QString::fromLatin1(binFiles).split(":", QString::SkipEmptyParts);
 
 	updateLabelPos();
+
+	//Check for a running instance
+	bool firstInstance = false;
+	if(m_ipcThread->initialize(&firstInstance))
+	{
+		m_ipcThread->start();
+		if(!firstInstance)
+		{
+			if(!m_ipcThread->wait(5000))
+			{
+				QMessageBox::warning(this, tr("Not Responding"), tr("<nobr>Another instance of this application is already running, but did not respond in time.<br>If the problem persists, please kill the running instance from the task manager!</nobr>"), tr("Quit"));
+				m_ipcThread->terminate();
+				m_ipcThread->wait();
+			}
+			close(); qApp->exit(-1); return;
+		}
+	}
 
 	//Check all binaries
 	while(!binaries.isEmpty())
@@ -796,6 +832,24 @@ void MainWindow::handleDroppedFiles(void)
 		}
 	}
 	qDebug("Leave from MainWindow::handleDroppedFiles!");
+}
+
+void MainWindow::instanceCreated(DWORD pid)
+{
+	qDebug("Notification from other instance (PID=0x%X) received!", pid);
+	
+	FLASHWINFO flashWinInfo;
+	memset(&flashWinInfo, 0, sizeof(FLASHWINFO));
+	flashWinInfo.cbSize = sizeof(FLASHWINFO);
+	flashWinInfo.hwnd = this->winId();
+	flashWinInfo.dwFlags = FLASHW_ALL;
+	flashWinInfo.dwTimeout = 125;
+	flashWinInfo.uCount = 5;
+
+	SwitchToThisWindow(this->winId(), TRUE);
+	SetForegroundWindow(this->winId());
+	qApp->processEvents();
+	FlashWindowEx(&flashWinInfo);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
