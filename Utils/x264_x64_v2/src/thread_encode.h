@@ -126,9 +126,11 @@ protected:
 	bool startProcess(QProcess &process, const QString &program, const QStringList &args, bool mergeChannels = true);
 	QString pathToLocal(const QString &longPath, bool create = false, bool keep = true);
 	QStringList splitParams(const QString &params);
+	qint64 estimateSize(int progress);
 
 	//Static functions
 	static QString commandline2string(const QString &program, const QStringList &arguments);
+	static QString sizeToString(qint64 size);
 
 signals:
 	void statusChanged(const QUuid &jobId, EncodeThread::JobStatus newStatus);
