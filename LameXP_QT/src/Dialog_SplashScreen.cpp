@@ -26,6 +26,7 @@
 #include <QThread>
 #include <QMovie>
 #include <QKeyEvent>
+#include <QTimer>
 
 #include "WinSevenTaskbar.h"
 
@@ -92,6 +93,10 @@ void SplashScreen::showSplash(QThread *thread)
 	connect(thread, SIGNAL(terminated()), loop, SLOT(quit()), Qt::QueuedConnection);
 	connect(thread, SIGNAL(finished()), loop, SLOT(quit()), Qt::QueuedConnection);
 
+	//Create timer
+	QTimer *timer = new QTimer();
+	connect(timer, SIGNAL(timeout()), loop, SLOT(quit()));
+
 	//Start thread
 	QApplication::processEvents();
 	thread->start();
@@ -105,19 +110,32 @@ void SplashScreen::showSplash(QThread *thread)
 	{
 		opacity = 0.01 * static_cast<double>(i);
 		splashScreen->setWindowOpacity(opacity);
-		QApplication::processEvents();
+		QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, FADE_DELAY);
 		Sleep(FADE_DELAY);
 	}
 
+	//Start the timer
+	timer->start(15360);
+
 	//Loop while thread is running
-	loop->exec();
+	while(thread->isRunning())
+	{
+		loop->exec();
+		if(thread->isRunning())
+		{
+			qWarning("Potential deadlock in initialization thread!");
+		}
+	}
 	
+	//Stop the timer
+	timer->stop();
+
 	//Fade out
 	for(int i = 100; i >= 0; i--)
 	{
 		opacity = 0.01 * static_cast<double>(i);
 		splashScreen->setWindowOpacity(opacity);
-		QApplication::processEvents();
+		QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, FADE_DELAY);
 		Sleep(FADE_DELAY);
 	}
 
@@ -130,6 +148,7 @@ void SplashScreen::showSplash(QThread *thread)
 
 	//Free
 	LAMEXP_DELETE(loop);
+	LAMEXP_DELETE(timer);
 	LAMEXP_DELETE(splashScreen);
 }
 
