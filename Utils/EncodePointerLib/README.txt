@@ -29,19 +29,27 @@ The Visual C++ 2010 linker sets the 'OperatingSystemVersion' field in the PE hea
 
 This will prevent the executable from loading on any operating system prior to Windows NT 5.1 - better known as Windows XP.
 
-So, in order to make the binary load on Windows 2000, we have to force the 'OperatingSystemVersion' to 5.0 (or lower).
+On Windows 2000, for example, you will get an error message which says that this is not a valid Win32 application :-(
 
-Unfortunately that isn't enough. Bummer!
+So, in order to make the binary load on Windows 2000, we have to force the 'OperatingSystemVersion' to '5.0' or even lower.
 
-The C Run-Time Libraries (CRT) of Visual C++ 2010 reference two system functions that were not available on Windows 2000.
+Unfortunately that isn't enough. Bummer !!!
 
-Therefore, on Windows 2000, you will see an error message about the missing entry point "DecodePointer" in KERNEL32.DLL.
+The C Run-Time Libraries (CRT) of Visual C++ 2010 reference two system functions that were NOT available on Windows 2000.
 
-Note that the entry point "EncodePointer" is missing too. These functions were added to KERNEL32.DLL with Windows XP (SP-2).
+Therefore, even when the 'Minimum Required Version' is forced to '5.0', the binary still refuses to run.
 
-We can get rid of the dependencies on "EncodePointer" and "DecodePointer" by linking 'EncodePointer.lib' into the binay.
+Instead of the previous error, you will now get an error message about the missing entry point "DecodePointer" in KERNEL32.DLL.
 
-After linking the library you can check that the two problematic functions are no longere imported from KERNEL32.DLL :-)
+Note that the entry point "EncodePointer" is missing too. These  functions were added to KERNEL32.DLL with Windows XP (SP-2).
+
+We can get rid of the dependencies on "EncodePointer" and "DecodePointer" by linking 'EncodePointer.lib' into the binay though.
+
+After linking that library, you will notice that the two problematic functions are no longere imported from KERNEL32.DLL :-)
+
+I suggest that you verify this with the help of Dependency Walker - http://www.dependencywalker.com/.
+
+Once the problematic imports from KERNEL32.DLL have been eliminated, your binary should run on Windows 2000 just fine.
 
 
 How EncodePointer.lib works
@@ -55,7 +63,7 @@ We have to use a "stub" function, because at compile-time the address of the act
 
 Instead the "stub" will look up the address of the actual function in the 'import address table' and then jump to that address.
 
-The import address table will be updated by the operating system's loader. This happens at load-time, not at compile-time!
+The import address table will be updated by the operating system's loader. This happens at load-time, NOT at compile-time!
 
 So how can we eliminate DLL imports, such as "DecodePointer" without modifying the CRT ???
 
@@ -69,9 +77,13 @@ Consequently by defining the symbol "__imp__DecodePointer@4" we can redirect the
 
 Note that the decorated name of "DecodePointer" is "_DecodePointer@4", so the symbol of the slot is NOT "__imp_DecodePointer."
 
-Apparently Visual C++ is smart enough to wipe out the DLL import after "_DecodePointer@4" has been defined explicitely!
+Apparently the linker is smart enough to wipe out the DLL import for "Foo" after "__imp__Foo" has been defined explicitely!
+
+The EncodePointer.lib consists of a single ASM file, which defines the required symbols to resolve our problem:
 
 In "EncodePointer.asm" both, __imp__DecodePointer@4 and __imp__EncodePointer@4, are redirected to a simple substitute function.
+
+Thus, if you link your binary against EncodePointer.lib, EncodePointer/DecodePointer won't be called from KERNL32.DLL anymore.
 
 
 Why it only works with the "static" CRT
