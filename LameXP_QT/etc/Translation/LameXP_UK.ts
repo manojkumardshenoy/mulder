@@ -1814,6 +1814,26 @@
         <source>CSV Import</source>
         <translation>Імпорт CSV</translation>
     </message>
+    <message>
+        <source>QAAC (Apple)</source>
+        <translation>QAAC (Apple)</translation>
+    </message>
+    <message>
+        <source>FHG AAC (Winamp)</source>
+        <translation>FHG AAC (Winamp)</translation>
+    </message>
+    <message>
+        <source>Nero AAC</source>
+        <translation>Nero AAC</translation>
+    </message>
+    <message>
+        <source>Not available!</source>
+        <translation>Не доступно!</translation>
+    </message>
+    <message>
+        <source>Current AAC Encoder: %1</source>
+        <translation>Поточний кодер AAC: %1</translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>

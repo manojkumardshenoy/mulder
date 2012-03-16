@@ -47,6 +47,7 @@ bool FLACEncoder::encode(const QString &sourceFile, const AudioFileModel &metaIn
 	QStringList args;
 
 	args << QString("-%1").arg(QString::number(qMax(0, qMin(8, m_configBitrate))));
+	args << "--channel-map=none";
 
 	if(!metaInfo.fileName().isEmpty()) args << "-T" << QString("title=%1").arg(metaInfo.fileName());
 	if(!metaInfo.fileArtist().isEmpty()) args << "-T" << QString("artist=%1").arg(metaInfo.fileArtist());
@@ -148,4 +149,16 @@ bool FLACEncoder::isFormatSupported(const QString &containerType, const QString 
 	}
 
 	return false;
+}
+
+const unsigned int *FLACEncoder::supportedChannelCount(void)
+{
+	static const unsigned int supportedChannels[] = {2, 4, 5, 6, 7, 8, NULL};
+	return supportedChannels;
+}
+
+const unsigned int *FLACEncoder::supportedBitdepths(void)
+{
+	static const unsigned int supportedBPS[] = {16, 24, NULL};
+	return supportedBPS;
 }
