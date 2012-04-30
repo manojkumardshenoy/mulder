@@ -227,6 +227,10 @@
         <source>Copyright (c) 2008-2011 Alexander E. Patrakov. Distributed under the LGPL.</source>
         <translation></translation>
     </message>
+    <message>
+        <source>About Qt5</source>
+        <translation>Über Qt5</translation>
+    </message>
 </context>
 <context>
     <name>AudioFileModel</name>
@@ -271,7 +275,7 @@
     <name>CueImportDialog</name>
     <message>
         <source>Import Cue Sheet</source>
-        <translation>Cuehseet Assistent</translation>
+        <translation>Cuesheet Assistent</translation>
     </message>
     <message>
         <source>The following Cue Sheet will be split and imported into LameXP.</source>
@@ -632,7 +636,7 @@
     </message>
     <message>
         <source>Prepend relative source file path to output file</source>
-        <translation>Relativer Pfad zur Quelle dem Zielpfad voranstellen</translation>
+        <translation>Relativen Pfad zur Quelle dem Zielpfad voranstellen</translation>
     </message>
     <message>
         <source>Meta Data</source>
@@ -1540,7 +1544,7 @@
     </message>
     <message>
         <source>Exponent Search Size:</source>
-        <translation>Exponenten Such-Größe:</translation>
+        <translation>Exponenten Suchgröße:</translation>
     </message>
     <message>
         <source>Don&apos;t Show Again</source>
@@ -1833,6 +1837,22 @@
     <message>
         <source>Current AAC Encoder: %1</source>
         <translation>Aktueller AAC-Kodierer: %1</translation>
+    </message>
+    <message>
+        <source>Edit Output Path</source>
+        <translation>Zielverzeichnis bearbeiten</translation>
+    </message>
+    <message>
+        <source>Show Favorites</source>
+        <translation>Favoriten anzeigen</translation>
+    </message>
+    <message>
+        <source>Initializing directory outline, please be patient...</source>
+        <translation>Verzeichnisbaum wird erzeugt, bitte warten...</translation>
+    </message>
+    <message>
+        <source>Refresh Directory Outline</source>
+        <translation>Verzeichnisbaum aktualisieren</translation>
     </message>
 </context>
 <context>
@@ -2223,7 +2243,7 @@
     </message>
     <message>
         <source>All files completed successfully.</source>
-        <translation>Alle Dateien wurden erfolgreich abgeschlossen.</translation>
+        <translation>Alle Dateien wurden erfolgreich umgewandelt.</translation>
     </message>
     <message>
         <source>LameXP - Done</source>

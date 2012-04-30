@@ -62,6 +62,8 @@ private slots:
 	void bitrateManagementMaxChanged(int value);
 	void bitrateManagementMinChanged(int value);
 	void browseCustomTempFolderButtonClicked(void);
+	void centerOutputFolderModel(void);
+	void centerOutputFolderModel_doAsync(void);
 	void channelModeChanged(int value);
 	void checkForBetaUpdatesActionTriggered(bool checked);
 	void checkUpdatesActionActivated(void);
@@ -92,6 +94,7 @@ private slots:
 	void importCueSheetActionTriggered(bool checked);
 	void importCsvContextActionTriggered(void);
 	void initOutputFolderModel(void);
+	void initOutputFolderModel_doAsync(void);
 	void languageActionActivated(QAction *action);
 	void languageFromFileActionActivated(bool checked);
 	void makeFolderButtonClicked(void);
@@ -104,11 +107,16 @@ private slots:
 	void notifyOtherInstance(void);
 	void openFolderActionActivated(void);
 	void outputFolderContextMenu(const QPoint &pos);
+	void outputFolderDirectoryLoaded(const QString &path);
+	void outputFolderEditFinished(void);
+	void outputFolderItemExpanded(const QModelIndex &item);
+	void outputFolderRowsInserted(const QModelIndex &parent, int start, int end);
 	void outputFolderViewClicked(const QModelIndex &index);
 	void outputFolderViewMoved(const QModelIndex &index);
 	void playlistEnabledChanged(void);
 	void prependRelativePathChanged(void);
 	void previewContextActionTriggered(void);
+	void refreshFolderContextActionTriggered(void);
 	void removeFileButtonClicked(void);
 	void renameOutputEnabledChanged(bool checked);
 	void renameOutputPatternChanged(void);
@@ -148,6 +156,7 @@ protected:
 	virtual bool eventFilter(QObject *obj, QEvent *event);
 	virtual void resizeEvent(QResizeEvent *event);
 	virtual void showEvent(QShowEvent *event);
+	virtual void keyPressEvent(QKeyEvent *e);
 	virtual bool event(QEvent *e);
 	virtual bool winEvent(MSG *message, long *result);
 
@@ -159,7 +168,8 @@ private:
 	
 	bool m_accepted;
 	bool m_firstTimeShown;
-	bool m_OutputFolderViewInitialized;
+	uint m_outputFolderViewInitCounter;
+	bool m_outputFolderViewCentering;
 
 	const bool m_neroEncoderAvailable;
 	const bool m_fhgEncoderAvailable;
@@ -179,11 +189,13 @@ private:
 	SettingsModel *m_settings;
 	QMenu *m_sourceFilesContextMenu;
 	QMenu *m_outputFolderFavoritesMenu;
+	QLabel *m_outputFolderNoteBox;
 
 	QAction *m_findFileContextAction;
 	QAction *m_previewContextAction;
 	QAction *m_showDetailsContextAction;
 	QAction *m_showFolderContextAction;
+	QAction *m_refreshFolderContextAction;
 	QAction *m_addFavoriteFolderAction;
 	QAction *m_exportCsvContextAction;
 	QAction *m_importCsvContextAction;

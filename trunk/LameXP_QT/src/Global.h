@@ -33,6 +33,9 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+//Visual Leaks Detector
+#include <vld.h>
+
 //Declarations
 class QString;
 class QStringList;
@@ -98,6 +101,7 @@ unsigned int lamexp_toolver_coreaudio(void);
 const char *lamexp_website_url(void);
 const char *lamexp_support_url(void);
 DWORD lamexp_get_os_version(void);
+bool lamexp_detect_wine(void);
 
 //Public functions
 void lamexp_init_console(int argc, char* argv[]);
@@ -151,6 +155,9 @@ SIZE_T lamexp_dbg_private_bytes(void);
 #define LAMEXP_DELETE_ARRAY(PTR) if(PTR) { delete [] PTR; PTR = NULL; }
 #define LAMEXP_SAFE_FREE(PTR) if(PTR) { free((void*) PTR); PTR = NULL; }
 #define LAMEXP_CLOSE(HANDLE) if(HANDLE != NULL && HANDLE != INVALID_HANDLE_VALUE) { CloseHandle(HANDLE); HANDLE = NULL; }
+#define LAMEXP_MIN_OS_VER(VER_INFO, VER_MAJ, VER_MIN) ((HIWORD(VER_INFO) > (VER_MAJ)) || ((HIWORD(VER_INFO) == (VER_MAJ)) && (LOWORD(VER_INFO) >= (VER_MIN))))
+#define LAMEXP_MAX_OS_VER(VER_INFO, VER_MAJ, VER_MIN) ((HIWORD(VER_INFO) < (VER_MAJ)) || ((HIWORD(VER_INFO) == (VER_MAJ)) && (LOWORD(VER_INFO) <= (VER_MIN))))
+#define LAMEXP_EQL_OS_VER(VER_INFO, VER_MAJ, VER_MIN) ((HIWORD(VER_INFO) == (VER_MAJ)) && (LOWORD(VER_INFO) == (VER_MIN)))
 #define QWCHAR(STR) reinterpret_cast<const wchar_t*>(STR.utf16())
 #define WCHAR2QSTR(STR) QString::fromUtf16(reinterpret_cast<const unsigned short*>(STR))
 #define	LAMEXP_DYNCAST(OUT,CLASS,SRC) try { OUT = dynamic_cast<CLASS>(SRC); } catch(std::bad_cast) { OUT = NULL; }
@@ -158,7 +165,7 @@ SIZE_T lamexp_dbg_private_bytes(void);
 #define LAMEXP_MAKE_STRING_EX(X) #X
 #define LAMEXP_MAKE_STRING(X) LAMEXP_MAKE_STRING_EX(X)
 #define LAMEXP_COMPILER_WARNING(TXT) __pragma(message(__FILE__ "(" LAMEXP_MAKE_STRING(__LINE__) ") : warning: " TXT))
-#define NOBR(STR) QString("<nobr>%1</nobr>").arg(STR).replace("-", "&minus;")
+#define NOBR(STR) (QString("<nobr>%1</nobr>").arg((STR)).replace("-", "&minus;"))
 
 //Output Qt debug message (Unicode-safe versions)
 //#define qDebug64(FORMAT, ...) qDebug("@BASE64@%s", QString(FORMAT).arg(__VA_ARGS__).toUtf8().toBase64().constData());
@@ -175,18 +182,25 @@ SIZE_T lamexp_dbg_private_bytes(void);
 #endif
 
 //Memory check
-#if defined(_DEBUG)
-#define LAMEXP_MEMORY_CHECK(CMD) \
+#if LAMEXP_DEBUG
+#define LAMEXP_MEMORY_CHECK(FUNC, RETV,  ...) \
 { \
 	SIZE_T _privateBytesBefore = lamexp_dbg_private_bytes(); \
-	CMD; \
+	RETV = FUNC(__VA_ARGS__); \
 	SIZE_T _privateBytesLeak = (lamexp_dbg_private_bytes() - _privateBytesBefore) / 1024; \
-	if(_privateBytesLeak > 10) { \
-		qWarning("Memory leak: Lost %u KiloBytes.", _privateBytesLeak); \
+	if(_privateBytesLeak > 0) { \
+		char _buffer[128]; \
+		_snprintf_s(_buffer, 128, _TRUNCATE, "Memory leak: Lost %u KiloBytes of PrivateUsage memory.\n", _privateBytesLeak); \
+		OutputDebugStringA("----------\n"); \
+		OutputDebugStringA(_buffer); \
+		OutputDebugStringA("----------\n"); \
 	} \
 }
 #else
-#define LAMEXP_MEMORY_CHECK(CMD) CMD
+#define LAMEXP_MEMORY_CHECK(FUNC, RETV,  ...) \
+{ \
+	RETV = __noop(__VA_ARGS__); \
+}
 #endif
 
 //Check for CPU-compatibility options

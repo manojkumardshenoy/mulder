@@ -46,6 +46,7 @@
 		<file>icons/drive.png</file>
 		<file>icons/drive_cd.png</file>
 		<file>icons/drive_disk.png</file>
+		<file>icons/drive_edit.png</file>
 		<file>icons/drive_link.png</file>
 		<file>icons/drive_network.png</file>
 		<file>icons/exclamation.png</file>
@@ -62,6 +63,7 @@
 		<file>icons/folder_table.png</file>
 		<file>icons/font.png</file>
 		<file>icons/group.png</file>
+		<file>icons/heart.png</file>
 		<file>icons/house.png</file>
 		<file>icons/hourglass.png</file>
 		<file>icons/information.png</file>
@@ -86,6 +88,7 @@
 		<file>icons/play.png</file>
 		<file>icons/power_off.png</file>
 		<file>icons/power_on.png</file>
+		<file>icons/qt.png</file>
 		<file>icons/report.png</file>
 		<file>icons/resultset_next.png</file>
 		<file>icons/script.png</file>

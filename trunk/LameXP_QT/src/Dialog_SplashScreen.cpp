@@ -30,15 +30,22 @@
 
 #include "WinSevenTaskbar.h"
 
-#define EPS (1.0E-5)
-#define FADE_DELAY 4
+#define FADE_DELAY 16
+#define OPACITY_DELTA 0.02
+
+/* It can happen that the QThread has just terminated and already emitted the 'terminated' signal, but did NOT change the 'isRunning' flag to FALSE yet. */
+/* For this reason the macro will first check the 'isRunning' flag. If (and only if) the flag still returns TRUE, then we will wait() for at most 50 ms. */
+/* If, after 50 ms, the wait() function returns with FALSE, then the thread probably is still running and we return TRUE. Otherwise we can return FALSE. */
+#define THREAD_RUNNING(THRD) (((THRD)->isRunning()) ? (!((THRD)->wait(50))) : false)
+
 
 ////////////////////////////////////////////////////////////
 // Constructor
 ////////////////////////////////////////////////////////////
 
 SplashScreen::SplashScreen(QWidget *parent)
-	: QFrame(parent, Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint)
+:
+	QFrame(parent, Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint)
 {
 	//Init the dialog, from the .ui file
 	setupUi(this);
@@ -75,18 +82,20 @@ SplashScreen::~SplashScreen(void)
 
 void SplashScreen::showSplash(QThread *thread)
 {
-	double opacity = 0.0;
+	double opacity = OPACITY_DELTA;
+	const int opacitySteps = qRound(1.0 / OPACITY_DELTA);
 	SplashScreen *splashScreen = new SplashScreen();
 	
 	//Show splash
 	splashScreen->m_canClose = false;
 	splashScreen->setWindowOpacity(opacity);
+	splashScreen->setFixedSize(splashScreen->size());
 	splashScreen->show();
 
 	//Wait for window to show
-	QApplication::processEvents();
-	Sleep(100);
-	QApplication::processEvents();
+	QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+	splashScreen->repaint();
+	QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
 	//Setup the event loop
 	QEventLoop *loop = new QEventLoop(splashScreen);
@@ -98,17 +107,17 @@ void SplashScreen::showSplash(QThread *thread)
 	connect(timer, SIGNAL(timeout()), loop, SLOT(quit()));
 
 	//Start thread
-	QApplication::processEvents();
+	QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 	thread->start();
-	QApplication::processEvents();
+	QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
 	//Init taskbar
 	WinSevenTaskbar::setTaskbarState(splashScreen, WinSevenTaskbar::WinSevenTaskbarIndeterminateState);
 
 	//Fade in
-	for(int i = 0; i <= 100; i++)
+	for(int i = 1; i <= opacitySteps; i++)
 	{
-		opacity = 0.01 * static_cast<double>(i);
+		opacity = OPACITY_DELTA * static_cast<double>(i);
 		splashScreen->setWindowOpacity(opacity);
 		QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, FADE_DELAY);
 		Sleep(FADE_DELAY);
@@ -117,23 +126,26 @@ void SplashScreen::showSplash(QThread *thread)
 	//Start the timer
 	timer->start(30720);
 
-	//Loop while thread is running
-	while(thread->isRunning())
+	//Loop while thread is still running
+	if(bool bIsRunning = THREAD_RUNNING(thread))
 	{
-		loop->exec();
-		if(thread->isRunning())
+		while(bIsRunning)
 		{
-			qWarning("Potential deadlock in initialization thread!");
+			loop->exec();
+			if(bIsRunning = THREAD_RUNNING(thread))
+			{
+				qWarning("Potential deadlock in initialization thread!");
+			}
 		}
 	}
-	
+
 	//Stop the timer
 	timer->stop();
 
 	//Fade out
-	for(int i = 100; i >= 0; i--)
+	for(int i = opacitySteps; i >= 0; i--)
 	{
-		opacity = 0.01 * static_cast<double>(i);
+		opacity = OPACITY_DELTA * static_cast<double>(i);
 		splashScreen->setWindowOpacity(opacity);
 		QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, FADE_DELAY);
 		Sleep(FADE_DELAY);

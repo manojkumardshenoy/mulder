@@ -56,7 +56,7 @@
 #include <QWindowsStyle>
 #include <QSysInfo>
 #include <QDragEnterEvent>
-#include <QWindowsMime>
+#include <QMimeData>				//#include <QWindowsMime>
 #include <QProcess>
 #include <QUuid>
 #include <QProcessEnvironment>
@@ -77,6 +77,8 @@
 #define FSLINK(PATH) QString("<a href=\"file:///%1\">%2</a>").arg(PATH).arg(QString(PATH).replace("-", "&minus;"))
 #define TEMP_HIDE_DROPBOX(CMD) { bool __dropBoxVisible = m_dropBox->isVisible(); if(__dropBoxVisible) m_dropBox->hide(); {CMD}; if(__dropBoxVisible) m_dropBox->show(); }
 #define USE_NATIVE_FILE_DIALOG (lamexp_themes_enabled() || ((QSysInfo::windowsVersion() & QSysInfo::WV_NT_based) < QSysInfo::WV_XP))
+#define CENTER_CURRENT_OUTPUT_FOLDER_DELAYED QTimer::singleShot(125, this, SLOT(centerOutputFolderModel()))
+#define SET_MODEL(VIEW, MODEL) { QItemSelectionModel *_tmp = (VIEW)->selectionModel(); (VIEW)->setModel(MODEL); LAMEXP_DELETE(_tmp); }
 
 ////////////////////////////////////////////////////////////
 // Constructor
@@ -88,12 +90,14 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	m_fileListModel(fileListModel),
 	m_metaData(metaInfo),
 	m_settings(settingsModel),
+	m_fileSystemModel(NULL),
 	m_neroEncoderAvailable(lamexp_check_tool("neroAacEnc.exe") && lamexp_check_tool("neroAacDec.exe") && lamexp_check_tool("neroAacTag.exe")),
 	m_fhgEncoderAvailable(lamexp_check_tool("fhgaacenc.exe") && lamexp_check_tool("enc_fhgaac.dll") && lamexp_check_tool("nsutil.dll") && lamexp_check_tool("libmp4v2.dll")),
 	m_qaacEncoderAvailable(lamexp_check_tool("qaac.exe") && lamexp_check_tool("libsoxrate.dll")),
 	m_accepted(false),
 	m_firstTimeShown(true),
-	m_OutputFolderViewInitialized(false)
+	m_outputFolderViewCentering(false),
+	m_outputFolderViewInitCounter(0)
 {
 	//Init the dialog, from the .ui file
 	setupUi(this);
@@ -146,21 +150,15 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	connect(m_findFileContextAction, SIGNAL(triggered(bool)), this, SLOT(findFileContextActionTriggered()));
 	connect(m_exportCsvContextAction, SIGNAL(triggered(bool)), this, SLOT(exportCsvContextActionTriggered()));
 	connect(m_importCsvContextAction, SIGNAL(triggered(bool)), this, SLOT(importCsvContextActionTriggered()));
-	
 
 	//Setup "Output" tab
-	m_fileSystemModel = new QFileSystemModelEx();
-	m_fileSystemModel->installEventFilter(this);
-	outputFolderView->setModel(m_fileSystemModel);
-	outputFolderView->header()->setStretchLastSection(true);
-	outputFolderView->header()->hideSection(1);
-	outputFolderView->header()->hideSection(2);
-	outputFolderView->header()->hideSection(3);
 	outputFolderView->setHeaderHidden(true);
 	outputFolderView->setAnimated(false);
 	outputFolderView->setMouseTracking(false);
 	outputFolderView->setContextMenuPolicy(Qt::CustomContextMenu);
+	outputFolderView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	outputFolderView->installEventFilter(this);
+	outputFoldersEditorLabel->installEventFilter(this);
 	outputFoldersFovoritesLabel->installEventFilter(this);
 	while(saveToSourceFolderCheckBox->isChecked() != m_settings->outputToSourceDir()) saveToSourceFolderCheckBox->click();
 	prependRelativePathCheckBox->setChecked(m_settings->prependRelativeSourcePath());
@@ -168,23 +166,41 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	connect(outputFolderView, SIGNAL(activated(QModelIndex)), this, SLOT(outputFolderViewClicked(QModelIndex)));
 	connect(outputFolderView, SIGNAL(pressed(QModelIndex)), this, SLOT(outputFolderViewClicked(QModelIndex)));
 	connect(outputFolderView, SIGNAL(entered(QModelIndex)), this, SLOT(outputFolderViewMoved(QModelIndex)));
+	connect(outputFolderView, SIGNAL(expanded(QModelIndex)), this, SLOT(outputFolderItemExpanded(QModelIndex)));
 	connect(buttonMakeFolder, SIGNAL(clicked()), this, SLOT(makeFolderButtonClicked()));
 	connect(buttonGotoHome, SIGNAL(clicked()), SLOT(gotoHomeFolderButtonClicked()));
 	connect(buttonGotoDesktop, SIGNAL(clicked()), this, SLOT(gotoDesktopButtonClicked()));
 	connect(buttonGotoMusic, SIGNAL(clicked()), this, SLOT(gotoMusicFolderButtonClicked()));
 	connect(saveToSourceFolderCheckBox, SIGNAL(clicked()), this, SLOT(saveToSourceFolderChanged()));
 	connect(prependRelativePathCheckBox, SIGNAL(clicked()), this, SLOT(prependRelativePathChanged()));
-	m_outputFolderContextMenu = new QMenu();
-	m_showFolderContextAction = m_outputFolderContextMenu->addAction(QIcon(":/icons/zoom.png"), "N/A");
-	m_outputFolderFavoritesMenu = new QMenu();
-	m_addFavoriteFolderAction = m_outputFolderFavoritesMenu->addAction(QIcon(":/icons/add.png"), "N/A");
-	m_outputFolderFavoritesMenu->insertSeparator(m_addFavoriteFolderAction);
-	connect(outputFolderView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(outputFolderContextMenu(QPoint)));
-	connect(m_showFolderContextAction, SIGNAL(triggered(bool)), this, SLOT(showFolderContextActionTriggered()));
-	connect(m_addFavoriteFolderAction, SIGNAL(triggered(bool)), this, SLOT(addFavoriteFolderActionTriggered()));
+	connect(outputFolderEdit, SIGNAL(editingFinished()), this, SLOT(outputFolderEditFinished()));
+	if(m_outputFolderContextMenu = new QMenu())
+	{
+		m_showFolderContextAction = m_outputFolderContextMenu->addAction(QIcon(":/icons/zoom.png"), "N/A");
+		m_refreshFolderContextAction = m_outputFolderContextMenu->addAction(QIcon(":/icons/arrow_refresh.png"), "N/A");
+		m_outputFolderContextMenu->setDefaultAction(m_showFolderContextAction);
+		connect(outputFolderView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(outputFolderContextMenu(QPoint)));
+		connect(m_showFolderContextAction, SIGNAL(triggered(bool)), this, SLOT(showFolderContextActionTriggered()));
+		connect(m_refreshFolderContextAction, SIGNAL(triggered(bool)), this, SLOT(refreshFolderContextActionTriggered()));
+	}
+	if(m_outputFolderFavoritesMenu = new QMenu())
+	{
+		m_addFavoriteFolderAction = m_outputFolderFavoritesMenu->addAction(QIcon(":/icons/add.png"), "N/A");
+		m_outputFolderFavoritesMenu->insertSeparator(m_addFavoriteFolderAction);
+		connect(m_addFavoriteFolderAction, SIGNAL(triggered(bool)), this, SLOT(addFavoriteFolderActionTriggered()));
+	}
+	outputFolderEdit->setVisible(false);
 	outputFolderLabel->installEventFilter(this);
-	outputFolderView->setCurrentIndex(m_fileSystemModel->index(m_settings->outputDir()));
-	outputFolderViewClicked(outputFolderView->currentIndex());
+	if(m_outputFolderNoteBox = new QLabel(outputFolderView))
+	{
+		m_outputFolderNoteBox->setAutoFillBackground(true);
+		m_outputFolderNoteBox->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+		m_outputFolderNoteBox->setFrameShape(QFrame::StyledPanel);
+		SET_FONT_BOLD(m_outputFolderNoteBox, true);
+		m_outputFolderNoteBox->hide();
+
+	}
+	outputFolderViewClicked(QModelIndex());
 	refreshFavorites();
 	
 	//Setup "Meta Data" tab
@@ -460,8 +476,9 @@ MainWindow::~MainWindow(void)
 	}
 
 	//Unset models
-	sourceFileView->setModel(NULL);
-	metaDataView->setModel(NULL);
+	SET_MODEL(sourceFileView, NULL);
+	SET_MODEL(outputFolderView, NULL);
+	SET_MODEL(metaDataView, NULL);
 
 	//Free memory
 	LAMEXP_DELETE(m_tabActionGroup);
@@ -477,6 +494,7 @@ MainWindow::~MainWindow(void)
 	LAMEXP_DELETE(m_encoderButtonGroup);
 	LAMEXP_DELETE(m_sourceFilesContextMenu);
 	LAMEXP_DELETE(m_outputFolderFavoritesMenu);
+	LAMEXP_DELETE(m_outputFolderContextMenu);
 	LAMEXP_DELETE(m_dropBox);
 }
 
@@ -704,10 +722,12 @@ void MainWindow::changeEvent(QEvent *e)
 
 		//Manually re-translate widgets that UIC doesn't handle
 		m_dropNoteLabel->setText(QString("» %1 «").arg(tr("You can drop in audio files here!")));
+		m_outputFolderNoteBox->setText(tr("Initializing directory outline, please be patient..."));
 		m_showDetailsContextAction->setText(tr("Show Details"));
 		m_previewContextAction->setText(tr("Open File in External Application"));
 		m_findFileContextAction->setText(tr("Browse File Location"));
 		m_showFolderContextAction->setText(tr("Browse Selected Folder"));
+		m_refreshFolderContextAction->setText(tr("Refresh Directory Outline"));
 		m_addFavoriteFolderAction->setText(tr("Bookmark Current Output Folder"));
 		m_exportCsvContextAction->setText(tr("Export Meta Tags to CSV File"));
 		m_importCsvContextAction->setText(tr("Import Meta Tags from CSV File"));
@@ -819,8 +839,39 @@ void MainWindow::closeEvent(QCloseEvent *event)
  */
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
-	QMainWindow::resizeEvent(event);
+	if(event) QMainWindow::resizeEvent(event);
 	m_dropNoteLabel->setGeometry(0, 0, sourceFileView->width(), sourceFileView->height());
+
+	if(QWidget *port = outputFolderView->viewport())
+	{
+		m_outputFolderNoteBox->setGeometry(16, (port->height() - 64) / 2, port->width() - 32,  64);
+	}
+}
+
+/*
+ * Key press event filter
+ */
+void MainWindow::keyPressEvent(QKeyEvent *e)
+{
+	if(e->key() == Qt::Key_F5)
+	{
+		if(outputFolderView->isVisible())
+		{
+			QTimer::singleShot(0, this, SLOT(refreshFolderContextActionTriggered()));
+			return;
+		}
+	}
+
+	if(e->key() == Qt::Key_Delete)
+	{
+		if(sourceFileView->isVisible())
+		{
+			QTimer::singleShot(0, this, SLOT(removeFileButtonClicked()));
+			return;
+		}
+	}
+
+	QMainWindow::keyPressEvent(e);
 }
 
 /*
@@ -860,7 +911,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 			{
 				QString path = outputFolderLabel->text();
 				if(!path.endsWith(QDir::separator())) path.append(QDir::separator());
-				ShellExecuteW(this->winId(), L"explore", QWCHAR(path), NULL, NULL, SW_SHOW);
+				ShellExecuteW(reinterpret_cast<HWND>(this->winId()), L"explore", QWCHAR(path), NULL, NULL, SW_SHOW);
 			}
 			break;
 		case QEvent::Enter:
@@ -891,12 +942,52 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 			{
 				if(pos.x() <= sender->width() && pos.y() <= sender->height() && pos.x() >= 0 && pos.y() >= 0 && mouseEvent->button() != Qt::MidButton)
 				{
-					m_outputFolderFavoritesMenu->popup(sender->mapToGlobal(pos));
+					if(outputFolderView->isEnabled())
+					{
+						m_outputFolderFavoritesMenu->popup(sender->mapToGlobal(pos));
+					}
 				}
 			}
 			break;
 		case QEvent::Leave:
 			outputFoldersFovoritesLabel->setFrameShadow(QFrame::Plain);
+			break;
+		}
+	}
+	else if(obj == outputFoldersEditorLabel)
+	{
+		QMouseEvent *mouseEvent = dynamic_cast<QMouseEvent*>(event);
+		QPoint pos = (mouseEvent != NULL) ? mouseEvent->pos() : QPoint();
+		QWidget *sender = dynamic_cast<QLabel*>(obj);
+
+		switch(event->type())
+		{
+		case QEvent::Enter:
+			outputFoldersEditorLabel->setFrameShadow(QFrame::Raised);
+			break;
+		case QEvent::MouseButtonPress:
+			outputFoldersEditorLabel->setFrameShadow(QFrame::Sunken);
+			break;
+		case QEvent::MouseButtonRelease:
+			outputFoldersEditorLabel->setFrameShadow(QFrame::Raised);
+			if(sender && mouseEvent)
+			{
+				if(pos.x() <= sender->width() && pos.y() <= sender->height() && pos.x() >= 0 && pos.y() >= 0 && mouseEvent->button() != Qt::MidButton)
+				{
+					if(outputFolderView->isEnabled())
+					{
+						outputFolderView->setEnabled(false);
+						outputFolderLabel->setVisible(false);
+						outputFolderEdit->setVisible(true);
+						outputFolderEdit->setText(outputFolderLabel->text());
+						outputFolderEdit->selectAll();
+						outputFolderEdit->setFocus();
+					}
+				}
+			}
+			break;
+		case QEvent::Leave:
+			outputFoldersEditorLabel->setFrameShadow(QFrame::Plain);
 			break;
 		}
 	}
@@ -924,6 +1015,11 @@ bool MainWindow::event(QEvent *e)
 		}
 		m_fileListModel->clearFiles();
 		return true;
+	case QEvent::MouseButtonPress:
+		if(outputFolderEdit->isVisible())
+		{
+			QTimer::singleShot(0, this, SLOT(outputFolderEditFinished()));
+		}
 	default:
 		return QMainWindow::event(e);
 	}
@@ -981,7 +1077,7 @@ void MainWindow::windowShown(void)
 				QString uninstallerPath = uninstallerInfo.canonicalFilePath();
 				for(int i = 0; i < 3; i++)
 				{
-					HINSTANCE res = ShellExecuteW(this->winId(), L"open", QWCHAR(QDir::toNativeSeparators(uninstallerPath)), L"/Force", QWCHAR(QDir::toNativeSeparators(uninstallerDir)), SW_SHOWNORMAL);
+					HINSTANCE res = ShellExecuteW(reinterpret_cast<HWND>(this->winId()), L"open", QWCHAR(QDir::toNativeSeparators(uninstallerPath)), L"/Force", QWCHAR(QDir::toNativeSeparators(uninstallerDir)), SW_SHOWNORMAL);
 					if(reinterpret_cast<int>(res) > 32) break;
 				}
 			}
@@ -1264,7 +1360,7 @@ void MainWindow::encodeButtonClicked(void)
 			return;
 			break;
 		default:
-			QMessageBox::warning(this, tr("Low Diskspace"), tr("You are proceeding with low diskspace. Problems might occur!"));
+			QMessageBox::warning(this, tr("Low Diskspace"), NOBR(tr("You are proceeding with low diskspace. Problems might occur!")));
 			break;
 		}
 	}
@@ -1338,6 +1434,8 @@ void MainWindow::closeButtonClicked(void)
  */
 void MainWindow::tabPageChanged(int idx)
 {
+	resizeEvent(NULL);
+	
 	QList<QAction*> actions = m_tabActionGroup->actions();
 	for(int i = 0; i < actions.count(); i++)
 	{
@@ -1383,9 +1481,13 @@ void MainWindow::tabPageChanged(int idx)
 	}
 	else if(idx == tabWidget->indexOf(tabOutputDir))
 	{
-		if(!m_OutputFolderViewInitialized)
+		if(!m_fileSystemModel)
 		{
-			QTimer::singleShot(0, this, SLOT(initOutputFolderModel()));
+			QTimer::singleShot(125, this, SLOT(initOutputFolderModel()));
+		}
+		else
+		{
+			CENTER_CURRENT_OUTPUT_FOLDER_DELAYED;
 		}
 	}
 
@@ -1471,7 +1573,11 @@ void MainWindow::styleActionActivated(QAction *action)
 	}
 
 	//Force re-translate after style change
-	changeEvent(new QEvent(QEvent::LanguageChange));
+	if(QEvent *e = new QEvent(QEvent::LanguageChange))
+	{
+		changeEvent(e);
+		LAMEXP_DELETE(e);
+	}
 }
 
 /*
@@ -2282,14 +2388,22 @@ void MainWindow::sourceModelChanged(void)
  */
 void MainWindow::outputFolderViewClicked(const QModelIndex &index)
 {
-	if(outputFolderView->currentIndex() != index)
+	if(index.isValid() && (outputFolderView->currentIndex() != index))
 	{
 		outputFolderView->setCurrentIndex(index);
 	}
-	QString selectedDir = m_fileSystemModel->filePath(index);
-	if(selectedDir.length() < 3) selectedDir.append(QDir::separator());
-	outputFolderLabel->setText(QDir::toNativeSeparators(selectedDir));
-	m_settings->outputDir(selectedDir);
+	
+	if(m_fileSystemModel && index.isValid())
+	{
+		QString selectedDir = m_fileSystemModel->filePath(index);
+		if(selectedDir.length() < 3) selectedDir.append(QDir::separator());
+		outputFolderLabel->setText(QDir::toNativeSeparators(selectedDir));
+		m_settings->outputDir(selectedDir);
+	}
+	else
+	{
+		outputFolderLabel->setText(QDir::toNativeSeparators(m_settings->outputDir()));
+	}
 }
 
 /*
@@ -2308,13 +2422,19 @@ void MainWindow::outputFolderViewMoved(const QModelIndex &index)
  */
 void MainWindow::gotoDesktopButtonClicked(void)
 {
+	if(!m_fileSystemModel)
+	{
+		qWarning("File system model not initialized yet!");
+		return;
+	}
+	
 	QString desktopPath = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
 	
 	if(!desktopPath.isEmpty() && QDir(desktopPath).exists())
 	{
 		outputFolderView->setCurrentIndex(m_fileSystemModel->index(desktopPath));
 		outputFolderViewClicked(outputFolderView->currentIndex());
-		outputFolderView->setFocus();
+		CENTER_CURRENT_OUTPUT_FOLDER_DELAYED;
 	}
 	else
 	{
@@ -2327,13 +2447,19 @@ void MainWindow::gotoDesktopButtonClicked(void)
  */
 void MainWindow::gotoHomeFolderButtonClicked(void)
 {
+	if(!m_fileSystemModel)
+	{
+		qWarning("File system model not initialized yet!");
+		return;
+	}
+
 	QString homePath = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
 	
 	if(!homePath.isEmpty() && QDir(homePath).exists())
 	{
 		outputFolderView->setCurrentIndex(m_fileSystemModel->index(homePath));
 		outputFolderViewClicked(outputFolderView->currentIndex());
-		outputFolderView->setFocus();
+		CENTER_CURRENT_OUTPUT_FOLDER_DELAYED;
 	}
 	else
 	{
@@ -2346,13 +2472,19 @@ void MainWindow::gotoHomeFolderButtonClicked(void)
  */
 void MainWindow::gotoMusicFolderButtonClicked(void)
 {
+	if(!m_fileSystemModel)
+	{
+		qWarning("File system model not initialized yet!");
+		return;
+	}
+
 	QString musicPath = QDesktopServices::storageLocation(QDesktopServices::MusicLocation);
 	
 	if(!musicPath.isEmpty() && QDir(musicPath).exists())
 	{
 		outputFolderView->setCurrentIndex(m_fileSystemModel->index(musicPath));
 		outputFolderViewClicked(outputFolderView->currentIndex());
-		outputFolderView->setFocus();
+		CENTER_CURRENT_OUTPUT_FOLDER_DELAYED;
 	}
 	else
 	{
@@ -2365,6 +2497,12 @@ void MainWindow::gotoMusicFolderButtonClicked(void)
  */
 void MainWindow::gotoFavoriteFolder(void)
 {
+	if(!m_fileSystemModel)
+	{
+		qWarning("File system model not initialized yet!");
+		return;
+	}
+
 	QAction *item = dynamic_cast<QAction*>(QObject::sender());
 	
 	if(item)
@@ -2374,7 +2512,7 @@ void MainWindow::gotoFavoriteFolder(void)
 		{
 			outputFolderView->setCurrentIndex(m_fileSystemModel->index(path.canonicalPath()));
 			outputFolderViewClicked(outputFolderView->currentIndex());
-			outputFolderView->setFocus();
+			CENTER_CURRENT_OUTPUT_FOLDER_DELAYED;
 		}
 		else
 		{
@@ -2391,6 +2529,12 @@ void MainWindow::gotoFavoriteFolder(void)
 void MainWindow::makeFolderButtonClicked(void)
 {
 	ABORT_IF_BUSY;
+
+	if(!m_fileSystemModel)
+	{
+		qWarning("File system model not initialized yet!");
+		return;
+	}
 
 	QDir basePath(m_fileSystemModel->fileInfo(outputFolderView->currentIndex()).absoluteFilePath());
 	QString suggestedName = tr("New Folder");
@@ -2461,9 +2605,10 @@ void MainWindow::makeFolderButtonClicked(void)
 				QDir createdDir = basePath;
 				if(createdDir.cd(newFolder))
 				{
-					outputFolderView->setCurrentIndex(m_fileSystemModel->index(createdDir.canonicalPath()));
-					outputFolderViewClicked(outputFolderView->currentIndex());
-					outputFolderView->setFocus();
+					QModelIndex newIndex = m_fileSystemModel->index(createdDir.canonicalPath());
+					outputFolderView->setCurrentIndex(newIndex);
+					outputFolderViewClicked(newIndex);
+					CENTER_CURRENT_OUTPUT_FOLDER_DELAYED;
 				}
 			}
 			else
@@ -2510,9 +2655,24 @@ void MainWindow::outputFolderContextMenu(const QPoint &pos)
  */
 void MainWindow::showFolderContextActionTriggered(void)
 {
+	if(!m_fileSystemModel)
+	{
+		qWarning("File system model not initialized yet!");
+		return;
+	}
+
 	QString path = QDir::toNativeSeparators(m_fileSystemModel->filePath(outputFolderView->currentIndex()));
 	if(!path.endsWith(QDir::separator())) path.append(QDir::separator());
-	ShellExecuteW(this->winId(), L"explore", QWCHAR(path), NULL, NULL, SW_SHOW);
+	ShellExecuteW(reinterpret_cast<HWND>(this->winId()), L"explore", QWCHAR(path), NULL, NULL, SW_SHOW);
+}
+
+/*
+ * Refresh the directory outline
+ */
+void MainWindow::refreshFolderContextActionTriggered(void)
+{
+	//force re-initialization
+	QTimer::singleShot(0, this, SLOT(initOutputFolderModel()));
 }
 
 /*
@@ -2538,16 +2698,181 @@ void MainWindow::addFavoriteFolderActionTriggered(void)
 }
 
 /*
+ * Output folder edit finished
+ */
+void MainWindow::outputFolderEditFinished(void)
+{
+	if(outputFolderEdit->isHidden())
+	{
+		return; //Not currently in edit mode!
+	}
+	
+	bool ok = false;
+	
+	QString text = QDir::fromNativeSeparators(outputFolderEdit->text().trimmed());
+	while(text.startsWith('"') || text.startsWith('/')) text = text.right(text.length() - 1).trimmed();
+	while(text.endsWith('"') || text.endsWith('/')) text = text.left(text.length() - 1).trimmed();
+
+	static const char *str = "?*<>|\"";
+	for(size_t i = 0; str[i]; i++) text.replace(str[i], "_");
+
+	if(!((text.length() >= 2) && text.at(0).isLetter() && text.at(1) == QChar(':')))
+	{
+		text = QString("%1/%2").arg(QDir::fromNativeSeparators(outputFolderLabel->text()), text);
+	}
+
+	if(text.length() == 2) text += "/"; /* "X:" => "X:/" */
+
+	while(text.length() > 2)
+	{
+		QFileInfo info(text);
+		if(info.exists() && info.isDir())
+		{
+			QModelIndex index = m_fileSystemModel->index(QFileInfo(info.canonicalFilePath()).absoluteFilePath());
+			if(index.isValid())
+			{
+				ok = true;
+				outputFolderView->setCurrentIndex(index);
+				outputFolderViewClicked(index);
+				break;
+			}
+		}
+		else if(info.exists() && info.isFile())
+		{
+			QModelIndex index = m_fileSystemModel->index(QFileInfo(info.canonicalPath()).absoluteFilePath());
+			if(index.isValid())
+			{
+				ok = true;
+				outputFolderView->setCurrentIndex(index);
+				outputFolderViewClicked(index);
+				break;
+			}
+		}
+
+		text = text.left(text.length() - 1).trimmed();
+	}
+
+	outputFolderEdit->setVisible(false);
+	outputFolderLabel->setVisible(true);
+	outputFolderView->setEnabled(true);
+
+	if(!ok) MessageBeep(MB_ICONERROR);
+	CENTER_CURRENT_OUTPUT_FOLDER_DELAYED;
+}
+
+/*
  * Initialize file system model
  */
 void MainWindow::initOutputFolderModel(void)
 {
-	QModelIndex previousIndex = outputFolderView->currentIndex();
-	m_fileSystemModel->setRootPath(m_fileSystemModel->rootPath());
-	QApplication::processEvents();
-	outputFolderView->reset();
-	outputFolderView->setCurrentIndex(previousIndex);
-	m_OutputFolderViewInitialized = true;
+	if(m_outputFolderNoteBox->isHidden())
+	{
+		m_outputFolderNoteBox->show();
+		m_outputFolderNoteBox->repaint();
+		m_outputFolderViewInitCounter = 4;
+
+		if(m_fileSystemModel)
+		{
+			SET_MODEL(outputFolderView, NULL);
+			LAMEXP_DELETE(m_fileSystemModel);
+			outputFolderView->repaint();
+		}
+
+		if(m_fileSystemModel = new QFileSystemModelEx())
+		{
+			m_fileSystemModel->installEventFilter(this);
+			connect(m_fileSystemModel, SIGNAL(directoryLoaded(QString)), this, SLOT(outputFolderDirectoryLoaded(QString)));
+			connect(m_fileSystemModel, SIGNAL(rowsInserted(QModelIndex,int,int)), this, SLOT(outputFolderRowsInserted(QModelIndex,int,int)));
+
+			SET_MODEL(outputFolderView, m_fileSystemModel);
+			outputFolderView->header()->setStretchLastSection(true);
+			outputFolderView->header()->hideSection(1);
+			outputFolderView->header()->hideSection(2);
+			outputFolderView->header()->hideSection(3);
+		
+			m_fileSystemModel->setRootPath("");
+			QModelIndex index = m_fileSystemModel->index(m_settings->outputDir());
+			if(index.isValid()) outputFolderView->setCurrentIndex(index);
+			outputFolderViewClicked(outputFolderView->currentIndex());
+		}
+
+		CENTER_CURRENT_OUTPUT_FOLDER_DELAYED;
+		QTimer::singleShot(125, this, SLOT(initOutputFolderModel_doAsync()));
+	}
+}
+
+/*
+ * Initialize file system model (do NOT call this one directly!)
+ */
+void MainWindow::initOutputFolderModel_doAsync(void)
+{
+	if(m_outputFolderViewInitCounter > 0)
+	{
+		m_outputFolderViewInitCounter--;
+		QTimer::singleShot(125, this, SLOT(initOutputFolderModel_doAsync()));
+	}
+	else
+	{
+		QTimer::singleShot(125, m_outputFolderNoteBox, SLOT(hide()));
+		outputFolderView->setFocus();
+	}
+}
+
+/*
+ * Center current folder in view
+ */
+void MainWindow::centerOutputFolderModel(void)
+{
+	if(outputFolderView->isVisible())
+	{
+		centerOutputFolderModel_doAsync();
+		QTimer::singleShot(125, this, SLOT(centerOutputFolderModel_doAsync()));
+	}
+}
+
+/*
+ * Center current folder in view (do NOT call this one directly!)
+ */
+void MainWindow::centerOutputFolderModel_doAsync(void)
+{
+	if(outputFolderView->isVisible())
+	{
+		m_outputFolderViewCentering = true;
+		const QModelIndex index = outputFolderView->currentIndex();
+		outputFolderView->scrollTo(index, QAbstractItemView::PositionAtCenter);
+		outputFolderView->setFocus();
+	}
+}
+
+/*
+ * File system model asynchronously loaded a dir
+ */
+void MainWindow::outputFolderDirectoryLoaded(const QString &path)
+{
+	if(m_outputFolderViewCentering)
+	{
+		CENTER_CURRENT_OUTPUT_FOLDER_DELAYED;
+	}
+}
+
+/*
+ * File system model inserted new items
+ */
+void MainWindow::outputFolderRowsInserted(const QModelIndex &parent, int start, int end)
+{
+	if(m_outputFolderViewCentering)
+	{
+		CENTER_CURRENT_OUTPUT_FOLDER_DELAYED;
+	}
+}
+
+/*
+ * Directory view item was expanded by user
+ */
+void MainWindow::outputFolderItemExpanded(const QModelIndex &item)
+{
+	//We need to stop centering as soon as the user has expanded an item manually!
+	m_outputFolderViewCentering = false;
 }
 
 // =========================================================
