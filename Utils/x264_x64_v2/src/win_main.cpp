@@ -40,6 +40,7 @@
 #include <QProcess>
 #include <QProgressDialog>
 #include <QScrollBar>
+#include <QTextStream>
 
 #include <Mmsystem.h>
 
@@ -49,6 +50,8 @@ const char *tpl_last = "<LAST_USED>";
 
 #define SET_FONT_BOLD(WIDGET,BOLD) { QFont _font = WIDGET->font(); _font.setBold(BOLD); WIDGET->setFont(_font); }
 #define SET_TEXT_COLOR(WIDGET,COLOR) { QPalette _palette = WIDGET->palette(); _palette.setColor(QPalette::WindowText, (COLOR)); _palette.setColor(QPalette::Text, (COLOR)); WIDGET->setPalette(_palette); }
+
+static int exceptionFilter(_EXCEPTION_RECORD *dst, _EXCEPTION_POINTERS *src) { memcpy(dst, src->ExceptionRecord, sizeof(_EXCEPTION_RECORD)); return EXCEPTION_EXECUTE_HANDLER; }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor & Destructor
@@ -63,6 +66,7 @@ MainWindow::MainWindow(const x264_cpu_t *const cpuFeatures)
 	m_appDir(QApplication::applicationDirPath()),
 	m_options(NULL),
 	m_jobList(NULL),
+	m_avsLib(NULL),
 	m_droppedFiles(NULL),
 	m_firstShow(true)
 {
@@ -194,6 +198,12 @@ MainWindow::~MainWindow(void)
 	}
 
 	X264_DELETE(m_ipcThread);
+
+	if(m_avsLib)
+	{
+		m_avsLib->unload();
+		X264_DELETE(m_avsLib);
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -209,7 +219,7 @@ void MainWindow::addButtonPressed(const QString &filePathIn, const QString &file
 	
 	if(ok) *ok = false;
 
-	AddJobDialog *addDialog = new AddJobDialog(this, options ? options : m_options, m_cpuFeatures->x64);
+	AddJobDialog *addDialog = new AddJobDialog(this, options ? options : m_options, m_cpuFeatures->x64, m_preferences.use10BitEncoding);
 	addDialog->setRunImmediately(countRunningJobs() < (m_preferences.autoRunNextJob ? m_preferences.maxRunningJobCount : 1));
 	
 	if(options) addDialog->setWindowTitle(tr("Restart Job"));
@@ -227,6 +237,7 @@ void MainWindow::addButtonPressed(const QString &filePathIn, const QString &file
 			options ? options : m_options,
 			QString("%1/toolset").arg(m_appDir),
 			m_cpuFeatures->x64,
+			m_preferences.use10BitEncoding,
 			m_cpuFeatures->x64 && m_preferences.useAvisyth64Bit
 		);
 
@@ -384,6 +395,7 @@ void MainWindow::jobChangedData(const QModelIndex &topLeft, const  QModelIndex &
 			{
 				if(m_preferences.autoRunNextJob) QTimer::singleShot(0, this, SLOT(launchNextJob()));
 				if(m_preferences.shutdownComputer) QTimer::singleShot(0, this, SLOT(shutdownComputer()));
+				if(m_preferences.saveLogFiles) saveLogFile(m_jobList->index(i, 1, QModelIndex()));
 			}
 		}
 	}
@@ -529,7 +541,6 @@ void MainWindow::showPreferences(void)
 void MainWindow::launchNextJob(void)
 {
 	qDebug("launchNextJob(void)");
-
 	
 	const int rows = m_jobList->rowCount(QModelIndex());
 
@@ -556,6 +567,39 @@ void MainWindow::launchNextJob(void)
 	}
 		
 	qWarning("No enqueued jobs left!");
+}
+
+/*
+ * Save log to text file
+ */
+void MainWindow::saveLogFile(const QModelIndex &index)
+{
+	if(index.isValid())
+	{
+		if(LogFileModel *log = m_jobList->getLogFile(index))
+		{
+			QDir(QString("%1/logs").arg(x264_data_path())).mkpath(".");
+			QString logFilePath = QString("%1/logs/LOG.%2.%3.txt").arg(x264_data_path(), QDate::currentDate().toString(Qt::ISODate), QTime::currentTime().toString(Qt::ISODate).replace(':', "-"));
+			QFile outFile(logFilePath);
+			if(outFile.open(QIODevice::WriteOnly))
+			{
+				QTextStream outStream(&outFile);
+				outStream.setCodec("UTF-8");
+				outStream.setGenerateByteOrderMark(true);
+				
+				const int rows = log->rowCount(QModelIndex());
+				for(int i = 0; i < rows; i++)
+				{
+					outStream << log->data(log->index(i, 0, QModelIndex()), Qt::DisplayRole).toString() << QLatin1String("\r\n");
+				}
+				outFile.close();
+			}
+			else
+			{
+				qWarning("Failed to open log file for writing:\n%s", logFilePath.toUtf8().constData());
+			}
+		}
+	}
 }
 
 /*
@@ -629,7 +673,7 @@ void MainWindow::shutdownComputer(void)
  */
 void MainWindow::init(void)
 {
-	static const char *binFiles = "x264.exe:x264_x64.exe:avs2yuv.exe:avs2yuv_x64.exe";
+	static const char *binFiles = "x264_8bit_x86.exe:x264_8bit_x64.exe:x264_10bit_x86.exe:x264_10bit_x64.exe:avs2yuv_x86.exe:avs2yuv_x64.exe";
 	QStringList binaries = QString::fromLatin1(binFiles).split(":", QString::SkipEmptyParts);
 
 	updateLabelPos();
@@ -725,23 +769,32 @@ void MainWindow::init(void)
 	//Check for Avisynth support
 	if(!qApp->arguments().contains("--skip-avisynth-check", Qt::CaseInsensitive))
 	{
+		qDebug("[Check for Avisynth support]");
 		double avisynthVersion = 0.0;
-		QLibrary *avsLib = new QLibrary("avisynth.dll");
-		if(avsLib->load())
+		if(!m_avsLib)
 		{
-			avisynthVersion = detectAvisynthVersion(avsLib);
+			m_avsLib = new QLibrary("avisynth.dll");
+		}
+		if(m_avsLib->load())
+		{
+			avisynthVersion = detectAvisynthVersion(m_avsLib);
 			if(avisynthVersion < 0.0)
 			{
 				int val = QMessageBox::critical(this, tr("Avisynth Error"), tr("<nobr>A critical error was encountered while checking your Avisynth version!</nobr>").replace("-", "&minus;"), tr("Quit"), tr("Ignore"));
 				if(val != 1) { close(); qApp->exit(-1); return; }
 			}
 		}
+		else
+		{
+			qWarning("Failed to load avisynth.dll libraray!");
+		}
 		if(avisynthVersion < 2.5)
 		{
 			int val = QMessageBox::warning(this, tr("Avisynth Missing"), tr("<nobr>It appears that Avisynth is <b>not</b> currently installed on your computer.<br>Therefore Avisynth (.avs) input will <b>not</b> be working at all!<br><br>Please download and install Avisynth:<br><a href=\"http://sourceforge.net/projects/avisynth2/files/AviSynth%202.5/\">http://sourceforge.net/projects/avisynth2/files/AviSynth 2.5/</a></nobr>").replace("-", "&minus;"), tr("Quit"), tr("Ignore"));
-			avsLib->unload(); X264_DELETE(avsLib);
+			m_avsLib->unload(); X264_DELETE(m_avsLib);
 			if(val != 1) { close(); qApp->exit(-1); return; }
 		}
+		qDebug("");
 	}
 
 	//Check for expiration
@@ -1099,7 +1152,9 @@ void MainWindow::updateTaskbar(EncodeThread::JobStatus status, const QIcon &icon
  */
 double MainWindow::detectAvisynthVersion(QLibrary *avsLib)
 {
+	qDebug("detectAvisynthVersion(QLibrary *avsLib)");
 	double version_number = 0.0;
+	EXCEPTION_RECORD exceptionRecord;
 	
 	__try
 	{
@@ -1107,14 +1162,18 @@ double MainWindow::detectAvisynthVersion(QLibrary *avsLib)
 		avs_invoke_func avs_invoke_ptr = (avs_invoke_func) avsLib->resolve("avs_invoke");
 		avs_function_exists_func avs_function_exists_ptr = (avs_function_exists_func) avsLib->resolve("avs_function_exists");
 		avs_delete_script_environment_func avs_delete_script_environment_ptr = (avs_delete_script_environment_func) avsLib->resolve("avs_delete_script_environment");
+		avs_release_value_func avs_release_value_ptr = (avs_release_value_func) avsLib->resolve("avs_release_value");
 
 		if((avs_create_script_environment_ptr != NULL) && (avs_invoke_ptr != NULL) && (avs_function_exists_ptr != NULL))
 		{
+			qDebug("avs_create_script_environment_ptr(AVS_INTERFACE_25)");
 			AVS_ScriptEnvironment* avs_env = avs_create_script_environment_ptr(AVS_INTERFACE_25);
 			if(avs_env != NULL)
 			{
+				qDebug("avs_function_exists_ptr(avs_env, \"VersionNumber\")");
 				if(avs_function_exists_ptr(avs_env, "VersionNumber"))
 				{
+					qDebug("avs_invoke_ptr(avs_env, \"VersionNumber\", avs_new_value_array(NULL, 0), NULL)");
 					AVS_Value avs_version = avs_invoke_ptr(avs_env, "VersionNumber", avs_new_value_array(NULL, 0), NULL);
 					if(!avs_is_error(avs_version))
 					{
@@ -1122,8 +1181,21 @@ double MainWindow::detectAvisynthVersion(QLibrary *avsLib)
 						{
 							qDebug("Avisynth version: v%.2f", avs_as_float(avs_version));
 							version_number = avs_as_float(avs_version);
+							if(avs_release_value_ptr) avs_release_value_ptr(avs_version);
+						}
+						else
+						{
+							qWarning("Failed to determine version number, Avisynth didn't return a float!");
 						}
 					}
+					else
+					{
+						qWarning("Failed to determine version number, Avisynth returned an error!");
+					}
+				}
+				else
+				{
+					qWarning("The 'VersionNumber' function does not exist in your Avisynth DLL, can't determine version!");
 				}
 				if(avs_delete_script_environment_ptr != NULL)
 				{
@@ -1131,15 +1203,19 @@ double MainWindow::detectAvisynthVersion(QLibrary *avsLib)
 					avs_env = NULL;
 				}
 			}
+			else
+			{
+				qWarning("The Avisynth DLL failed to create the script environment!");
+			}
 		}
 		else
 		{
 			qWarning("It seems the Avisynth DLL is missing required API functions!");
 		}
 	}
-	__except(1)
+	__except(exceptionFilter(&exceptionRecord, GetExceptionInformation()))
 	{
-		qWarning("Exception in Avisynth initialization code!");
+		qWarning("Exception in Avisynth initialization code! (Address: %p, Code: 0x%08x)", exceptionRecord.ExceptionAddress, exceptionRecord.ExceptionCode);
 		version_number = -1.0;
 	}
 
