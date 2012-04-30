@@ -105,6 +105,7 @@ const char *FileAnalyzer::g_tags_gen[] =
 const char *FileAnalyzer::g_tags_aud[] =
 {
 	"ID",
+	"Source",
 	"Format",
 	"Format_Profile",
 	"Format_Version",
@@ -383,9 +384,19 @@ void FileAnalyzer::updateInfo(AudioFileModel &audioFile, bool *skipNext, unsigne
 		return;
 	}
 
-	/*Skip?*/
+	/*Skip or empty?*/
 	if((*skipNext) || value.isEmpty())
 	{
+		return;
+	}
+
+	/*Playlist file?*/
+	if(IS_KEY("Aud_Source"))
+	{
+		*skipNext = true;
+		audioFile.setFormatContainerType(QString());
+		audioFile.setFormatAudioType(QString());
+		qWarning("Skipping info for playlist file!");
 		return;
 	}
 

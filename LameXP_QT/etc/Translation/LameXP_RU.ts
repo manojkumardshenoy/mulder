@@ -9,11 +9,11 @@
     </message>
     <message>
         <source>Please visit %1 for news and updates!</source>
-        <translation>Пожайлуйста посетите %1 за новостями и обновлениями!</translation>
+        <translation>Пожалуйста посетите %1 для новостей и обновлений!</translation>
     </message>
     <message>
         <source>Note: LameXP is free software. Do &lt;b&gt;not&lt;/b&gt; pay money to obtain or use LameXP! If some third-party website tries to make you pay for downloading LameXP, you should &lt;b&gt;not&lt;/b&gt; respond to the offer !!!</source>
-        <translation>Примечание: LameXP является бесплатным программным обеспечением. Вам &lt;b&gt;ненадо&lt;/b&gt; платить деньги, чтобы получить или использовать LameXP! Если некоторый сторонний веб-сайт пытается заставить Вас заплатить за загрузку LameXP, Вы должны &lt;b&gt; не &lt;/b&gt;, отвечать на это предложение!!!</translation>
+        <translation>Примечание: LameXP является бесплатным программным обеспечением. Вам &lt;b&gt;не надо&lt;/b&gt; платить деньги, чтобы получить или использовать LameXP! Если какой-то веб-сайт пытается заставить Вас заплатить за загрузку LameXP, Вы должны &lt;b&gt; не отвечать&lt;/b&gt; на это предложение!!!</translation>
     </message>
     <message>
         <source>Special thanks go out to &quot;John33&quot; from %1 for his continuous support.</source>
@@ -189,7 +189,7 @@
     </message>
     <message>
         <source>Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.</source>
-        <translation type="unfinished">Внимание: это демо (пре-релиз) версия LameXP прекратит работу %1. Осталось %2 дней.</translation>
+        <translation type="unfinished">Внимание: эта демо (пре-релиз) версия LameXP прекратит работу %1. Осталось %2 дней.</translation>
     </message>
     <message>
         <source>Aften - A/52 audio encoder</source>
@@ -226,6 +226,10 @@
     <message>
         <source>Copyright (c) 2008-2011 Alexander E. Patrakov. Distributed under the LGPL.</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>About Qt5</source>
+        <translation type="unfinished">О Qt5</translation>
     </message>
 </context>
 <context>
@@ -393,7 +397,7 @@
     </message>
     <message>
         <source>Select ANSI Codepage for Cue Sheet file:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Кодировка ANSI для файла CUE:</translation>
     </message>
     <message>
         <source>OK</source>
@@ -444,11 +448,11 @@
     </message>
     <message>
         <source>Artist:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Исполнитель:</translation>
     </message>
     <message>
         <source>Album:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Альбом:</translation>
     </message>
 </context>
 <context>
@@ -544,7 +548,7 @@
     </message>
     <message>
         <source>Select ANSI Codepage for CSV file:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Кодировка ANSI для файла CSV:</translation>
     </message>
     <message>
         <source>OK</source>
@@ -650,7 +654,7 @@
     </message>
     <message>
         <source>Note: Meta information you enter here will &lt;u&gt;supersede&lt;/u&gt; data from the source!</source>
-        <translation type="unfinished">Примечание: метаинформация введённая здесь  &lt;u&gt;замененит&lt;/u&gt; информацию из источника!</translation>
+        <translation type="unfinished">Примечание: метаинформация введённая здесь  &lt;u&gt;заменит&lt;/u&gt; информацию из источника!</translation>
     </message>
     <message>
         <source>Reset</source>
@@ -1721,35 +1725,35 @@
     </message>
     <message>
         <source>DEMO VERSION</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ДЕМО ВЕРСИЯ</translation>
     </message>
     <message>
         <source>Hibernate Computer On Shutdown</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Гибернация компьютера при выключении</translation>
     </message>
     <message>
         <source>Hibernate Computer</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Гибернация компьютера</translation>
     </message>
     <message>
         <source>Do you really want the computer to be hibernated on shutdown?</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Переводить компьютер в состояние гибернации при выключении?</translation>
     </message>
     <message>
         <source>LameXP will hibernate the computer on shutdown from now on.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">LameXP  переведёт компьютер в состояние гибернации при выключении.</translation>
     </message>
     <message>
         <source>LameXP will &lt;i&gt;not&lt;/i&gt; hibernate the computer on shutdown from now on.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">LameXP &lt;i&gt;НЕ&lt;/i&gt; переведёт компьютер в состояние гибернации при выключении.</translation>
     </message>
     <message>
         <source>(Hint: Please ignore the name of the downloaded ZIP file and check the included &apos;changelog.txt&apos; instead!)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">(Подсказка: Пожалуйста игнорируйте имя загруженного ZIP-файла и проверьте &apos;changelog.txt&apos;)</translation>
     </message>
     <message>
         <source>Skipping update check this time, please be patient...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Пропуск проверки обновлений, пожалуйста подождите...</translation>
     </message>
     <message>
         <source>DCA Enc</source>
@@ -1757,67 +1761,67 @@
     </message>
     <message>
         <source>Export Meta Tags to CSV File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Экспорт Meta-тегов в файл CSV</translation>
     </message>
     <message>
         <source>Import Meta Tags from CSV File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Испорт Meta-теги из файла CSV</translation>
     </message>
     <message>
         <source>Save CSV file</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Сохранить файл CSV</translation>
     </message>
     <message>
         <source>CSV File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">CSV файл</translation>
     </message>
     <message>
         <source>CSV Export</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">CSV Экспорт</translation>
     </message>
     <message>
         <source>Sorry, there are no meta tags that can be exported!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Meta-теги, которые могут быть экспортированы, отсутствуют!</translation>
     </message>
     <message>
         <source>Sorry, failed to open CSV file for writing!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ошибка открытия файла CSV для записи!</translation>
     </message>
     <message>
         <source>Sorry, failed to write to the CSV file!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ошибка записи файла CSV!</translation>
     </message>
     <message>
         <source>The CSV files was created successfully!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Файл CSV был успешно создан!</translation>
     </message>
     <message>
         <source>Open CSV file</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Открыть файл CSV</translation>
     </message>
     <message>
         <source>Sorry, failed to open CSV file for reading!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ошибка открытия файла CSV для чтения!</translation>
     </message>
     <message>
         <source>Sorry, failed to read from the CSV file!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ошибка при чтении файла CSV!</translation>
     </message>
     <message>
         <source>Sorry, the CSV file does not contain any known fields!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Файл CSV не содержит ни одного известного поля!</translation>
     </message>
     <message>
         <source>CSV file is incomplete. Not all files were updated!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Файл CSV не полный. Обновлены не все файлы!</translation>
     </message>
     <message>
         <source>The CSV files was imported successfully!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Файлы CSV успешно импортированы!</translation>
     </message>
     <message>
         <source>CSV Import</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Импорт CSV</translation>
     </message>
     <message>
         <source>QAAC (Apple)</source>
@@ -1833,11 +1837,27 @@
     </message>
     <message>
         <source>Not available!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Недоступно!</translation>
     </message>
     <message>
         <source>Current AAC Encoder: %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Текущий кодировщик AAC: %1</translation>
+    </message>
+    <message>
+        <source>Edit Output Path</source>
+        <translation type="unfinished">Изменить папку выходных файлов</translation>
+    </message>
+    <message>
+        <source>Show Favorites</source>
+        <translation type="unfinished">Показать избранные папки</translation>
+    </message>
+    <message>
+        <source>Initializing directory outline, please be patient...</source>
+        <translation type="unfinished">Чтение структуры каталогов, пожалуйста ждите...</translation>
+    </message>
+    <message>
+        <source>Refresh Directory Outline</source>
+        <translation>Обновить</translation>
     </message>
 </context>
 <context>
@@ -1904,7 +1924,7 @@
     </message>
     <message>
         <source>Meta Information: %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Метаинформация: %1</translation>
     </message>
 </context>
 <context>
@@ -2154,7 +2174,7 @@
     </message>
     <message>
         <source>Analyzing</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Анализ</translation>
     </message>
 </context>
 <context>
@@ -2177,7 +2197,7 @@
     </message>
     <message>
         <source>Show details for selected job</source>
-        <translation type="unfinished">Показать детали задания</translation>
+        <translation type="unfinished">Показать подробности задания</translation>
     </message>
     <message>
         <source>Browse Output File Location</source>
@@ -2205,7 +2225,7 @@
     </message>
     <message>
         <source>Encoding: %1 files of %2 completed so far, please wait...</source>
-        <translation type="unfinished">Кодирование: %1 файл из %2 завершен, пожалуйста ожидайте...</translation>
+        <translation>Кодирование: %1 из %2 завершено.</translation>
     </message>
     <message>
         <source>Creating the playlist file, please wait...</source>
@@ -2230,7 +2250,7 @@
     <message>
         <source>Error: %1 of %2 files failed. Double-click failed items for detailed information!</source>
         <translatorcomment>бред -_-</translatorcomment>
-        <translation type="unfinished">Ошибка: %1 из %2 файлов перестали работать. Дважды щелкните по отказавшим элементам для получения подробностей!</translation>
+        <translation type="unfinished">Ошибка с %1 из %2 файлов. Дважды щелкните по файлам с ошибкой для подробностей!</translation>
     </message>
     <message>
         <source>LameXP - Error</source>
@@ -2246,7 +2266,7 @@
     </message>
     <message>
         <source>All files completed successfully.</source>
-        <translation type="unfinished">Все файлы завершились успешно.</translation>
+        <translation type="unfinished">Все файлы преобразовались успешно.</translation>
     </message>
     <message>
         <source>Playlist creation failed</source>
@@ -2270,35 +2290,35 @@
     </message>
     <message>
         <source>CPU Usage (Overall)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Загрузка процессора (Общая)</translation>
     </message>
     <message>
         <source>Physical RAM Usage</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Использование оперативной памяти</translation>
     </message>
     <message>
         <source>Free Disk Space (Temp Folder)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Свободное место на диске (Временная папка)</translation>
     </message>
     <message>
         <source>Process finished after %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Кодирование заняло %1</translation>
     </message>
     <message>
         <source>hour(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>час.</translation>
     </message>
     <message>
         <source>minute(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>мин.</translation>
     </message>
     <message>
         <source>second(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>сек.</translation>
     </message>
     <message>
         <source>millisecond(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>мс.</translation>
     </message>
 </context>
 <context>
@@ -2328,7 +2348,7 @@
     </message>
     <message>
         <source>Executable &apos;%1&apos; was built for Qt &apos;%2&apos;, but found Qt &apos;%3&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Исполняемый файл  &apos;%1&apos; был собран для Qt &apos;%2&apos;, но найдена версия Qt &apos;%3&apos;.</translation>
     </message>
 </context>
 <context>
@@ -2353,11 +2373,11 @@
     <name>UpdateDialog</name>
     <message>
         <source>LameXP Update Manager</source>
-        <translation type="unfinished">Менеджер обновлений LameXP</translation>
+        <translation>Менеджер обновлений LameXP</translation>
     </message>
     <message>
         <source>Please wait...</source>
-        <translation type="unfinished">Пожалуйста, подождите...</translation>
+        <translation>Пожалуйста, подождите...</translation>
     </message>
     <message>
         <source>Latest version available:</source>
@@ -2365,7 +2385,7 @@
     </message>
     <message>
         <source>Currently installed version:</source>
-        <translation>Установленная верися:</translation>
+        <translation>Установленная версия:</translation>
     </message>
     <message>
         <source>Retry</source>
@@ -2385,7 +2405,7 @@
     </message>
     <message>
         <source>Build</source>
-        <translation type="unfinished">Сборка</translation>
+        <translation>Сборка</translation>
     </message>
     <message>
         <source>Unknown</source>
@@ -2405,7 +2425,7 @@
     </message>
     <message>
         <source>Checking for new updates online, please wait...</source>
-        <translation type="unfinished">Проверяю обновления, пожалйста, подождите...</translation>
+        <translation type="unfinished">Проверяю обновления, пожалуйста, подождите...</translation>
     </message>
     <message>
         <source>Failed to fetch update information from server!</source>
@@ -2413,7 +2433,7 @@
     </message>
     <message>
         <source>Sorry, the update server might be busy at this time. Plase try again later.</source>
-        <translation type="unfinished">Извините, сервер обновлений сейчас недоступен. Пожалуйста попробуйте позднее.</translation>
+        <translation type="unfinished">Извините, сервер обновлений сейчас недоступен. Пожалуйста, попробуйте позднее.</translation>
     </message>
     <message>
         <source>More information available at:</source>
@@ -2425,7 +2445,7 @@
     </message>
     <message>
         <source>We highly recommend all users to install this update as soon as possible.</source>
-        <translation type="unfinished">Мы очень рекомендуем установить это обновлений как можо скорее.</translation>
+        <translation type="unfinished">Мы очень рекомендуем установить это обновление как можо скорее.</translation>
     </message>
     <message>
         <source>No new updates available at this time.</source>
@@ -2433,7 +2453,7 @@
     </message>
     <message>
         <source>Your version of LameXP is still up-to-date. Please check for updates regularly!</source>
-        <translation type="unfinished">Вы используете самую новую версию LameXP. Проверяйте обновления регулярно!</translation>
+        <translation>Вы используете самую новую версию. Проверяйте обновления регулярно!</translation>
     </message>
     <message>
         <source>Your version appears to be newer than the latest release.</source>
@@ -2441,11 +2461,11 @@
     </message>
     <message>
         <source>This usually indicates your are currently using a pre-release version of LameXP.</source>
-        <translation type="unfinished">Это обычно показывает, что вы используете бета версию LameXP.</translation>
+        <translation type="unfinished">Это обычно значит, что вы используете бета версию LameXP.</translation>
     </message>
     <message>
         <source>Update is being downloaded, please be patient...</source>
-        <translation type="unfinished">Скачиваю обновления, будте терпеливы...</translation>
+        <translation type="unfinished">Скачиваю обновление, будте терпеливы...</translation>
     </message>
     <message>
         <source>Update ready to install. Applicaion will quit...</source>
@@ -2462,7 +2482,7 @@
     </message>
     <message>
         <source>Please make sure your computer is connected to the internet and try again.</source>
-        <translation type="unfinished">Пожалуйста, проверьте, что ваш компьютер подключен к интернету и поробуйте снова.</translation>
+        <translation type="unfinished">Пожалуйста, проверьте, что ваш компьютер подключен к интернету и попробуйте снова.</translation>
     </message>
 </context>
 </TS>

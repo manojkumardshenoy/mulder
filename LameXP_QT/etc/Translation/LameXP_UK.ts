@@ -228,6 +228,10 @@
         <source>Copyright (c) 2008-2011 Alexander E. Patrakov. Distributed under the LGPL.</source>
         <translation>Всі права належать 2008-2011 Alexander E. Patrakov. Розповсюджується під ліцензією LGPL.</translation>
     </message>
+    <message>
+        <source>About Qt5</source>
+        <translation>Про Qt5</translation>
+    </message>
 </context>
 <context>
     <name>AudioFileModel</name>
@@ -1833,6 +1837,22 @@
     <message>
         <source>Current AAC Encoder: %1</source>
         <translation>Поточний кодер AAC: %1</translation>
+    </message>
+    <message>
+        <source>Edit Output Path</source>
+        <translation>Редагувати шлях до файла(-ів) на виході</translation>
+    </message>
+    <message>
+        <source>Show Favorites</source>
+        <translation>Показати закладки</translation>
+    </message>
+    <message>
+        <source>Initializing directory outline, please be patient...</source>
+        <translation>Йде ініціалізація структури тек, будь ласка, зачекайте...</translation>
+    </message>
+    <message>
+        <source>Refresh Directory Outline</source>
+        <translation>Поновити структуру тек</translation>
     </message>
 </context>
 <context>

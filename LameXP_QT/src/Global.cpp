@@ -58,6 +58,7 @@
 #include <intrin.h>
 #include <math.h>
 #include <time.h>
+#include <process.h>
 
 //COM includes
 #include <Objbase.h>
@@ -70,8 +71,13 @@
 
 //Initialize static Qt plugins
 #ifdef QT_NODLL
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
 Q_IMPORT_PLUGIN(qico)
 Q_IMPORT_PLUGIN(qsvg)
+#else
+Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
+Q_IMPORT_PLUGIN(QICOPlugin)
+#endif
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -132,9 +138,9 @@ static bool g_lamexp_console_attached = false;
 	#if (__INTEL_COMPILER >= 1200)
 		static const char *g_lamexp_version_compiler = "ICL 12.x";
 	#elif (__INTEL_COMPILER >= 1100)
-		static const char *g_lamexp_version_compiler = = "ICL 11.x";
+		static const char *g_lamexp_version_compiler = "ICL 11.x";
 	#elif (__INTEL_COMPILER >= 1000)
-		static const char *g_lamexp_version_compiler = = "ICL 10.x";
+		static const char *g_lamexp_version_compiler = "ICL 10.x";
 	#else
 		#error Compiler is not supported!
 	#endif
@@ -237,7 +243,7 @@ g_lamexp_ipc_ptr =
 };
 
 //Image formats
-static const char *g_lamexp_imageformats[] = {"png", "jpg", "gif", "ico", "svg", NULL};
+static const char *g_lamexp_imageformats[] = {"bmp", "png", "jpg", "gif", "ico", "xpm", NULL}; //"svg"
 
 //Global locks
 static QMutex g_lamexp_message_mutex;
@@ -296,7 +302,7 @@ bool lamexp_version_demo(void)
  */
 QDate lamexp_version_expires(void)
 {
-	return lamexp_version_date().addDays(LAMEXP_DEBUG ? 2 : 30);
+	return lamexp_version_date().addDays(LAMEXP_DEBUG ? 7 : 30);
 }
 
 /*
@@ -341,21 +347,54 @@ const QDate &lamexp_version_date(void)
  */
 DWORD lamexp_get_os_version(void)
 {
-	OSVERSIONINFO osVerInfo;
-	memset(&osVerInfo, 0, sizeof(OSVERSIONINFO));
-	osVerInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	DWORD version = 0;
+	static DWORD osVersion = 0;
 	
-	if(GetVersionEx(&osVerInfo) == TRUE)
+	if(!osVersion)
 	{
-		if(osVerInfo.dwPlatformId != VER_PLATFORM_WIN32_NT)
+		OSVERSIONINFO osVerInfo;
+		memset(&osVerInfo, 0, sizeof(OSVERSIONINFO));
+		osVerInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	
+		if(GetVersionEx(&osVerInfo) == TRUE)
 		{
-			throw "Ouuups: Not running under Windows NT. This is not supposed to happen!";
+			if(osVerInfo.dwPlatformId != VER_PLATFORM_WIN32_NT)
+			{
+				throw "Ouuups: Not running under Windows NT. This is not supposed to happen!";
+			}
+			const DWORD osVerHi = (DWORD)(((DWORD)(osVerInfo.dwMajorVersion)) << 16);
+			const DWORD osVerLo = (DWORD)(((DWORD)(osVerInfo.dwMinorVersion)) & ((DWORD)(0xffff)));
+			osVersion = (DWORD)(((DWORD)(osVerHi)) | ((DWORD)(osVerLo)));
 		}
-		version = (DWORD)((osVerInfo.dwMajorVersion << 16) | (osVerInfo.dwMinorVersion & 0xffff));
+		else
+		{
+			throw "GetVersionEx() has failed. This is not supposed to happen!";
+		}
 	}
 
-	return version;
+	return osVersion;
+}
+
+/*
+ * Check if we are running under wine
+ */
+bool lamexp_detect_wine(void)
+{
+	static bool isWine = false;
+	static bool isWine_initialized = false;
+
+	if(!isWine_initialized)
+	{
+		QLibrary ntdll("ntdll.dll");
+		if(ntdll.load())
+		{
+			if(ntdll.resolve("wine_nt_to_unix_file_name") != NULL) isWine = true;
+			if(ntdll.resolve("wine_get_version") != NULL) isWine = true;
+			ntdll.unload();
+		}
+		isWine_initialized = true;
+	}
+
+	return isWine;
 }
 
 /*
@@ -689,29 +728,53 @@ lamexp_cpu_t lamexp_detect_cpu_features(int argc, char **argv)
 /*
  * Check for debugger (detect routine)
  */
-static bool lamexp_check_for_debugger(void)
+static __forceinline bool lamexp_check_for_debugger(void)
 {
+	if(IsDebuggerPresent())
+	{
+		return true;
+	}
+	
+	__try
+	{
+		CloseHandle((HANDLE) 0x7FFFFFFF);
+	}
+	__except(EXCEPTION_EXECUTE_HANDLER)
+	{
+		return true;
+	}
+
 	__try 
 	{
 		DebugBreak();
 	}
-	__except(GetExceptionCode() == EXCEPTION_BREAKPOINT ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) 
+	__except(EXCEPTION_EXECUTE_HANDLER) 
 	{
 		return false;
 	}
+	
 	return true;
 }
 
 /*
  * Check for debugger (thread proc)
  */
-static void WINAPI lamexp_debug_thread_proc(__in LPVOID lpParameter)
+static unsigned int __stdcall lamexp_debug_thread_proc(LPVOID lpParameter)
 {
-	while(!(IsDebuggerPresent() || lamexp_check_for_debugger()))
+	while(!lamexp_check_for_debugger())
 	{
-		Sleep(333);
+		Sleep(32);
+	}
+	if(HANDLE thrd = OpenThread(THREAD_TERMINATE, FALSE, g_main_thread_id))
+	{
+		if(TerminateThread(thrd, -1))
+		{
+			FatalAppExit(0, L"Not a debug build. Please unload debugger and try again!");
+		}
+		CloseHandle(thrd);
 	}
 	TerminateProcess(GetCurrentProcess(), -1);
+	return 666;
 }
 
 /*
@@ -719,13 +782,13 @@ static void WINAPI lamexp_debug_thread_proc(__in LPVOID lpParameter)
  */
 static HANDLE lamexp_debug_thread_init(void)
 {
-	if(IsDebuggerPresent() || lamexp_check_for_debugger())
+	if(lamexp_check_for_debugger())
 	{
 		FatalAppExit(0, L"Not a debug build. Please unload debugger and try again!");
 		TerminateProcess(GetCurrentProcess(), -1);
 	}
 
-	return CreateThread(NULL, NULL, reinterpret_cast<LPTHREAD_START_ROUTINE>(&lamexp_debug_thread_proc), NULL, NULL, NULL);
+	return (HANDLE) _beginthreadex(NULL, 0, lamexp_debug_thread_proc, NULL, 0, NULL);
 }
 
 /*
@@ -735,7 +798,7 @@ static bool lamexp_check_compatibility_mode(const char *exportName, const char *
 {
 	QLibrary kernel32("kernel32.dll");
 
-	if(exportName != NULL)
+	if((exportName != NULL) && kernel32.load())
 	{
 		if(kernel32.resolve(exportName) != NULL)
 		{
@@ -870,6 +933,12 @@ static bool lamexp_broadcast(int eventType, bool onlyToVisible)
  */
 static bool lamexp_event_filter(void *message, long *result)
 {
+	if((!(LAMEXP_DEBUG)) && lamexp_check_for_debugger())
+	{
+		FatalAppExit(0, L"Not a debug build. Please unload debugger and try again!");
+		TerminateProcess(GetCurrentProcess(), -1);
+	}
+	
 	switch(reinterpret_cast<MSG*>(message)->message)
 	{
 	case WM_QUERYENDSESSION:
@@ -947,7 +1016,6 @@ static bool lamexp_check_elevation(void)
 bool lamexp_init_qt(int argc, char* argv[])
 {
 	static bool qt_initialized = false;
-	bool isWine = false;
 	typedef BOOL (WINAPI *SetDllDirectoryProc)(WCHAR *lpPathName);
 
 	//Don't initialized again, if done already
@@ -973,6 +1041,7 @@ bool lamexp_init_qt(int argc, char* argv[])
 	}
 
 	//Check Qt version
+#ifdef QT_BUILD_KEY
 	qDebug("Using Qt v%s [%s], %s, %s", qVersion(), QLibraryInfo::buildDate().toString(Qt::ISODate).toLatin1().constData(), (qSharedBuild() ? "DLL" : "Static"), QLibraryInfo::buildKey().toLatin1().constData());
 	qDebug("Compiled with Qt v%s [%s], %s\n", QT_VERSION_STR, QT_PACKAGEDATE_STR, QT_BUILD_KEY);
 	if(_stricmp(qVersion(), QT_VERSION_STR))
@@ -985,6 +1054,10 @@ bool lamexp_init_qt(int argc, char* argv[])
 		qFatal("%s", QApplication::tr("Executable '%1' was built for Qt '%2', but found Qt '%3'.").arg(QString::fromLatin1(executableName), QString::fromLatin1(QT_BUILD_KEY), QLibraryInfo::buildKey()).toLatin1().constData());
 		return false;
 	}
+#else
+	qDebug("Using Qt v%s [%s], %s", qVersion(), QLibraryInfo::buildDate().toString(Qt::ISODate).toLatin1().constData(), (qSharedBuild() ? "DLL" : "Static"));
+	qDebug("Compiled with Qt v%s [%s]\n", QT_VERSION_STR, QT_PACKAGEDATE_STR);
+#endif
 
 	//Check the Windows version
 	switch(QSysInfo::windowsVersion() & QSysInfo::WV_NT_based)
@@ -1011,41 +1084,47 @@ bool lamexp_init_qt(int argc, char* argv[])
 		break;
 	case QSysInfo::WV_WINDOWS7:
 		qDebug("Running on Windows 7 or Windows Server 2008 R2.\n");
-		lamexp_check_compatibility_mode(NULL, executableName);
+		lamexp_check_compatibility_mode("CreateFile2", executableName);
 		break;
 	default:
 		{
 			DWORD osVersionNo = lamexp_get_os_version();
-			qWarning("Running on an unknown/untested WinNT-based OS (v%u.%u).\n", HIWORD(osVersionNo), LOWORD(osVersionNo));
+			if(LAMEXP_EQL_OS_VER(osVersionNo, 6, 2))
+			{
+				qDebug("Running on Windows 8 (still experimental!)\n");
+				lamexp_check_compatibility_mode(NULL, executableName);
+			}
+			else
+			{
+				qWarning("Running on an unknown/untested WinNT-based OS (v%u.%u).\n", HIWORD(osVersionNo), LOWORD(osVersionNo));
+			}
 		}
 		break;
 	}
 
 	//Check for Wine
-	QLibrary ntdll("ntdll.dll");
-	if(ntdll.load())
+	if(lamexp_detect_wine())
 	{
-		if(ntdll.resolve("wine_nt_to_unix_file_name") != NULL) isWine = true;
-		if(ntdll.resolve("wine_get_version") != NULL) isWine = true;
-		if(isWine) qWarning("It appears we are running under Wine, unexpected things might happen!\n");
-		ntdll.unload();
+		qWarning("It appears we are running under Wine, unexpected things might happen!\n");
 	}
 
-	//Create Qt application instance and setup version info
+	//Set text Codec for locale
+	QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+
+	//Create Qt application instance
 	QApplication *application = new QApplication(argc, argv);
+
+	//Load plugins from application directory
+	QCoreApplication::setLibraryPaths(QStringList() << QApplication::applicationDirPath());
+	qDebug("Library Path:\n%s\n", QApplication::libraryPaths().first().toUtf8().constData());
+
+	//Set application properties
 	application->setApplicationName("LameXP - Audio Encoder Front-End");
 	application->setApplicationVersion(QString().sprintf("%d.%02d.%04d", lamexp_version_major(), lamexp_version_minor(), lamexp_version_build())); 
 	application->setOrganizationName("LoRd_MuldeR");
 	application->setOrganizationDomain("mulder.at.gg");
 	application->setWindowIcon(lamexp_app_icon());
 	application->setEventFilter(lamexp_event_filter);
-
-	//Set text Codec for locale
-	QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
-
-	//Load plugins from application directory
-	QCoreApplication::setLibraryPaths(QStringList() << QApplication::applicationDirPath());
-	qDebug("Library Path:\n%s\n", QApplication::libraryPaths().first().toUtf8().constData());
 
 	//Check for supported image formats
 	QList<QByteArray> supportedFormats = QImageReader::supportedImageFormats();
@@ -1057,22 +1136,26 @@ bool lamexp_init_qt(int argc, char* argv[])
 			return false;
 		}
 	}
-
+	
 	//Add default translations
 	g_lamexp_translation.files.insert(LAMEXP_DEFAULT_LANGID, "");
 	g_lamexp_translation.names.insert(LAMEXP_DEFAULT_LANGID, "English");
 
 	//Check for process elevation
-	if(!lamexp_check_elevation())
+	if((!lamexp_check_elevation()) && (!lamexp_detect_wine()))
 	{
-		if(QMessageBox::warning(NULL, "LameXP", "<nobr>LameXP was started with elevated rights. This is a potential security risk!</nobr>", "Quit Program (Recommended)", "Ignore") == 0)
+		QMessageBox messageBox(QMessageBox::Warning, "LameXP", "<nobr>LameXP was started with 'elevated' rights, altough LameXP does not need these rights.<br>Running an applications with unnecessary rights is a potential security risk!</nobr>", QMessageBox::NoButton, NULL, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+		messageBox.addButton("Quit Program (Recommended)", QMessageBox::NoRole);
+		messageBox.addButton("Ignore", QMessageBox::NoRole);
+		if(messageBox.exec() == 0)
 		{
 			return false;
 		}
 	}
 
 	//Update console icon, if a console is attached
-	if(g_lamexp_console_attached && !isWine)
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+	if(g_lamexp_console_attached && (!lamexp_detect_wine()))
 	{
 		typedef DWORD (__stdcall *SetConsoleIconFun)(HICON);
 		QLibrary kernel32("kernel32.dll");
@@ -1083,6 +1166,7 @@ bool lamexp_init_qt(int argc, char* argv[])
 			kernel32.unload();
 		}
 	}
+#endif
 
 	//Done
 	qt_initialized = true;
@@ -1604,15 +1688,17 @@ QString lamexp_known_folder(lamexp_known_folder_t folder_id)
 	static const GUID GUID_PROGRAM_FILES = {0x905e63b6,0xc1bf,0x494e,{0xb2,0x9c,0x65,0xb7,0x32,0xd3,0xd2,0x1a}};
 	static const GUID GUID_SYSTEM_FOLDER = {0x1AC14E77,0x02E7,0x4E5D,{0xB7,0x44,0x2E,0xB1,0xAE,0x51,0x98,0xB7}};
 
-	static QLibrary *Kernel32Lib = NULL;
 	static SHGetKnownFolderPathFun SHGetKnownFolderPathPtr = NULL;
 	static SHGetFolderPathFun SHGetFolderPathPtr = NULL;
 
 	if((!SHGetKnownFolderPathPtr) && (!SHGetFolderPathPtr))
 	{
-		if(!Kernel32Lib) Kernel32Lib = new QLibrary("shell32.dll");
-		SHGetKnownFolderPathPtr = (SHGetKnownFolderPathFun) Kernel32Lib->resolve("SHGetKnownFolderPath");
-		SHGetFolderPathPtr = (SHGetFolderPathFun) Kernel32Lib->resolve("SHGetFolderPathW");
+		QLibrary kernel32Lib("shell32.dll");
+		if(kernel32Lib.load())
+		{
+			SHGetKnownFolderPathPtr = (SHGetKnownFolderPathFun) kernel32Lib.resolve("SHGetKnownFolderPath");
+			SHGetFolderPathPtr = (SHGetFolderPathFun) kernel32Lib.resolve("SHGetFolderPathW");
+		}
 	}
 
 	int folderCSIDL = -1;
@@ -1718,17 +1804,26 @@ bool lamexp_themes_enabled(void)
 {
 	typedef int (WINAPI *IsAppThemedFun)(void);
 	
-	bool isAppThemed = false;
-	QLibrary uxTheme(QString("%1/UxTheme.dll").arg(lamexp_known_folder(lamexp_folder_systemfolder)));
-	IsAppThemedFun IsAppThemedPtr = (IsAppThemedFun) uxTheme.resolve("IsAppThemed");
+	static bool isAppThemed = false;
+	static bool isAppThemed_initialized = false;
 
-	if(IsAppThemedPtr)
+	if(!isAppThemed_initialized)
 	{
-		isAppThemed = IsAppThemedPtr();
-		if(!isAppThemed)
+		IsAppThemedFun IsAppThemedPtr = NULL;
+		QLibrary uxTheme(QString("%1/UxTheme.dll").arg(lamexp_known_folder(lamexp_folder_systemfolder)));
+		if(uxTheme.load())
 		{
-			qWarning("Theme support is disabled for this process!");
+			IsAppThemedPtr = (IsAppThemedFun) uxTheme.resolve("IsAppThemed");
 		}
+		if(IsAppThemedPtr)
+		{
+			isAppThemed = IsAppThemedPtr();
+			if(!isAppThemed)
+			{
+				qWarning("Theme support is disabled for this process!");
+			}
+		}
+		isAppThemed_initialized = true;
 	}
 
 	return isAppThemed;
@@ -1970,6 +2065,23 @@ void lamexp_finalization(void)
 	LAMEXP_DELETE(g_lamexp_ipc_ptr.sharedmem);
 	LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_read);
 	LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_write);
+	LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_read_mutex);
+	LAMEXP_DELETE(g_lamexp_ipc_ptr.semaphore_write_mutex);
+
+	//Free STDOUT and STDERR buffers
+	if(g_lamexp_console_attached)
+	{
+		if(std::filebuf *tmp = dynamic_cast<std::filebuf*>(std::cout.rdbuf()))
+		{
+			std::cout.rdbuf(NULL);
+			LAMEXP_DELETE(tmp);
+		}
+		if(std::filebuf *tmp = dynamic_cast<std::filebuf*>(std::cerr.rdbuf()))
+		{
+			std::cerr.rdbuf(NULL);
+			LAMEXP_DELETE(tmp);
+		}
+	}
 
 	//Close log file
 	if(g_lamexp_log_file)
