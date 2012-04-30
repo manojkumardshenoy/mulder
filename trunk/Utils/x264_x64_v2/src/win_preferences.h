@@ -33,7 +33,9 @@ public:
 		bool autoRunNextJob;
 		unsigned int maxRunningJobCount;
 		bool shutdownComputer;
+		bool use10BitEncoding;
 		bool useAvisyth64Bit;
+		bool saveLogFiles;
 	}
 	Preferences;
 
@@ -58,4 +60,5 @@ private:
 
 private slots:
 	void resetButtonPressed(void);
+	void use10BitEncodingToggled(bool checked);
 };

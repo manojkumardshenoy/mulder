@@ -185,12 +185,13 @@ public:
 // Constructor & Destructor
 ///////////////////////////////////////////////////////////////////////////////
 
-AddJobDialog::AddJobDialog(QWidget *parent, OptionsModel *options, bool x64supported)
+AddJobDialog::AddJobDialog(QWidget *parent, OptionsModel *options, bool x64supported, bool use10BitEncoding)
 :
 	QDialog(parent),
 	m_defaults(new OptionsModel()),
 	m_options(options),
 	m_x64supported(x64supported),
+	m_use10BitEncoding(use10BitEncoding),
 	m_initialDir_src(QDir::fromNativeSeparators(QDesktopServices::storageLocation(QDesktopServices::MoviesLocation))),
 	m_initialDir_out(QDir::fromNativeSeparators(QDesktopServices::storageLocation(QDesktopServices::MoviesLocation))),
 	m_lastFilterIndex(0)
@@ -278,7 +279,19 @@ AddJobDialog::~AddJobDialog(void)
 		cbxTemplate->setItemData(i, QVariant::fromValue<void*>(NULL));
 		X264_DELETE(item);
 	}
-	
+
+	//Free validators
+	if(const QValidator *tmp = editCustomX264Params->validator())
+	{
+		editCustomX264Params->setValidator(NULL);
+		X264_DELETE(tmp);
+	}
+	if(const QValidator *tmp = editCustomAvs2YUVParams->validator())
+	{
+		editCustomAvs2YUVParams->setValidator(NULL);
+		X264_DELETE(tmp);
+	}
+
 	X264_DELETE(m_defaults);
 }
 
@@ -310,13 +323,13 @@ bool AddJobDialog::eventFilter(QObject *o, QEvent *e)
 {
 	if((o == labelHelpScreenX264) && (e->type() == QEvent::MouseButtonPress))
 	{
-		HelpDialog *helpScreen = new HelpDialog(this, false, m_x64supported);
+		HelpDialog *helpScreen = new HelpDialog(this, false, m_x64supported, m_use10BitEncoding);
 		helpScreen->exec();
 		X264_DELETE(helpScreen);
 	}
 	else if((o == labelHelpScreenAvs2YUV) && (e->type() == QEvent::MouseButtonPress))
 	{
-		HelpDialog *helpScreen = new HelpDialog(this, true, m_x64supported);
+		HelpDialog *helpScreen = new HelpDialog(this, true, m_x64supported, m_use10BitEncoding);
 		helpScreen->exec();
 		X264_DELETE(helpScreen);
 	}
