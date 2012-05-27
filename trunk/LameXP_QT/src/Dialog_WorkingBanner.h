@@ -42,9 +42,12 @@ public:
 private:
 	QMovie *m_working;
 	bool m_canClose;
+	void updateProgress(void);
 
 public slots:
 	void setText(const QString &text);
+	void setProgressMax(unsigned int max);
+	void setProgressVal(unsigned int val);
 	bool close(void);
 
 signals:
@@ -55,4 +58,10 @@ protected:
 	void keyReleaseEvent(QKeyEvent *event);
 	void closeEvent(QCloseEvent *event);
 	bool winEvent(MSG *message, long *result);
+
+	QLabel *m_progress;
+	QFontMetrics *m_metrics;
+	unsigned int m_progressMax;
+	unsigned int m_progressVal;
+	unsigned int m_progressInt;
 };

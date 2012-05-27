@@ -31,6 +31,7 @@
 #include "Dialog_DropBox.h"
 #include "Dialog_CueImport.h"
 #include "Thread_FileAnalyzer.h"
+#include "Thread_FileAnalyzer_ST.h"
 #include "Thread_MessageHandler.h"
 #include "Model_MetaInfo.h"
 #include "Model_Settings.h"
@@ -56,7 +57,7 @@
 #include <QWindowsStyle>
 #include <QSysInfo>
 #include <QDragEnterEvent>
-#include <QMimeData>				//#include <QWindowsMime>
+#include <QMimeData>
 #include <QProcess>
 #include <QUuid>
 #include <QProcessEnvironment>
@@ -424,6 +425,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	connect(m_fileListModel, SIGNAL(modelReset()), m_dropBox, SLOT(modelChanged()));
 	connect(m_fileListModel, SIGNAL(rowsInserted(QModelIndex,int,int)), m_dropBox, SLOT(modelChanged()));
 	connect(m_fileListModel, SIGNAL(rowsRemoved(QModelIndex,int,int)), m_dropBox, SLOT(modelChanged()));
+	connect(m_fileListModel, SIGNAL(rowAppended()), m_dropBox, SLOT(modelChanged()));
 
 	//Create message handler thread
 	m_messageHandler = new MessageHandlerThread();
@@ -514,12 +516,90 @@ void MainWindow::addFiles(const QStringList &files)
 
 	tabWidget->setCurrentIndex(0);
 
+	//int timeMT = 0, timeST = 0;
+	//
+	//--Prepass--
+	//
+	//FileAnalyzer_ST *analyzerPre = new FileAnalyzer_ST(files);
+	//connect(analyzerPre, SIGNAL(fileSelected(QString)), m_banner, SLOT(setText(QString)), Qt::QueuedConnection);
+	//connect(analyzerPre, SIGNAL(progressValChanged(unsigned int)), m_banner, SLOT(setProgressVal(unsigned int)), Qt::QueuedConnection);
+	//connect(analyzerPre, SIGNAL(progressMaxChanged(unsigned int)), m_banner, SLOT(setProgressMax(unsigned int)), Qt::QueuedConnection);
+	//connect(analyzerPre, SIGNAL(fileAnalyzed(AudioFileModel)), m_fileListModel, SLOT(addFile(AudioFileModel)), Qt::QueuedConnection);
+	//connect(m_banner, SIGNAL(userAbort()), analyzerPre, SLOT(abortProcess()), Qt::DirectConnection);
+	//
+	//try
+	//{
+	//	m_fileListModel->setBlockUpdates(true);
+	//	m_banner->show(tr("Adding file(s), please wait..."), analyzerPre);
+	//}
+	//catch(...)
+	//{
+	//	/* ignore any exceptions that may occur */
+	//}
+	//
+	//--MT--
+
 	FileAnalyzer *analyzer = new FileAnalyzer(files);
 	connect(analyzer, SIGNAL(fileSelected(QString)), m_banner, SLOT(setText(QString)), Qt::QueuedConnection);
+	connect(analyzer, SIGNAL(progressValChanged(unsigned int)), m_banner, SLOT(setProgressVal(unsigned int)), Qt::QueuedConnection);
+	connect(analyzer, SIGNAL(progressMaxChanged(unsigned int)), m_banner, SLOT(setProgressMax(unsigned int)), Qt::QueuedConnection);
 	connect(analyzer, SIGNAL(fileAnalyzed(AudioFileModel)), m_fileListModel, SLOT(addFile(AudioFileModel)), Qt::QueuedConnection);
 	connect(m_banner, SIGNAL(userAbort()), analyzer, SLOT(abortProcess()), Qt::DirectConnection);
 
-	m_banner->show(tr("Adding file(s), please wait..."), analyzer);
+	try
+	{
+		m_fileListModel->setBlockUpdates(true);
+		QTime startTime = QTime::currentTime();
+		m_banner->show(tr("Adding file(s), please wait..."), analyzer);
+		//timeMT = startTime.secsTo(QTime::currentTime());
+	}
+	catch(...)
+	{
+		/* ignore any exceptions that may occur */
+	}
+
+	//--ST--
+	//
+	//FileAnalyzer_ST *analyzerST = new FileAnalyzer_ST(files);
+	//connect(analyzerST, SIGNAL(fileSelected(QString)), m_banner, SLOT(setText(QString)), Qt::QueuedConnection);
+	//connect(analyzerST, SIGNAL(progressValChanged(unsigned int)), m_banner, SLOT(setProgressVal(unsigned int)), Qt::QueuedConnection);
+	//connect(analyzerST, SIGNAL(progressMaxChanged(unsigned int)), m_banner, SLOT(setProgressMax(unsigned int)), Qt::QueuedConnection);
+	//connect(analyzerST, SIGNAL(fileAnalyzed(AudioFileModel)), m_fileListModel, SLOT(addFile(AudioFileModel)), Qt::QueuedConnection);
+	//connect(m_banner, SIGNAL(userAbort()), analyzerST, SLOT(abortProcess()), Qt::DirectConnection);
+	//
+	//try
+	//{
+	//	m_fileListModel->setBlockUpdates(true);
+	//	QTime startTime = QTime::currentTime();
+	//	m_banner->show(tr("Adding file(s), please wait..."), analyzerST);
+	//	timeST = startTime.secsTo(QTime::currentTime());
+	//}
+	//catch(...)
+	//{
+	//	/* ignore any exceptions that may occur */
+	//}
+	//
+	//------
+	//
+	//if(timeST > 0 && timeMT > 0)
+	//{
+	//	double speedUp = static_cast<double>(timeST) / static_cast<double>(timeMT);
+	//	qWarning("ST: %d, MT: %d", timeST, timeMT);
+	//	QMessageBox::information(this, "Speed Up", QString().sprintf("Announcement: The new multi-threaded file analyzer is %.1fx faster !!!", speedUp), QMessageBox::Ok);
+	//}
+	//else
+	//{
+	//	QMessageBox::information(this, "Speed Up", "Couldn't compare the the new multi-threaded file analyzer this time!", QMessageBox::Ok);
+	//}
+	//
+	//------
+
+	m_fileListModel->setBlockUpdates(false);
+	qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+	sourceFileView->update();
+	qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+	sourceFileView->scrollToBottom();
+	qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
 
 	if(analyzer->filesDenied())
 	{
@@ -539,7 +619,9 @@ void MainWindow::addFiles(const QStringList &files)
 	}
 
 	LAMEXP_DELETE(analyzer);
-	sourceFileView->scrollToBottom();
+	//LAMEXP_DELETE(analyzerST);
+	//LAMEXP_DELETE(analyzerPre);
+
 	m_banner->close();
 }
 
