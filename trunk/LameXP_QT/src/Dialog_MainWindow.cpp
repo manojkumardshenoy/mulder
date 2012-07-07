@@ -1125,12 +1125,13 @@ bool MainWindow::winEvent(MSG *message, long *result)
  */
 void MainWindow::windowShown(void)
 {
-	QStringList arguments = QApplication::arguments();
+	const QStringList &arguments = lamexp_arguments(); //QApplication::arguments();
 
 	//First run?
 	bool firstRun = false;
 	for(int i = 0; i < arguments.count(); i++)
 	{
+		/*QMessageBox::information(this, QString::number(i), arguments[i]);*/
 		if(!arguments[i].compare("--first-run", Qt::CaseInsensitive)) firstRun = true;
 	}
 

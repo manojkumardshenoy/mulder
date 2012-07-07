@@ -104,7 +104,7 @@ DWORD lamexp_get_os_version(void);
 bool lamexp_detect_wine(void);
 
 //Public functions
-void lamexp_init_console(int argc, char* argv[]);
+void lamexp_init_console(const QStringList &argv);
 bool lamexp_init_qt(int argc, char* argv[]);
 int lamexp_init_ipc(void);
 LONG WINAPI lamexp_exception_handler(__in struct _EXCEPTION_POINTERS *ExceptionInfo);
@@ -119,11 +119,12 @@ QString lamexp_rand_str(void);
 const QString &lamexp_temp_folder2(void);
 void lamexp_ipc_read(unsigned int *command, char* message, size_t buffSize);
 void lamexp_ipc_send(unsigned int command, const char* message);
-lamexp_cpu_t lamexp_detect_cpu_features(int argc = 0, char **argv = NULL);
+lamexp_cpu_t lamexp_detect_cpu_features(const QStringList &argv);
 bool lamexp_portable_mode(void);
 bool lamexp_shutdown_computer(const QString &message, const unsigned long timeout = 30, const bool forceShutdown = true, const bool hibernate = false);
 bool lamexp_is_hibernation_supported(void);
 QIcon lamexp_app_icon(const QDate *date = NULL, const QTime *time = NULL);
+const QStringList &lamexp_arguments(void);
 
 //Translation support
 QStringList lamexp_query_translations(void);

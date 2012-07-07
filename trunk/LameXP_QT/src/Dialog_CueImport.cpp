@@ -175,10 +175,14 @@ int CueImportDialog::exec(void)
 
 	//----------------------//
 
-	m_outputDir = QString("%1/%2").arg(cueFileInfo.canonicalPath(), cueFileInfo.completeBaseName());
-	for(int n = 2; QDir(m_outputDir).exists(); n++)
+	QString baseName = cueFileInfo.completeBaseName().simplified();
+	while(baseName.endsWith(".") || baseName.endsWith(" ")) baseName.chop(1);
+	if(baseName.isEmpty()) baseName = tr("New Folder");
+
+	m_outputDir = QString("%1/%2").arg(cueFileInfo.canonicalPath(), baseName);
+	for(int n = 2; QDir(m_outputDir).exists() || QFileInfo(m_outputDir).exists(); n++)
 	{
-		m_outputDir = QString("%1/%2 (%3)").arg(cueFileInfo.canonicalPath(), cueFileInfo.completeBaseName(), QString::number(n));
+		m_outputDir = QString("%1/%2 (%3)").arg(cueFileInfo.canonicalPath(), baseName, QString::number(n));
 	}
 
 	setWindowTitle(QString("%1: %2").arg(windowTitle().split(":", QString::SkipEmptyParts).first().trimmed(), cueFileInfo.fileName()));
