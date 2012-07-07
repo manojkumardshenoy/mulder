@@ -413,6 +413,10 @@
         <source>Unknown Album</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>New Folder</source>
+        <translation type="unfinished">Nuova Cartella</translation>
+    </message>
 </context>
 <context>
     <name>CueSheetImport</name>
@@ -2168,6 +2172,11 @@
     </message>
     <message>
         <source>Analyzing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>WARNING: Decoded file size exceeds 4 GB, problems might occur!
+</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
