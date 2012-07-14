@@ -1,8 +1,8 @@
 diff --git a/common/common.c b/common/common.c
-index 4c978d3..5d1dda1 100644
+index bb11faa..091b2c2 100644
 --- a/common/common.c
 +++ b/common/common.c
-@@ -1064,8 +1064,10 @@ static void x264_log_default( void *p_unused, int i_level, const char *psz_fmt,
+@@ -1075,8 +1075,10 @@ static void x264_log_default( void *p_unused, int i_level, const char *psz_fmt,
              psz_prefix = "unknown";
              break;
      }
@@ -14,20 +14,20 @@ index 4c978d3..5d1dda1 100644
  
  /****************************************************************************
 diff --git a/configure b/configure
-index 7aea31f..3d5cd5c 100755
+index 086b399..5fbc24e 100755
 --- a/configure
 +++ b/configure
-@@ -1084,6 +1084,8 @@ gpl_filters=""
+@@ -1169,6 +1169,8 @@ gpl_filters=""
  [ $swscale = yes ] && filters="resize $filters"
  [ $gpl = yes ] && filters="$filters $gpl_filters"
  
 +echo "#define X264_CFLAGS \"$CFLAGS\"" >> config.h
 +
  cat > conftest.log <<EOF
- Platform:   $ARCH
- System:     $SYS
+ platform:      $ARCH
+ system:        $SYS
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 7ef8893..a31b1d8 100644
+index 2ced2bf..01dfa47 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
 @@ -32,6 +32,7 @@
@@ -35,10 +35,10 @@ index 7ef8893..a31b1d8 100644
  #include "macroblock.h"
  #include "me.h"
 +#include "config.h"
+ #include "unicode_support.h"
  
  #if HAVE_VISUALIZE
- #include "common/visualize.h"
-@@ -1317,6 +1318,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -1391,6 +1392,20 @@ x264_t *x264_encoder_open( x264_param_t *param )
              profile, level, subsampling[CHROMA_FORMAT], BIT_DEPTH );
      }
  

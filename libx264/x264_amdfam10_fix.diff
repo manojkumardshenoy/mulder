@@ -1,8 +1,8 @@
 diff --git a/Makefile b/Makefile
-index 560ba90..8d8dcad 100644
+index 2299634..315cacd 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -195,7 +195,7 @@ fprofiled:
+@@ -223,7 +223,7 @@ fprofiled:
  else
  fprofiled:
  	$(MAKE) clean
@@ -12,10 +12,10 @@ index 560ba90..8d8dcad 100644
  	rm -f $(SRC2:%.c=%.o)
  	$(MAKE) CFLAGS="$(CFLAGS) $(PROF_USE_CC)" LDFLAGS="$(LDFLAGS) $(PROF_USE_LD)"
 diff --git a/encoder/encoder.c b/encoder/encoder.c
-index 0cae34a..7ef8893 100644
+index 93c4049..2ced2bf 100644
 --- a/encoder/encoder.c
 +++ b/encoder/encoder.c
-@@ -1211,7 +1211,12 @@ x264_t *x264_encoder_open( x264_param_t *param )
+@@ -1271,7 +1271,12 @@ x264_t *x264_encoder_open( x264_param_t *param )
          x264_log( h, X264_LOG_ERROR, "Are you attempting to run an SSE4a-targeted build on a CPU that\n" );
          x264_log( h, X264_LOG_ERROR, "doesn't support it?\n" );
  #endif

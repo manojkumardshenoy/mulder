@@ -1,8 +1,10 @@
+LoadPlugin("E:\AviSynth 2.5\z_Plugins\ffms2.dll")
 FFVideoSource("F:\Samples\Lossless\soccer.704x576.60fps.avi")
 #AssumeFrameBased()
 #FFVideoSource("F:\Samples\Lossless\crew.704x576.avi")
 #FFVideoSource("F:\Samples\Lossless\foreman_cif.352x288.avi") ++ FFVideoSource("F:\Samples\Lossless\football_cif.352x288.avi")
 #Dissolve(Last.Trim(0,199), Last.Trim(200,399), Last.Trim(400,599), 15)
 Dissolve(Last.Trim(0,299), Last.Trim(350,599), 50)
+
 AssumeFPS(60.0)
 AssumeFrameBased()

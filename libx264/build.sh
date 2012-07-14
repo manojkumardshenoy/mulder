@@ -3,9 +3,9 @@
 ######################################################
 
 GIT_URL="git://git.videolan.org/x264.git"
-DEFAULT_PATCHES="x264_amdfam10_fix x264_print_params x264_dll_version"
-COMPILERS_STABLE="446 453 461"
-COMPILERS_OTHERS="462 451 440 345"
+DEFAULT_PATCHES="x264_utf8 x264_amdfam10_fix x264_print_params x264_dll_version"
+COMPILERS_STABLE="471 462"
+COMPILERS_OTHERS="345"
 CPU_TYPES="i686 core2 amdfam10 pentium3 noasm"
 ROOT_DRIVE="e"
 
@@ -154,9 +154,21 @@ make_x264() {
   ELFLAGS="-L../pthreads"
   ECFLAGS="-I../pthreads"
   
-  if [ -f "./libpack/lib/libavcodec.a" -a -f "./libpack/include/libavcodec/avcodec.h" -a $1 -ge 445 -a $1 -lt 460 ]; then #TODO: Fix library pack for GCC prior to 4.4.5 and 4.6.0
-    ELFLAGS="$ELFLAGS -L../libpack/lib"
-    ECFLAGS="$ECFLAGS -I../libpack/include"
+  if [ -f "./libpack.44x/lib/libavcodec.a" -a -f "./libpack.44x/include/libavcodec/avcodec.h" -a $1 -ge 440 -a $1 -lt 450 ]; then
+    ELFLAGS="$ELFLAGS -L../libpack.44x/lib"
+    ECFLAGS="$ECFLAGS -I../libpack.44x/include"
+  fi
+  if [ -f "./libpack.45x/lib/libavcodec.a" -a -f "./libpack.45x/include/libavcodec/avcodec.h" -a $1 -ge 450 -a $1 -lt 460 ]; then
+    ELFLAGS="$ELFLAGS -L../libpack.45x/lib"
+    ECFLAGS="$ECFLAGS -I../libpack.45x/include"
+  fi
+  if [ -f "./libpack.46x/lib/libavcodec.a" -a -f "./libpack.45x/include/libavcodec/avcodec.h" -a $1 -ge 460 -a $1 -lt 470 ]; then
+    ELFLAGS="$ELFLAGS -L../libpack.46x/lib"
+    ECFLAGS="$ECFLAGS -I../libpack.46x/include"
+  fi
+  if [ -f "./libpack.47x/lib/libavcodec.a" -a -f "./libpack.45x/include/libavcodec/avcodec.h" -a $1 -ge 470 -a $1 -lt 480 ]; then
+    ELFLAGS="$ELFLAGS -L../libpack.47x/lib"
+    ECFLAGS="$ECFLAGS -I../libpack.47x/include"
   fi
   
   if [ "$2" != "noasm" ]; then
@@ -280,10 +292,10 @@ make_x264() {
 
   if [ "$3" != "" ]; then
     git diff > ./x264-patches-$3-$VER.diff
-    7z a "patches.tar" "x264-patches-$3-$VER.diff"
+    7za a "patches.tar" "x264-patches-$3-$VER.diff"
   else
     git diff > ./x264-patches-$VER.diff
-    7z a "patches.tar" "x264-patches-$VER.diff"
+    7za a "patches.tar" "x264-patches-$VER.diff"
   fi
   
   echo -e "\n------------------------------------------------------------------------------\n"
@@ -319,7 +331,7 @@ make_x264() {
   echo -e "\n------------------------------------------------------------------------------\n"
 
   if [ -f "./libx264-$API.dll" -a -f "./x264.exe" -a -f "./history.txt" -a -f "./readme.txt" -a -f "./patches.tar" -a -f "./checkasm.log" -a -f "./compiler.ver" ]; then
-    7z a "libx264-$API-$VER-$NAME-fprofiled.7z" "libx264-$API.dll" "x264.exe" "readme.txt" "history.txt" "patches.tar" "checkasm.log" "compiler.ver"
+    7za a "libx264-$API-$VER-$NAME-fprofiled.7z" "libx264-$API.dll" "x264.exe" "readme.txt" "history.txt" "patches.tar" "checkasm.log" "compiler.ver"
   fi
   
   cd ..
