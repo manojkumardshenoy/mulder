@@ -683,18 +683,6 @@
         <translation> Kodierer / Format </translation>
     </message>
     <message>
-        <source>Lame MP3</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Ogg Vorbis</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Wave (PCM)</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>FLAC</source>
         <translation></translation>
     </message>
@@ -1459,10 +1447,6 @@
         <translation>LameXP wird fortan &lt;i&gt;nicht&lt;/i&gt; nach Beta (Entwickler) Updates suchen.</translation>
     </message>
     <message>
-        <source>Aften A/52</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>Lame MP3:</source>
         <translation></translation>
     </message>
@@ -1687,10 +1671,6 @@
         <translation>Lesezeichen für aktuelles Verzeichnis hinzufügen</translation>
     </message>
     <message>
-        <source>MPEG-4 AAC</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>AAC Encoder-Options</source>
         <translation>AAC-Kodierer Optionen</translation>
     </message>
@@ -1753,10 +1733,6 @@
     <message>
         <source>Skipping update check this time, please be patient...</source>
         <translation>Update-Überprüfung wird übersprungen, bitte warten...</translation>
-    </message>
-    <message>
-        <source>DCA Enc</source>
-        <translation></translation>
     </message>
     <message>
         <source>Export Meta Tags to CSV File</source>
@@ -1857,6 +1833,66 @@
     <message>
         <source>Refresh Directory Outline</source>
         <translation>Verzeichnisbaum aktualisieren</translation>
+    </message>
+    <message>
+        <source>MP3</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Ogg/Vorbis</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>AAC/MP4</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>PCM/Wave</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>A/52</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>DCA</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Opus</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source> Opus Encoder Options </source>
+        <translation>Opus Kodierer Optionen</translation>
+    </message>
+    <message>
+        <source>Optimize for Signal Type:</source>
+        <translation>Optimieren für Signaltyp:</translation>
+    </message>
+    <message>
+        <source>Encoding Complexity:</source>
+        <translation>Kodierer Komplexität:</translation>
+    </message>
+    <message>
+        <source>Music</source>
+        <translation>Musik</translation>
+    </message>
+    <message>
+        <source>(Undefined)</source>
+        <translation>(Undefiniert)</translation>
+    </message>
+    <message>
+        <source>Frame Size:</source>
+        <translation>Framegröße:</translation>
+    </message>
+    <message>
+        <source>Use Experimental Encoder Perceptual Tuning</source>
+        <translation>Psychoakustische Optimierungen (experimentell)</translation>
+    </message>
+    <message>
+        <source>OpusEnc:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2177,7 +2213,7 @@
     <message>
         <source>WARNING: Decoded file size exceeds 4 GB, problems might occur!
 </source>
-        <translation type="unfinished"></translation>
+        <translation>WARNUNG: Dekodierte Dateigröße übersteigt 4 GB, Probleme sind vorprogrammiert!</translation>
     </message>
 </context>
 <context>

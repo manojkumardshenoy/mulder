@@ -21,31 +21,18 @@
 
 #pragma once
 
-#include "Encoder_Abstract.h"
+#include "Decoder_Abstract.h"
 
-#include <QObject>
-
-class AACEncoder : public AbstractEncoder
+class OpusDecoder : public AbstractDecoder
 {
-	Q_OBJECT
-
 public:
-	AACEncoder(void);
-	~AACEncoder(void);
+	OpusDecoder(void);
+	~OpusDecoder(void);
 
-	virtual bool encode(const QString &sourceFile, const AudioFileModel &metaInfo, const QString &outputFile, volatile bool *abortFlag);
-	virtual bool isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion);
-	virtual QString extension(void);
-	virtual const bool needsTimingInfo(void);
-	
-	//Advanced options
-	virtual void setProfile(int profile);
-	virtual void setEnable2Pass(bool enabled);
+	virtual bool decode(const QString &sourceFile, const QString &outputFile, volatile bool *abortFlag);
+	static bool isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion);
+	static QStringList supportedTypes(void);
 
 private:
-	const QString m_binary_enc;
-	const QString m_binary_tag;
-	const QString m_binary_sox;
-	int m_configProfile;
-	bool m_configEnable2Pass;
+	const QString m_binary;
 };

@@ -21,40 +21,37 @@
 
 #pragma once
 
-#include "Tool_Abstract.h"
-#include "Model_AudioFile.h"
+#include "Encoder_Abstract.h"
 
-class QProcess;
-class QStringList;
-class QMutex;
+#include <QObject>
 
-class AbstractEncoder : public AbstractTool
+class OpusEncoder : public AbstractEncoder
 {
 	Q_OBJECT
 
 public:
-	AbstractEncoder(void);
-	~AbstractEncoder(void);
+	OpusEncoder(void);
+	~OpusEncoder(void);
 
-	//Internal encoder API
-	virtual bool encode(const QString &sourceFile, const AudioFileModel &metaInfo, const QString &outputFile, volatile bool *abortFlag) = 0;
-	virtual bool isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion) = 0;
-	virtual QString extension(void) = 0;
-	virtual const unsigned int *supportedSamplerates(void);
+	virtual bool encode(const QString &sourceFile, const AudioFileModel &metaInfo, const QString &outputFile, volatile bool *abortFlag);
+	virtual bool isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion);
+	virtual QString extension(void);
 	virtual const unsigned int *supportedChannelCount(void);
 	virtual const unsigned int *supportedBitdepths(void);
 	virtual const bool needsTimingInfo(void);
 
-	//Common setter methods
-	void setBitrate(int bitrate);
-	void setRCMode(int mode);
-	void setCustomParams(const QString &customParams);
+	//Advanced options
+	virtual void setOptimizeFor(int optimizeFor);
+	virtual void setEncodeComplexity(int complexity);
+	virtual void setFrameSize(int frameSize);
+	virtual void setExpAnalysisOn(bool expAnalysisOn);
 
-protected:
-	int m_configBitrate;
-	int m_configRCMode;
-	QString m_configCustomParams;
-
-	//Helper functions
-	bool isUnicode(const QString &text);
+private:
+	const QString m_binary_std;
+	const QString m_binary_ea7;
+	
+	int m_configOptimizeFor;
+	int m_configEncodeComplexity;
+	int m_configFrameSize;
+	bool m_configExpAnalysisOn;
 };

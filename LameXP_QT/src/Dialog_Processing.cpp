@@ -39,6 +39,7 @@
 #include "Encoder_FLAC.h"
 #include "Encoder_MP3.h"
 #include "Encoder_Vorbis.h"
+#include "Encoder_Opus.h"
 #include "Encoder_Wave.h"
 #include "Filter_Downmix.h"
 #include "Filter_Normalize.h"
@@ -78,21 +79,33 @@ static int cores2instances(int cores);
 
 ////////////////////////////////////////////////////////////
 
-#define CHANGE_BACKGROUND_COLOR(WIDGET, COLOR) \
+#define CHANGE_BACKGROUND_COLOR(WIDGET, COLOR) do \
 { \
 	QPalette palette = WIDGET->palette(); \
 	palette.setColor(QPalette::Background, COLOR); \
 	WIDGET->setPalette(palette); \
-}
+} \
+while(0)
 
-#define SET_PROGRESS_TEXT(TXT) \
+#define SET_PROGRESS_TEXT(TXT) do \
 { \
 	label_progress->setText(TXT); \
 	m_systemTray->setToolTip(QString().sprintf("LameXP v%d.%02d\n%ls", lamexp_version_major(), lamexp_version_minor(), QString(TXT).utf16())); \
-}
+} \
+while(0)
 
-#define SET_FONT_BOLD(WIDGET,BOLD) { QFont _font = WIDGET->font(); _font.setBold(BOLD); WIDGET->setFont(_font); }
-#define UPDATE_MIN_WIDTH(WIDGET) { if(WIDGET->width() > WIDGET->minimumWidth()) WIDGET->setMinimumWidth(WIDGET->width()); }
+#define SET_FONT_BOLD(WIDGET,BOLD) do \
+{ \
+	QFont _font = WIDGET->font(); \
+	_font.setBold(BOLD); WIDGET->setFont(_font); \
+} \
+while(0)
+
+#define UPDATE_MIN_WIDTH(WIDGET) do \
+{ \
+	if(WIDGET->width() > WIDGET->minimumWidth()) WIDGET->setMinimumWidth(WIDGET->width()); \
+} \
+while(0)
 
 ////////////////////////////////////////////////////////////
 // Constructor
@@ -835,7 +848,19 @@ AbstractEncoder *ProcessingDialog::makeEncoder(bool *nativeResampling)
 			encoder = flacEncoder;
 		}
 		break;
-	case SettingsModel::DCAEncoder:
+	case SettingsModel::OpusEncoder:
+		{
+			OpusEncoder *opusEncoder = new OpusEncoder();
+			opusEncoder->setBitrate(m_settings->compressionBitrate());
+			opusEncoder->setRCMode(m_settings->compressionRCMode());
+			opusEncoder->setOptimizeFor(m_settings->opusOptimizeFor());
+			opusEncoder->setEncodeComplexity(m_settings->opusComplexity());
+			opusEncoder->setFrameSize(m_settings->opusFramesize());
+			opusEncoder->setExpAnalysisOn(m_settings->opusExpAnalysis());
+			opusEncoder->setCustomParams(m_settings->customParametersOpus());
+			encoder = opusEncoder;
+		}
+		break;	case SettingsModel::DCAEncoder:
 		{
 			DCAEncoder *dcaEncoder = new DCAEncoder();
 			dcaEncoder->setBitrate(m_settings->compressionBitrate());
