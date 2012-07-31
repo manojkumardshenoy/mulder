@@ -62,8 +62,9 @@ public:
 		AACEncoder = 2,
 		AC3Encoder = 3,
 		FLACEncoder = 4,
-		DCAEncoder = 5,
-		PCMEncoder = 6
+		OpusEncoder = 5,
+		DCAEncoder = 6,
+		PCMEncoder = 7
 	};
 	enum RCMode
 	{
@@ -111,6 +112,10 @@ public:
 	LAMEXP_MAKE_OPTION_I(aftenDynamicRangeCompression);
 	LAMEXP_MAKE_OPTION_B(aftenFastBitAllocation);
 	LAMEXP_MAKE_OPTION_I(aftenExponentSearchSize);
+	LAMEXP_MAKE_OPTION_I(opusOptimizeFor);
+	LAMEXP_MAKE_OPTION_I(opusComplexity);
+	LAMEXP_MAKE_OPTION_I(opusFramesize);
+	LAMEXP_MAKE_OPTION_B(opusExpAnalysis);
 	LAMEXP_MAKE_OPTION_B(normalizationFilterEnabled);
 	LAMEXP_MAKE_OPTION_I(normalizationFilterMaxVolume);
 	LAMEXP_MAKE_OPTION_I(normalizationFilterEqualizationMode);
@@ -121,6 +126,7 @@ public:
 	LAMEXP_MAKE_OPTION_S(customParametersAacEnc);
 	LAMEXP_MAKE_OPTION_S(customParametersAften);
 	LAMEXP_MAKE_OPTION_S(customParametersFLAC);
+	LAMEXP_MAKE_OPTION_S(customParametersOpus);
 	LAMEXP_MAKE_OPTION_B(renameOutputFilesEnabled);
 	LAMEXP_MAKE_OPTION_S(renameOutputFilesPattern);
 	LAMEXP_MAKE_OPTION_U(metaInfoPosition);

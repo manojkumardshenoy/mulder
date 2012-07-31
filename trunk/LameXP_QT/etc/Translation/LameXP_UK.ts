@@ -416,7 +416,7 @@
     </message>
     <message>
         <source>New Folder</source>
-        <translation type="unfinished">Нова тека</translation>
+        <translation>Нова тека</translation>
     </message>
 </context>
 <context>
@@ -681,18 +681,6 @@
     <message>
         <source> Encoder / Format </source>
         <translation> Кодер / Формат </translation>
-    </message>
-    <message>
-        <source>Lame MP3</source>
-        <translation>Lame MP3</translation>
-    </message>
-    <message>
-        <source>Ogg Vorbis</source>
-        <translation>Ogg Vorbis</translation>
-    </message>
-    <message>
-        <source>Wave (PCM)</source>
-        <translation>Wave (PCM)</translation>
     </message>
     <message>
         <source>FLAC</source>
@@ -1431,10 +1419,6 @@
         <translation>Не можливо вести запис до обраної теки. Будь ласка, оберіть іншу!</translation>
     </message>
     <message>
-        <source>Aften A/52</source>
-        <translation>Aften A/52</translation>
-    </message>
-    <message>
         <source>Lame MP3:</source>
         <translation>Lame MP3:</translation>
     </message>
@@ -1687,10 +1671,6 @@
         <translation>Додати поточну теку до закладок</translation>
     </message>
     <message>
-        <source>MPEG-4 AAC</source>
-        <translation>MPEG-4 AAC</translation>
-    </message>
-    <message>
         <source>AAC Encoder-Options</source>
         <translation>Налаштування кодера AAC</translation>
     </message>
@@ -1753,10 +1733,6 @@
     <message>
         <source>Skipping update check this time, please be patient...</source>
         <translation>Наразі йде переривання перевірки оновлень, будь ласка, зачекайте...</translation>
-    </message>
-    <message>
-        <source>DCA Enc</source>
-        <translation>DCA Enc</translation>
     </message>
     <message>
         <source>Export Meta Tags to CSV File</source>
@@ -1857,6 +1833,66 @@
     <message>
         <source>Refresh Directory Outline</source>
         <translation>Поновити структуру тек</translation>
+    </message>
+    <message>
+        <source>MP3</source>
+        <translation>MP3</translation>
+    </message>
+    <message>
+        <source>Ogg/Vorbis</source>
+        <translation>Ogg/Vorbis</translation>
+    </message>
+    <message>
+        <source>AAC/MP4</source>
+        <translation>AAC/MP4</translation>
+    </message>
+    <message>
+        <source>PCM/Wave</source>
+        <translation>PCM/Wave</translation>
+    </message>
+    <message>
+        <source>A/52</source>
+        <translation>A/52</translation>
+    </message>
+    <message>
+        <source>DCA</source>
+        <translation>DCA</translation>
+    </message>
+    <message>
+        <source>Opus</source>
+        <translation>Opus</translation>
+    </message>
+    <message>
+        <source> Opus Encoder Options </source>
+        <translation>Налаштування кодера Opus</translation>
+    </message>
+    <message>
+        <source>Optimize for Signal Type:</source>
+        <translation>Оптимізувати відносно типу сигнала:</translation>
+    </message>
+    <message>
+        <source>Encoding Complexity:</source>
+        <translation>Складність кодування:</translation>
+    </message>
+    <message>
+        <source>Music</source>
+        <translation>Музика</translation>
+    </message>
+    <message>
+        <source>(Undefined)</source>
+        <translation>(Невизначено)</translation>
+    </message>
+    <message>
+        <source>Frame Size:</source>
+        <translation>Розмір кадру:</translation>
+    </message>
+    <message>
+        <source>Use Experimental Encoder Perceptual Tuning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OpusEnc:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2177,7 +2213,7 @@
     <message>
         <source>WARNING: Decoded file size exceeds 4 GB, problems might occur!
 </source>
-        <translation type="unfinished"></translation>
+        <translation>ПОПЕРЕДЖЕННЯ: Розмір декодованного файла перевищує 4 ГБ, можуть виникнути проблеми!</translation>
     </message>
 </context>
 <context>

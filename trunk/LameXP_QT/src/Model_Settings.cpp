@@ -101,6 +101,10 @@ LAMEXP_MAKE_ID(aftenExponentSearchSize, "AdvancedOptions/Aften/ExponentSearchSiz
 LAMEXP_MAKE_ID(samplingRate, "AdvancedOptions/Common/Resampling");
 LAMEXP_MAKE_ID(neroAACEnable2Pass, "AdvancedOptions/AACEnc/Enable2Pass");
 LAMEXP_MAKE_ID(aacEncProfile, "AdvancedOptions/AACEnc/ForceProfile");
+LAMEXP_MAKE_ID(opusOptimizeFor, "AdvancedOptions/Opus/OptimizeForSignalType");
+LAMEXP_MAKE_ID(opusComplexity, "AdvancedOptions/Opus/EncodingComplexity");
+LAMEXP_MAKE_ID(opusFramesize, "AdvancedOptions/Opus/FrameSize");
+LAMEXP_MAKE_ID(opusExpAnalysis, "AdvancedOptions/Opus/EnableExpAnalysis");
 LAMEXP_MAKE_ID(normalizationFilterEnabled, "AdvancedOptions/VolumeNormalization/Enabled");
 LAMEXP_MAKE_ID(normalizationFilterMaxVolume, "AdvancedOptions/VolumeNormalization/MaxVolume");
 LAMEXP_MAKE_ID(normalizationFilterEqualizationMode, "AdvancedOptions/VolumeNormalization/EqualizationMode");
@@ -111,6 +115,7 @@ LAMEXP_MAKE_ID(customParametersOggEnc, "AdvancedOptions/CustomParameters/OggEnc"
 LAMEXP_MAKE_ID(customParametersAacEnc, "AdvancedOptions/CustomParameters/AacEnc");
 LAMEXP_MAKE_ID(customParametersAften, "AdvancedOptions/CustomParameters/Aften");
 LAMEXP_MAKE_ID(customParametersFLAC, "AdvancedOptions/CustomParameters/FLAC");
+LAMEXP_MAKE_ID(customParametersOpus, "AdvancedOptions/CustomParameters/OpusEnc");
 LAMEXP_MAKE_ID(renameOutputFilesEnabled, "AdvancedOptions/RenameOutputFiles/Enabled");
 LAMEXP_MAKE_ID(renameOutputFilesPattern, "AdvancedOptions/RenameOutputFiles/Pattern");
 LAMEXP_MAKE_ID(hibernateComputer, "AdvancedOptions/HibernateComputerOnShutdown");
@@ -378,6 +383,10 @@ LAMEXP_MAKE_OPTION_I(aftenAudioCodingMode, 0);
 LAMEXP_MAKE_OPTION_I(aftenDynamicRangeCompression, 5);
 LAMEXP_MAKE_OPTION_B(aftenFastBitAllocation, false);
 LAMEXP_MAKE_OPTION_I(aftenExponentSearchSize, 8);
+LAMEXP_MAKE_OPTION_I(opusOptimizeFor, 0);
+LAMEXP_MAKE_OPTION_I(opusComplexity, 10);
+LAMEXP_MAKE_OPTION_I(opusFramesize, 3);
+LAMEXP_MAKE_OPTION_B(opusExpAnalysis, true);
 LAMEXP_MAKE_OPTION_B(normalizationFilterEnabled, false)
 LAMEXP_MAKE_OPTION_I(normalizationFilterMaxVolume, -50)
 LAMEXP_MAKE_OPTION_I(normalizationFilterEqualizationMode, 0);
@@ -388,6 +397,7 @@ LAMEXP_MAKE_OPTION_S(customParametersOggEnc, QString());
 LAMEXP_MAKE_OPTION_S(customParametersAacEnc, QString());
 LAMEXP_MAKE_OPTION_S(customParametersAften, QString());
 LAMEXP_MAKE_OPTION_S(customParametersFLAC, QString());
+LAMEXP_MAKE_OPTION_S(customParametersOpus, QString());
 LAMEXP_MAKE_OPTION_B(renameOutputFilesEnabled, false);
 LAMEXP_MAKE_OPTION_S(renameOutputFilesPattern, "[<TrackNo>] <Artist> - <Title>");
 LAMEXP_MAKE_OPTION_U(metaInfoPosition, UINT_MAX);

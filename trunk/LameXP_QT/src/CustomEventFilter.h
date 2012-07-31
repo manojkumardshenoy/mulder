@@ -21,31 +21,40 @@
 
 #pragma once
 
-#include "Encoder_Abstract.h"
+#include <QEvent>
+#include <QWidget>
 
-#include <QObject>
-
-class AACEncoder : public AbstractEncoder
+class CustomEventFilter: public QObject
 {
 	Q_OBJECT
 
 public:
-	AACEncoder(void);
-	~AACEncoder(void);
+	CustomEventFilter(void) {}
+	~CustomEventFilter(void) {}
 
-	virtual bool encode(const QString &sourceFile, const AudioFileModel &metaInfo, const QString &outputFile, volatile bool *abortFlag);
-	virtual bool isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion);
-	virtual QString extension(void);
-	virtual const bool needsTimingInfo(void);
-	
-	//Advanced options
-	virtual void setProfile(int profile);
-	virtual void setEnable2Pass(bool enabled);
+	bool eventFilter(QObject *obj, QEvent *event)
+	{
+		if(QWidget *sender = dynamic_cast<QWidget*>(obj))
+		{
+			switch(event->type())
+			{
+			case QEvent::Enter:
+			case QEvent::Leave:
+			case QEvent::KeyPress:
+			case QEvent::KeyRelease:
+			case QEvent::MouseButtonPress:
+			case QEvent::MouseButtonRelease:
+			case QEvent::FocusIn:
+			case QEvent::FocusOut:
+			case QEvent::TouchEnd:
+				eventOccurred(sender, event);
+				break;
+			}
+		}
 
-private:
-	const QString m_binary_enc;
-	const QString m_binary_tag;
-	const QString m_binary_sox;
-	int m_configProfile;
-	bool m_configEnable2Pass;
+		return false;
+	}
+
+signals:
+	void eventOccurred(QWidget *sender, QEvent *event);
 };
