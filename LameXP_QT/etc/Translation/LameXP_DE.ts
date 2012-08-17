@@ -270,6 +270,10 @@
         <source>Variable</source>
         <translation>variabel</translation>
     </message>
+    <message>
+        <source>Encoder</source>
+        <translation>Kodierer</translation>
+    </message>
 </context>
 <context>
     <name>CueImportDialog</name>
@@ -1892,7 +1896,11 @@
     </message>
     <message>
         <source>OpusEnc:</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Show Help</source>
+        <translation>Hilfethemen anzeigen</translation>
     </message>
 </context>
 <context>

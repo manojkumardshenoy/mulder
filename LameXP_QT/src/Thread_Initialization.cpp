@@ -84,7 +84,7 @@ protected:
 				else
 				{
 					qDebug("Extracting file: %s -> %s", m_toolName.toLatin1().constData(), m_toolShortName.toLatin1().constData());
-					lockedFile = new LockedFile(QString(":/tools/%1").arg(m_toolName), QString("%1/lamexp_%2").arg(lamexp_temp_folder2(), m_toolShortName), m_toolHash);
+					lockedFile = new LockedFile(QString(":/tools/%1").arg(m_toolName), QString("%1/lxp_%2").arg(lamexp_temp_folder2(), m_toolShortName), m_toolHash);
 				}
 
 				if(lockedFile)
@@ -489,14 +489,15 @@ void InitializationThread::initFhgAac(void)
 {
 	const QString appPath = QDir(QCoreApplication::applicationDirPath()).canonicalPath();
 	
-	QFileInfo fhgFileInfo[4];
+	QFileInfo fhgFileInfo[5];
 	fhgFileInfo[0] = QFileInfo(QString("%1/fhgaacenc.exe").arg(appPath));
 	fhgFileInfo[1] = QFileInfo(QString("%1/enc_fhgaac.dll").arg(appPath));
 	fhgFileInfo[2] = QFileInfo(QString("%1/nsutil.dll").arg(appPath));
 	fhgFileInfo[3] = QFileInfo(QString("%1/libmp4v2.dll").arg(appPath));
+	fhgFileInfo[4] = QFileInfo(QString("%1/libsndfile-1.dll").arg(appPath));
 	
 	bool fhgFilesFound = true;
-	for(int i = 0; i < 4; i++)	{ if(!fhgFileInfo[i].exists()) fhgFilesFound = false; }
+	for(int i = 0; i < 5; i++)	{ if(!fhgFileInfo[i].exists()) fhgFilesFound = false; }
 
 	//Lock the FhgAacEnc binaries
 	if(!fhgFilesFound)
@@ -508,19 +509,19 @@ void InitializationThread::initFhgAac(void)
 	qDebug("Found FhgAacEnc cli_exe:\n%s\n", fhgFileInfo[0].canonicalFilePath().toUtf8().constData());
 	qDebug("Found FhgAacEnc enc_dll:\n%s\n", fhgFileInfo[1].canonicalFilePath().toUtf8().constData());
 
-	LockedFile *fhgBin[4];
-	for(int i = 0; i < 4; i++) fhgBin[i] = NULL;
+	LockedFile *fhgBin[5];
+	for(int i = 0; i < 5; i++) fhgBin[i] = NULL;
 
 	try
 	{
-		for(int i = 0; i < 4; i++)
+		for(int i = 0; i < 5; i++)
 		{
 			fhgBin[i] = new LockedFile(fhgFileInfo[i].canonicalFilePath());
 		}
 	}
 	catch(...)
 	{
-		for(int i = 0; i < 4; i++) LAMEXP_DELETE(fhgBin[i]);
+		for(int i = 0; i < 5; i++) LAMEXP_DELETE(fhgBin[i]);
 		qWarning("Failed to get excluive lock to FhgAacEnc binary -> FhgAacEnc support will be disabled!");
 		return;
 	}
@@ -536,7 +537,7 @@ void InitializationThread::initFhgAac(void)
 		qWarning("Error message: \"%s\"\n", process.errorString().toLatin1().constData());
 		process.kill();
 		process.waitForFinished(-1);
-		for(int i = 0; i < 4; i++) LAMEXP_DELETE(fhgBin[i]);
+		for(int i = 0; i < 5; i++) LAMEXP_DELETE(fhgBin[i]);
 		return;
 	}
 
@@ -551,7 +552,7 @@ void InitializationThread::initFhgAac(void)
 			qWarning("FhgAacEnc process time out -> killing!");
 			process.kill();
 			process.waitForFinished(-1);
-			for(int i = 0; i < 4; i++) LAMEXP_DELETE(fhgBin[i]);
+			for(int i = 0; i < 5; i++) LAMEXP_DELETE(fhgBin[i]);
 			return;
 		}
 		while(process.bytesAvailable() > 0)
@@ -569,17 +570,18 @@ void InitializationThread::initFhgAac(void)
 	if(!(fhgVersion > 0))
 	{
 		qWarning("FhgAacEnc version couldn't be determined -> FhgAacEnc support will be disabled!");
-		for(int i = 0; i < 4; i++) LAMEXP_DELETE(fhgBin[i]);
+		for(int i = 0; i < 5; i++) LAMEXP_DELETE(fhgBin[i]);
 		return;
 	}
 	else if(fhgVersion < lamexp_toolver_fhgaacenc())
 	{
-		qWarning("FhgAacEnc version is too much outdated -> FhgAacEnc support will be disabled!");
-		for(int i = 0; i < 4; i++) LAMEXP_DELETE(fhgBin[i]);
+		qWarning("FhgAacEnc version is too much outdated (%s) -> FhgAacEnc support will be disabled!", lamexp_version2string("????-??-??", fhgVersion, "N/A").toLatin1().constData());
+		qWarning("Minimum required FhgAacEnc version currently is: %s\n", lamexp_version2string("????-??-??", lamexp_toolver_fhgaacenc(), "N/A").toLatin1().constData());
+		for(int i = 0; i < 5; i++) LAMEXP_DELETE(fhgBin[i]);
 		return;
 	}
 	
-	for(int i = 0; i < 4; i++)
+	for(int i = 0; i < 5; i++)
 	{
 		lamexp_register_tool(fhgFileInfo[i].fileName(), fhgBin[i], fhgVersion);
 	}
@@ -695,6 +697,7 @@ void InitializationThread::initQAac(void)
 	else if(qaacVersion < lamexp_toolver_qaacenc())
 	{
 		qWarning("QAAC version is too much outdated (%s) -> QAAC support will be disabled!", lamexp_version2string("v?.??", qaacVersion, "N/A").toLatin1().constData());
+		qWarning("Minimum required QAAC version currently is: %s.\n", lamexp_version2string("v?.??", lamexp_toolver_qaacenc(), "N/A").toLatin1().constData());
 		for(int i = 0; i < 2; i++) LAMEXP_DELETE(qaacBin[i]);
 		return;
 	}
@@ -708,6 +711,7 @@ void InitializationThread::initQAac(void)
 	else if(coreVersion < lamexp_toolver_coreaudio())
 	{
 		qWarning("CoreAudioToolbox version is too much outdated (%s) -> QAAC support will be disabled!", lamexp_version2string("v?.?.?.?", coreVersion, "N/A").toLatin1().constData());
+		qWarning("Minimum required CoreAudioToolbox version currently is: %s.\n", lamexp_version2string("v?.??", lamexp_toolver_coreaudio(), "N/A").toLatin1().constData());
 		for(int i = 0; i < 2; i++) LAMEXP_DELETE(qaacBin[i]);
 		return;
 	}
@@ -743,7 +747,7 @@ void InitializationThread::selfTest(void)
 				qDebug("%02i -> %s", ++n, g_lamexp_tools[i].pcName);
 			}
 		}
-		if(n != 25)
+		if(n != 28)
 		{
 			qFatal("Tool count mismatch !!!");
 		}

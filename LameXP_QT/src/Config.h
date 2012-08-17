@@ -28,17 +28,17 @@
 #define VER_LAMEXP_MAJOR					4
 #define VER_LAMEXP_MINOR_HI					0
 #define VER_LAMEXP_MINOR_LO					5
-#define VER_LAMEXP_TYPE						Alpha
-#define VER_LAMEXP_PATCH					12
-#define VER_LAMEXP_BUILD					1067
+#define VER_LAMEXP_TYPE						Beta
+#define VER_LAMEXP_PATCH					4
+#define VER_LAMEXP_BUILD					1086
 
 ///////////////////////////////////////////////////////////////////////////////
 // Tool versions (minimum expected versions!)
 ///////////////////////////////////////////////////////////////////////////////
 
 #define VER_LAMEXP_TOOL_NEROAAC				1540
-#define VER_LAMEXP_TOOL_FHGAACENC			20110822
-#define VER_LAMEXP_TOOL_QAAC				131
+#define VER_LAMEXP_TOOL_FHGAACENC			20120806
+#define VER_LAMEXP_TOOL_QAAC				139
 #define VER_LAMEXP_TOOL_COREAUDIO			7710
 
 ///////////////////////////////////////////////////////////////////////////////
