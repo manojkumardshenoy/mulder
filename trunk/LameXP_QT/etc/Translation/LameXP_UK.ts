@@ -271,6 +271,10 @@
         <source>Variable</source>
         <translation>Змінний</translation>
     </message>
+    <message>
+        <source>Encoder</source>
+        <translation>Кодер</translation>
+    </message>
 </context>
 <context>
     <name>CueImportDialog</name>
@@ -1888,11 +1892,15 @@
     </message>
     <message>
         <source>Use Experimental Encoder Perceptual Tuning</source>
-        <translation type="unfinished"></translation>
+        <translation>Використовувати експериментальне відчуттєве налагодження кодера</translation>
     </message>
     <message>
         <source>OpusEnc:</source>
-        <translation type="unfinished"></translation>
+        <translation>OpusEnc:</translation>
+    </message>
+    <message>
+        <source>Show Help</source>
+        <translation>Відобразити допоміжну інформацію</translation>
     </message>
 </context>
 <context>

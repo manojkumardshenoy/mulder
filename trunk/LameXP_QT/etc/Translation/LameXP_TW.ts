@@ -270,6 +270,10 @@
         <source>Variable</source>
         <translation>可變</translation>
     </message>
+    <message>
+        <source>Encoder</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>CueImportDialog</name>
@@ -1891,6 +1895,10 @@
     </message>
     <message>
         <source>OpusEnc:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Help</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
