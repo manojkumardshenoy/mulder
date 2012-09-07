@@ -140,7 +140,7 @@ static const char* LAMEXP_DEFAULT_LANGID = "en";
 //Auxiliary functions
 bool lamexp_clean_folder(const QString &folderPath);
 const QString lamexp_version2string(const QString &pattern, unsigned int version, const QString &defaultText);
-QString lamexp_known_folder(lamexp_known_folder_t folder_id);
+const QString &lamexp_known_folder(lamexp_known_folder_t folder_id);
 unsigned __int64 lamexp_free_diskspace(const QString &path, bool *ok = NULL);
 bool lamexp_remove_file(const QString &filename);
 bool lamexp_themes_enabled(void);
@@ -185,7 +185,7 @@ SIZE_T lamexp_dbg_private_bytes(void);
 
 //Memory check
 #if LAMEXP_DEBUG
-#define LAMEXP_MEMORY_CHECK(FUNC, RETV,  ...) \
+#define LAMEXP_MEMORY_CHECK(FUNC, RETV,  ...) do \
 { \
 	SIZE_T _privateBytesBefore = lamexp_dbg_private_bytes(); \
 	RETV = FUNC(__VA_ARGS__); \
@@ -197,12 +197,14 @@ SIZE_T lamexp_dbg_private_bytes(void);
 		OutputDebugStringA(_buffer); \
 		OutputDebugStringA("----------\n"); \
 	} \
-}
+} \
+while(0)
 #else
-#define LAMEXP_MEMORY_CHECK(FUNC, RETV,  ...) \
+#define LAMEXP_MEMORY_CHECK(FUNC, RETV,  ...) do \
 { \
 	RETV = __noop(__VA_ARGS__); \
-}
+} \
+while(0)
 #endif
 
 //Check for CPU-compatibility options
