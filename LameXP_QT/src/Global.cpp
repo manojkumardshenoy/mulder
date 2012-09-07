@@ -86,6 +86,8 @@ Q_IMPORT_PLUGIN(QICOPlugin)
 #endif
 #endif
 
+#define LAMEXP_ZERO_MEMORY(X) SecureZeroMemory(&X, sizeof(X))
+
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 ///////////////////////////////////////////////////////////////////////////////
@@ -201,8 +203,8 @@ static const unsigned int g_lamexp_toolver_coreaudio = VER_LAMEXP_TOOL_COREAUDIO
 //Special folders
 static struct
 {
-	QString temp;
-	QString knownFolders[3];
+	QString *temp;
+	QMap<size_t, QString> *knownFolders;
 	QReadWriteLock lock;
 }
 g_lamexp_folder;
@@ -210,8 +212,8 @@ g_lamexp_folder;
 //Tools
 static struct
 {
-	QMap<QString, LockedFile*> registry;
-	QMap<QString, unsigned int> versions;
+	QMap<QString, LockedFile*> *registry;
+	QMap<QString, unsigned int> *versions;
 	QReadWriteLock lock;
 }
 g_lamexp_tools;
@@ -219,10 +221,10 @@ g_lamexp_tools;
 //Languages
 static struct
 {
-	QMap<QString, QString> files;
-	QMap<QString, QString> names;
-	QMap<QString, unsigned int> sysid;
-	QMap<QString, unsigned int> cntry;
+	QMap<QString, QString> *files;
+	QMap<QString, QString> *names;
+	QMap<QString, unsigned int> *sysid;
+	QMap<QString, unsigned int> *cntry;
 	QReadWriteLock lock;
 }
 g_lamexp_translation;
@@ -230,11 +232,18 @@ g_lamexp_translation;
 //Translator
 static struct
 {
-	QVariant instance;
+	QTranslator *instance;
 	QReadWriteLock lock;
-
 }
 g_lamexp_currentTranslator;
+
+//CLI Arguments
+static struct
+{
+	QStringList *list;
+	QReadWriteLock lock;
+}
+g_lamexp_argv;
 
 //Shared memory
 static const struct
@@ -260,11 +269,9 @@ static struct
 	QSystemSemaphore *semaphore_read_mutex;
 	QSystemSemaphore *semaphore_write;
 	QSystemSemaphore *semaphore_write_mutex;
+	QReadWriteLock lock;
 }
-g_lamexp_ipc_ptr =
-{
-	NULL, NULL, NULL
-};
+g_lamexp_ipc_ptr;
 
 //Image formats
 static const char *g_lamexp_imageformats[] = {"bmp", "png", "jpg", "gif", "ico", "xpm", NULL}; //"svg"
@@ -277,9 +284,6 @@ static const DWORD g_main_thread_id = GetCurrentThreadId();
 
 //Log file
 static FILE *g_lamexp_log_file = NULL;
-
-//CLI Arguments
-static QStringList *g_lamexp_argv = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBAL FUNCTIONS
@@ -1130,7 +1134,7 @@ bool lamexp_init_qt(int argc, char* argv[])
 			DWORD osVersionNo = lamexp_get_os_version();
 			if(LAMEXP_EQL_OS_VER(osVersionNo, 6, 2))
 			{
-				qDebug("Running on Windows 8 (still experimental!)\n");
+				qDebug("Running on Windows 8 or Windows Server 2012\n");
 				lamexp_check_compatibility_mode(NULL, executableName);
 			}
 			else
@@ -1178,8 +1182,10 @@ bool lamexp_init_qt(int argc, char* argv[])
 	
 	//Add default translations
 	QWriteLocker writeLockTranslations(&g_lamexp_translation.lock);
-	g_lamexp_translation.files.insert(LAMEXP_DEFAULT_LANGID, "");
-	g_lamexp_translation.names.insert(LAMEXP_DEFAULT_LANGID, "English");
+	if(!g_lamexp_translation.files) g_lamexp_translation.files = new QMap<QString, QString>();
+	if(!g_lamexp_translation.names) g_lamexp_translation.names = new QMap<QString, QString>();
+	g_lamexp_translation.files->insert(LAMEXP_DEFAULT_LANGID, "");
+	g_lamexp_translation.names->insert(LAMEXP_DEFAULT_LANGID, "English");
 	writeLockTranslations.unlock();
 
 	//Check for process elevation
@@ -1219,6 +1225,8 @@ bool lamexp_init_qt(int argc, char* argv[])
  */
 int lamexp_init_ipc(void)
 {
+	QWriteLocker writeLock(&g_lamexp_ipc_ptr.lock);
+	
 	if(g_lamexp_ipc_ptr.sharedmem && g_lamexp_ipc_ptr.semaphore_read && g_lamexp_ipc_ptr.semaphore_write && g_lamexp_ipc_ptr.semaphore_read_mutex && g_lamexp_ipc_ptr.semaphore_write_mutex)
 	{
 		return 0;
@@ -1311,6 +1319,8 @@ int lamexp_init_ipc(void)
  */
 void lamexp_ipc_send(unsigned int command, const char* message)
 {
+	QReadLocker readLock(&g_lamexp_ipc_ptr.lock);
+
 	if(!g_lamexp_ipc_ptr.sharedmem || !g_lamexp_ipc_ptr.semaphore_read || !g_lamexp_ipc_ptr.semaphore_write || !g_lamexp_ipc_ptr.semaphore_read_mutex || !g_lamexp_ipc_ptr.semaphore_write_mutex)
 	{
 		throw "Shared memory for IPC not initialized yet.";
@@ -1343,6 +1353,8 @@ void lamexp_ipc_send(unsigned int command, const char* message)
  */
 void lamexp_ipc_read(unsigned int *command, char* message, size_t buffSize)
 {
+	QReadLocker readLock(&g_lamexp_ipc_ptr.lock);
+	
 	*command = 0;
 	message[0] = '\0';
 	
@@ -1412,17 +1424,26 @@ const QString &lamexp_temp_folder2(void)
 	QReadLocker readLock(&g_lamexp_folder.lock);
 
 	//Already initialized?
-	if(!g_lamexp_folder.temp.isEmpty())
+	if(g_lamexp_folder.temp)
 	{
-		if(QDir(g_lamexp_folder.temp).exists())
+		if(!g_lamexp_folder.temp->isEmpty())
 		{
-			return g_lamexp_folder.temp;
+			if(QDir(*g_lamexp_folder.temp).exists())
+			{
+				return *g_lamexp_folder.temp;
+			}
 		}
 	}
 	
 	readLock.unlock();
 	QWriteLocker writeLock(&g_lamexp_folder.lock);
-	g_lamexp_folder.temp.clear();
+	
+	if(!g_lamexp_folder.temp)
+	{
+		g_lamexp_folder.temp = new QString();
+	}
+	
+	g_lamexp_folder.temp->clear();
 
 	static const char *TEMP_STR = "Temp";
 	const QString WRITE_TEST_DATA = lamexp_rand_str();
@@ -1440,14 +1461,14 @@ const QString &lamexp_temp_folder2(void)
 			{
 				if(testFile.write(WRITE_TEST_DATA.toLatin1().constData()) >= strlen(WRITE_TEST_DATA.toLatin1().constData()))
 				{
-					g_lamexp_folder.temp = temp.canonicalPath();
+					(*g_lamexp_folder.temp) = temp.canonicalPath();
 				}
 				testFile.remove();
 			}
 		}
-		if(!g_lamexp_folder.temp.isEmpty())
+		if(!g_lamexp_folder.temp->isEmpty())
 		{
-			return g_lamexp_folder.temp;
+			return *g_lamexp_folder.temp;
 		}
 	}
 
@@ -1475,22 +1496,22 @@ const QString &lamexp_temp_folder2(void)
 					{
 						if(testFile.write(WRITE_TEST_DATA.toLatin1().constData()) >= strlen(WRITE_TEST_DATA.toLatin1().constData()))
 						{
-							g_lamexp_folder.temp = localAppData.canonicalPath();
+							(*g_lamexp_folder.temp) = localAppData.canonicalPath();
 						}
 						testFile.remove();
 					}
 				}
 			}
 		}
-		if(!g_lamexp_folder.temp.isEmpty())
+		if(!g_lamexp_folder.temp->isEmpty())
 		{
-			return g_lamexp_folder.temp;
+			return *g_lamexp_folder.temp;
 		}
 	}
 
 	//Failed to create TEMP folder!
 	qFatal("Temporary directory could not be initialized!\n\nFirst attempt:\n%s\n\nSecond attempt:\n%s", temp.canonicalPath().toUtf8().constData(), localAppData.canonicalPath().toUtf8().constData());
-	return g_lamexp_folder.temp;
+	return *g_lamexp_folder.temp;
 }
 
 /*
@@ -1530,13 +1551,16 @@ void lamexp_register_tool(const QString &toolName, LockedFile *file, unsigned in
 {
 	QWriteLocker writeLock(&g_lamexp_tools.lock);
 	
-	if(g_lamexp_tools.registry.contains(toolName.toLower()))
+	if(!g_lamexp_tools.registry) g_lamexp_tools.registry = new QMap<QString, LockedFile*>();
+	if(!g_lamexp_tools.versions) g_lamexp_tools.versions = new QMap<QString, unsigned int>();
+
+	if(g_lamexp_tools.registry->contains(toolName.toLower()))
 	{
 		throw "lamexp_register_tool: Tool is already registered!";
 	}
 
-	g_lamexp_tools.registry.insert(toolName.toLower(), file);
-	g_lamexp_tools.versions.insert(toolName.toLower(), version);
+	g_lamexp_tools.registry->insert(toolName.toLower(), file);
+	g_lamexp_tools.versions->insert(toolName.toLower(), version);
 }
 
 /*
@@ -1545,7 +1569,7 @@ void lamexp_register_tool(const QString &toolName, LockedFile *file, unsigned in
 bool lamexp_check_tool(const QString &toolName)
 {
 	QReadLocker readLock(&g_lamexp_tools.lock);
-	return g_lamexp_tools.registry.contains(toolName.toLower());
+	return (g_lamexp_tools.registry) ? g_lamexp_tools.registry->contains(toolName.toLower()) : false;
 }
 
 /*
@@ -1555,9 +1579,16 @@ const QString lamexp_lookup_tool(const QString &toolName)
 {
 	QReadLocker readLock(&g_lamexp_tools.lock);
 
-	if(g_lamexp_tools.registry.contains(toolName.toLower()))
+	if(g_lamexp_tools.registry)
 	{
-		return g_lamexp_tools.registry.value(toolName.toLower())->filePath();
+		if(g_lamexp_tools.registry->contains(toolName.toLower()))
+		{
+			return g_lamexp_tools.registry->value(toolName.toLower())->filePath();
+		}
+		else
+		{
+			return QString();
+		}
 	}
 	else
 	{
@@ -1572,9 +1603,16 @@ unsigned int lamexp_tool_version(const QString &toolName)
 {
 	QReadLocker readLock(&g_lamexp_tools.lock);
 
-	if(g_lamexp_tools.versions.contains(toolName.toLower()))
+	if(g_lamexp_tools.versions)
 	{
-		return g_lamexp_tools.versions.value(toolName.toLower());
+		if(g_lamexp_tools.versions->contains(toolName.toLower()))
+		{
+			return g_lamexp_tools.versions->value(toolName.toLower());
+		}
+		else
+		{
+			return UINT_MAX;
+		}
 	}
 	else
 	{
@@ -1625,10 +1663,15 @@ bool lamexp_translation_register(const QString &langId, const QString &qmFile, c
 		return false;
 	}
 
-	g_lamexp_translation.files.insert(langId, qmFile);
-	g_lamexp_translation.names.insert(langId, langName);
-	g_lamexp_translation.sysid.insert(langId, systemId);
-	g_lamexp_translation.cntry.insert(langId, country);
+	if(!g_lamexp_translation.files) g_lamexp_translation.files = new QMap<QString, QString>();
+	if(!g_lamexp_translation.names) g_lamexp_translation.names = new QMap<QString, QString>();
+	if(!g_lamexp_translation.sysid) g_lamexp_translation.sysid = new QMap<QString, unsigned int>();
+	if(!g_lamexp_translation.cntry) g_lamexp_translation.cntry = new QMap<QString, unsigned int>();
+
+	g_lamexp_translation.files->insert(langId, qmFile);
+	g_lamexp_translation.names->insert(langId, langName);
+	g_lamexp_translation.sysid->insert(langId, systemId);
+	g_lamexp_translation.cntry->insert(langId, country);
 
 	return true;
 }
@@ -1638,8 +1681,8 @@ bool lamexp_translation_register(const QString &langId, const QString &qmFile, c
  */
 QStringList lamexp_query_translations(void)
 {
-	QReadLocker writeLockTranslations(&g_lamexp_translation.lock);
-	return g_lamexp_translation.files.keys();
+	QReadLocker readLockTranslations(&g_lamexp_translation.lock);
+	return (g_lamexp_translation.files) ? g_lamexp_translation.files->keys() : QStringList();
 }
 
 /*
@@ -1647,8 +1690,8 @@ QStringList lamexp_query_translations(void)
  */
 QString lamexp_translation_name(const QString &langId)
 {
-	QReadLocker writeLockTranslations(&g_lamexp_translation.lock);
-	return g_lamexp_translation.names.value(langId.toLower(), QString());
+	QReadLocker readLockTranslations(&g_lamexp_translation.lock);
+	return (g_lamexp_translation.names) ? g_lamexp_translation.names->value(langId.toLower(), QString()) : QString();
 }
 
 /*
@@ -1656,8 +1699,8 @@ QString lamexp_translation_name(const QString &langId)
  */
 unsigned int lamexp_translation_sysid(const QString &langId)
 {
-	QReadLocker writeLockTranslations(&g_lamexp_translation.lock);
-	return g_lamexp_translation.sysid.value(langId.toLower(), 0);
+	QReadLocker readLockTranslations(&g_lamexp_translation.lock);
+	return (g_lamexp_translation.sysid) ? g_lamexp_translation.sysid->value(langId.toLower(), 0) : 0;
 }
 
 /*
@@ -1665,8 +1708,8 @@ unsigned int lamexp_translation_sysid(const QString &langId)
  */
 unsigned int lamexp_translation_country(const QString &langId)
 {
-	QReadLocker writeLockTranslations(&g_lamexp_translation.lock);
-	return g_lamexp_translation.cntry.value(langId.toLower(), 0);
+	QReadLocker readLockTranslations(&g_lamexp_translation.lock);
+	return (g_lamexp_translation.cntry) ? g_lamexp_translation.cntry->value(langId.toLower(), 0) : 0;
 }
 
 /*
@@ -1683,7 +1726,9 @@ bool lamexp_install_translator(const QString &langId)
 	else
 	{
 		QReadLocker readLock(&g_lamexp_translation.lock);
-		QString qmFile = g_lamexp_translation.files.value(langId.toLower(), QString());
+		QString qmFile = (g_lamexp_translation.files) ? g_lamexp_translation.files->value(langId.toLower(), QString()) : QString();
+		readLock.unlock();
+
 		if(!qmFile.isEmpty())
 		{
 			success = lamexp_install_translator_from_file(QString(":/localization/%1").arg(qmFile));
@@ -1705,19 +1750,18 @@ bool lamexp_install_translator_from_file(const QString &qmFile)
 	QWriteLocker writeLock(&g_lamexp_currentTranslator.lock);
 	bool success = false;
 
-	if(!g_lamexp_currentTranslator.instance.isValid())
+	if(!g_lamexp_currentTranslator.instance)
 	{
-		g_lamexp_currentTranslator.instance.setValue<QObject*>(new QTranslator());
+		g_lamexp_currentTranslator.instance = new QTranslator();
 	}
 
 	if(!qmFile.isEmpty())
 	{
 		QString qmPath = QFileInfo(qmFile).canonicalFilePath();
-		QTranslator *poTranslator = dynamic_cast<QTranslator*>(g_lamexp_currentTranslator.instance.value<QObject*>());
-		QApplication::removeTranslator(poTranslator);
-		if(success = poTranslator->load(qmPath))
+		QApplication::removeTranslator(g_lamexp_currentTranslator.instance);
+		if(success = g_lamexp_currentTranslator.instance->load(qmPath))
 		{
-			QApplication::installTranslator(poTranslator);
+			QApplication::installTranslator(g_lamexp_currentTranslator.instance);
 		}
 		else
 		{
@@ -1726,7 +1770,7 @@ bool lamexp_install_translator_from_file(const QString &qmFile)
 	}
 	else
 	{
-		QApplication::removeTranslator(dynamic_cast<QTranslator*>(g_lamexp_currentTranslator.instance.value<QObject*>()));
+		QApplication::removeTranslator(g_lamexp_currentTranslator.instance);
 		success = true;
 	}
 
@@ -1735,9 +1779,14 @@ bool lamexp_install_translator_from_file(const QString &qmFile)
 
 const QStringList &lamexp_arguments(void)
 {
-	if(!g_lamexp_argv)
+	QReadLocker readLock(&g_lamexp_argv.lock);
+
+	if(!g_lamexp_argv.list)
 	{
-		g_lamexp_argv = new QStringList();
+		readLock.unlock();
+		QWriteLocker writeLock(&g_lamexp_argv.lock);
+
+		g_lamexp_argv.list = new QStringList;
 
 		int nArgs = 0;
 		LPWSTR *szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
@@ -1746,7 +1795,7 @@ const QStringList &lamexp_arguments(void)
 		{
 			for(int i = 0; i < nArgs; i++)
 			{
-				*g_lamexp_argv << WCHAR2QSTR(szArglist[i]);
+				(*g_lamexp_argv.list) << WCHAR2QSTR(szArglist[i]);
 			}
 			LocalFree(szArglist);
 		}
@@ -1756,13 +1805,13 @@ const QStringList &lamexp_arguments(void)
 		}
 	}
 
-	return *g_lamexp_argv;
+	return (*g_lamexp_argv.list);
 }
 
 /*
  * Locate known folder on local system
  */
-QString lamexp_known_folder(lamexp_known_folder_t folder_id)
+const QString &lamexp_known_folder(lamexp_known_folder_t folder_id)
 {
 	typedef HRESULT (WINAPI *SHGetKnownFolderPathFun)(__in const GUID &rfid, __in DWORD dwFlags, __in HANDLE hToken, __out PWSTR *ppszPath);
 	typedef HRESULT (WINAPI *SHGetFolderPathFun)(__in HWND hwndOwner, __in int nFolder, __in HANDLE hToken, __in DWORD dwFlags, __out LPWSTR pszPath);
@@ -1800,14 +1849,17 @@ QString lamexp_known_folder(lamexp_known_folder_t folder_id)
 		break;
 	default:
 		qWarning("Invalid 'known' folder was requested!");
-		return QString();
+		return *reinterpret_cast<QString*>(NULL);
 		break;
 	}
 
 	//Already in cache?
-	if(!g_lamexp_folder.knownFolders[folderCacheId].isEmpty())
+	if(g_lamexp_folder.knownFolders)
 	{
-		return g_lamexp_folder.knownFolders[folderCacheId];
+		if(g_lamexp_folder.knownFolders->contains(folderCacheId))
+		{
+			return (*g_lamexp_folder.knownFolders)[folderCacheId];
+		}
 	}
 
 	readLock.unlock();
@@ -1865,13 +1917,15 @@ QString lamexp_known_folder(lamexp_known_folder_t folder_id)
 		delete [] path;
 	}
 
-	//Update cache
-	if(!folder.isEmpty())
+	//Create cache
+	if(!g_lamexp_folder.knownFolders)
 	{
-		g_lamexp_folder.knownFolders[folderCacheId] = folder;
+		g_lamexp_folder.knownFolders = new QMap<size_t, QString>();
 	}
 
-	return folder;
+	//Update cache
+	g_lamexp_folder.knownFolders->insert(folderCacheId, folder);
+	return (*g_lamexp_folder.knownFolders)[folderCacheId];
 }
 
 /*
@@ -2124,6 +2178,23 @@ QStringList lamexp_available_codepages(bool noAliases)
 }
 
 /*
+ * Entry point checks
+ */
+static DWORD lamexp_entry_check(void);
+static DWORD g_lamexp_entry_check_result = lamexp_entry_check();
+static DWORD g_lamexp_entry_check_flag = 0x789E09B2;
+static DWORD lamexp_entry_check(void)
+{
+	volatile DWORD retVal = 0xA199B5AF;
+	if(g_lamexp_entry_check_flag != 0x8761F64D)
+	{
+		FatalAppExit(0, L"Application initialization has failed, take care!");
+		TerminateProcess(GetCurrentProcess(), -1);
+	}
+	return retVal;
+}
+
+/*
  * Application entry point (runs before static initializers)
  */
 extern "C"
@@ -2137,6 +2208,25 @@ extern "C"
 			FatalAppExit(0, L"Not a debug build. Please unload debugger and try again!");
 			TerminateProcess(GetCurrentProcess(), -1);
 		}
+
+		if(g_lamexp_entry_check_flag != 0x789E09B2)
+		{
+			FatalAppExit(0, L"Application initialization has failed, take care!");
+			TerminateProcess(GetCurrentProcess(), -1);
+		}
+
+		//Zero *before* constructors are called
+		LAMEXP_ZERO_MEMORY(g_lamexp_argv);
+		LAMEXP_ZERO_MEMORY(g_lamexp_tools);
+		LAMEXP_ZERO_MEMORY(g_lamexp_currentTranslator);
+		LAMEXP_ZERO_MEMORY(g_lamexp_translation);
+		LAMEXP_ZERO_MEMORY(g_lamexp_folder);
+		LAMEXP_ZERO_MEMORY(g_lamexp_ipc_ptr);
+
+		//Make sure we will pass the check
+		g_lamexp_entry_check_flag = ~g_lamexp_entry_check_flag;
+
+		//Now initialize the C Runtime library!
 		return WinMainCRTStartup();
 	}
 }
@@ -2149,43 +2239,47 @@ void lamexp_finalization(void)
 	qDebug("lamexp_finalization()");
 	
 	//Free all tools
-	if(!g_lamexp_tools.registry.isEmpty())
+	if(g_lamexp_tools.registry)
 	{
-		QStringList keys = g_lamexp_tools.registry.keys();
+		QStringList keys = g_lamexp_tools.registry->keys();
 		for(int i = 0; i < keys.count(); i++)
 		{
-			LAMEXP_DELETE(g_lamexp_tools.registry[keys.at(i)]);
+			LAMEXP_DELETE((*g_lamexp_tools.registry)[keys.at(i)]);
 		}
-		g_lamexp_tools.registry.clear();
-		g_lamexp_tools.versions.clear();
+		LAMEXP_DELETE(g_lamexp_tools.registry);
+		LAMEXP_DELETE(g_lamexp_tools.versions);
 	}
 	
 	//Delete temporary files
-	if(!g_lamexp_folder.temp.isEmpty())
+	if(g_lamexp_folder.temp)
 	{
-		for(int i = 0; i < 100; i++)
+		if(!g_lamexp_folder.temp->isEmpty())
 		{
-			if(lamexp_clean_folder(g_lamexp_folder.temp))
+			for(int i = 0; i < 100; i++)
 			{
-				break;
+				if(lamexp_clean_folder(*g_lamexp_folder.temp))
+				{
+					break;
+				}
+				Sleep(125);
 			}
-			Sleep(125);
 		}
-		g_lamexp_folder.temp.clear();
+		LAMEXP_DELETE(g_lamexp_folder.temp);
 	}
 
+	//Clear folder cache
+	LAMEXP_DELETE(g_lamexp_folder.knownFolders);
+
 	//Clear languages
-	if(g_lamexp_currentTranslator.instance.isValid())
+	if(g_lamexp_currentTranslator.instance)
 	{
-		QTranslator *poTranslator = dynamic_cast<QTranslator*>(g_lamexp_currentTranslator.instance.value<QObject*>());
-		g_lamexp_currentTranslator.instance.clear();
-		QApplication::removeTranslator(poTranslator);
-		LAMEXP_DELETE(poTranslator);
+		QApplication::removeTranslator(g_lamexp_currentTranslator.instance);
+		LAMEXP_DELETE(g_lamexp_currentTranslator.instance);
 	}
-	g_lamexp_translation.files.clear();
-	g_lamexp_translation.names.clear();
-	g_lamexp_translation.cntry.clear();
-	g_lamexp_translation.sysid.clear();
+	LAMEXP_DELETE(g_lamexp_translation.files);
+	LAMEXP_DELETE(g_lamexp_translation.names);
+	LAMEXP_DELETE(g_lamexp_translation.cntry);
+	LAMEXP_DELETE(g_lamexp_translation.sysid);
 
 	//Destroy Qt application object
 	QApplication *application = dynamic_cast<QApplication*>(QApplication::instance());
@@ -2222,7 +2316,7 @@ void lamexp_finalization(void)
 	}
 
 	//Free CLI Arguments
-	LAMEXP_DELETE(g_lamexp_argv);
+	LAMEXP_DELETE(g_lamexp_argv.list);
 }
 
 /*
