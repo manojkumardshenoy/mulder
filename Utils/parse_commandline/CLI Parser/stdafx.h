@@ -16,5 +16,8 @@
 #include <Windows.h>
 #include <ShellAPI.h>
 #include <vector>
+#include <QtCore/QVector>
+#include <QtCore/QString>
+#include <QtCore/QStringList>
 
 // TODO: reference additional headers your program requires here
