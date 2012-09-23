@@ -99,6 +99,78 @@ static int parse_commandline(vector<TCHAR*> &argv, const TCHAR *cmd)
 
 /* ------------------------------------------------------------------------- */
 
+template<typename Char>
+static QVector<Char*> qWinCmdLine(Char *cmdParam, int length, int &argc)
+{
+	argc = 0;
+	QVector<Char*> argv;
+
+	if(cmdParam)
+	{
+		int p = 0, l = 0;
+		TCHAR flag = Char('\0');
+
+		for(int i = 0; i < length; i++)
+		{
+			/*
+			 * 2n backslashes followed by a quotation mark produce n backslashes followed by a quotation mark.
+			 * (2n) + 1 backslashes followed by a quotation mark again produce n backslashes followed by a quotation mark.
+			 * n backslashes not followed by a quotation mark simply produce n backslashes.
+			*/
+			if(cmdParam[i] == Char('\\')) //escape character?
+			{
+				bool escape = false; int n = 1; while(cmdParam[++i] == Char('\\')) n++;
+				if(((cmdParam[i] == Char('\"')) || (cmdParam[i] == Char('\''))) && ((cmdParam[i] == flag) || (flag == Char('\0')))) //yes!
+				{
+					escape = ((n % 2) > 0); n = n / 2;
+				}
+				for(int j = 0; j < n; j++) cmdParam[l++] = Char('\\');
+				if(escape == true) cmdParam[l++] = cmdParam[i]; else i--;
+				continue;
+			}
+			if(cmdParam[i] == flag) //end of quote
+			{
+				flag = Char('\0');
+				continue;
+			}
+			if((flag == Char('\0')) && ((cmdParam[i] == Char('\"')) || (cmdParam[i] == Char('\'')))) //begin new quote
+			{
+				flag = cmdParam[i];
+				continue;
+			}
+			if(((cmdParam[i] == Char(' ')) || (cmdParam[i] == Char('\t'))) && (flag == Char('\0'))) //white-space separator
+			{
+				if(l > p) { cmdParam[l++] = Char('\0'); argv.append(&cmdParam[p]); }
+				p = l;
+				continue;
+			}
+			cmdParam[l++] = cmdParam[i];
+		}
+		
+		if(l > p) { cmdParam[l++] = Char('\0'); argv.append(&cmdParam[p]); }
+		argc = argv.count();
+	}
+
+	return argv;
+}
+
+static inline QStringList qWinCmdArgs(QString cmdLine) // not const-ref: this might be modified
+{
+	QStringList args;
+
+	int argc = 0;
+	QVector<wchar_t*> argv = qWinCmdLine<wchar_t>((wchar_t *)cmdLine.utf16(), cmdLine.length(), argc);
+	
+	for (int a = 0; a < argc; ++a)
+	{
+		args << QString::fromUtf16((const ushort*) argv[a]);
+	}
+
+	return args;
+}
+
+/* ------------------------------------------------------------------------- */
+
 int _tmain(/*int argc, _TCHAR* argv[]*/)
 {
 	_tprintf(_T("\nCommand-line:\n<%s>\n\n"), GetCommandLine());
@@ -116,6 +188,17 @@ int _tmain(/*int argc, _TCHAR* argv[]*/)
 
 	delete [] argv.front();
 	argv.clear();
+
+	/* ---------------------------- */
+
+	QString cmdline = QString::fromUtf16((const ushort*) GetCommandLineW());
+	QStringList qArgs = qWinCmdArgs(cmdline);
+	
+	wprintf(L"\nqWinCmdArgs: %d\n", qArgs.count());
+	for(int i = 0; i < qArgs.count(); i++)
+	{
+		wprintf(L"argv[%d] = <%s>\n", i, (wchar_t*) qArgs[i].utf16());
+	}
 
 	/* ---------------------------- */
 
