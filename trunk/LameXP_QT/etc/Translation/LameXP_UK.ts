@@ -16,16 +16,8 @@
         <translation>Примітка: LameXP є вільним ПЗ. &lt;b&gt;Не&lt;/b&gt; надавайте грошей за його отримання або використання! Якщо хтось хоче отримати гроші за завантаження LameXP, ви &lt;b&gt;не&lt;/b&gt; повинні відповідати на такий запит !!!</translation>
     </message>
     <message>
-        <source>Special thanks go out to &quot;John33&quot; from %1 for his continuous support.</source>
-        <translation>Окрема подяка  &quot;John33&quot; з %1 за постійну підтримку.</translation>
-    </message>
-    <message>
         <source>About LameXP</source>
         <translation>Про LameXP</translation>
-    </message>
-    <message>
-        <source>Show License Text</source>
-        <translation>Показати текст ліцензії</translation>
     </message>
     <message>
         <source>Accept License</source>
@@ -44,10 +36,6 @@
         <translation>Доробники</translation>
     </message>
     <message>
-        <source>About Qt4</source>
-        <translation>Про Qt4</translation>
-    </message>
-    <message>
         <source>Discard</source>
         <translation>Вийти</translation>
     </message>
@@ -62,10 +50,6 @@
     <message>
         <source>If you are willing to contribute a LameXP translation, feel free to contact us!</source>
         <translation>Якщо ви хочете допомогти перекласти інтерфейс LameXP, можете вільно зв&apos;язатись з нами!</translation>
-    </message>
-    <message>
-        <source>About Contributors</source>
-        <translation>Про Доробників</translation>
     </message>
     <message>
         <source>The following third-party software is used in LameXP:</source>
@@ -176,12 +160,8 @@
         <translation>GNU Wget - Software for retrieving files using HTTP</translation>
     </message>
     <message>
-        <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</source>
+        <source>The copyright of LameXP as a whole belongs to LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</source>
         <translation>Всі права на LameXP належать LoRd_MuldeR. Права на стороннє ПЗ, що використовується в LameXP, належать авторам цього ПЗ.</translation>
-    </message>
-    <message>
-        <source>About Third-party Software</source>
-        <translation>Про стороннє ПЗ</translation>
     </message>
     <message>
         <source>n/a</source>
@@ -229,8 +209,84 @@
         <translation>Всі права належать 2008-2011 Alexander E. Patrakov. Розповсюджується під ліцензією LGPL.</translation>
     </message>
     <message>
-        <source>About Qt5</source>
-        <translation>Про Qt5</translation>
+        <source>Information</source>
+        <translation>Інформація</translation>
+    </message>
+    <message>
+        <source>License</source>
+        <translation>Ліцензія</translation>
+    </message>
+    <message>
+        <source>Programmers:</source>
+        <translation>Програмувальники:</translation>
+    </message>
+    <message>
+        <source>Project Leader</source>
+        <translation>Керівник проекту</translation>
+    </message>
+    <message>
+        <source>Opus Audio Codec</source>
+        <translation>Opus Audio Codec</translation>
+    </message>
+    <message>
+        <source>Totally open, royalty-free, highly versatile audio codec.</source>
+        <translation>Повністю відкритий, вільний від ліцензійних виплат, універсальний кодек аудіо.</translation>
+    </message>
+    <message>
+        <source>Silk Icons - Over 700  icons in PNG format</source>
+        <translation>Silk Icons - Більш ніж 700  іконок у форматі PNG</translation>
+    </message>
+    <message>
+        <source>By Mark James, released under the Creative Commons &apos;by&apos; License.</source>
+        <translation>За участі Mark James, випускається під ліцензією Creative Commons.</translation>
+    </message>
+    <message>
+        <source>Show License Text</source>
+        <translation>Показати текст ліцензії</translation>
+    </message>
+    <message>
+        <source>About Qt...</source>
+        <translation>Про Qt...</translation>
+    </message>
+    <message>
+        <source>Special thanks to:</source>
+        <translation>Окрема подяка:</translation>
+    </message>
+    <message>
+        <source>Doom9&apos;s Forum</source>
+        <translation>Форум Doom9</translation>
+    </message>
+    <message>
+        <source>Gleitz | German Doom9</source>
+        <translation>Gleitz | Німецький Doom9</translation>
+    </message>
+    <message>
+        <source>Hydrogenaudio Forums</source>
+        <translation>Форуми Hydrogenaudio</translation>
+    </message>
+    <message>
+        <source>RareWares</source>
+        <translation>RareWares</translation>
+    </message>
+    <message>
+        <source>GitHub</source>
+        <translation>GitHub</translation>
+    </message>
+    <message>
+        <source>SourceForge</source>
+        <translation>SourceForge</translation>
+    </message>
+    <message>
+        <source>Qt Developer Network</source>
+        <translation>Мережа розробників Qt</translation>
+    </message>
+    <message>
+        <source>Marius Hudea</source>
+        <translation>Marius Hudea</translation>
+    </message>
+    <message>
+        <source>UPX - The Ultimate Packer for eXecutables</source>
+        <translation>UPX - The Ultimate Packer for eXecutables</translation>
     </message>
 </context>
 <context>

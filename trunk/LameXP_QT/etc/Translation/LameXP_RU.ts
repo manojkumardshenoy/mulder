@@ -16,16 +16,8 @@
         <translation>Примечание: LameXP является бесплатным программным обеспечением. Вам &lt;b&gt;не надо&lt;/b&gt; платить деньги, чтобы получить или использовать LameXP! Если какой-то веб-сайт пытается заставить Вас заплатить за загрузку LameXP, Вы должны &lt;b&gt; не отвечать&lt;/b&gt; на это предложение!!!</translation>
     </message>
     <message>
-        <source>Special thanks go out to &quot;John33&quot; from %1 for his continuous support.</source>
-        <translation>Специальная благодарность &quot;John33&quot; с %1 за его непрерывную поддержку.</translation>
-    </message>
-    <message>
         <source>About LameXP</source>
         <translation>О LameXP</translation>
-    </message>
-    <message>
-        <source>Show License Text</source>
-        <translation>Показать текст лицензии</translation>
     </message>
     <message>
         <source>Accept License</source>
@@ -44,10 +36,6 @@
         <translation>Участники</translation>
     </message>
     <message>
-        <source>About Qt4</source>
-        <translation>О Qt4</translation>
-    </message>
-    <message>
         <source>Discard</source>
         <translation>Отменить</translation>
     </message>
@@ -62,10 +50,6 @@
     <message>
         <source>If you are willing to contribute a LameXP translation, feel free to contact us!</source>
         <translation>Если Вы готовы внести вклад в развитие LameXP, не стесняйтесь связаться с нами!</translation>
-    </message>
-    <message>
-        <source>About Contributors</source>
-        <translation>О Участниках</translation>
     </message>
     <message>
         <source>The following third-party software is used in LameXP:</source>
@@ -176,12 +160,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</source>
+        <source>The copyright of LameXP as a whole belongs to LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</source>
         <translation type="unfinished">LameXP защищена авторским правом LoRd_MuldeR. Авторское право на  программное обеспечение третьих сторон, используемое в LameXP, принадлежит индивидуальным авторам.</translation>
-    </message>
-    <message>
-        <source>About Third-party Software</source>
-        <translation type="unfinished">О програмном обеспечении третьих сторон</translation>
     </message>
     <message>
         <source>n/a</source>
@@ -228,8 +208,84 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>About Qt5</source>
-        <translation type="unfinished">О Qt5</translation>
+        <source>Information</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>License</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Programmers:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Project Leader</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opus Audio Codec</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Totally open, royalty-free, highly versatile audio codec.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Silk Icons - Over 700  icons in PNG format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>By Mark James, released under the Creative Commons &apos;by&apos; License.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show License Text</source>
+        <translation>Показать текст лицензии</translation>
+    </message>
+    <message>
+        <source>About Qt...</source>
+        <translation>О Qt</translation>
+    </message>
+    <message>
+        <source>Special thanks to:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Doom9&apos;s Forum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gleitz | German Doom9</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hydrogenaudio Forums</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RareWares</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GitHub</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SourceForge</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Qt Developer Network</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Marius Hudea</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>UPX - The Ultimate Packer for eXecutables</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

@@ -12,16 +12,8 @@
         <translation>注:LameXP是免費軟件.&lt;b&gt;不用&lt;/b&gt;付錢獲取或使用LameXP!如果某些第三方網站嘗試讓你付出代價下載LameXP,你應該&lt;b&gt;不&lt;/b&gt;接受報價!</translation>
     </message>
     <message>
-        <source>Special thanks go out to &quot;John33&quot; from %1 for his continuous support.</source>
-        <translation>特別感謝&quot;John33&quot;從 %1 為他的持續支持.</translation>
-    </message>
-    <message>
         <source>About LameXP</source>
         <translation>關于 LameXP</translation>
-    </message>
-    <message>
-        <source>Show License Text</source>
-        <translation>顯示許可證文本</translation>
     </message>
     <message>
         <source>Accept License</source>
@@ -40,10 +32,6 @@
         <translation>貢獻者</translation>
     </message>
     <message>
-        <source>About Qt4</source>
-        <translation>關于 Qt4</translation>
-    </message>
-    <message>
         <source>Discard</source>
         <translation>放棄</translation>
     </message>
@@ -58,10 +46,6 @@
     <message>
         <source>If you are willing to contribute a LameXP translation, feel free to contact us!</source>
         <translation>如果你愿意貢獻 LameXP 翻譯,隨時與我們聯系 !</translation>
-    </message>
-    <message>
-        <source>About Contributors</source>
-        <translation>關于貢獻者</translation>
     </message>
     <message>
         <source>The following third-party software is used in LameXP:</source>
@@ -86,10 +70,6 @@
     <message>
         <source>Open and patent-free lossless audio compression technology.</source>
         <translation>打開和專利自由無損音頻壓縮技術.</translation>
-    </message>
-    <message>
-        <source>About Third-party Software</source>
-        <translation>關于第三方軟件</translation>
     </message>
     <message>
         <source>n/a</source>
@@ -216,7 +196,7 @@
         <translation>avs2wav - Avisynth到WAV音頻轉換器</translation>
     </message>
     <message>
-        <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</source>
+        <source>The copyright of LameXP as a whole belongs to LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</source>
         <translation>LameXP是作為一個整體版權由 LoRd_MuldeR 保護.在 LameXP 中使用的第三方軟件作著權屬于第三方.</translation>
     </message>
     <message>
@@ -228,8 +208,84 @@
         <translation>Copyright (c) 2008-2011 Alexander E. Patrakov. Distributed under the LGPL.</translation>
     </message>
     <message>
-        <source>About Qt5</source>
-        <translation>關于 Qt5</translation>
+        <source>Information</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>License</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Programmers:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Project Leader</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opus Audio Codec</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Totally open, royalty-free, highly versatile audio codec.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Silk Icons - Over 700  icons in PNG format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>By Mark James, released under the Creative Commons &apos;by&apos; License.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show License Text</source>
+        <translation>顯示許可證文本</translation>
+    </message>
+    <message>
+        <source>About Qt...</source>
+        <translation>關于 Qt</translation>
+    </message>
+    <message>
+        <source>Special thanks to:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Doom9&apos;s Forum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gleitz | German Doom9</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hydrogenaudio Forums</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RareWares</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GitHub</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SourceForge</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Qt Developer Network</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Marius Hudea</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>UPX - The Ultimate Packer for eXecutables</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

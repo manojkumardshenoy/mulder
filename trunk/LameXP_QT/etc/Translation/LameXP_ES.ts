@@ -12,16 +12,8 @@
         <translation>Nota: LameXP es software libre. ¡&lt;b&gt;No&lt;/b&gt; pague por LameXP! ¡¡¡Si alguna web intenta hacerle pagar por descargar LameXP, usted &lt;b&gt;no&lt;/b&gt; debería aceptar!!!</translation>
     </message>
     <message>
-        <source>Special thanks go out to &quot;John33&quot; from %1 for his continuous support.</source>
-        <translation>Especial agradecimiento a &quot;John33&quot; de %1 por su apoyo continuo.</translation>
-    </message>
-    <message>
         <source>About LameXP</source>
         <translation>Acerca de LameXP</translation>
-    </message>
-    <message>
-        <source>Show License Text</source>
-        <translation>Mostrar licencia</translation>
     </message>
     <message>
         <source>Accept License</source>
@@ -40,10 +32,6 @@
         <translation>Contribuidores</translation>
     </message>
     <message>
-        <source>About Qt4</source>
-        <translation>Acerca de Qt4</translation>
-    </message>
-    <message>
         <source>Discard</source>
         <translation>Cancelar</translation>
     </message>
@@ -58,10 +46,6 @@
     <message>
         <source>If you are willing to contribute a LameXP translation, feel free to contact us!</source>
         <translation>¡Si está dispuesto a traducir LameXP, contáctenos sin dudarlo!</translation>
-    </message>
-    <message>
-        <source>About Contributors</source>
-        <translation>Acerca de los contribuidores</translation>
     </message>
     <message>
         <source>The following third-party software is used in LameXP:</source>
@@ -88,10 +72,6 @@
         <translation>Tecnología de codificación de audio sin pérdidas, abierta y libre de patentes.</translation>
     </message>
     <message>
-        <source>About Third-party Software</source>
-        <translation>Acerca del Software de terceros</translation>
-    </message>
-    <message>
         <source>n/a</source>
         <translation>n/d</translation>
     </message>
@@ -108,7 +88,7 @@
         <translation>Distribuido bajo los términos de la Licencia Pública General GNU.</translation>
     </message>
     <message>
-        <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</source>
+        <source>The copyright of LameXP as a whole belongs to LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</source>
         <translation>LameXP tiene copyright de LoRd_MuldeR. El copyright del software de terceros usado en LameXP pertenece a sus autores individuales.</translation>
     </message>
     <message>
@@ -228,8 +208,84 @@
         <translation>Copyright (c) 2008-2011 Alexander E. Patrakov. Distribuido bajo licencia LGPL.</translation>
     </message>
     <message>
-        <source>About Qt5</source>
-        <translation>Acerca de Qt5</translation>
+        <source>Information</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>License</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Programmers:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Project Leader</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opus Audio Codec</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Totally open, royalty-free, highly versatile audio codec.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Silk Icons - Over 700  icons in PNG format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>By Mark James, released under the Creative Commons &apos;by&apos; License.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show License Text</source>
+        <translation>Mostrar licencia</translation>
+    </message>
+    <message>
+        <source>About Qt...</source>
+        <translation>Acerca de Qt...</translation>
+    </message>
+    <message>
+        <source>Special thanks to:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Doom9&apos;s Forum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gleitz | German Doom9</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hydrogenaudio Forums</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RareWares</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GitHub</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SourceForge</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Qt Developer Network</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Marius Hudea</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>UPX - The Ultimate Packer for eXecutables</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

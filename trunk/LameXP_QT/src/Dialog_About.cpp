@@ -36,12 +36,22 @@
 #include <QDir>
 #include <QDesktopWidget>
 #include <QLabel>
+#include <QMessageBox>
+#include <QTextStream>
+#include <QScrollBar>
+#include <QCloseEvent>
+#include <QWindowsVistaStyle>
+#include <QWindowsXPStyle>
 
+#include <ShellAPI.h>
 #include <MMSystem.h>
 #include <math.h>
 
 //Helper macros
 #define LINK(URL) QString("<a href=\"%1\">%2</a>").arg(URL).arg(QString(URL).replace("-", "&minus;"))
+#define TRIM_RIGHT(STR) do { while(STR.endsWith(QChar(' ')) || STR.endsWith(QChar('\t')) || STR.endsWith(QChar('\r')) || STR.endsWith(QChar('\n'))) STR.chop(1); } while(0)
+#define MAKE_TRANSPARENT(WIDGET) do { QPalette _p = (WIDGET)->palette(); _p.setColor(QPalette::Background, Qt::transparent); (WIDGET)->setPalette(_p); } while(0)
+
 
 //Constants
 const char *AboutDialog::neroAacUrl = "http://www.nero.com/eng/technologies-aac-codec.html";
@@ -55,7 +65,7 @@ static const struct
 	wchar_t *pcName;
 	char *pcMail;
 }
-g_lamexp_contributors[] =
+g_lamexp_translators[] =
 {
 	{"en", L"Englisch",   L"LoRd_MuldeR",         "MuldeR2@GMX.de"        },
 	{"de", L"Deutsch",    L"LoRd_MuldeR",         "MuldeR2@GMX.de"        },
@@ -80,138 +90,56 @@ g_lamexp_contributors[] =
 
 AboutDialog::AboutDialog(SettingsModel *settings, QWidget *parent, bool firstStart)
 :
-	QMessageBox(parent),
+	QDialog(parent),
 	m_settings(settings),
+	m_initFlags(new QMap<QWidget*,bool>),
 	m_disque(NULL),
 	m_disqueTimer(NULL),
 	m_rotateNext(false),
-	m_disqueDelay(_I64_MAX)
+	m_disqueDelay(_I64_MAX),
+	m_lastTab(0)
 {
-	const QString versionStr = QString().sprintf
-	(
-		"Version %d.%02d %s, Build %d [%s], %s %s, Qt v%s",
-		lamexp_version_major(),
-		lamexp_version_minor(),
-		lamexp_version_release(),
-		lamexp_version_build(),
-		lamexp_version_date().toString(Qt::ISODate).toLatin1().constData(),
-		lamexp_version_compiler(),
-		lamexp_version_arch(),
-		qVersion()
-	);
-	const QString copyrightStr = QString().sprintf
-	(
-		"Copyright (C) 2004-%04d LoRd_MuldeR &lt;MuldeR2@GMX.de&gt;. Some rights reserved.",
-		qMax(lamexp_version_date().year(), QDate::currentDate().year())
-	);
+	//Init the dialog, from the .ui file
+	setupUi(this);
+	setWindowFlags(windowFlags() & (~Qt::WindowContextHelpButtonHint));
+	resize(this->minimumSize());
+	
+	//Disable "X" button
+	if(firstStart)
+	{
+		if(HMENU hMenu = GetSystemMenu((HWND) winId(), FALSE))
+		{
+			EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
+		}
+	}
 
+	//Init images
 	for(int i = 0; i < 4; i++)
 	{
 		m_cartoon[i] = NULL;
 	}
 
-	QString aboutText;
+	//Init tab widget
+	connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
 
-	aboutText += QString("<h2>%1</h2>").arg(NOBR(tr("LameXP - Audio Encoder Front-end")));
-	aboutText += QString("<b>%1</b><br>").arg(NOBR(copyrightStr));
-	aboutText += QString("<b>%1</b><br><br>").arg(NOBR(versionStr));
-	aboutText += QString("%1<br>").arg(NOBR(tr("Please visit %1 for news and updates!").arg(LINK(lamexp_website_url()))));
-
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-	if(LAMEXP_DEBUG)
+	//Make transparent
+	QStyle *style = qApp->style();
+	if((dynamic_cast<QWindowsVistaStyle*>(style)) || (dynamic_cast<QWindowsXPStyle*>(style)))
 	{
-		int daysLeft = qMax(QDate::currentDate().daysTo(lamexp_version_expires()), 0);
-		aboutText += QString("<hr><font color=\"crimson\">%1</font>").arg(NOBR(QString("!!! --- DEBUG BUILD --- Expires at: %1 &middot; Days left: %2 --- DEBUG BUILD --- !!!").arg(lamexp_version_expires().toString(Qt::ISODate), QString::number(daysLeft))));
+		MAKE_TRANSPARENT(infoScrollArea);
+		MAKE_TRANSPARENT(contributorsScrollArea);
+		MAKE_TRANSPARENT(softwareScrollArea);
+		MAKE_TRANSPARENT(licenseScrollArea);
 	}
-	else if(lamexp_version_demo())
+
+	//Show about dialog for the first time?
+	if(!firstStart)
 	{
-		int daysLeft = qMax(QDate::currentDate().daysTo(lamexp_version_expires()), 0);
-		aboutText += QString("<hr><font color=\"crimson\">%1</font>").arg(NOBR(tr("Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.").arg(lamexp_version_expires().toString(Qt::ISODate), QString::number(daysLeft))));
-	}
-#else
-	if(LAMEXP_DEBUG)
-	{
-		int daysLeft = qMax(QDate::currentDate().daysTo(lamexp_version_expires()), 0i64);
-		aboutText += QString("<hr><font color=\"crimson\">%1</font>").arg(NOBR(QString("!!! --- DEBUG BUILD --- Expires at: %1 &middot; Days left: %2 --- DEBUG BUILD --- !!!").arg(lamexp_version_expires().toString(Qt::ISODate), QString::number(daysLeft))));
-	}
-	else if(lamexp_version_demo())
-	{
-		int daysLeft = qMax(QDate::currentDate().daysTo(lamexp_version_expires()), 0i64);
-		aboutText += QString("<hr><font color=\"crimson\">%1</font>").arg(NOBR(tr("Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.").arg(lamexp_version_expires().toString(Qt::ISODate), QString::number(daysLeft))));
-	}
-#endif
-
-	aboutText += "<hr><br>";
-	aboutText += "<nobr><tt>This program is free software; you can redistribute it and/or<br>";
-	aboutText += "modify it under the terms of the GNU General Public License<br>";
-	aboutText += "as published by the Free Software Foundation; either version 2<br>";
-	aboutText += "of the License, or (at your option) any later version.<br><br>";
-	aboutText += "This program is distributed in the hope that it will be useful,<br>";
-	aboutText += "but WITHOUT ANY WARRANTY; without even the implied warranty of<br>";
-	aboutText += "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the<br>";
-	aboutText += "GNU General Public License for more details.<br><br>";
-	aboutText += "You should have received a copy of the GNU General Public License<br>";
-	aboutText += "along with this program; if not, write to the Free Software<br>";
-	aboutText += "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110&minus;1301, USA.</tt></nobr><br>";
-	aboutText += "<hr><table><tr>";
-	aboutText += "<td valign=\"middle\"><img src=\":/icons/error_big.png\"</td><td>&nbsp;</td>";
-	aboutText += QString("<td><font color=\"darkred\">%1</font></td>").arg(tr("Note: LameXP is free software. Do <b>not</b> pay money to obtain or use LameXP! If some third-party website tries to make you pay for downloading LameXP, you should <b>not</b> respond to the offer !!!"));
-	aboutText += "</tr></table><hr><br>";
-	aboutText += QString("%1<br>").arg(NOBR(tr("Special thanks go out to \"John33\" from %1 for his continuous support.")).arg(LINK("http://www.rarewares.org/")));
-
-	setText(aboutText);
-	setIconPixmap(lamexp_app_icon().pixmap(QSize(72,72)));
-	setWindowTitle(tr("About LameXP"));
-
-	if(firstStart)
-	{
-		QPushButton *firstButton = addButton(tr("Show License Text"), QMessageBox::AcceptRole);
-		firstButton->setIcon(QIcon(":/icons/script.png"));
-		firstButton->setIconSize(QSize(16, 16));
-		firstButton->setMinimumWidth(135);
-		firstButton->disconnect();
-		connect(firstButton, SIGNAL(clicked()), this, SLOT(openLicenseText()));
-
-		QPushButton *secondButton = addButton(tr("Accept License"), QMessageBox::AcceptRole);
-		secondButton->setIcon(QIcon(":/icons/accept.png"));
-		secondButton->setIconSize(QSize(16, 16));
-		secondButton->setMinimumWidth(120);
-
-		QPushButton *thirdButton = addButton(tr("Decline License"), QMessageBox::AcceptRole);
-		thirdButton->setIcon(QIcon(":/icons/delete.png"));
-		thirdButton->setIconSize(QSize(16, 16));
-		thirdButton->setMinimumWidth(120);
-		thirdButton->setEnabled(false);
-	}
-	else
-	{
-		QPushButton *firstButton = addButton(tr("3rd Party S/W"), QMessageBox::AcceptRole);
-		firstButton->setIcon(QIcon(":/icons/page_white_cplusplus.png"));
-		firstButton->setIconSize(QSize(16, 16));
-		firstButton->setMinimumWidth(120);
-		firstButton->disconnect();
-		connect(firstButton, SIGNAL(clicked()), this, SLOT(showMoreAbout()));
-
-		QPushButton *secondButton = addButton(tr("Contributors"), QMessageBox::AcceptRole);
-		secondButton->setIcon(QIcon(":/icons/user_suit.png"));
-		secondButton->setIconSize(QSize(16, 16));
-		secondButton->setMinimumWidth(120);
-		secondButton->disconnect();
-		connect(secondButton, SIGNAL(clicked()), this, SLOT(showAboutContributors()));
-
-		static const bool isQt5 = (QT_VERSION >= QT_VERSION_CHECK(5,0,0));
-		QPushButton *thirdButton = addButton(isQt5 ? tr("About Qt5") : tr("About Qt4"), QMessageBox::AcceptRole);
-		thirdButton->setIcon(QIcon(":/icons/qt.png"));
-		thirdButton->setIconSize(QSize(16, 16));
-		thirdButton->setMinimumWidth(120);
-		thirdButton->disconnect();
-		connect(thirdButton, SIGNAL(clicked()), this, SLOT(showAboutQt()));
-
-		QPushButton *fourthButton = addButton(tr("Discard"), QMessageBox::AcceptRole);
-		fourthButton->setIcon(QIcon(":/icons/cross.png"));
-		fourthButton->setIconSize(QSize(16, 16));
-		fourthButton->setMinimumWidth(90);
-
+		acceptButton->hide();
+		declineButton->hide();
+		aboutQtButton->show();
+		closeButton->show();
+		
 		QPixmap disque(":/images/Disque.png");
 		QRect screenGeometry = QApplication::desktop()->availableGeometry();
 		m_disque = new QLabel(this, Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
@@ -228,8 +156,21 @@ AboutDialog::AboutDialog(SettingsModel *settings, QWidget *parent, bool firstSta
 		connect(m_disqueTimer, SIGNAL(timeout()), this, SLOT(moveDisque()));
 		m_disqueTimer->setInterval(10);
 		m_disqueTimer->start();
+
+		connect(aboutQtButton, SIGNAL(clicked()), this, SLOT(showAboutQt()));
 	}
-	
+	else
+	{
+		acceptButton->show();
+		declineButton->show();
+		aboutQtButton->hide();
+		closeButton->hide();
+	}
+
+	//Activate "show license" button
+	showLicenseButton->show();
+	connect(showLicenseButton, SIGNAL(clicked()), this, SLOT(gotoLicenseTab()));
+
 	m_firstShow = firstStart;
 }
 
@@ -249,7 +190,7 @@ AboutDialog::~AboutDialog(void)
 	{
 		LAMEXP_DELETE(m_cartoon[i]);
 	}
-
+	LAMEXP_DELETE(m_initFlags);
 }
 
 ////////////////////////////////////////////////////////////
@@ -273,7 +214,7 @@ int AboutDialog::exec()
 		}
 	}
 	
-	switch(QMessageBox::exec())
+	switch(QDialog::exec())
 	{
 	case 1:
 		return 1;
@@ -294,21 +235,66 @@ int AboutDialog::exec()
 #define TEMP_HIDE_DISQUE(CMD) \
 if(m_disque) { bool _tmp = m_disque->isVisible(); if(_tmp) m_disque->hide(); {CMD}; if(_tmp) { m_disque->show(); m_disque->setWindowOpacity(0.01); } } else {CMD}
 
-void AboutDialog::enableButtons(void)
+void AboutDialog::tabChanged(int index)
 {
-	const QList<QAbstractButton*> buttonList = buttons();
-	
-	for(int i = 0; i < buttonList.count(); i++)
+	bool bInitialized = m_initFlags->value(tabWidget->widget(index), false);
+
+	if(!bInitialized)
 	{
-		buttonList.at(i)->setEnabled(true);
+		qApp->setOverrideCursor(QCursor(Qt::WaitCursor));
+
+		if(QWidget *tab = tabWidget->widget(index))
+		{
+			bool ok = false;
+
+			if(tab == infoTab) { initInformationTab(); ok = true; }
+			if(tab == contributorsTab) { initContributorsTab(); ok = true; }
+			if(tab == softwareTab) { initSoftwareTab(); ok = true; }
+			if(tab == licenseTab) { initLicenseTab(); ok = true; }
+
+			if(ok)
+			{
+				m_initFlags->insert(tab, true);
+			}
+			else
+			{
+				qWarning("Unknown tab %p encountered, cannot initialize !!!", tab);
+			}
+			
+		}
+
+		tabWidget->widget(index)->update();
+		qApp->processEvents();
+		qApp->restoreOverrideCursor();
 	}
 
+	//Scroll to the top
+	if(QWidget *tab = tabWidget->widget(index))
+	{
+		if(tab == infoTab) infoScrollArea->verticalScrollBar()->setSliderPosition(0);
+		if(tab == contributorsTab) contributorsScrollArea->verticalScrollBar()->setSliderPosition(0);
+		if(tab == softwareTab) softwareScrollArea->verticalScrollBar()->setSliderPosition(0);
+		if(tab == licenseTab) licenseScrollArea->verticalScrollBar()->setSliderPosition(0);
+	}
+
+	//Update license button
+	showLicenseButton->setChecked(tabWidget->widget(index) == licenseTab);
+	if(tabWidget->widget(index) != licenseTab) m_lastTab = index;
+}
+
+void AboutDialog::enableButtons(void)
+{
+	acceptButton->setEnabled(true);
+	declineButton->setEnabled(true);
 	setCursor(QCursor(Qt::ArrowCursor));
 }
 
-void AboutDialog::openLicenseText(void)
+void AboutDialog::openURL(const QString &url)
 {
-	QDesktopServices::openUrl(QUrl("http://www.gnu.org/licenses/gpl-2.0.txt"));
+	if(!QDesktopServices::openUrl(QUrl(url)))
+	{
+		ShellExecuteW(this->winId(), L"open", QWCHAR(url), NULL, NULL, SW_SHOW);
+	}
 }
 
 void AboutDialog::showAboutQt(void)
@@ -319,238 +305,9 @@ void AboutDialog::showAboutQt(void)
 	);
 }
 
-void AboutDialog::showAboutContributors(void)
+void AboutDialog::gotoLicenseTab(void)
 {
-	TEMP_HIDE_DISQUE
-	(
-		QString contributorsAboutText;
-
-		contributorsAboutText += QString("<h3>%1</h3>").arg(NOBR(tr("The following people have contributed to LameXP:")));
-		contributorsAboutText += QString("<b>%1</b>").arg(tr("Translators:"));
-		contributorsAboutText += "<table style=\"margin-top:5px\">";
-		for(int i = 0; g_lamexp_contributors[i].pcName; i++)
-		{
-			QString flagIcon = (strlen(g_lamexp_contributors[i].pcFlag) > 0) ? QString("<img src=\":/flags/%1.png\">").arg(g_lamexp_contributors[i].pcFlag) : QString();
-			contributorsAboutText += QString("<tr><td valign=\"middle\">%1</td><td>&nbsp;&nbsp;</td>").arg(flagIcon);
-			contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>&nbsp;&nbsp;</td>").arg(WCHAR2QSTR(g_lamexp_contributors[i].pcLanguage));
-			contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>&nbsp;&nbsp;</td><td><a href=\"mailto:%2\">&lt;%2&gt;</a></td></tr>").arg(WCHAR2QSTR(g_lamexp_contributors[i].pcName), g_lamexp_contributors[i].pcMail);
-		}
-		contributorsAboutText += "</table>";
-		contributorsAboutText += "<br><br>";
-		contributorsAboutText += QString("<i>%1</i><br>").arg(NOBR(tr("If you are willing to contribute a LameXP translation, feel free to contact us!")));
-
-		QMessageBox *contributorsAboutBox = new QMessageBox(this);
-		contributorsAboutBox->setText(contributorsAboutText);
-		contributorsAboutBox->setIconPixmap(dynamic_cast<QApplication*>(QApplication::instance())->windowIcon().pixmap(QSize(64,64)));
-
-		QPushButton *closeButton = contributorsAboutBox->addButton(tr("Discard"), QMessageBox::AcceptRole);
-		closeButton->setIcon(QIcon(":/icons/cross.png"));
-		closeButton->setMinimumWidth(90);
-
-		contributorsAboutBox->setWindowTitle(tr("About Contributors"));
-		contributorsAboutBox->setIconPixmap(QIcon(":/images/Logo_Contributors.png").pixmap(QSize(64,74)));
-		contributorsAboutBox->setWindowIcon(QIcon(":/icons/user_suit.png"));
-		contributorsAboutBox->exec();
-
-		LAMEXP_DELETE(contributorsAboutBox);
-	);
-}
-
-void AboutDialog::showMoreAbout(void)
-{
-	TEMP_HIDE_DISQUE
-	(
-		QString moreAboutText;
-
-		moreAboutText += QString("<h3>%1</h3>").arg(tr("The following third-party software is used in LameXP:"));
-		moreAboutText += "<div style=\"margin-left:-25px;font-size:7pt;white-space:nowrap\"><table><tr><td><ul>";
-	
-		moreAboutText += makeToolText
-		(
-			tr("LAME - OpenSource mp3 Encoder"),
-			"lame.exe", "v?.??, Final-?",
-			tr("Released under the terms of the GNU Lesser General Public License."),
-			"http://lame.sourceforge.net/"
-		);
-		moreAboutText += makeToolText
-		(
-			tr("OggEnc - Ogg Vorbis Encoder"),
-			"oggenc2.exe", "v?.??, aoTuV Beta-?.??",
-			tr("Completely open and patent-free audio encoding technology."),
-			"http://www.vorbis.com/"
-		);
-		moreAboutText += makeToolText
-		(
-			tr("Nero AAC Reference MPEG-4 Encoder"),
-			"neroAacEnc.exe", "v?.?.?.?",
-			tr("Freeware state-of-the-art HE-AAC encoder with 2-Pass support."),
-			neroAacUrl,
-			tr("Available from vendor web-site as free download:")
-		);
-		moreAboutText += makeToolText
-		(
-			tr("Aften - A/52 audio encoder"),
-			"aften.exe", "v?.?.?",
-			tr("Released under the terms of the GNU Lesser General Public License."),
-			"http://aften.sourceforge.net/"
-		);
-		moreAboutText += makeToolText
-		(
-			tr("FLAC - Free Lossless Audio Codec"),
-			"flac.exe", "v?.?.?",
-			tr("Open and patent-free lossless audio compression technology."),
-			"http://flac.sourceforge.net/"
-		);
-		moreAboutText += makeToolText
-		(
-			tr("mpg123 - Fast Console MPEG Audio Player/Decoder"),
-			"mpg123.exe", "v?.??.?",
-			tr("Released under the terms of the GNU Lesser General Public License."),
-			"http://www.mpg123.de/"
-		);
-		moreAboutText += makeToolText
-		(
-			tr("FAAD - OpenSource MPEG-4 and MPEG-2 AAC Decoder"),
-			"faad.exe", "v?.?",
-			tr("Released under the terms of the GNU General Public License."),
-			"http://www.audiocoding.com/"
-		);
-		moreAboutText += makeToolText
-		(
-			tr("AC3Filter Tools - AC3/DTS Decoder"),
-			"valdec.exe", "v?.??",
-			tr("Released under the terms of the GNU Lesser General Public License."),
-			"http://www.ac3filter.net/projects/tools"
-		);
-		moreAboutText += makeToolText
-			(
-			tr("WavPack - Hybrid Lossless Compression"),
-			"wvunpack.exe", "v?.??.?",
-			tr("Completely open audio compression format."),
-			"http://www.wavpack.com/"
-		);
-		moreAboutText += makeToolText
-			(
-			tr("Musepack - Living Audio Compression"),
-			"mpcdec.exe", "r???",
-			tr("Released under the terms of the GNU Lesser General Public License."),
-			"http://www.musepack.net/"
-		);
-		moreAboutText += makeToolText
-		(
-			tr("Monkey's Audio - Lossless Audio Compressor"),
-			"mac.exe", "v?.??",
-			tr("Freely available source code, simple SDK and non-restrictive licensing."),
-			"http://www.monkeysaudio.com/"
-		);
-		moreAboutText += QString
-		(
-			"</ul></td><td><ul>" /* ----------------------------------------- */
-		);
-		moreAboutText += makeToolText
-		(
-			tr("Shorten - Lossless Audio Compressor"),
-			"shorten.exe", "v?.?.?",
-			tr("Released under the terms of the GNU Lesser General Public License."),
-			"http://etree.org/shnutils/shorten/"
-		);
-		moreAboutText += makeToolText
-		(
-			tr("Speex - Free Codec For Free Speech"),
-			"speexdec.exe", "v?.?",
-			tr("Open Source patent-free audio format designed for speech."),
-			"http://www.speex.org/"
-		);
-		moreAboutText += makeToolText
-		(
-			tr("The True Audio - Lossless Audio Codec"),
-			"tta.exe", "v?.?",
-			tr("Released under the terms of the GNU Lesser General Public License."),
-			"http://tta.sourceforge.net/"
-		);
-		moreAboutText += makeToolText
-		(
-			tr("ALAC Decoder"),
-			"alac.exe", "v?.?.?",
-			tr("Copyright (c) 2004 David Hammerton. Contributions by Cody Brocious."),
-			"http://craz.net/programs/itunes/alac.html"
-		);
-		moreAboutText += makeToolText
-		(
-			tr("wma2wav - Dump WMA files to Wave Audio"),
-			"wma2wav.exe", "????-??-??",
-			tr("Copyright (c) 2011 LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved."),
-			"http://forum.doom9.org/showthread.php?t=140273"
-		);
-		moreAboutText += makeToolText
-		(
-			tr("avs2wav - Avisynth to Wave Audio converter"),
-			"avs2wav.exe", "v?.?",
-			tr("By Jory Stone <jcsston@toughguy.net> and LoRd_MuldeR <mulder2@gmx.de>."),
-			"http://forum.doom9.org/showthread.php?t=70882"
-		);
-		moreAboutText += makeToolText
-		(
-			tr("dcaenc"),
-			"dcaenc.exe", "????-??-??",
-			tr("Copyright (c) 2008-2011 Alexander E. Patrakov. Distributed under the LGPL."),
-			"http://gitorious.org/dtsenc/dtsenc/trees/master"
-		);
-		moreAboutText += makeToolText
-		(
-			tr("MediaInfo - Media File Analysis Tool"),
-			"mediainfo.exe", "v?.?.??",
-			tr("Released under the terms of the GNU Lesser General Public License."),
-			"http://mediainfo.sourceforge.net/"
-		);
-		moreAboutText += makeToolText
-		(
-			tr("SoX - Sound eXchange"),
-			"sox.exe", "v??.?.?",
-			tr("Released under the terms of the GNU Lesser General Public License."),
-			"http://sox.sourceforge.net/"
-		);
-		moreAboutText += makeToolText
-		(
-			tr("GnuPG - The GNU Privacy Guard"),
-			"gpgv.exe", "v?.?.??",
-			tr("Released under the terms of the GNU Lesser General Public License."),
-			"http://www.gnupg.org/"
-		);
-		moreAboutText += makeToolText
-		(
-			tr("GNU Wget - Software for retrieving files using HTTP"),
-			"wget.exe", "v?.??.?",
-			tr("Released under the terms of the GNU Lesser General Public License."),
-			"http://www.gnu.org/software/wget/"
-		);
-		//moreAboutText += makeToolText
-		//(
-		//	tr("Silk Icons - Over 700  icons in PNG format"),
-		//	QString(), "v1.3",
-		//	tr("By Mark James, released under the Creative Commons 'by' License."),
-		//	"http://www.famfamfam.com/lab/icons/silk/"
-		//);
-		moreAboutText += QString("</ul></td><td>&nbsp;</td></tr></table></div><i>%1</i><br>").arg
-		(
-			NOBR(tr("LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors."))
-		);
-
-		QMessageBox *moreAboutBox = new QMessageBox(this);
-		moreAboutBox->setText(moreAboutText);
-		moreAboutBox->setIconPixmap(dynamic_cast<QApplication*>(QApplication::instance())->windowIcon().pixmap(QSize(64,64)));
-
-		QPushButton *closeButton = moreAboutBox->addButton(tr("Discard"), QMessageBox::AcceptRole);
-		closeButton->setIcon(QIcon(":/icons/cross.png"));
-		closeButton->setMinimumWidth(90);
-
-		moreAboutBox->setWindowTitle(tr("About Third-party Software"));
-		moreAboutBox->setIconPixmap(QIcon(":/images/Logo_Software.png").pixmap(QSize(64,71)));
-		moreAboutBox->setWindowIcon(QIcon(":/icons/page_white_cplusplus.png"));
-		moreAboutBox->exec();
-				
-		LAMEXP_DELETE(moreAboutBox);
-	);
+	tabWidget->setCurrentIndex(tabWidget->indexOf(showLicenseButton->isChecked() ? licenseTab : tabWidget->widget(m_lastTab)));
 }
 
 void AboutDialog::moveDisque(void)
@@ -628,6 +385,20 @@ void AboutDialog::moveDisque(void)
 		}
 	}
 }
+
+void AboutDialog::adjustSize(void)
+{
+	int maximumHeight = QApplication::desktop()->availableGeometry().height();
+
+	int delta = infoScrollArea->widget()->height() - infoScrollArea->viewport()->height();
+	if(delta > 0)
+	{
+		this->resize(this->width(), qMin(this->height() + delta, maximumHeight));
+		this->move(this->x(), this->y() - (delta/2));
+		this->setMinimumHeight(qMax(this->minimumHeight(), this->height()));
+	}
+}
+
 ////////////////////////////////////////////////////////////
 // Protected Functions
 ////////////////////////////////////////////////////////////
@@ -635,18 +406,24 @@ void AboutDialog::moveDisque(void)
 void AboutDialog::showEvent(QShowEvent *e)
 {
 	QDialog::showEvent(e);
+	
+	tabWidget->setCurrentIndex(tabWidget->indexOf(infoTab));
+	tabChanged(m_lastTab = tabWidget->currentIndex());
+	
 	if(m_firstShow)
 	{
-		const QList<QAbstractButton*> buttonList = buttons();
-
-		for(int i = 1; i < buttonList.count(); i++)
-		{
-			buttonList.at(i)->setEnabled(false);
-		}
-
+		acceptButton->setEnabled(false);
+		declineButton->setEnabled(false);
 		QTimer::singleShot(5000, this, SLOT(enableButtons()));
 		setCursor(QCursor(Qt::WaitCursor));
 	}
+
+	QTimer::singleShot(0, this, SLOT(adjustSize()));
+}
+
+void AboutDialog::closeEvent(QCloseEvent *e)
+{
+	if(m_firstShow) e->ignore();
 }
 
 bool AboutDialog::eventFilter(QObject *obj, QEvent *event)
@@ -672,6 +449,377 @@ bool AboutDialog::eventFilter(QObject *obj, QEvent *event)
 // Private Functions
 ////////////////////////////////////////////////////////////
 
+void AboutDialog::initInformationTab(void)
+{
+	const QString versionStr = QString().sprintf
+	(
+		"Version %d.%02d %s, Build %d [%s], %s %s, Qt v%s",
+		lamexp_version_major(),
+		lamexp_version_minor(),
+		lamexp_version_release(),
+		lamexp_version_build(),
+		lamexp_version_date().toString(Qt::ISODate).toLatin1().constData(),
+		lamexp_version_compiler(),
+		lamexp_version_arch(),
+		qVersion()
+	);
+
+	const QString copyrightStr = QString().sprintf
+	(
+		"Copyright (C) 2004-%04d LoRd_MuldeR &lt;MuldeR2@GMX.de&gt;. Some rights reserved.",
+		qMax(lamexp_version_date().year(), QDate::currentDate().year())
+	);
+
+	QString aboutText;
+
+	aboutText += QString("<h2>%1</h2>").arg(NOBR(tr("LameXP - Audio Encoder Front-end")));
+	aboutText += QString("<b>%1</b><br>").arg(NOBR(copyrightStr));
+	aboutText += QString("<b>%1</b><br><br>").arg(NOBR(versionStr));
+	aboutText += QString("%1<br>").arg(NOBR(tr("Please visit %1 for news and updates!").arg(LINK(lamexp_website_url()))));
+
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+	if(LAMEXP_DEBUG)
+	{
+		int daysLeft = qMax(QDate::currentDate().daysTo(lamexp_version_expires()), 0);
+		aboutText += QString("<hr><font color=\"crimson\">%1</font>").arg(NOBR(QString("!!! --- DEBUG BUILD --- Expires at: %1 &middot; Days left: %2 --- DEBUG BUILD --- !!!").arg(lamexp_version_expires().toString(Qt::ISODate), QString::number(daysLeft))));
+	}
+	else if(lamexp_version_demo())
+	{
+		int daysLeft = qMax(QDate::currentDate().daysTo(lamexp_version_expires()), 0);
+		aboutText += QString("<hr><font color=\"crimson\">%1</font>").arg(NOBR(tr("Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.").arg(lamexp_version_expires().toString(Qt::ISODate), QString::number(daysLeft))));
+	}
+#else
+	if(LAMEXP_DEBUG)
+	{
+		int daysLeft = qMax(QDate::currentDate().daysTo(lamexp_version_expires()), 0i64);
+		aboutText += QString("<hr><font color=\"crimson\">%1</font>").arg(NOBR(QString("!!! --- DEBUG BUILD --- Expires at: %1 &middot; Days left: %2 --- DEBUG BUILD --- !!!").arg(lamexp_version_expires().toString(Qt::ISODate), QString::number(daysLeft))));
+	}
+	else if(lamexp_version_demo())
+	{
+		int daysLeft = qMax(QDate::currentDate().daysTo(lamexp_version_expires()), 0i64);
+		aboutText += QString("<hr><font color=\"crimson\">%1</font>").arg(NOBR(tr("Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.").arg(lamexp_version_expires().toString(Qt::ISODate), QString::number(daysLeft))));
+	}
+#endif
+
+	aboutText += "<hr><br>";
+	aboutText += "<nobr><tt>This program is free software; you can redistribute it and/or<br>";
+	aboutText += "modify it under the terms of the GNU General Public License<br>";
+	aboutText += "as published by the Free Software Foundation; either version 2<br>";
+	aboutText += "of the License, or (at your option) any later version.<br><br>";
+	aboutText += "This program is distributed in the hope that it will be useful,<br>";
+	aboutText += "but WITHOUT ANY WARRANTY; without even the implied warranty of<br>";
+	aboutText += "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the<br>";
+	aboutText += "GNU General Public License for more details.<br><br>";
+	aboutText += "You should have received a copy of the GNU General Public License<br>";
+	aboutText += "along with this program; if not, write to the Free Software<br>";
+	aboutText += "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110&minus;1301, USA.</tt></nobr><br>";
+	aboutText += "<hr><table style=\"margin-top:4px\"><tr>";
+	aboutText += "<td valign=\"middle\"><img src=\":/icons/error_big.png\"</td><td>&nbsp;</td>";
+	aboutText += QString("<td><font color=\"darkred\">%1</font></td>").arg(tr("Note: LameXP is free software. Do <b>not</b> pay money to obtain or use LameXP! If some third-party website tries to make you pay for downloading LameXP, you should <b>not</b> respond to the offer !!!"));
+	aboutText += "</tr></table>";
+	//aboutText += QString("%1<br>").arg(NOBR(tr("Special thanks go out to \"John33\" from %1 for his continuous support.")).arg(LINK("http://www.rarewares.org/")));
+
+	infoLabel->setText(aboutText);
+	infoIcon->setPixmap(lamexp_app_icon().pixmap(QSize(72,72)));
+	connect(infoLabel, SIGNAL(linkActivated(QString)), this, SLOT(openURL(QString)));
+}
+
+void AboutDialog::initContributorsTab(void)
+{
+	const QString spaces("&nbsp;&nbsp;&nbsp;&nbsp;");
+	const QString extraVSpace("<font style=\"font-size:7px\"><br>&nbsp;</font>");
+	
+	QString contributorsAboutText;
+	contributorsAboutText += QString("<h3>%1</h3>").arg(NOBR(tr("The following people have contributed to LameXP:")));
+	contributorsAboutText += "<table style=\"margin-top:12px;white-space:nowrap\">";
+	
+	contributorsAboutText += QString("<tr><td colspan=\"7\"><b>%1</b>%2</td></tr>").arg(tr("Programmers:"), extraVSpace);
+	QString icon = QString("<img src=\":/icons/%1.png\">").arg("user_gray");
+	contributorsAboutText += QString("<tr><td valign=\"middle\">%1</td><td>%2</td>").arg(icon, spaces);
+	contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>%2</td>").arg(tr("Project Leader"), spaces);
+	contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>%2</td><td><a href=\"mailto:%2\">&lt;%3&gt;</a></td></tr>").arg("LoRd_MuldeR", spaces, "MuldeR2@GMX.de");
+	contributorsAboutText += QString("<tr><td colspan=\"7\"><b>&nbsp;</b></td></tr>");
+
+	contributorsAboutText += QString("<tr><td colspan=\"7\"><b>%1</b>%2</td></tr>").arg(tr("Translators:"), extraVSpace);
+	for(int i = 0; g_lamexp_translators[i].pcName; i++)
+	{
+		QString flagIcon = (strlen(g_lamexp_translators[i].pcFlag) > 0) ? QString("<img src=\":/flags/%1.png\">").arg(g_lamexp_translators[i].pcFlag) : QString();
+		contributorsAboutText += QString("<tr><td valign=\"middle\">%1</td><td>%2</td>").arg(flagIcon, spaces);
+		contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>%2</td>").arg(WCHAR2QSTR(g_lamexp_translators[i].pcLanguage), spaces);
+		contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>%2</td><td><a href=\"mailto:%2\">&lt;%3&gt;</a></td></tr>").arg(WCHAR2QSTR(g_lamexp_translators[i].pcName), spaces, g_lamexp_translators[i].pcMail);
+	}
+
+	contributorsAboutText += QString("<tr><td colspan=\"7\"><b>&nbsp;</b></td></tr>");
+	contributorsAboutText += QString("<tr><td colspan=\"7\"><b>%1</b>%2</td></tr>").arg(tr("Special thanks to:"), extraVSpace);
+
+	QString webIcon = QString("<img src=\":/icons/%1.png\">").arg("world");
+	contributorsAboutText += QString("<tr><td valign=\"middle\">%1</td><td>%2</td>").arg(webIcon, spaces);
+	contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>%2</td><td valign=\"middle\" colspan=\"3\"><a href=\"%3\">%3</td></tr>").arg(tr("Doom9's Forum"), spaces, "http://forum.doom9.org/");
+	contributorsAboutText += QString("<tr><td valign=\"middle\">%1</td><td>%2</td>").arg(webIcon, spaces);
+	contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>%2</td><td valign=\"middle\" colspan=\"3\"><a href=\"%3\">%3</td></tr>").arg(tr("Gleitz | German Doom9"), spaces, "http://forum.gleitz.info/");
+	contributorsAboutText += QString("<tr><td valign=\"middle\">%1</td><td>%2</td>").arg(webIcon, spaces);
+	contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>%2</td><td valign=\"middle\" colspan=\"3\"><a href=\"%3\">%3</td></tr>").arg(tr("Hydrogenaudio Forums"), spaces, "http://www.hydrogenaudio.org/");
+	contributorsAboutText += QString("<tr><td valign=\"middle\">%1</td><td>%2</td>").arg(webIcon, spaces);
+	contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>%2</td><td valign=\"middle\" colspan=\"3\"><a href=\"%3\">%3</td></tr>").arg(tr("RareWares"), spaces, "http://www.rarewares.org/");
+	contributorsAboutText += QString("<tr><td valign=\"middle\">%1</td><td>%2</td>").arg(webIcon, spaces);
+	contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>%2</td><td valign=\"middle\" colspan=\"3\"><a href=\"%3\">%3</td></tr>").arg(tr("GitHub"), spaces, "http://github.com/");
+	contributorsAboutText += QString("<tr><td valign=\"middle\">%1</td><td>%2</td>").arg(webIcon, spaces);
+	contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>%2</td><td valign=\"middle\" colspan=\"3\"><a href=\"%3\">%3</td></tr>").arg(tr("SourceForge"), spaces, "http://sourceforge.net/");
+	contributorsAboutText += QString("<tr><td valign=\"middle\">%1</td><td>%2</td>").arg(webIcon, spaces);
+	contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>%2</td><td valign=\"middle\" colspan=\"3\"><a href=\"%3\">%3</td></tr>").arg(tr("Qt Developer Network"), spaces, "http://qt-project.org/");
+	contributorsAboutText += QString("<tr><td valign=\"middle\">%1</td><td>%2</td>").arg(webIcon, spaces);
+	contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>%2</td><td valign=\"middle\" colspan=\"3\"><a href=\"%3\">%3</td></tr>").arg(tr("Marius Hudea"), spaces, "http://savedonthe.net/");
+
+	contributorsAboutText += "</table><br><br><br>";
+	contributorsAboutText += QString("<i>%1</i><br>").arg(NOBR(tr("If you are willing to contribute a LameXP translation, feel free to contact us!")));
+
+	contributorsLabel->setText(contributorsAboutText);
+	contributorsIcon->setPixmap(QIcon(":/images/Logo_Contributors.png").pixmap(QSize(72,84)));
+	connect(contributorsLabel, SIGNAL(linkActivated(QString)), this, SLOT(openURL(QString)));
+}
+
+void AboutDialog::initSoftwareTab(void)
+{
+	QString moreAboutText;
+
+	moreAboutText += QString("<h3>%1</h3>").arg(tr("The following third-party software is used in LameXP:"));
+	moreAboutText += "<div style=\"margin-left:-25px;white-space:nowrap\"><table><tr><td><ul>"; //;font-size:7pt
+	
+	moreAboutText += makeToolText
+	(
+		tr("LAME - OpenSource mp3 Encoder"),
+		"lame.exe", "v?.??, Final-?",
+		tr("Released under the terms of the GNU Lesser General Public License."),
+		"http://lame.sourceforge.net/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("OggEnc - Ogg Vorbis Encoder"),
+		"oggenc2.exe", "v?.??, aoTuV Beta-?.??",
+		tr("Completely open and patent-free audio encoding technology."),
+		"http://www.vorbis.com/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("Nero AAC Reference MPEG-4 Encoder"),
+		"neroAacEnc.exe", "v?.?.?.?",
+		tr("Freeware state-of-the-art HE-AAC encoder with 2-Pass support."),
+		neroAacUrl,
+		tr("Available from vendor web-site as free download:")
+	);
+	moreAboutText += makeToolText
+	(
+		tr("Aften - A/52 audio encoder"),
+		"aften.exe", "v?.?.?",
+		tr("Released under the terms of the GNU Lesser General Public License."),
+		"http://aften.sourceforge.net/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("FLAC - Free Lossless Audio Codec"),
+		"flac.exe", "v?.?.?",
+		tr("Open and patent-free lossless audio compression technology."),
+		"http://flac.sourceforge.net/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("Opus Audio Codec"),
+		"opusenc_std.exe", "????-??-??",
+		tr("Totally open, royalty-free, highly versatile audio codec."),
+		"http://www.opus-codec.org/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("mpg123 - Fast Console MPEG Audio Player/Decoder"),
+		"mpg123.exe", "v?.??.?",
+		tr("Released under the terms of the GNU Lesser General Public License."),
+		"http://www.mpg123.de/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("FAAD - OpenSource MPEG-4 and MPEG-2 AAC Decoder"),
+		"faad.exe", "v?.?",
+		tr("Released under the terms of the GNU General Public License."),
+		"http://www.audiocoding.com/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("AC3Filter Tools - AC3/DTS Decoder"),
+		"valdec.exe", "v?.??",
+		tr("Released under the terms of the GNU Lesser General Public License."),
+		"http://www.ac3filter.net/projects/tools"
+	);
+	moreAboutText += makeToolText
+		(
+		tr("WavPack - Hybrid Lossless Compression"),
+		"wvunpack.exe", "v?.??.?",
+		tr("Completely open audio compression format."),
+		"http://www.wavpack.com/"
+	);
+	moreAboutText += makeToolText
+		(
+		tr("Musepack - Living Audio Compression"),
+		"mpcdec.exe", "r???",
+		tr("Released under the terms of the GNU Lesser General Public License."),
+		"http://www.musepack.net/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("Monkey's Audio - Lossless Audio Compressor"),
+		"mac.exe", "v?.??",
+		tr("Freely available source code, simple SDK and non-restrictive licensing."),
+		"http://www.monkeysaudio.com/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("Shorten - Lossless Audio Compressor"),
+		"shorten.exe", "v?.?.?",
+		tr("Released under the terms of the GNU Lesser General Public License."),
+		"http://etree.org/shnutils/shorten/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("Speex - Free Codec For Free Speech"),
+		"speexdec.exe", "v?.?",
+		tr("Open Source patent-free audio format designed for speech."),
+		"http://www.speex.org/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("The True Audio - Lossless Audio Codec"),
+		"tta.exe", "v?.?",
+		tr("Released under the terms of the GNU Lesser General Public License."),
+		"http://tta.sourceforge.net/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("ALAC Decoder"),
+		"alac.exe", "v?.?.?",
+		tr("Copyright (c) 2004 David Hammerton. Contributions by Cody Brocious."),
+		"http://craz.net/programs/itunes/alac.html"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("wma2wav - Dump WMA files to Wave Audio"),
+		"wma2wav.exe", "????-??-??",
+		tr("Copyright (c) 2011 LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved."),
+		"http://forum.doom9.org/showthread.php?t=140273"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("avs2wav - Avisynth to Wave Audio converter"),
+		"avs2wav.exe", "v?.?",
+		tr("By Jory Stone <jcsston@toughguy.net> and LoRd_MuldeR <mulder2@gmx.de>."),
+		"http://forum.doom9.org/showthread.php?t=70882"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("dcaenc"),
+		"dcaenc.exe", "????-??-??",
+		tr("Copyright (c) 2008-2011 Alexander E. Patrakov. Distributed under the LGPL."),
+		"http://gitorious.org/dtsenc/dtsenc/trees/master"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("MediaInfo - Media File Analysis Tool"),
+		"mediainfo.exe", "v?.?.??",
+		tr("Released under the terms of the GNU Lesser General Public License."),
+		"http://mediainfo.sourceforge.net/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("SoX - Sound eXchange"),
+		"sox.exe", "v??.?.?",
+		tr("Released under the terms of the GNU Lesser General Public License."),
+		"http://sox.sourceforge.net/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("GnuPG - The GNU Privacy Guard"),
+		"gpgv.exe", "v?.?.??",
+		tr("Released under the terms of the GNU Lesser General Public License."),
+		"http://www.gnupg.org/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("GNU Wget - Software for retrieving files using HTTP"),
+		"wget.exe", "v?.??.?",
+		tr("Released under the terms of the GNU Lesser General Public License."),
+		"http://www.gnu.org/software/wget/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("UPX - The Ultimate Packer for eXecutables"),
+		QString(), "v3.08",
+		tr("Released under the terms of the GNU Lesser General Public License."),
+		"http://upx.sourceforge.net/"
+	);
+	moreAboutText += makeToolText
+	(
+		tr("Silk Icons - Over 700  icons in PNG format"),
+		QString(), "v1.3",
+		tr("By Mark James, released under the Creative Commons 'by' License."),
+		"http://www.famfamfam.com/lab/icons/silk/"
+	);
+	moreAboutText += QString("</ul></td><td>&nbsp;</td></tr></table></div><br><i>%1</i><br>").arg
+	(
+		tr("The copyright of LameXP as a whole belongs to LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.")
+	);
+
+	softwareLabel->setText(moreAboutText);
+	softwareIcon->setPixmap(QIcon(":/images/Logo_Software.png").pixmap(QSize(72,65)));
+	connect(softwareLabel, SIGNAL(linkActivated(QString)), this, SLOT(openURL(QString)));
+}
+
+void AboutDialog::initLicenseTab(void)
+{
+	QString licenseText;
+	licenseText += ("<tt>");
+
+	QFile file(":/License.txt");
+	if(file.open(QIODevice::ReadOnly))
+	{
+		QTextStream stream(&file);
+		unsigned int counter = 0;
+		while((!stream.atEnd()) && (stream.status() == QTextStream::Ok))
+		{
+			QString line = stream.readLine();
+			const bool bIsBlank = line.trimmed().isEmpty();
+			line.replace('<', "&lt;").replace('>', "&gt;");
+
+			switch(counter)
+			{
+			case 0:
+				if(!bIsBlank) licenseText += QString("<font size=\"+2\">%1</font><br>").arg(line.simplified());
+				break;
+			case 1:
+				if(!bIsBlank) licenseText += QString("<font size=\"+1\">%1 &minus; %2</font><br>").arg(line.simplified(), LINK("http://www.gnu.org/licenses/gpl-2.0.html"));
+				break;
+			default:
+				TRIM_RIGHT(line);
+				licenseText += QString("<nobr>%1</nobr><br>").arg(line.replace(' ', "&nbsp;"));
+				break;
+			}
+
+			if(!bIsBlank) counter++;
+		}
+		licenseText += QString("<br>");
+		stream.device()->close();
+	}
+	else
+	{
+		licenseText += QString("<font color=\"darkred\">Oups, failed to load license text. Please refer to:</font><br>");
+		licenseText += LINK("http://www.gnu.org/licenses/gpl-2.0.html");
+	}
+
+	licenseText += ("</tt>");
+
+	licenseLabel->setText(licenseText);
+	licenseIcon->setPixmap(QIcon(":/images/Logo_GNU.png").pixmap(QSize(72,65)));
+	connect(licenseLabel, SIGNAL(linkActivated(QString)), this, SLOT(openURL(QString)));
+}
+
+
 QString AboutDialog::makeToolText(const QString &toolName, const QString &toolBin, const QString &toolVerFmt, const QString &toolLicense, const QString &toolWebsite, const QString &extraInfo)
 {
 	QString toolText, verStr(toolVerFmt);
@@ -685,7 +833,7 @@ QString AboutDialog::makeToolText(const QString &toolName, const QString &toolBi
 	toolText += QString("%1<br>").arg(NOBR(toolLicense));
 	if(!extraInfo.isEmpty()) toolText += QString("<i>%1</i><br>").arg(NOBR(extraInfo));
 	toolText += QString("<nobr>%1</nobr>").arg(LINK(toolWebsite));
-	toolText += QString("<div style=\"font-size:1pt\"><br></div>");
+	toolText += QString("<font style=\"font-size:9px\"><br>&nbsp;</font>");
 
 	return toolText;
 }

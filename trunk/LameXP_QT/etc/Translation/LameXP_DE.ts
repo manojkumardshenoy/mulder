@@ -12,16 +12,8 @@
         <translation>Hinweis: LameXP ist freie Software. Zahlen Sie &lt;b&gt;kein&lt;/b&gt; Geld um LameXP zu erhalten oder zu verwenden! Gehen Sie insbesondere &lt;b&gt;nicht&lt;/b&gt; auf kostenpflichtige Download-Angebote ein !!!</translation>
     </message>
     <message>
-        <source>Special thanks go out to &quot;John33&quot; from %1 for his continuous support.</source>
-        <translation>Besonderen Dank an &quot;John33&quot; von %1 für seine langjährige Unterstützung.</translation>
-    </message>
-    <message>
         <source>About LameXP</source>
         <translation>Über LameXP</translation>
-    </message>
-    <message>
-        <source>Show License Text</source>
-        <translation>Lizenztext anzeigen</translation>
     </message>
     <message>
         <source>Accept License</source>
@@ -40,10 +32,6 @@
         <translation>Mitwirkende</translation>
     </message>
     <message>
-        <source>About Qt4</source>
-        <translation>Über Qt4</translation>
-    </message>
-    <message>
         <source>Discard</source>
         <translation>Schließen</translation>
     </message>
@@ -58,10 +46,6 @@
     <message>
         <source>If you are willing to contribute a LameXP translation, feel free to contact us!</source>
         <translation>Wenn Sie LameXP in Ihre Sprache übersetzen möchten, melden Sie sich bitte bei uns!</translation>
-    </message>
-    <message>
-        <source>About Contributors</source>
-        <translation>Über Mitwirkende</translation>
     </message>
     <message>
         <source>The following third-party software is used in LameXP:</source>
@@ -88,10 +72,6 @@
         <translation>Offene und patentfreie Technlogie zur verlustfreien Audiokompression.</translation>
     </message>
     <message>
-        <source>About Third-party Software</source>
-        <translation>Über Drittsoftware</translation>
-    </message>
-    <message>
         <source>n/a</source>
         <translation>n/v</translation>
     </message>
@@ -108,8 +88,8 @@
         <translation>Veröffentlicht unter den Bestimmungen der GNU General Public License.</translation>
     </message>
     <message>
-        <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</source>
-        <translation>Das Urheberrecht an LameXP liegt bei LoRd_MuldeR. Das Urheberrecht an der eingesetzten Drittsoftware liegt bei den jeweiligen Autoren.</translation>
+        <source>The copyright of LameXP as a whole belongs to LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</source>
+        <translation>Das Urheberrecht an LameXP als Gesamtwerk liegt bei LoRd_MuldeR. Das Urheberrecht an der eingesetzten Drittsoftware liegt bei den jeweiligen Autoren.</translation>
     </message>
     <message>
         <source>LameXP - Audio Encoder Front-end</source>
@@ -189,7 +169,7 @@
     </message>
     <message>
         <source>Note: This demo (pre-release) version of LameXP will expire at %1. Still %2 days left.</source>
-        <translation>Hinweise: Diese Demo (Test) Version von LameXP läuft am %1 ab. Noch %2 Tage übrig.</translation>
+        <translation>Hinweis: Diese Demo (Test) Version von LameXP läuft am %1 ab. Noch %2 Tage übrig.</translation>
     </message>
     <message>
         <source>Aften - A/52 audio encoder</source>
@@ -228,8 +208,84 @@
         <translation></translation>
     </message>
     <message>
-        <source>About Qt5</source>
-        <translation>Über Qt5</translation>
+        <source>Information</source>
+        <translation>Informationen</translation>
+    </message>
+    <message>
+        <source>License</source>
+        <translation>Lizenzbedingungen</translation>
+    </message>
+    <message>
+        <source>Programmers:</source>
+        <translation>Entwickler:</translation>
+    </message>
+    <message>
+        <source>Project Leader</source>
+        <translation>Projektleitung</translation>
+    </message>
+    <message>
+        <source>Opus Audio Codec</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Totally open, royalty-free, highly versatile audio codec.</source>
+        <translation>Komplett offener, kostenloser und vielseitiger Audio Codec.</translation>
+    </message>
+    <message>
+        <source>Silk Icons - Over 700  icons in PNG format</source>
+        <translation>Silk Icons - Über 700 Symbole im PNG Format</translation>
+    </message>
+    <message>
+        <source>By Mark James, released under the Creative Commons &apos;by&apos; License.</source>
+        <translation>Von Mark James, veröffentlicht unter der Creative Commons &apos;by&apos; Lizenz.</translation>
+    </message>
+    <message>
+        <source>Show License Text</source>
+        <translation>Lizenztext anzeigen</translation>
+    </message>
+    <message>
+        <source>About Qt...</source>
+        <translation>Über Qt...</translation>
+    </message>
+    <message>
+        <source>Special thanks to:</source>
+        <translation>Besonderen Dank an:</translation>
+    </message>
+    <message>
+        <source>Doom9&apos;s Forum</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Gleitz | German Doom9</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Hydrogenaudio Forums</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>RareWares</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>GitHub</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>SourceForge</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Qt Developer Network</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Marius Hudea</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>UPX - The Ultimate Packer for eXecutables</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
