@@ -16,16 +16,8 @@
         <translation type="unfinished">알림: LameXP는 무료 소프트웨어입니다. LameXP를 내려받거나 사용하기 위해서 &lt;b&gt;돈을 지불하지 마십시오&lt;/b&gt;. 일부 타 웹사이트에서 LameXP를 내려받기 위해서 지불을 요구한다면 &lt;b&gt;절대로&lt;/b&gt; 내려받지 마십시오!!!</translation>
     </message>
     <message>
-        <source>Special thanks go out to &quot;John33&quot; from %1 for his continuous support.</source>
-        <translation type="unfinished">지속적인 지원을 해주신 John33(%1)님께 특별히 감사드립니다.</translation>
-    </message>
-    <message>
         <source>About LameXP</source>
         <translation type="unfinished">LameXP에 대해</translation>
-    </message>
-    <message>
-        <source>Show License Text</source>
-        <translation type="unfinished">라이센스 보기</translation>
     </message>
     <message>
         <source>Accept License</source>
@@ -44,10 +36,6 @@
         <translation type="unfinished">기여자</translation>
     </message>
     <message>
-        <source>About Qt4</source>
-        <translation type="unfinished">Qt4에 대해</translation>
-    </message>
-    <message>
         <source>Discard</source>
         <translation type="unfinished">닫기</translation>
     </message>
@@ -62,10 +50,6 @@
     <message>
         <source>If you are willing to contribute a LameXP translation, feel free to contact us!</source>
         <translation type="unfinished">LameXP 번역에 도움을 주실 분들은 연락주시기 바랍니다!</translation>
-    </message>
-    <message>
-        <source>About Contributors</source>
-        <translation type="unfinished">도움 주신 분들</translation>
     </message>
     <message>
         <source>The following third-party software is used in LameXP:</source>
@@ -176,12 +160,8 @@
         <translation type="unfinished">GNU Wget - HTTP를 사용하여 파일을 검색하기 위한 소프트웨어</translation>
     </message>
     <message>
-        <source>LameXP as a whole is copyrighted by LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</source>
+        <source>The copyright of LameXP as a whole belongs to LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</source>
         <translation type="unfinished">LameXP 전체의 저작권은 LoRd_MuldeR에게 있습니다. LameXP에 사용된 타사 소프트웨어는 각 소프트웨어의 저작자에게 저작권이 있습니다.</translation>
-    </message>
-    <message>
-        <source>About Third-party Software</source>
-        <translation type="unfinished">타사 소프트웨어에 대해</translation>
     </message>
     <message>
         <source>n/a</source>
@@ -228,8 +208,84 @@
         <translation type="unfinished">저작권 (c) 2008-2011 Alexander E. Patrakov. Distributed under the LGPL.</translation>
     </message>
     <message>
-        <source>About Qt5</source>
-        <translation type="unfinished">Qt5에 대해</translation>
+        <source>Information</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>License</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Programmers:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Project Leader</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Opus Audio Codec</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Totally open, royalty-free, highly versatile audio codec.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Silk Icons - Over 700  icons in PNG format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>By Mark James, released under the Creative Commons &apos;by&apos; License.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show License Text</source>
+        <translation type="unfinished">라이센스 보기</translation>
+    </message>
+    <message>
+        <source>About Qt...</source>
+        <translation type="unfinished">Qt에 대해</translation>
+    </message>
+    <message>
+        <source>Special thanks to:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Doom9&apos;s Forum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gleitz | German Doom9</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hydrogenaudio Forums</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RareWares</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GitHub</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SourceForge</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Qt Developer Network</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Marius Hudea</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>UPX - The Ultimate Packer for eXecutables</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

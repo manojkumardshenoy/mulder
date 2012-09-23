@@ -21,11 +21,11 @@
 
 #pragma once
 
-#include <QMessageBox>
+#include "../tmp/UIC_AboutDialog.h"
 
 class SettingsModel;
 
-class AboutDialog : public QMessageBox
+class AboutDialog : public QDialog, private Ui::AboutDialog
 {
 	Q_OBJECT
 
@@ -38,25 +38,35 @@ public:
 public slots:
 	int exec();
 	void enableButtons(void);
-	void openLicenseText(void);
-	void showMoreAbout(void);
+	void openURL(const QString &url);
+	void gotoLicenseTab(void);
 	void showAboutQt(void);
-	void showAboutContributors(void);
 	void moveDisque(void);
+	void tabChanged(int index);
+	void adjustSize(void);
 
 protected:
-	void showEvent(QShowEvent *e);
+	virtual void showEvent(QShowEvent *e);
+	virtual void closeEvent(QCloseEvent *e);
 	bool eventFilter(QObject *obj, QEvent *event);
 
 private:
 	bool m_firstShow;
 	SettingsModel *m_settings;
+	QMap<QWidget*,bool> *m_initFlags;
+	int m_lastTab;
+	
 	QLabel *m_disque;
 	QTimer * m_disqueTimer;
 	bool m_disqueFlags[2];
 	QPixmap *m_cartoon[4];
 	bool m_rotateNext;
 	__int64 m_disqueDelay;
+
+	void initInformationTab(void);
+	void initContributorsTab(void);
+	void initSoftwareTab(void);
+	void initLicenseTab(void);
 
 	QString makeToolText(const QString &toolName, const QString &toolBin, const QString &toolVerFmt, const QString &toolLicense, const QString &toolWebsite, const QString &extraInfo = QString());
 	bool playResoureSound(const QString &library, const unsigned long soundId, const bool async);
