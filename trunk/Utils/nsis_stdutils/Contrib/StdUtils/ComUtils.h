@@ -57,25 +57,36 @@ private:
 	VARIANT data;
 };
 
+#define DISPATCH_MESSAGES do \
+{ \
+	MSG _msg; \
+	while(PeekMessage(&_msg, NULL, 0, 0, PM_REMOVE)) \
+	{ \
+		DispatchMessage(&_msg); \
+	} \
+} \
+while(0)
+
 /*
  * Each single-threaded apartment (STA) must have a message loop to handle calls from other processes and apartments within the same process!
  * In order to avoid deadlock or crash, we use CoWaitForMultipleHandles() to dispatch the pending messages, as it will perform "message pumping" while waiting.
- * Source: http://msdn.microsoft.com/en-us/library/windows/desktop/ms680112%28v=vs.85%29.aspx
+ * Source: http://msdn.microsoft.com/en-us/library/windows/desktop/ms680112%28v=vs.85%29.aspx | http://msdn.microsoft.com/en-us/library/ms809971.aspx
  */
-static void DispatchPendingMessages(const DWORD uiTimeout)
+static void DispatchPendingMessages(const DWORD dwTimeout)
 {
+	DWORD dwMaxTicks = GetTickCount() + (10 * dwTimeout);
 	HANDLE hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	if(hEvent)
 	{
-		const DWORD nLoops = (uiTimeout / 100) + ((uiTimeout % 100) != 0);
-		for(DWORD i = 0; i < nLoops; i++)
+		for(;;)
 		{
-			DWORD uiIndex;
-			CoWaitForMultipleHandles(0, 100, 1, &hEvent, &uiIndex);
-			Sleep(0);
+			DISPATCH_MESSAGES;
+			DWORD dwReturn = MsgWaitForMultipleObjects(1, &hEvent, FALSE, dwTimeout, QS_ALLINPUT | QS_ALLPOSTMESSAGE);
+			if((dwReturn == WAIT_TIMEOUT) || (dwReturn == WAIT_FAILED) || (GetTickCount() > dwMaxTicks)) break;
 		}
 		CloseHandle(hEvent);
 	}
+	DISPATCH_MESSAGES;
 }
 
 /*eof*/
