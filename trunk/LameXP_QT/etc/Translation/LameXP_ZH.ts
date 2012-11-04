@@ -172,14 +172,6 @@
         <translation>Aften - A/52 音频编码器</translation>
     </message>
     <message>
-        <source>ALAC Decoder</source>
-        <translation>ALAC 解码器</translation>
-    </message>
-    <message>
-        <source>Copyright (c) 2004 David Hammerton. Contributions by Cody Brocious.</source>
-        <translation>版权所有 (c) 2004 David Hammerton.科迪 Brocious 的贡献.</translation>
-    </message>
-    <message>
         <source>Copyright (c) 2011 LoRd_MuldeR &lt;mulder2@gmx.de&gt;. Some rights reserved.</source>
         <translation>版权所有 (c) 2011 LoRd_MuldeR &lt;mulder2@gmx.de&gt;.保留某些权利.</translation>
     </message>
@@ -209,35 +201,35 @@
     </message>
     <message>
         <source>Information</source>
-        <translation type="unfinished"></translation>
+        <translation>信息</translation>
     </message>
     <message>
         <source>License</source>
-        <translation type="unfinished"></translation>
+        <translation>许可证</translation>
     </message>
     <message>
         <source>Programmers:</source>
-        <translation type="unfinished"></translation>
+        <translation>程序员:</translation>
     </message>
     <message>
         <source>Project Leader</source>
-        <translation type="unfinished"></translation>
+        <translation>项目负责人</translation>
     </message>
     <message>
         <source>Opus Audio Codec</source>
-        <translation type="unfinished"></translation>
+        <translation>Opus音频编解码器</translation>
     </message>
     <message>
         <source>Totally open, royalty-free, highly versatile audio codec.</source>
-        <translation type="unfinished"></translation>
+        <translation>完全开放的，免版税的，高度灵活的音频编解码器。</translation>
     </message>
     <message>
         <source>Silk Icons - Over 700  icons in PNG format</source>
-        <translation type="unfinished"></translation>
+        <translation>Silk图标 - 超过700 PNG格式的图标</translation>
     </message>
     <message>
         <source>By Mark James, released under the Creative Commons &apos;by&apos; License.</source>
-        <translation type="unfinished"></translation>
+        <translation>马克詹姆斯，在知识共享授权下发布。</translation>
     </message>
     <message>
         <source>Show License Text</source>
@@ -245,46 +237,54 @@
     </message>
     <message>
         <source>About Qt...</source>
-        <translation>关于 Qt</translation>
+        <translation>关于 Qt...</translation>
     </message>
     <message>
         <source>Special thanks to:</source>
-        <translation type="unfinished"></translation>
+        <translation>特别感谢:</translation>
     </message>
     <message>
         <source>Doom9&apos;s Forum</source>
-        <translation type="unfinished"></translation>
+        <translation>Doom9论坛</translation>
     </message>
     <message>
         <source>Gleitz | German Doom9</source>
-        <translation type="unfinished"></translation>
+        <translation>格雷兹 | 德国 Doom9</translation>
     </message>
     <message>
         <source>Hydrogenaudio Forums</source>
-        <translation type="unfinished"></translation>
+        <translation>Hydrogenaudio论坛</translation>
     </message>
     <message>
         <source>RareWares</source>
-        <translation type="unfinished"></translation>
+        <translation>RareWares</translation>
     </message>
     <message>
         <source>GitHub</source>
-        <translation type="unfinished"></translation>
+        <translation>GitHub</translation>
     </message>
     <message>
         <source>SourceForge</source>
-        <translation type="unfinished"></translation>
+        <translation>SourceForge</translation>
     </message>
     <message>
         <source>Qt Developer Network</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt的开发者网络</translation>
     </message>
     <message>
         <source>Marius Hudea</source>
-        <translation type="unfinished"></translation>
+        <translation>Marius Hudea</translation>
     </message>
     <message>
         <source>UPX - The Ultimate Packer for eXecutables</source>
+        <translation>UPX - 终极可执行程序文件压缩器</translation>
+    </message>
+    <message>
+        <source>refalac - Win32 command line ALAC encoder/decoder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The ALAC reference implementation by Apple is available under the Apache license.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2276,7 +2276,7 @@
     <message>
         <source>WARNING: Decoded file size exceeds 4 GB, problems might occur!
 </source>
-        <translation type="unfinished"></translation>
+        <translation>警告: 解码文件大小超过4GB, 可能会出现问题!</translation>
     </message>
 </context>
 <context>

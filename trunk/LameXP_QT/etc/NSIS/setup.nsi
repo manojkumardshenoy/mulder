@@ -417,7 +417,9 @@ Section "!Install Files"
 	Delete "$INSTDIR\LameEnc.sys"
 	Delete "$INSTDIR\LameXP.exe"
 	Delete "$INSTDIR\LameXP.exe.sig"
+	Delete "$INSTDIR\LameXP-Portable.exe"
 	Delete "$INSTDIR\License.txt"
+	Delete "$INSTDIR\Manual.html"
 	Delete "$INSTDIR\Readme.htm"
 	Delete "$INSTDIR\ReadMe.txt"
 	Delete "$INSTDIR\PRE_RELEASE_INFO.txt"
@@ -463,7 +465,9 @@ Section "-Create Shortcuts"
 		Delete "$SMPROGRAMS\$StartMenuFolder\*.pif"
 		Delete "$SMPROGRAMS\$StartMenuFolder\*.url"
 
-		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk" "$INSTDIR\LameXP.exe" "" "$INSTDIR\LameXP.exe" 0
+		!insertmacro GetExecutableName $R0
+		
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk" "$INSTDIR\$R0" "" "$INSTDIR\$R0" 0
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(LAMEXP_LANG_LINK_LICENSE).lnk" "$INSTDIR\License.txt"
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(LAMEXP_LANG_LINK_CHANGELOG).lnk" "$INSTDIR\Changelog.html"
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(LAMEXP_LANG_LINK_TRANSLATE).lnk" "$INSTDIR\Translate.html"
@@ -475,12 +479,20 @@ Section "-Create Shortcuts"
 		!insertmacro CreateWebLink "$SMPROGRAMS\$StartMenuFolder\Doom9's Forum.url" "http://forum.doom9.org/"
 		!insertmacro CreateWebLink "$SMPROGRAMS\$StartMenuFolder\RareWares.org.url" "http://rarewares.org/"
 		!insertmacro CreateWebLink "$SMPROGRAMS\$StartMenuFolder\Hydrogenaudio Forums.url" "http://www.hydrogenaudio.org/"
+
+		${If} ${FileExists} "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk"
+			${StdUtils.InvokeShellVerb} $R1 "$SMPROGRAMS\$StartMenuFolder" "LameXP.lnk" ${StdUtils.Const.ISV_PinToTaskbar}
+			DetailPrint 'Pin: "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk" -> $R1'
+		${EndIf}
 	!insertmacro MUI_STARTMENU_WRITE_END
 SectionEnd
 
 Section "-Update Registry"
 	!insertmacro PrintProgress "$(LAMEXP_LANG_STATUS_REGISTRY)"
+
+	!insertmacro GetExecutableName $R0
 	WriteRegStr HKLM "${MyRegPath}" "InstallLocation" "$INSTDIR"
+	WriteRegStr HKLM "${MyRegPath}" "ExecutableName" "$R0"
 	WriteRegStr HKLM "${MyRegPath}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
 	WriteRegStr HKLM "${MyRegPath}" "DisplayName" "LameXP"
 SectionEnd
@@ -493,10 +505,6 @@ Section "-Finished"
 		${StdUtils.ExecShellAsUser} $R1 "$INSTDIR\PRE_RELEASE_INFO.txt" "open" ""
 	${EndIf}
 !endif
-
-	; ---- POLL ----
-	; !insertmacro UAC_AsUser_ExecShell "" "http://mulder.brhack.net/temp/style_poll/" "" "" SW_SHOWNORMAL
-	; ---- POLL ----
 SectionEnd
 
 
@@ -508,7 +516,44 @@ Section "Uninstall"
 	SetOutPath "$INSTDIR"
 	!insertmacro PrintProgress "$(LAMEXP_LANG_STATUS_UNINSTALL)"
 
+	; --------------
+	; Startmenu
+	; --------------
+	
+	!insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder
+	${IfNot} "$StartMenuFolder" == ""
+		SetShellVarContext current
+		${If} ${FileExists} "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk"
+			${StdUtils.InvokeShellVerb} $R1 "$SMPROGRAMS\$StartMenuFolder" "LameXP.lnk" ${StdUtils.Const.ISV_UnpinFromTaskbar}
+			DetailPrint 'Unpin: "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk" -> $R1'
+		${EndIf}
+		${If} ${FileExists} "$SMPROGRAMS\$StartMenuFolder\*.*"
+			Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.lnk"
+			Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.url"
+			RMDir "$SMPROGRAMS\$StartMenuFolder"
+		${EndIf}
+		
+		SetShellVarContext all
+		${If} ${FileExists} "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk"
+			${StdUtils.InvokeShellVerb} $R1 "$SMPROGRAMS\$StartMenuFolder" "LameXP.lnk" ${StdUtils.Const.ISV_UnpinFromTaskbar}
+			DetailPrint 'Unpin: "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk" -> $R1'
+		${EndIf}
+		${If} ${FileExists} "$SMPROGRAMS\$StartMenuFolder\*.*"
+			Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.lnk"
+			Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.url"
+			RMDir "$SMPROGRAMS\$StartMenuFolder"
+		${EndIf}
+	${EndIf}
+
+	; --------------
+	; Files
+	; --------------
+
+	ReadRegStr $R0 HKLM "${MyRegPath}" "ExecutableName"
+	${IfThen} "$R0" == "" ${|} StrCpy $R0 "LameXP.exe" ${|}
+
 	Delete /REBOOTOK "$INSTDIR\LameXP.exe"
+	Delete /REBOOTOK "$INSTDIR\$R0"
 	Delete /REBOOTOK "$INSTDIR\LameXP-Portable.exe"
 	Delete /REBOOTOK "$INSTDIR\LameXP.exe.sig"
 	Delete /REBOOTOK "$INSTDIR\LameXP*"
@@ -521,6 +566,7 @@ Section "Uninstall"
 	Delete /REBOOTOK "$INSTDIR\Howto.html"
 	Delete /REBOOTOK "$INSTDIR\LameEnc.sys"
 	Delete /REBOOTOK "$INSTDIR\License.txt"
+	Delete /REBOOTOK "$INSTDIR\Manual.html"
 	Delete /REBOOTOK "$INSTDIR\Readme.htm"
 	Delete /REBOOTOK "$INSTDIR\ReadMe.txt"
 	Delete /REBOOTOK "$INSTDIR\PRE_RELEASE_INFO.txt"
@@ -530,16 +576,12 @@ Section "Uninstall"
 
 	RMDir "$INSTDIR"
 
-	!insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder
-	StrCmp "$StartMenuFolder" "" NoStartmenuFolder
-	IfFileExists "$SMPROGRAMS\$StartMenuFolder\*.*" 0 NoStartmenuFolder
-	Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.lnk"
-	Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.url"
-	RMDir "$SMPROGRAMS\$StartMenuFolder"
-
-	NoStartmenuFolder:
-
+	; --------------
+	; Registry
+	; --------------
+	
 	DeleteRegValue HKLM "${MyRegPath}" "InstallLocation"
+	DeleteRegValue HKLM "${MyRegPath}" "ExecutableName"
 	DeleteRegValue HKLM "${MyRegPath}" "UninstallString"
 	DeleteRegValue HKLM "${MyRegPath}" "DisplayName"
 	DeleteRegValue HKLM "${MyRegPath}" "StartmenuFolder"
