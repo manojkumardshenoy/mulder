@@ -39,7 +39,6 @@
 #include <QMovie>
 #include <QtConcurrentRun>
 
-#include <time.h>
 #include <MMSystem.h>
 #include <WinInet.h>
 
@@ -59,9 +58,13 @@ static const char *update_mirrors_prim[] =
 {
 	"http://mulder.brhack.net/",
 	"http://mulder.bplaced.net/",
+	"http://mulder.cwsurf.de/",
+	"http://mulder.6te.net/",
+	"http://mulder.webuda.com/",
+//	"http://free.pages.at/borschdfresser/",
 	"http://lamexp.sourceforge.net/",
-	"http://free.pages.at/borschdfresser/",
 	"http://lordmulder.github.com/LameXP/",
+	"http://lord_mulder.bitbucket.org/",
 	"http://www.tricksoft.de/",
 	NULL
 };
@@ -69,12 +72,12 @@ static const char *update_mirrors_prim[] =
 static const char *update_mirrors_back[] =
 {
 	"http://mplayer.savedonthe.net/",
-	"http://mulder.dummwiedeutsch.de/",
-	"http://mplayer.somestuff.org/",
+	"http://www.rarewares.org/",
+	"http://lord_mulder.doom9.net/",
 	NULL
 };
 
-static const char *known_hosts[] =		//Taken form: http://www.alexa.com/topsites
+static const char *known_hosts[] =		//Taken form: http://www.alexa.com/topsites !!!
 {
 	"http://www.163.com/",
 	"http://www.360buy.com/",
@@ -90,12 +93,14 @@ static const char *known_hosts[] =		//Taken form: http://www.alexa.com/topsites
 	"http://www.bing.com/",
 	"http://www.cnet.com/",
 	"http://cnzz.com/",
+	"http://qt.digia.com/",
 	"http://www.ebay.com/",
 	"http://www.equation.com/",
 	"http://fc2.com/",
 	"http://www.ffmpeg.org/",
 	"http://www.flickr.com/",
 	"http://www.gitorious.org/",
+	"http://git-scm.com/",
 	"http://www.gnome.org/",
 	"http://www.gnu.org/",
 	"http://go.com/",
@@ -113,13 +118,14 @@ static const char *known_hosts[] =		//Taken form: http://www.alexa.com/topsites
 	"http://www.livejournal.com/",
 	"http://mail.ru/",
 	"http://www.mediafire.com/",
-	"http://www.mozilla.org/",
+	"http://www.mozilla.org/en-US/",
 	"http://mplayerhq.hu/",
 	"http://www.msn.com/?st=1",
 	"http://oss.netfarm.it/",
 	"http://www.nytimes.com/",
 	"http://www.opera.com/",
 	"http://www.quakelive.com/",
+	"http://qt-project.org/",
 	"http://www.seamonkey-project.org/",
 	"http://www.sina.com.cn/",
 	"http://www.sohu.com/",
@@ -140,6 +146,7 @@ static const char *known_hosts[] =		//Taken form: http://www.alexa.com/topsites
 	"http://www.yandex.ru/",
 	"http://www.youtube.com/",
 	"http://www.zedo.com/",
+	"http://ffmpeg.zeranoe.com/",
 	NULL
 };
 
@@ -419,10 +426,10 @@ void UpdateDialog::checkForUpdates(void)
 		hostList << QString::fromLatin1(known_hosts[i]);
 	}
 
-	qsrand(time(NULL));
+	lamexp_seed_rand();
 	while(!hostList.isEmpty())
 	{
-		QString currentHost = hostList.takeAt(qrand() % hostList.count());
+		QString currentHost = hostList.takeAt(lamexp_rand() % hostList.count());
 		if(connectionScore < MIN_CONNSCORE)
 		{
 			m_logFile->append(QStringList() << "" << "Testing host:" << currentHost << "");
@@ -433,14 +440,14 @@ void UpdateDialog::checkForUpdates(void)
 				connectionScore++;
 				progressBar->setValue(qBound(1, connectionScore + 1, MIN_CONNSCORE + 1));
 				QApplication::processEvents();
-				Sleep(125);
+				Sleep(64);
 			}
 			if(httpOk)
 			{
 				connectionScore++;
 				progressBar->setValue(qBound(1, connectionScore + 1, MIN_CONNSCORE + 1));
 				QApplication::processEvents();
-				Sleep(125);
+				Sleep(64);
 			}
 			QFile::remove(outFile);
 		}
@@ -473,17 +480,21 @@ void UpdateDialog::checkForUpdates(void)
 
 	statusLabel->setText(tr("Checking for new updates online, please wait..."));
 	m_logFile->append(QStringList() << "" << "----" << "" << "Checking for updates online...");
-	
+
 	QStringList mirrorList;
 	for(int index = 0; update_mirrors_prim[index]; index++)
 	{
 		mirrorList << QString::fromLatin1(update_mirrors_prim[index]);
 	}
 
-	qsrand(time(NULL));
-	for(int i = 0; i < 4375; i++)
+	lamexp_seed_rand();
+	if(const int len = mirrorList.count())
 	{
-		mirrorList.swap(i % mirrorList.count(), qrand() % mirrorList.count());
+		const int rounds = len * 1097;
+		for(int i = 0; i < rounds; i++)
+		{
+			mirrorList.swap(i % len, lamexp_rand() % len);
+		}
 	}
 
 	for(int index = 0; update_mirrors_back[index]; index++)
@@ -507,7 +518,7 @@ void UpdateDialog::checkForUpdates(void)
 		else
 		{
 			QApplication::processEvents();
-			Sleep(125);
+			Sleep(64);
 		}
 	}
 	

@@ -135,23 +135,25 @@ AboutDialog::AboutDialog(SettingsModel *settings, QWidget *parent, bool firstSta
 	//Show about dialog for the first time?
 	if(!firstStart)
 	{
+		lamexp_seed_rand();
+
 		acceptButton->hide();
 		declineButton->hide();
 		aboutQtButton->show();
 		closeButton->show();
-		
+
 		QPixmap disque(":/images/Disque.png");
 		QRect screenGeometry = QApplication::desktop()->availableGeometry();
 		m_disque = new QLabel(this, Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
 		m_disque->installEventFilter(this);
 		m_disque->setStyleSheet("background:transparent;");
 		m_disque->setAttribute(Qt::WA_TranslucentBackground);
-		m_disque->setGeometry(qrand() % (screenGeometry.width() - disque.width()), qrand() % (screenGeometry.height() - disque.height()), disque.width(), disque.height());
+		m_disque->setGeometry(static_cast<int>(lamexp_rand() % static_cast<unsigned int>(screenGeometry.width() - disque.width())), static_cast<int>(lamexp_rand() % static_cast<unsigned int>(screenGeometry.height() - disque.height())), disque.width(), disque.height());
 		m_disque->setPixmap(disque);
 		m_disque->setWindowOpacity(0.01);
 		m_disque->show();
-		m_disqueFlags[0] = (qrand() > (RAND_MAX/2));
-		m_disqueFlags[1] = (qrand() > (RAND_MAX/2));
+		m_disqueFlags[0] = (lamexp_rand() > (UINT_MAX/2));
+		m_disqueFlags[1] = (lamexp_rand() > (UINT_MAX/2));
 		m_disqueTimer = new QTimer;
 		connect(m_disqueTimer, SIGNAL(timeout()), this, SLOT(moveDisque()));
 		m_disqueTimer->setInterval(10);
@@ -691,12 +693,19 @@ void AboutDialog::initSoftwareTab(void)
 		tr("Released under the terms of the GNU Lesser General Public License."),
 		"http://tta.sourceforge.net/"
 	);
+	//moreAboutText += makeToolText
+	//(
+	//	tr("ALAC Decoder"),
+	//	"alac.exe", "v?.?.?",
+	//	tr("Copyright (c) 2004 David Hammerton. Contributions by Cody Brocious."),
+	//	"http://craz.net/programs/itunes/alac.html"
+	//);
 	moreAboutText += makeToolText
 	(
-		tr("ALAC Decoder"),
-		"alac.exe", "v?.?.?",
-		tr("Copyright (c) 2004 David Hammerton. Contributions by Cody Brocious."),
-		"http://craz.net/programs/itunes/alac.html"
+		tr("refalac - Win32 command line ALAC encoder/decoder"),
+		"refalac.exe", "v?.??",
+		tr("The ALAC reference implementation by Apple is available under the Apache license."),
+		"http://alac.macosforge.org/"
 	);
 	moreAboutText += makeToolText
 	(

@@ -5,23 +5,27 @@
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <style type="text/css">
 <!--
-body { font-family:Monospace; font-size:10pt; }
+body { font-family:Consolas, "Lucida Console", Monospace; font-size:10pt; }
 a { text-decoration:none; color:#0000EE; transition:color 0.5s ease; -moz-transition:background-color 0.5s ease; -o-transition:background-color 0.5s ease; -webkit-transition:background-color 0.5s ease; }
 a:hover { background-color: #CCCCCC; }
 a:active { color: #551A8B; }
 a:visited { color: #0000EE; }
+.code { background-color: #EAEAEA; }
 -->
 </style>
 </head>
 <body>
 <h3>LameXP - Version History</h3><br>
 
-<a name="4.06"></a>Changes between v4.05 and v4.06 [<font color="darkred">unreleased</font>]:<br><ul>
+<a name="4.06"></a>Changes between v4.05 and v4.06 [2012-11-04]:<br><ul>
 <li>Updated Opus encoder/decoder libraries to v1.0.1 and Opus-Tools to v0.1.5 (2012-09-22)
 <li>Updated mpg123 decoder to v1.14.4+ (2012-09-24), compiled with GCC 4.7.1
+<li>Updated ALAC decoder to refalac v0.56 (2012-10-24), based on reference implementation by Apple
 <li>Updated Qt runtime libraries to v4.8.3 (2012-09-13), compiled with MSVC 10.0
-<li>Updated MediaInfo to v0.7.60 (2012-09-07), compiled with ICL 12.1.7 and MSVC 10.0
+<li>Updated MediaInfo to v0.7.61+ (2012-10-28), compiled with ICL 12.1.7 and MSVC 10.0
+<li>Updated language files (big thank-you to all contributors !!!)
 <li>Fixed a bug with the "Store temporary files in your system's default TEMP director" checkbox
+<li>Fixed a buffer overflow in FAAD2 decoder which could cause crashes with very long file names
 <li>Fixed a regression in Qt v4.8.3 that broke Drag&amp;Drop support (<a href="https://bugreports.qt-project.org/browse/QTBUG-27265" target="_blank">details #1</a>) (<a href="https://codereview.qt-project.org/35297" target="_blank">details #2</a>)
 <li>Reworked the "About..." dialog &ndash; now using a custom dialog instead of message boxes
 </ul><br>
