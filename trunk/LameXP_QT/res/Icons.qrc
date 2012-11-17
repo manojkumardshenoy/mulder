@@ -54,6 +54,7 @@
 		<file>icons/error_big.png</file>
 		<file>icons/feed.png</file>
 		<file>icons/film.png</file>
+		<file>icons/filter.png</file>
 		<file>icons/folder.png</file>
 		<file>icons/folder_add.png</file>
 		<file>icons/folder_go.png</file>
@@ -101,6 +102,7 @@
 		<file>icons/shield_exclamation.png</file>
 		<file>icons/shield_green.png</file>
 		<file>icons/sound.png</file>
+		<file>icons/step_over.png</file>
 		<file>icons/star.png</file>
 		<file>icons/table_edit.png</file>
 		<file>icons/table_save.png</file>

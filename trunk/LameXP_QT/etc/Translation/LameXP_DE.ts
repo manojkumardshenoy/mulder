@@ -1958,6 +1958,42 @@
         <source>Show Help</source>
         <translation>Hilfethemen anzeigen</translation>
     </message>
+    <message>
+        <source> Overwrite Mode </source>
+        <translation> Überschreiben Modus </translation>
+    </message>
+    <message>
+        <source>Overwrite Existing File</source>
+        <translation>Zieldatei ersetzen</translation>
+    </message>
+    <message>
+        <source>Skip File</source>
+        <translation>Überspringen</translation>
+    </message>
+    <message>
+        <source>Keep Both Files (Default)</source>
+        <translation>Beide erhalten (Standard)</translation>
+    </message>
+    <message>
+        <source>If Target File Already Exists:</source>
+        <translation>Bei existierender Zieldatei:</translation>
+    </message>
+    <message>
+        <source>Overwrite Mode</source>
+        <translation>Überschreiben Modus</translation>
+    </message>
+    <message>
+        <source>Warning: This mode may overwrite existing files with no way to revert!</source>
+        <translation>Achtung: Dieser Modus überschreibt möglicherweise existierende Dateien!</translation>
+    </message>
+    <message>
+        <source>Continue</source>
+        <translation>Fortfahren</translation>
+    </message>
+    <message>
+        <source>Revert</source>
+        <translation>Zurück</translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -2279,6 +2315,26 @@
 </source>
         <translation>WARNUNG: Dekodierte Dateigröße übersteigt 4 GB, Probleme sind vorprogrammiert!</translation>
     </message>
+    <message>
+        <source>Skipped.</source>
+        <translation>Übersprungen.</translation>
+    </message>
+    <message>
+        <source>Target output file already exists, going to skip this file:</source>
+        <translation>Zieldatei existiert bereits, die Datei wird übersprungen:</translation>
+    </message>
+    <message>
+        <source>If you don&apos;t want existing files to be skipped, please change the overwrite mode!</source>
+        <translation>Wenn existierende Dateien nicht übersprungen werden sollen, ändern Sie bitte den Überschreiben-Modus!</translation>
+    </message>
+    <message>
+        <source>Target output file already exists, going to delete existing file:</source>
+        <translation>Zieldatei existiert bereits, die Datei wird gelöscht und überschrieben:</translation>
+    </message>
+    <message>
+        <source>Failed to delete existing target file, will save to another file name!</source>
+        <translation>Die existierende Datei konnte nicht gelöscht werden, ein anderer Dateiname wird gewählt!</translation>
+    </message>
 </context>
 <context>
     <name>ProcessingDialog</name>
@@ -2421,6 +2477,42 @@
     <message>
         <source>millisecond(s)</source>
         <translation>Millisekunde(n)</translation>
+    </message>
+    <message>
+        <source>Filter Log Items</source>
+        <translation>Logeinträge filtern</translation>
+    </message>
+    <message>
+        <source>Show Running Only</source>
+        <translation>Nur laufende anzeigen</translation>
+    </message>
+    <message>
+        <source>Show Succeeded Only</source>
+        <translation>Nur erfolgreiche anzeigen</translation>
+    </message>
+    <message>
+        <source>Show Failed Only</source>
+        <translation>Nur fehlgeschlagene anzeigen</translation>
+    </message>
+    <message>
+        <source>Show Skipped Only</source>
+        <translation>Nur übersprungene anzeigen</translation>
+    </message>
+    <message>
+        <source>Show All Items</source>
+        <translation>Alle Einträge anzeigen</translation>
+    </message>
+    <message>
+        <source>Error: %1 of %2 files failed (%3 files skipped). Double-click failed items for detailed information!</source>
+        <translation>Fehler: %1 von %2 Dateien sind fehlgeschlagen (%3 übersprungen). Doppelklicken um Details anzuzeigen!</translation>
+    </message>
+    <message>
+        <source>All files completed successfully. Skipped %1 files.</source>
+        <translation>Alle Dateien wurden erfolgreich umgewandelt. %1 Dateien wurden übersprungen.</translation>
+    </message>
+    <message>
+        <source>None of the items matches the current filtering rules</source>
+        <translation>Keiner der Einträge entspricht den aktuellen Filterregeln</translation>
     </message>
 </context>
 <context>

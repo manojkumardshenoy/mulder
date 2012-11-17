@@ -45,6 +45,7 @@ public:
 	void abort() { m_aborted = true; }
 	QUuid getId() { return m_jobId; }
 	void setRenamePattern(const QString &pattern);
+	void setOverwriteMode(const bool bSkipExistingFile, const bool ReplacesExisting = false);
 	void addFilter(AbstractFilter *filter);
 
 private slots:
@@ -54,7 +55,7 @@ private slots:
 signals:
 	void processStateInitialized(const QUuid &jobId, const QString &jobName, const QString &jobInitialStatus, int jobInitialState);
 	void processStateChanged(const QUuid &jobId, const QString &newStatus, int newState);
-	void processStateFinished(const QUuid &jobId, const QString &outFileName, bool success);
+	void processStateFinished(const QUuid &jobId, const QString &outFileName, int success);
 	void processMessageLogged(const QUuid &jobId, const QString &line);
 
 private:
@@ -68,7 +69,7 @@ private:
 	};
 	
 	void processFile();
-	QString generateOutFileName(void);
+	int generateOutFileName(QString &outFileName);
 	QString generateTempFileName(void);
 	void insertDownsampleFilter(void);
 	void insertDownmixFilter(void);
@@ -84,6 +85,8 @@ private:
 	const bool m_prependRelativeSourcePath;
 	QList<AbstractFilter*> m_filters;
 	QString m_renamePattern;
+	bool m_overwriteSkipExistingFile;
+	bool m_overwriteReplacesExisting;
 	WaveProperties *m_propDetect;
 	
 	static QMutex *m_mutex_genFileName;

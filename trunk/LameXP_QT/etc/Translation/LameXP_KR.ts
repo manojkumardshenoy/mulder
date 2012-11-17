@@ -1957,6 +1957,42 @@
         <source>Show Help</source>
         <translation type="unfinished">도움말 표시</translation>
     </message>
+    <message>
+        <source> Overwrite Mode </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Overwrite Existing File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Skip File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keep Both Files (Default)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>If Target File Already Exists:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Overwrite Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warning: This mode may overwrite existing files with no way to revert!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Continue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Revert</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -2278,6 +2314,26 @@
 </source>
         <translation type="unfinished">알림: 디코드 파일 크기가 4GB 초과, 문제가 발생할 수 있습니다!</translation>
     </message>
+    <message>
+        <source>Skipped.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Target output file already exists, going to skip this file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>If you don&apos;t want existing files to be skipped, please change the overwrite mode!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Target output file already exists, going to delete existing file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to delete existing target file, will save to another file name!</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ProcessingDialog</name>
@@ -2420,6 +2476,42 @@
     <message>
         <source>millisecond(s)</source>
         <translation type="unfinished">ms</translation>
+    </message>
+    <message>
+        <source>Filter Log Items</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Running Only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Succeeded Only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Failed Only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Skipped Only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show All Items</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error: %1 of %2 files failed (%3 files skipped). Double-click failed items for detailed information!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All files completed successfully. Skipped %1 files.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None of the items matches the current filtering rules</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

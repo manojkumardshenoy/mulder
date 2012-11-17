@@ -59,17 +59,19 @@ private slots:
 	void initEncoding(void);
 	void doneEncoding(void);
 	void abortEncoding(bool force = false);
-	void processFinished(const QUuid &jobId, const QString &outFileName, bool success);
+	void processFinished(const QUuid &jobId, const QString &outFileName, int success);
 	void progressModelChanged(void);
 	void logViewDoubleClicked(const QModelIndex &index);
 	void logViewSectionSizeChanged(int, int, int);
 	void contextMenuTriggered(const QPoint &pos);
 	void contextMenuDetailsActionTriggered(void);
 	void contextMenuShowFileActionTriggered(void);
+	void contextMenuFilterActionTriggered(void);
 	void systemTrayActivated(QSystemTrayIcon::ActivationReason reason);
 	void cpuUsageHasChanged(const double val);
 	void ramUsageHasChanged(const double val);
 	void diskUsageHasChanged(const quint64 val);
+	void progressViewFilterChanged(void);
 
 protected:
 	void showEvent(QShowEvent *event);
@@ -77,6 +79,7 @@ protected:
 	bool eventFilter(QObject *obj, QEvent *event);
 	virtual bool event(QEvent *e);
 	virtual bool winEvent(MSG *message, long *result);
+	virtual void resizeEvent(QResizeEvent *event);
 
 private:
 	void setCloseButtonEnabled(bool enabled);
@@ -95,11 +98,15 @@ private:
 	ProgressModel *m_progressModel;
 	QMap<QUuid,QString> m_playList;
 	QMenu *m_contextMenu;
+	QActionGroup *m_progressViewFilterGroup;
+	QLabel *m_filterInfoLabel;
+	QLabel *m_filterInfoLabelIcon;
 	unsigned int m_runningThreads;
 	unsigned int m_currentFile;
 	QList<QUuid> m_allJobs;
 	QList<QUuid> m_succeededJobs;
 	QList<QUuid> m_failedJobs;
+	QList<QUuid> m_skippedJobs;
 	bool m_userAborted;
 	bool m_forcedAbort;
 	bool m_firstShow;
@@ -109,4 +116,5 @@ private:
 	RAMObserverThread *m_ramObserver;
 	DiskObserverThread *m_diskObserver;
 	qint64 m_timerStart;
+	int m_progressViewFilter;
 };
