@@ -63,6 +63,7 @@
 #include <QSystemTrayIcon>
 #include <QProcess>
 #include <QProgressDialog>
+#include <QResizeEvent>
 #include <QTime>
 
 #include <MMSystem.h>
@@ -101,11 +102,33 @@ while(0)
 } \
 while(0)
 
+#define SET_TEXT_COLOR(WIDGET, COLOR) do \
+{ \
+	QPalette _palette = WIDGET->palette(); \
+	_palette.setColor(QPalette::WindowText, (COLOR)); \
+	_palette.setColor(QPalette::Text, (COLOR)); \
+	WIDGET->setPalette(_palette); \
+} \
+while(0)
+
 #define UPDATE_MIN_WIDTH(WIDGET) do \
 { \
 	if(WIDGET->width() > WIDGET->minimumWidth()) WIDGET->setMinimumWidth(WIDGET->width()); \
 } \
 while(0)
+
+////////////////////////////////////////////////////////////
+
+//Dummy class for UserData
+class IntUserData : public QObjectUserData
+{
+public:
+	IntUserData(int value) : m_value(value) {/*NOP*/}
+	int value(void) { return m_value; }
+	void setValue(int value) { m_value = value; }
+private:
+	int m_value;
+};
 
 ////////////////////////////////////////////////////////////
 // Constructor
@@ -121,6 +144,7 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 	m_diskObserver(NULL),
 	m_cpuObserver(NULL),
 	m_ramObserver(NULL),
+	m_progressViewFilter(-1),
 	m_firstShow(true)
 {
 	//Init the dialog, from the .ui file
@@ -162,6 +186,8 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 	view_log->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
 	view_log->viewport()->installEventFilter(this);
 	connect(m_progressModel, SIGNAL(rowsInserted(QModelIndex,int,int)), this, SLOT(progressModelChanged()));
+	connect(m_progressModel, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)), this, SLOT(progressModelChanged()));
+	connect(m_progressModel, SIGNAL(rowsRemoved(QModelIndex,int,int)), this, SLOT(progressModelChanged()));
 	connect(m_progressModel, SIGNAL(modelReset()), this, SLOT(progressModelChanged()));
 	connect(view_log, SIGNAL(activated(QModelIndex)), this, SLOT(logViewDoubleClicked(QModelIndex)));
 	connect(view_log->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(logViewSectionSizeChanged(int,int,int)));
@@ -170,11 +196,57 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 	m_contextMenu = new QMenu();
 	QAction *contextMenuDetailsAction = m_contextMenu->addAction(QIcon(":/icons/zoom.png"), tr("Show details for selected job"));
 	QAction *contextMenuShowFileAction = m_contextMenu->addAction(QIcon(":/icons/folder_go.png"), tr("Browse Output File Location"));
+	m_contextMenu->addSeparator();
 
+	//Create "filter" context menu
+	m_progressViewFilterGroup = new QActionGroup(this);
+	QAction *contextMenuFilterAction[5] = {NULL, NULL, NULL, NULL, NULL};
+	if(QMenu *filterMenu = m_contextMenu->addMenu(QIcon(":/icons/filter.png"), tr("Filter Log Items")))
+	{
+		contextMenuFilterAction[0] = filterMenu->addAction(m_progressModel->getIcon(ProgressModel::JobRunning), tr("Show Running Only"));
+		contextMenuFilterAction[1] = filterMenu->addAction(m_progressModel->getIcon(ProgressModel::JobComplete), tr("Show Succeeded Only"));
+		contextMenuFilterAction[2] = filterMenu->addAction(m_progressModel->getIcon(ProgressModel::JobFailed), tr("Show Failed Only"));
+		contextMenuFilterAction[3] = filterMenu->addAction(m_progressModel->getIcon(ProgressModel::JobSkipped), tr("Show Skipped Only"));
+		contextMenuFilterAction[4] = filterMenu->addAction(m_progressModel->getIcon(ProgressModel::JobState(-1)), tr("Show All Items"));
+		if(QAction *act = contextMenuFilterAction[0]) { m_progressViewFilterGroup->addAction(act); act->setCheckable(true); act->setData(ProgressModel::JobRunning); }
+		if(QAction *act = contextMenuFilterAction[1]) { m_progressViewFilterGroup->addAction(act); act->setCheckable(true); act->setData(ProgressModel::JobComplete); }
+		if(QAction *act = contextMenuFilterAction[2]) { m_progressViewFilterGroup->addAction(act); act->setCheckable(true); act->setData(ProgressModel::JobFailed); }
+		if(QAction *act = contextMenuFilterAction[3]) { m_progressViewFilterGroup->addAction(act); act->setCheckable(true); act->setData(ProgressModel::JobSkipped); }
+		if(QAction *act = contextMenuFilterAction[4]) { m_progressViewFilterGroup->addAction(act); act->setCheckable(true); act->setData(-1); act->setChecked(true); }
+	}
+
+	//Create info label
+	if(m_filterInfoLabel = new QLabel(view_log))
+	{
+		m_filterInfoLabel->setFrameShape(QFrame::NoFrame);
+		m_filterInfoLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+		m_filterInfoLabel->setUserData(0, new IntUserData(-1));
+		SET_FONT_BOLD(m_filterInfoLabel, true);
+		SET_TEXT_COLOR(m_filterInfoLabel, Qt::darkGray);
+		m_filterInfoLabel->setContextMenuPolicy(Qt::CustomContextMenu);
+		connect(m_filterInfoLabel, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuTriggered(QPoint)));
+		m_filterInfoLabel->hide();
+	}
+	if(m_filterInfoLabelIcon = new QLabel(view_log))
+	{
+		m_filterInfoLabelIcon->setFrameShape(QFrame::NoFrame);
+		m_filterInfoLabelIcon->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
+		m_filterInfoLabelIcon->setContextMenuPolicy(Qt::CustomContextMenu);
+		const QIcon &ico = m_progressModel->getIcon(ProgressModel::JobState(-1));
+		m_filterInfoLabelIcon->setPixmap(ico.pixmap(16, 16));
+		connect(m_filterInfoLabelIcon, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuTriggered(QPoint)));
+		m_filterInfoLabelIcon->hide();
+	}
+
+	//Connect context menu
 	view_log->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(view_log, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuTriggered(QPoint)));
 	connect(contextMenuDetailsAction, SIGNAL(triggered(bool)), this, SLOT(contextMenuDetailsActionTriggered()));
 	connect(contextMenuShowFileAction, SIGNAL(triggered(bool)), this, SLOT(contextMenuShowFileActionTriggered()));
+	for(size_t i = 0; i < 5; i++)
+	{
+		if(contextMenuFilterAction[i]) connect(contextMenuFilterAction[i], SIGNAL(triggered(bool)), this, SLOT(contextMenuFilterActionTriggered()));
+	}
 	SET_FONT_BOLD(contextMenuDetailsAction, true);
 
 	//Enque jobs
@@ -198,6 +270,7 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 	m_allJobs.clear();
 	m_succeededJobs.clear();
 	m_failedJobs.clear();
+	m_skippedJobs.clear();
 	m_userAborted = false;
 	m_forcedAbort = false;
 	m_timerStart = 0I64;
@@ -209,6 +282,8 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 
 ProcessingDialog::~ProcessingDialog(void)
 {
+	fprintf(stderr, "BUMP 1\n"); fflush(stderr);
+	
 	view_log->setModel(NULL);
 
 	if(m_progressIndicator)
@@ -244,16 +319,7 @@ ProcessingDialog::~ProcessingDialog(void)
 		}
 	}
 
-	LAMEXP_DELETE(m_progressIndicator);
-	LAMEXP_DELETE(m_progressModel);
-	LAMEXP_DELETE(m_contextMenu);
-	LAMEXP_DELETE(m_systemTray);
-	LAMEXP_DELETE(m_diskObserver);
-	LAMEXP_DELETE(m_cpuObserver);
-	LAMEXP_DELETE(m_ramObserver);
-
-	WinSevenTaskbar::setOverlayIcon(this, NULL);
-	WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNoState);
+	fprintf(stderr, "BUMP 2\n"); fflush(stderr);
 
 	while(!m_threadList.isEmpty())
 	{
@@ -262,6 +328,26 @@ ProcessingDialog::~ProcessingDialog(void)
 		thread->wait(15000);
 		delete thread;
 	}
+
+	fprintf(stderr, "BUMP 3\n"); fflush(stderr);
+
+	LAMEXP_DELETE(m_progressIndicator);
+	LAMEXP_DELETE(m_systemTray);
+	LAMEXP_DELETE(m_diskObserver);
+	LAMEXP_DELETE(m_cpuObserver);
+	LAMEXP_DELETE(m_ramObserver);
+	LAMEXP_DELETE(m_progressViewFilterGroup);
+	LAMEXP_DELETE(m_filterInfoLabel);
+	LAMEXP_DELETE(m_filterInfoLabelIcon);
+	LAMEXP_DELETE(m_contextMenu);
+	LAMEXP_DELETE(m_progressModel);
+
+	fprintf(stderr, "BUMP 4\n"); fflush(stderr);
+
+	WinSevenTaskbar::setOverlayIcon(this, NULL);
+	WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNoState);
+
+	fprintf(stderr, "BUMP 5\n"); fflush(stderr);
 }
 
 ////////////////////////////////////////////////////////////
@@ -293,6 +379,9 @@ void ProcessingDialog::showEvent(QShowEvent *event)
 		QTimer::singleShot(1000, this, SLOT(initEncoding()));
 		m_firstShow = false;
 	}
+
+	//Force update geometry
+	resizeEvent(NULL);
 }
 
 void ProcessingDialog::closeEvent(QCloseEvent *event)
@@ -361,6 +450,21 @@ bool ProcessingDialog::event(QEvent *e)
 	}
 }
 
+/*
+ * Window was resized
+ */
+void ProcessingDialog::resizeEvent(QResizeEvent *event)
+{
+	if(event) QDialog::resizeEvent(event);
+
+	if(QWidget *port = view_log->viewport())
+	{
+		QRect geom = port->geometry();
+		m_filterInfoLabel->setGeometry(geom.left() + 16, geom.top() + 16, geom.width() - 32, 48);
+		m_filterInfoLabelIcon->setGeometry(geom.left() + 16, geom.top() + 64, geom.width() - 32, geom.height() - 80);
+	}
+}
+
 bool ProcessingDialog::winEvent(MSG *message, long *result)
 {
 	return WinSevenTaskbar::handleWinEvent(message, result);
@@ -379,6 +483,7 @@ void ProcessingDialog::initEncoding(void)
 	m_allJobs.clear();
 	m_succeededJobs.clear();
 	m_failedJobs.clear();
+	m_skippedJobs.clear();
 	m_userAborted = false;
 	m_forcedAbort = false;
 	m_playList.clear();
@@ -433,6 +538,7 @@ void ProcessingDialog::initEncoding(void)
 	for(unsigned int i = 0; i < maximumInstances; i++)
 	{
 		startNextJob();
+		qApp->processEvents();
 	}
 
 	LARGE_INTEGER counter;
@@ -526,7 +632,14 @@ void ProcessingDialog::doneEncoding(void)
 			CHANGE_BACKGROUND_COLOR(frame_header, QColor("#FFBABA"));
 			WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarErrorState);
 			WinSevenTaskbar::setOverlayIcon(this, &QIcon(":/icons/exclamation.png"));
-			SET_PROGRESS_TEXT(tr("Error: %1 of %2 files failed. Double-click failed items for detailed information!").arg(QString::number(m_failedJobs.count()), QString::number(m_failedJobs.count() + m_succeededJobs.count())));
+			if(m_skippedJobs.count() > 0)
+			{
+				SET_PROGRESS_TEXT(tr("Error: %1 of %2 files failed (%3 files skipped). Double-click failed items for detailed information!").arg(QString::number(m_failedJobs.count()), QString::number(m_failedJobs.count() + m_succeededJobs.count() + m_skippedJobs.count()), QString::number(m_skippedJobs.count())));
+			}
+			else
+			{
+				SET_PROGRESS_TEXT(tr("Error: %1 of %2 files failed. Double-click failed items for detailed information!").arg(QString::number(m_failedJobs.count()), QString::number(m_failedJobs.count() + m_succeededJobs.count())));
+			}
 			m_systemTray->showMessage(tr("LameXP - Error"), tr("At least one file has failed!"), QSystemTrayIcon::Critical);
 			m_systemTray->setIcon(QIcon(":/icons/cd_delete.png"));
 			QApplication::processEvents();
@@ -537,7 +650,14 @@ void ProcessingDialog::doneEncoding(void)
 			CHANGE_BACKGROUND_COLOR(frame_header, QColor("#E0FFE2"));
 			WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNormalState);
 			WinSevenTaskbar::setOverlayIcon(this, &QIcon(":/icons/accept.png"));
-			SET_PROGRESS_TEXT(tr("All files completed successfully."));
+			if(m_skippedJobs.count() > 0)
+			{
+				SET_PROGRESS_TEXT(tr("All files completed successfully. Skipped %1 files.").arg(QString::number(m_skippedJobs.count())));
+			}
+			else
+			{
+				SET_PROGRESS_TEXT(tr("All files completed successfully."));
+			}
 			m_systemTray->showMessage(tr("LameXP - Done"), tr("All files completed successfully."), QSystemTrayIcon::Information);
 			m_systemTray->setIcon(QIcon(":/icons/cd_add.png"));
 			QApplication::processEvents();
@@ -568,22 +688,39 @@ void ProcessingDialog::doneEncoding(void)
 	}
 }
 
-void ProcessingDialog::processFinished(const QUuid &jobId, const QString &outFileName, bool success)
+void ProcessingDialog::processFinished(const QUuid &jobId, const QString &outFileName, int success)
 {
-	if(success)
+	if(success > 0)
 	{
 		m_playList.insert(jobId, outFileName);
 		m_succeededJobs.append(jobId);
+	}
+	else if(success < 0)
+	{
+		m_playList.insert(jobId, outFileName);
+		m_skippedJobs.append(jobId);
 	}
 	else
 	{
 		m_failedJobs.append(jobId);
 	}
+
+	//Update filter as soon as a job finished!
+	if(m_progressViewFilter >= 0)
+	{
+		QTimer::singleShot(0, this, SLOT(progressViewFilterChanged()));
+	}
 }
 
 void ProcessingDialog::progressModelChanged(void)
 {
-	view_log->scrollToBottom();
+	//Update filter as soon as the model changes!
+	if(m_progressViewFilter >= 0)
+	{
+		QTimer::singleShot(0, this, SLOT(progressViewFilterChanged()));
+	}
+
+	QTimer::singleShot(0, view_log, SLOT(scrollToBottom()));
 }
 
 void ProcessingDialog::logViewDoubleClicked(const QModelIndex &index)
@@ -681,6 +818,54 @@ void ProcessingDialog::contextMenuShowFileActionTriggered(void)
 	}
 }
 
+void ProcessingDialog::contextMenuFilterActionTriggered(void)
+{
+	if(QAction *action = dynamic_cast<QAction*>(QObject::sender()))
+	{
+		if(action->data().type() == QVariant::Int)
+		{
+			m_progressViewFilter = action->data().toInt();
+			progressViewFilterChanged();
+			QTimer::singleShot(0, this, SLOT(progressViewFilterChanged()));
+			QTimer::singleShot(0, view_log, SLOT(scrollToBottom()));
+			action->setChecked(true);
+		}
+	}
+}
+
+/*
+ * Filter progress items
+ */
+void ProcessingDialog::progressViewFilterChanged(void)
+{
+	bool matchFound = false;
+
+	for(int i = 0; i < view_log->model()->rowCount(); i++)
+	{
+		QModelIndex index = (m_progressViewFilter >= 0) ? m_progressModel->index(i, 0) : QModelIndex();
+		const bool bHide = index.isValid() ? (m_progressModel->getJobState(index) != m_progressViewFilter) : false;
+		view_log->setRowHidden(i, bHide); matchFound = matchFound || (!bHide);
+	}
+
+	if((m_progressViewFilter >= 0) && (!matchFound))
+	{
+		if(m_filterInfoLabel->isHidden() || (dynamic_cast<IntUserData*>(m_filterInfoLabel->userData(0))->value() != m_progressViewFilter))
+		{
+			dynamic_cast<IntUserData*>(m_filterInfoLabel->userData(0))->setValue(m_progressViewFilter);
+			m_filterInfoLabel->setText(QString("<p>&raquo; %1 &laquo;</p>").arg(tr("None of the items matches the current filtering rules")));
+			m_filterInfoLabel->show();
+			m_filterInfoLabelIcon->setPixmap(m_progressModel->getIcon(static_cast<ProgressModel::JobState>(m_progressViewFilter)).pixmap(16, 16, QIcon::Disabled));
+			m_filterInfoLabelIcon->show();
+			resizeEvent(NULL);
+		}
+	}
+	else if(!m_filterInfoLabel->isHidden())
+	{
+		m_filterInfoLabel->hide();
+		m_filterInfoLabelIcon->hide();
+	}
+}
+
 ////////////////////////////////////////////////////////////
 // Private Functions
 ////////////////////////////////////////////////////////////
@@ -733,6 +918,10 @@ void ProcessingDialog::startNextJob(void)
 	{
 		thread->setRenamePattern(m_settings->renameOutputFilesPattern());
 	}
+	if(m_settings->overwriteMode() != SettingsModel::Overwrite_KeepBoth)
+	{
+		thread->setOverwriteMode((m_settings->overwriteMode() == SettingsModel::Overwrite_SkipFile), (m_settings->overwriteMode() == SettingsModel::Overwrite_Replaces));
+	}
 
 	m_threadList.append(thread);
 	m_allJobs.append(thread->getId());
@@ -741,12 +930,18 @@ void ProcessingDialog::startNextJob(void)
 	connect(thread, SIGNAL(finished()), this, SLOT(doneEncoding()), Qt::QueuedConnection);
 	connect(thread, SIGNAL(processStateInitialized(QUuid,QString,QString,int)), m_progressModel, SLOT(addJob(QUuid,QString,QString,int)), Qt::QueuedConnection);
 	connect(thread, SIGNAL(processStateChanged(QUuid,QString,int)), m_progressModel, SLOT(updateJob(QUuid,QString,int)), Qt::QueuedConnection);
-	connect(thread, SIGNAL(processStateFinished(QUuid,QString,bool)), this, SLOT(processFinished(QUuid,QString,bool)), Qt::QueuedConnection);
+	connect(thread, SIGNAL(processStateFinished(QUuid,QString,int)), this, SLOT(processFinished(QUuid,QString,int)), Qt::QueuedConnection);
 	connect(thread, SIGNAL(processMessageLogged(QUuid,QString)), m_progressModel, SLOT(appendToLog(QUuid,QString)), Qt::QueuedConnection);
 	
 	//Give it a go!
 	m_runningThreads++;
 	thread->start();
+
+	//Give thread some advance
+	for(unsigned int i = 0; i < MAX_INSTANCES; i++)
+	{
+		QThread::yieldCurrentThread();
+	}
 }
 
 AbstractEncoder *ProcessingDialog::makeEncoder(bool *nativeResampling)

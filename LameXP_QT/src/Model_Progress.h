@@ -48,7 +48,8 @@ public:
 		JobFailed = 3,
 		JobSystem = 4,
 		JobWarning = 5,
-		JobPerformance = 6
+		JobPerformance = 6,
+		JobSkipped = 7
 	};
 	enum SysMsgType
 	{
@@ -65,7 +66,9 @@ public:
 
 	//Public functions
 	const QStringList &getLogFile(const QModelIndex &index);
-	const QUuid &getJobId(const QModelIndex &index);
+	const QUuid &getJobId(const QModelIndex &index) const;
+	const JobState getJobState(const QModelIndex &index) const;
+	const QIcon &ProgressModel::getIcon(ProgressModel::JobState state) const;
 	void restoreHiddenItems(void);
 
 public slots:
@@ -91,4 +94,6 @@ private:
 	const QIcon m_iconSystem;
 	const QIcon m_iconWarning;
 	const QIcon m_iconPerformance;
+	const QIcon m_iconSkipped;
+	const QIcon m_iconUndefined;
 };
