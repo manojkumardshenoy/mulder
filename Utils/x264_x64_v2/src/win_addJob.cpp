@@ -39,6 +39,7 @@
 #include <QUrl>
 #include <QAction>
 #include <QClipboard>
+#include <QToolTip>
 
 #define VALID_DIR(PATH) ((!(PATH).isEmpty()) && QFileInfo(PATH).exists() && QFileInfo(PATH).isDir())
 
@@ -119,13 +120,25 @@ protected:
 				flag = flag || input.contains(QString("%1-%2").arg(QChar::fromLatin1(c[i]), param), Qt::CaseSensitive);
 			}
 		}
+		if((flag) && (m_notifier))
+		{
+			m_notifier->setText(tr("Invalid parameter: %1").arg((param.length() > 1) ? QString("%1%2").arg(prefix, param) : QString("-%1").arg(param)));
+		}
+		return flag;
+	}
+
+	const bool &setStatus(const bool &flag, const QString &toolName) const
+	{
 		if(flag)
 		{
 			if(m_notifier)
 			{
-				m_notifier->setText(tr("Invalid parameter: %1").arg((param.length() > 1) ? QString("%1%2").arg(prefix, param) : QString("-%1").arg(param)));
 				if(m_notifier->isHidden()) m_notifier->show();
 				if(m_icon) { if(m_icon->isHidden()) m_icon->show(); }
+				if(QWidget *w = m_notifier->topLevelWidget()->focusWidget())
+				{
+					QToolTip::showText(static_cast<QWidget*>(w->parent())->mapToGlobal(w->pos()), QString("<nobr>%1</nobr>").arg(tr("<b>Warning:</b> You entered a parameter that is incomaptible with using %1 from a GUI.<br>Please note that the GUI will automatically set <i>this</i> parameter for you (if required).").arg(toolName)), m_notifier, QRect());
+				}
 			}
 		}
 		else
@@ -134,6 +147,7 @@ protected:
 			{
 				if(m_notifier->isVisible()) m_notifier->hide();
 				if(m_icon) { if(m_icon->isVisible()) m_icon->hide(); }
+				QToolTip::hideText();
 			}
 		}
 		return flag;
@@ -147,7 +161,7 @@ public:
 
 	virtual State validate(QString &input, int &pos) const
 	{
-		static const char* p[] = {"B", "o", "h", "p", "q", "fps", "frames", "preset", "tune", "profile",
+		static const char* p[] = {"B", "o", "h", "p", "q", /*"fps", "frames",*/ "preset", "tune", "profile",
 			"stdin", "crf", "bitrate", "qp", "pass", "stats", "output", "help","quiet", NULL};
 
 		bool invalid = false;
@@ -157,7 +171,7 @@ public:
 			invalid = invalid || checkParam(input, QString::fromLatin1(p[i]), true);
 		}
 
-		return invalid ? QValidator::Intermediate : QValidator::Acceptable;
+		return setStatus(invalid, "x264") ? QValidator::Intermediate : QValidator::Acceptable;
 	}
 };
 
@@ -176,8 +190,8 @@ public:
 		{
 			invalid = invalid || checkParam(input, QString::fromLatin1(p[i]), false);
 		}
-
-		return invalid ? QValidator::Intermediate : QValidator::Acceptable;
+		
+		return setStatus(invalid, "Avs2YUV") ? QValidator::Intermediate : QValidator::Acceptable;
 	}
 };
 
@@ -318,6 +332,9 @@ void AddJobDialog::showEvent(QShowEvent *event)
 	iconNotificationX264->hide();
 	labelNotificationAvs2YUV->hide();
 	iconNotificationAvs2YUV->hide();
+
+	//Enable drag&drop support for this window, required for Qt v4.8.4+
+	setAcceptDrops(true);
 }
 
 bool AddJobDialog::eventFilter(QObject *o, QEvent *e)
@@ -347,9 +364,15 @@ bool AddJobDialog::eventFilter(QObject *o, QEvent *e)
 
 void AddJobDialog::dragEnterEvent(QDragEnterEvent *event)
 {
-	QStringList formats = event->mimeData()->formats();
-	
-	if(formats.contains("application/x-qt-windows-mime;value=\"FileNameW\"", Qt::CaseInsensitive) && formats.contains("text/uri-list", Qt::CaseInsensitive))
+	bool accept[2] = {false, false};
+
+	foreach(const QString &fmt, event->mimeData()->formats())
+	{
+		accept[0] = accept[0] || fmt.contains("text/uri-list", Qt::CaseInsensitive);
+		accept[1] = accept[1] || fmt.contains("FileNameW", Qt::CaseInsensitive);
+	}
+
+	if(accept[0] && accept[1])
 	{
 		event->acceptProposedAction();
 	}
