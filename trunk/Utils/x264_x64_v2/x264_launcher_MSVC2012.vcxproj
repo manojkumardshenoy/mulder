@@ -14,19 +14,21 @@
     <ProjectGuid>{563D953B-CBC3-4C75-AFC2-5BD87531C332}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>x264_launcher</RootNamespace>
+    <ProjectName>x264_launcher</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v110_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>Windows7.1SDK</PlatformToolset>
+    <PlatformToolset>v110_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -39,7 +41,6 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)obj\$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -56,17 +57,30 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;QT_DEBUG;QT_DLL;QT_GUI_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtTest;$(SolutionDir)tmp\uic;$(SolutionDir)etc\vld\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;$(SolutionDir)etc\vld\lib\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>QtMaind.lib;QtCored4.lib;QtGuid4.lib;Winmm.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>QtCored4.lib;QtGuid4.lib;Winmm.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>rmdir /S /Q "$(SolutionDir)bin\$(Configuration)\toolset"
-mkdir "$(SolutionDir)bin\$(Configuration)\toolset"
-copy /Y "$(SolutionDir)res\toolset\*.exe" "$(TargetDir)\toolset"
+      <Command>del /S /Q "$(TargetDir)\*.dll"
+rmdir /S /Q "$(TargetDir)\toolset"
+rmdir /S /Q "$(TargetDir)\imageformats"
+mkdir "$(TargetDir)\toolset"
+mkdir "$(TargetDir)\imageformats"
+copy /Y "$(SolutionDir)res\toolset\*.exe" "$(TargetDir)\toolset\"
+copy /Y "$(QTDIR)\bin\QtCored4.dll" "$(TargetDir)"
+copy /Y "$(QTDIR)\bin\QtGuid4.dll" "$(TargetDir)"
+copy /Y "$(QTDIR)\bin\QtSvgd4.dll" "$(TargetDir)"
+copy /Y "$(QTDIR)\bin\QtXmld4.dll" "$(TargetDir)"
+copy /Y "$(QTDIR)\plugins\imageformats\qicod4.dll" "$(TargetDir)\imageformats"
+copy /Y "$(QTDIR)\plugins\imageformats\qsvgd4.dll" "$(TargetDir)\imageformats"
+copy /Y "$(QTDIR)\plugins\imageformats\qjpegd4.dll" "$(TargetDir)\imageformats"
+copy /Y "$(QTDIR)\plugins\imageformats\qtiffd4.dll" "$(TargetDir)\imageformats"
+copy /Y "$(QTDIR)\plugins\imageformats\qgifd4.dll" "$(TargetDir)\imageformats"
 copy /Y "$(SolutionDir)etc\vld\bin\Win32\*.dll" "$(TargetDir)"
 copy /Y "$(SolutionDir)etc\vld\bin\Win32\*.manifest" "$(TargetDir)"
 </Command>
@@ -92,11 +106,13 @@ copy /Y "$(SolutionDir)etc\vld\bin\Win32\*.manifest" "$(TargetDir)"
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <CreateHotpatchableImage>false</CreateHotpatchableImage>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
+      <OmitFramePointers>true</OmitFramePointers>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -104,8 +120,9 @@ copy /Y "$(SolutionDir)etc\vld\bin\Win32\*.manifest" "$(TargetDir)"
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>QtMain.lib;QtCore4.lib;QtGui4.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>QtCore4.lib;QtGui4.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PreBuildEvent>
       <Command>"$(SolutionDir)etc\auto_inc.exe" VER_X264_BUILD "$(SolutionDir)src\version.h" 5</Command>
@@ -122,9 +139,21 @@ copy /Y "$(SolutionDir)etc\vld\bin\Win32\*.manifest" "$(TargetDir)"
       </Message>
     </PreLinkEvent>
     <PostBuildEvent>
-      <Command>rmdir /S /Q "$(TargetDir)\toolset"
+      <Command>del /S /Q "$(TargetDir)\*.dll"
+rmdir /S /Q "$(TargetDir)\toolset"
+rmdir /S /Q "$(TargetDir)\imageformats"
 mkdir "$(TargetDir)\toolset"
+mkdir "$(TargetDir)\imageformats"
 copy /Y "$(SolutionDir)res\toolset\*.exe" "$(TargetDir)\toolset\"
+copy /Y "$(QTDIR)\bin\QtCore4.dll" "$(TargetDir)"
+copy /Y "$(QTDIR)\bin\QtGui4.dll" "$(TargetDir)"
+copy /Y "$(QTDIR)\bin\QtSvg4.dll" "$(TargetDir)"
+copy /Y "$(QTDIR)\bin\QtXml4.dll" "$(TargetDir)"
+copy /Y "$(QTDIR)\plugins\imageformats\qico4.dll" "$(TargetDir)\imageformats"
+copy /Y "$(QTDIR)\plugins\imageformats\qsvg4.dll" "$(TargetDir)\imageformats"
+copy /Y "$(QTDIR)\plugins\imageformats\qjpeg4.dll" "$(TargetDir)\imageformats"
+copy /Y "$(QTDIR)\plugins\imageformats\qtiff4.dll" "$(TargetDir)\imageformats"
+copy /Y "$(QTDIR)\plugins\imageformats\qgif4.dll" "$(TargetDir)\imageformats"
 </Command>
       <Message>Copy Toolset</Message>
     </PostBuildEvent>
@@ -272,6 +301,10 @@ copy /Y "$(SolutionDir)res\toolset\*.exe" "$(TargetDir)\toolset\"
     <ClCompile Include="src\model_jobList.cpp" />
     <ClCompile Include="src\model_logFile.cpp" />
     <ClCompile Include="src\model_options.cpp" />
+    <ClCompile Include="src\qtmain_win.cpp">
+      <TreatWChar_tAsBuiltInType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWChar_tAsBuiltInType>
+      <TreatWChar_tAsBuiltInType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWChar_tAsBuiltInType>
+    </ClCompile>
     <ClCompile Include="src\taskbar7.cpp" />
     <ClCompile Include="src\thread_encode.cpp" />
     <ClCompile Include="src\global.cpp" />
