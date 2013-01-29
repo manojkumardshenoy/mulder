@@ -281,11 +281,12 @@
     </message>
     <message>
         <source>refalac - Win32 command line ALAC encoder/decoder</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">refalac - Win32 command line ALAC encoder/decoder</translation>
     </message>
     <message>
         <source>The ALAC reference implementation by Apple is available under the Apache license.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>애플의 ALAC 참조 구현은 Apache 라이센스에 따라 사용 가능합니다.</translatorcomment>
+        <translation type="unfinished">ALAC reference implementation by Apple is available under the Apache license.</translation>
     </message>
 </context>
 <context>
@@ -422,10 +423,6 @@
         <translation type="unfinished">큐 시트를 분할하는 도중에 예기치 않은 오류가 발생했습니다!</translation>
     </message>
     <message>
-        <source>Imported %1 track(s) from the Cue Sheet and skipped %2 track(s).</source>
-        <translation type="unfinished">큐 시트로부터 %1 트랙 가져옴, 그리고 %2 트랙 건너뜀.</translation>
-    </message>
-    <message>
         <source>Cue Sheet Completed</source>
         <translation type="unfinished">큐 시트 작업 완료</translation>
     </message>
@@ -444,10 +441,6 @@
     <message>
         <source>Abort</source>
         <translation type="unfinished">취소</translation>
-    </message>
-    <message>
-        <source>Process was aborted by the user after %1 track(s)!</source>
-        <translation type="unfinished">%1 트랙 처리 후 사용자에 의해 작업이 취소되었습니다!</translation>
     </message>
     <message>
         <source>(System Default)</source>
@@ -476,6 +469,24 @@
     <message>
         <source>New Folder</source>
         <translation type="unfinished">새 폴더</translation>
+    </message>
+    <message numerus="yes">
+        <source>Process was aborted by the user after %n track(s)!</source>
+        <translation type="unfinished">
+            <numerusform>%n 트랙 후 사용자에 의해 작업이 취소되었습니다!</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Imported %n track(s) from the Cue Sheet.</source>
+        <translation type="unfinished">
+            <numerusform>큐 시트에서 %n 트랙을 가져왔습니다.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Skipped %n track(s).</source>
+        <translation type="unfinished">
+            <numerusform>%n 트랙을 건너뛰었습니다.</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -1106,16 +1117,8 @@
         <translation type="unfinished">접근 거부</translation>
     </message>
     <message>
-        <source>%1 file(s) have been rejected, because read access was not granted!</source>
-        <translation type="unfinished">%1 파일이 거부되었습니다. 읽기 권한이 부여되지 않았습니다!</translation>
-    </message>
-    <message>
         <source>This usually means the file is locked by another process.</source>
         <translation type="unfinished">다른 프로세스에 의해 파일이 잠겨 있는 경우입니다.</translation>
-    </message>
-    <message>
-        <source>%1 file(s) have been rejected, because they are dummy CDDA files!</source>
-        <translation type="unfinished">%1 파일이 거부되었습니다. 가짜 CDDA 파일입니다!</translation>
     </message>
     <message>
         <source>Sorry, LameXP cannot extract audio tracks from an Audio-CD at present.</source>
@@ -1128,10 +1131,6 @@
     <message>
         <source>Files Rejected</source>
         <translation type="unfinished">파일 거부</translation>
-    </message>
-    <message>
-        <source>%1 file(s) have been rejected, because the file format could not be recognized!</source>
-        <translation type="unfinished">%1 파일이 거부되었습니다. 파일 형식이 인식되지 않습니다!</translation>
     </message>
     <message>
         <source>This usually means the file is damaged or the file format is not supported.</source>
@@ -1398,10 +1397,6 @@
         <translation type="unfinished">최저 품질 (매우 빠름)</translation>
     </message>
     <message>
-        <source>%1 Instance(s)</source>
-        <translation type="unfinished">%1 인스턴스</translation>
-    </message>
-    <message>
         <source>Cannot write to the selected directory. Please choose another directory!</source>
         <translation type="unfinished">선택한 디렉토리에 작성할 수 없습니다. 다른 디렉토리를 선택하여 주십시오!</translation>
     </message>
@@ -1618,10 +1613,6 @@
         <translation type="unfinished">큐 시트</translation>
     </message>
     <message>
-        <source>%1 file(s) have been rejected, because they appear to be Cue Sheet images!</source>
-        <translation type="unfinished">%1 파일이 거부되었습니다. 그 파일들은 큐 시트 이미지들로 나타나기 때문입니다!</translation>
-    </message>
-    <message>
         <source>Please use LameXP&apos;s Cue Sheet wizard for importing Cue Sheet files.</source>
         <translation type="unfinished">큐 시트 파일을 가져오려면 LameXP의 큐 시트 마법사를 사용하십시오.</translation>
     </message>
@@ -1643,95 +1634,95 @@
     </message>
     <message>
         <source>Slow Startup Notifications</source>
-        <translation type="unfinished">느린 시작 알림</translation>
+        <translation>느린 시작 알림</translation>
     </message>
     <message>
         <source>Do you really want to disable the slow startup notifications?</source>
-        <translation type="unfinished">느린 시작 알림을 비활성화하시겠습니까?</translation>
+        <translation>느린 시작 알림을 비활성화하시겠습니까?</translation>
     </message>
     <message>
         <source>The slow startup notifications have been disabled.</source>
-        <translation type="unfinished">느린 시작 알림이 비활성화되었습니다.</translation>
+        <translation>느린 시작 알림이 비활성화되었습니다.</translation>
     </message>
     <message>
         <source>The slow startup notifications have been re-enabled.</source>
-        <translation type="unfinished">느린 시작 알림이 재활성화되었습니다.</translation>
+        <translation>느린 시작 알림이 재활성화되었습니다.</translation>
     </message>
     <message>
         <source> Rename Output Files </source>
-        <translation type="unfinished">출력 파일 이름 변경</translation>
+        <translation>출력 파일 이름 변경</translation>
     </message>
     <message>
         <source>Rename Output Files</source>
-        <translation type="unfinished">출력 파일 이름 변경</translation>
+        <translation>출력 파일 이름 변경</translation>
     </message>
     <message>
         <source>Track number with leading zero</source>
-        <translation type="unfinished">트랙 번호 01, 02, 03...</translation>
+        <translation>트랙 번호 01, 02, 03...</translation>
     </message>
     <message>
         <source>Track title</source>
-        <translation type="unfinished">트랙 제목</translation>
+        <translation>트랙 제목</translation>
     </message>
     <message>
         <source>Artist name</source>
-        <translation type="unfinished">가수 이름</translation>
+        <translation>가수 이름</translation>
     </message>
     <message>
         <source>Album name</source>
-        <translation type="unfinished">앨범 이름</translation>
+        <translation>앨범 이름</translation>
     </message>
     <message>
         <source>Year with (at least) four digits</source>
-        <translation type="unfinished">출판 연도(적어도 4자리)</translation>
+        <translation>출판 연도(적어도 4자리)</translation>
     </message>
     <message>
         <source>Comment</source>
-        <translation type="unfinished">설명</translation>
+        <translation>설명</translation>
     </message>
     <message>
         <source>Rename Macros</source>
-        <translation type="unfinished">매크로 이름 변경</translation>
+        <translation>매크로 이름 변경</translation>
     </message>
     <message>
         <source>You can enter custom parameters here!</source>
-        <translation type="unfinished">여기에 사용자 변수를 입력할 수 있습니다!</translation>
+        <translation>여기에 사용자 변수를 입력할 수 있습니다!</translation>
     </message>
     <message>
         <source>Enter the pattern to rename the output files here!</source>
-        <translation type="unfinished">출력 파일의 이름 바꾸기 패턴을 입력하십시오!</translation>
+        <translation>출력 파일의 이름 바꾸기 패턴을 입력하십시오!</translation>
     </message>
     <message>
         <source>&lt;a href=&quot;reset&quot;&gt;Reset&lt;/a&gt; &amp;nbsp; &lt;a href=&quot;#&quot;&gt;Show List of Macros&lt;/a&gt;</source>
-        <translation type="unfinished">&lt;a href=&quot;reset&quot;&gt;재설정&lt;/a&gt; &amp;nbsp; &lt;a href=&quot;#&quot;&gt;매크로 목록 표시&lt;/a&gt;</translation>
+        <translation>&lt;a href=&quot;reset&quot;&gt;재설정&lt;/a&gt; &amp;nbsp; &lt;a href=&quot;#&quot;&gt;매크로 목록 표시&lt;/a&gt;</translation>
     </message>
     <message>
         <source>File name without extension</source>
-        <translation type="unfinished">확장자 없는 파일명</translation>
+        <translation>확장자 없는 파일명</translation>
     </message>
     <message>
         <source>Rename Pattern:</source>
-        <translation type="unfinished">패턴 이름 변경:</translation>
+        <translation>패턴 이름 변경:</translation>
     </message>
     <message>
         <source>Example File Name:</source>
-        <translation type="unfinished">파일명 예제:</translation>
+        <translation>파일명 예제:</translation>
     </message>
     <message>
         <source>Characters forbidden in file names:</source>
-        <translation type="unfinished">파일명에 금지된 문자:</translation>
+        <translation>파일명에 금지된 문자:</translation>
     </message>
     <message>
         <source>Enforce Stereo Downmix of Surround (Multi-Channel) Sources</source>
-        <translation type="unfinished">서라운드(멀티-채널) 소스의 스트레오 다운믹스 강제</translation>
+        <translation>서라운드(멀티-채널) 소스의 스트레오 다운믹스 강제</translation>
     </message>
     <message>
         <source>Bookmark Current Output Folder</source>
-        <translation type="unfinished">현재 출력 폴더 북마트</translation>
+        <translation>현재 출력 폴더 북마트</translation>
     </message>
     <message>
         <source>AAC Encoder-Options</source>
-        <translation type="unfinished">AAC Encoder-옵션</translation>
+        <translation>AAC Encoder-옵션</translation>
     </message>
     <message>
         <source>MPEG-4 AAC:</source>
@@ -1926,28 +1917,12 @@
         <translation type="unfinished"> Opus 인코더 옵션 </translation>
     </message>
     <message>
-        <source>Optimize for Signal Type:</source>
-        <translation type="unfinished">신호 방식 최적화:</translation>
-    </message>
-    <message>
         <source>Encoding Complexity:</source>
         <translation type="unfinished">인코딩 복잡도:</translation>
     </message>
     <message>
-        <source>Music</source>
-        <translation type="unfinished">음악</translation>
-    </message>
-    <message>
-        <source>(Undefined)</source>
-        <translation type="unfinished">(정의되지 않음)</translation>
-    </message>
-    <message>
         <source>Frame Size:</source>
         <translation type="unfinished">프레임 크기:</translation>
-    </message>
-    <message>
-        <source>Use Experimental Encoder Perceptual Tuning</source>
-        <translation type="unfinished">경험적 인코더 인식 조정 사용</translation>
     </message>
     <message>
         <source>OpusEnc:</source>
@@ -1959,39 +1934,81 @@
     </message>
     <message>
         <source> Overwrite Mode </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">대체 방식 </translation>
     </message>
     <message>
         <source>Overwrite Existing File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">기존 파일 대체</translation>
     </message>
     <message>
         <source>Skip File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">파일 건너뛰기</translation>
     </message>
     <message>
         <source>Keep Both Files (Default)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">두 파일 유지 (기본)</translation>
     </message>
     <message>
         <source>If Target File Already Exists:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">대상 파일이 이미 존재하면:</translation>
     </message>
     <message>
         <source>Overwrite Mode</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">대체 방식</translation>
     </message>
     <message>
         <source>Warning: This mode may overwrite existing files with no way to revert!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">경고: 이 방식은 기존 파일이 되돌릴 수 없는 방법으로 대체될 수 있습니다!</translation>
     </message>
     <message>
         <source>Continue</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">계속</translation>
     </message>
     <message>
         <source>Revert</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">되돌리기</translation>
+    </message>
+    <message>
+        <source>Up One Level</source>
+        <translation type="unfinished">한 단계 위로</translation>
+    </message>
+    <message>
+        <source>Go To Parent Directory</source>
+        <translation type="unfinished">상위 디렉터리로 이동</translation>
+    </message>
+    <message>
+        <source>Disable Opus-Decoder Resampling (i.e. always output as 48.000 Hz)</source>
+        <translation type="unfinished">Opus Decoder 리샘플링 비활성화 (보기. 항상 48.000 Hz로 출력)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n file(s) have been rejected, because read access was not granted!</source>
+        <translation type="unfinished">
+            <numerusform>읽기 엑세스가 허용되어 있지 않기 때문에 %n 파일이 거부되었습니다!</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n file(s) have been rejected, because they are dummy CDDA files!</source>
+        <translation type="unfinished">
+            <numerusform>더미 CDDA 파일이기 때문에 %n 파일이 거부되었습니다!</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n file(s) have been rejected, because they appear to be Cue Sheet images!</source>
+        <translation type="unfinished">
+            <numerusform>큐 시트 이미지로 나타나기 때문에 %n 파일이 거부되었습니다!</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n file(s) have been rejected, because the file format could not be recognized!</source>
+        <translation type="unfinished">
+            <numerusform>파일 형식을 인식할 수 없으므로 %n 파일이 거부되었습니다!</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n Instance(s)</source>
+        <translation type="unfinished">
+            <numerusform>%n 인스턴스</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -2316,23 +2333,23 @@
     </message>
     <message>
         <source>Skipped.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">건너뜀.</translation>
     </message>
     <message>
         <source>Target output file already exists, going to skip this file:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">대상 출력 파일이 이미 존재합니다. 건너뛰기할 파일:</translation>
     </message>
     <message>
         <source>If you don&apos;t want existing files to be skipped, please change the overwrite mode!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">기존 파일을 건너뛰기하지 않으려면, 덮어쓰기 방식을 변경하시기 바랍니다!</translation>
     </message>
     <message>
         <source>Target output file already exists, going to delete existing file:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">대상 출력 파일이 이미 존재합니다. 건너뛰기할 파일:</translation>
     </message>
     <message>
         <source>Failed to delete existing target file, will save to another file name!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">기존 대상 파일 삭제 실패. 다른 파일명으로 저장됩니다!</translation>
     </message>
 </context>
 <context>
@@ -2386,16 +2403,8 @@
         <translation type="unfinished">중단됨! 종료를 위해 실행중인 작업을 대기중...</translation>
     </message>
     <message>
-        <source>Encoding: %1 files of %2 completed so far, please wait...</source>
-        <translation type="unfinished">편집중: 현재 %1/%2 파일 완료됨, 잠시만 기다려 주십시오...</translation>
-    </message>
-    <message>
         <source>Creating the playlist file, please wait...</source>
         <translation type="unfinished">재생 목록 파일 생성중, 잠시 기다려 주십시오...</translation>
-    </message>
-    <message>
-        <source>Process was aborted by the user after %1 file(s)!</source>
-        <translation type="unfinished">%1 파일 후 처리가 사용자에 의해 중단되었습니다!</translation>
     </message>
     <message>
         <source>Process was aborted prematurely by the user!</source>
@@ -2408,10 +2417,6 @@
     <message>
         <source>Process was aborted by the user.</source>
         <translation type="unfinished">처리가 사용자에 의해 중단되었습니다.</translation>
-    </message>
-    <message>
-        <source>Error: %1 of %2 files failed. Double-click failed items for detailed information!</source>
-        <translation type="unfinished">오류: %1 /%2 파일 실패됨. 자세한 정보를 보려면 실패된 항목을 더블 클릭하십시오!</translation>
     </message>
     <message>
         <source>LameXP - Error</source>
@@ -2462,56 +2467,92 @@
         <translation type="unfinished">작업 경과 시간: %1 소요됨.</translation>
     </message>
     <message>
-        <source>hour(s)</source>
-        <translation type="unfinished">시간</translation>
-    </message>
-    <message>
-        <source>minute(s)</source>
-        <translation type="unfinished">분</translation>
-    </message>
-    <message>
-        <source>second(s)</source>
-        <translation type="unfinished">초</translation>
-    </message>
-    <message>
-        <source>millisecond(s)</source>
-        <translation type="unfinished">ms</translation>
-    </message>
-    <message>
         <source>Filter Log Items</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">필터링 로그 항목</translation>
     </message>
     <message>
         <source>Show Running Only</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">실행중인 항목만 표시</translation>
     </message>
     <message>
         <source>Show Succeeded Only</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">성공한 항목만 표시</translation>
     </message>
     <message>
         <source>Show Failed Only</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">실패된 항목만 표시</translation>
     </message>
     <message>
         <source>Show Skipped Only</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">건너뛴 항목만 표시</translation>
     </message>
     <message>
         <source>Show All Items</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Error: %1 of %2 files failed (%3 files skipped). Double-click failed items for detailed information!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>All files completed successfully. Skipped %1 files.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">모든 항목 표시</translation>
     </message>
     <message>
         <source>None of the items matches the current filtering rules</source>
-        <translation type="unfinished"></translation>
+        <translation>현재 필터링 규칙과 일치하지 항목이 없습니다.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Process was aborted by the user after %n file(s)!</source>
+        <translation type="unfinished">
+            <numerusform>%n 파일 후 사용자에 의해 작업이 취소되었습니다!</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hour(s)</source>
+        <translation type="unfinished">
+            <numerusform>%n 시간</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minute(s)</source>
+        <translation type="unfinished">
+            <numerusform>%n 분</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n second(s)</source>
+        <translation type="unfinished">
+            <numerusform>%n 초</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n millisecond(s)</source>
+        <translation type="unfinished">
+            <numerusform>%n ms</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Encoding: %n file(s) of %1 completed so far, please wait...</source>
+        <translation type="unfinished">
+            <numerusform>인코딩: 현재 %n / %1 파일 완료됨, 잠시만 기다려 주십시오...</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Error: %1 of %n file(s) failed (%2). Double-click failed items for detailed information!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n file(s) skipped</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Error: %1 of %n file(s) failed. Double-click failed items for detailed information!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>All files completed successfully. Skipped %n file(s).</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
     </message>
 </context>
 <context>

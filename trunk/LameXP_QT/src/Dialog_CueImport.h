@@ -22,20 +22,25 @@
 #pragma once
 
 #include <QDialog>
-#include "../tmp/UIC_CueSheetImport.h"
-
-#include "Model_AudioFile.h"
 
 class CueSheetModel;
 class LockedFile;
+class AudioFileModel;
 class FileListModel;
+class SettingsModel;
 
-class CueImportDialog : public QDialog, private Ui::CueSheetImport
+//UIC forward declartion
+namespace Ui {
+	class CueSheetImport;
+}
+
+//CueImportDialog class
+class CueImportDialog : public QDialog
 {
 	Q_OBJECT
 
 public:
-	CueImportDialog(QWidget *parent, FileListModel *fileList, const QString &cueFile);
+	CueImportDialog(QWidget *parent, FileListModel *fileList, const QString &cueFile, const SettingsModel *settings);
 	~CueImportDialog(void);
 
 	int exec(void);
@@ -51,12 +56,16 @@ private slots:
 	void analyzedFile(const AudioFileModel &file);
 
 private:
+	Ui::CueSheetImport *ui; //for Qt UIC
+	
 	void importCueSheet(void);
 	bool analyzeFiles(QStringList &files);
 	void splitFiles(void);
 
 	CueSheetModel *m_model;
 	FileListModel *m_fileList;
+
+	const SettingsModel *m_settings;
 
 	QList<LockedFile*> m_locks;
 	QList<AudioFileModel> m_fileInfo;

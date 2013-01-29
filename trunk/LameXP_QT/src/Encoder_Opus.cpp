@@ -30,10 +30,9 @@
 
 OpusEncoder::OpusEncoder(void)
 :
-	m_binary_std(lamexp_lookup_tool("opusenc_std.exe")),
-	m_binary_ea7(lamexp_lookup_tool("opusenc_ea7.exe"))
+	m_binary(lamexp_lookup_tool("opusenc.exe"))
 {
-	if(m_binary_std.isEmpty() || m_binary_ea7.isEmpty())
+	if(m_binary.isEmpty())
 	{
 		throw "Error initializing Opus encoder. Tool 'opusenc.exe' is not registred!";
 	}
@@ -41,7 +40,6 @@ OpusEncoder::OpusEncoder(void)
 	m_configOptimizeFor = 0;
 	m_configEncodeComplexity = 10;
 	m_configFrameSize = 3;
-	m_configExpAnalysisOn = true;
 }
 
 OpusEncoder::~OpusEncoder(void)
@@ -107,20 +105,20 @@ bool OpusEncoder::encode(const QString &sourceFile, const AudioFileModel &metaIn
 
 	args << QString("--bitrate") << QString::number(qMax(0, qMin(500, m_configBitrate * 8)));
 
-	if(!metaInfo.fileName().isEmpty()) args << "--title" << metaInfo.fileName();
-	if(!metaInfo.fileArtist().isEmpty()) args << "--artist" << metaInfo.fileArtist();
-	if(!metaInfo.fileAlbum().isEmpty()) args << "--comment" << QString("album=%1").arg(metaInfo.fileAlbum());
-	if(!metaInfo.fileGenre().isEmpty()) args << "--comment" << QString("genre=%1").arg(metaInfo.fileGenre());
-	if(!metaInfo.fileComment().isEmpty()) args << "--comment" << QString("comment=%1").arg(metaInfo.fileComment());
-	if(metaInfo.fileYear()) args << "--comment" << QString("date=%1").arg(QString::number(metaInfo.fileYear()));
-	if(metaInfo.filePosition()) args << "--comment" << QString("track=%1").arg(QString::number(metaInfo.filePosition()));
+	if(!metaInfo.fileName().isEmpty()) args << "--title" << cleanTag(metaInfo.fileName());
+	if(!metaInfo.fileArtist().isEmpty()) args << "--artist" << cleanTag(metaInfo.fileArtist());
+	if(!metaInfo.fileAlbum().isEmpty()) args << "--album" << cleanTag(metaInfo.fileAlbum());
+	if(!metaInfo.fileGenre().isEmpty()) args << "--genre" << cleanTag(metaInfo.fileGenre());
+	if(metaInfo.fileYear()) args << "--date" << QString::number(metaInfo.fileYear());
+	if(metaInfo.filePosition()) args << "--comment" << QString("tracknumber=%1").arg(QString::number(metaInfo.filePosition()));
+	if(!metaInfo.fileComment().isEmpty()) args << "--comment" << QString("comment=%1").arg(cleanTag(metaInfo.fileComment()));
 	
 	if(!m_configCustomParams.isEmpty()) args << m_configCustomParams.split(" ", QString::SkipEmptyParts);
 
 	args << QDir::toNativeSeparators(sourceFile);
 	args << QDir::toNativeSeparators(outputFile);
 
-	if(!startProcess(process, m_configExpAnalysisOn ? m_binary_ea7 : m_binary_std, args))
+	if(!startProcess(process, m_binary, args))
 	{
 		return false;
 	}
@@ -201,11 +199,6 @@ void OpusEncoder::setEncodeComplexity(int complexity)
 void OpusEncoder::setFrameSize(int frameSize)
 {
 	m_configFrameSize = qBound(0, frameSize, 5);
-}
-
-void OpusEncoder::setExpAnalysisOn(bool expAnalysisOn)
-{
-	m_configExpAnalysisOn = expAnalysisOn;
 }
 
 QString OpusEncoder::extension(void)

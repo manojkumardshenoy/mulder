@@ -21,23 +21,32 @@
 
 #pragma once
 
-#include "../tmp/UIC_MainWindow.h"
+#include <QMainWindow>
 
 //Class declarations
-class QFileSystemModelEx;
-class WorkingBanner;
-class MessageHandlerThread;
-class AudioFileModel;
-class MetaInfoModel;
-class SettingsModel;
-class QButtonGroup;
-class FileListModel;
 class AbstractEncoder;
-class QMenu;
-class DropBox;
+class AudioFileModel;
 class CustomEventFilter;
+class DropBox;
+class FileListModel;
+class MessageHandlerThread;
+class MetaInfoModel;
+class QActionGroup;
+class QButtonGroup;
+class QFileSystemModelEx;
+class QLabel;
+class QMenu;
+class QModelIndex;
+class SettingsModel;
+class WorkingBanner;
 
-class MainWindow: public QMainWindow, private Ui::MainWindow
+//UIC forward declartion
+namespace Ui {
+	class MainWindow;
+}
+
+//MainWindow class
+class MainWindow: public QMainWindow
 {
 	Q_OBJECT
 
@@ -92,6 +101,7 @@ private slots:
 	void gotoFavoriteFolder(void);
 	void gotoHomeFolderButtonClicked(void);
 	void gotoMusicFolderButtonClicked(void);
+	void goUpFolderContextActionTriggered(void);
 	void handleDelayedFiles(void);
 	void hibernateComputerActionTriggered(bool checked);
 	void importCueSheetActionTriggered(bool checked);
@@ -169,6 +179,8 @@ protected:
 	virtual bool winEvent(MSG *message, long *result);
 
 private:
+	Ui::MainWindow *ui; //for Qt UIC
+
 	void addFiles(const QStringList &files);
 	void addFolder(const QString &path, bool recursive = false, bool delayed = false);
 	bool checkForUpdates(void);
@@ -205,6 +217,7 @@ private:
 	QAction *m_showDetailsContextAction;
 	QAction *m_showFolderContextAction;
 	QAction *m_refreshFolderContextAction;
+	QAction *m_goUpFolderContextAction;
 	QAction *m_addFavoriteFolderAction;
 	QAction *m_exportCsvContextAction;
 	QAction *m_importCsvContextAction;
