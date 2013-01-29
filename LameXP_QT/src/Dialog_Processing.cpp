@@ -21,6 +21,9 @@
 
 #include "Dialog_Processing.h"
 
+//UIC includes
+#include "../tmp/UIC_ProcessingDialog.h"
+
 #include "Global.h"
 #include "Resource.h"
 #include "Model_FileList.h"
@@ -41,6 +44,7 @@
 #include "Encoder_Vorbis.h"
 #include "Encoder_Opus.h"
 #include "Encoder_Wave.h"
+#include "Registry_Decoder.h"
 #include "Filter_Downmix.h"
 #include "Filter_Normalize.h"
 #include "Filter_Resample.h"
@@ -90,7 +94,7 @@ while(0)
 
 #define SET_PROGRESS_TEXT(TXT) do \
 { \
-	label_progress->setText(TXT); \
+	ui->label_progress->setText(TXT); \
 	m_systemTray->setToolTip(QString().sprintf("LameXP v%d.%02d\n%ls", lamexp_version_major(), lamexp_version_minor(), QString(TXT).utf16())); \
 } \
 while(0)
@@ -137,6 +141,7 @@ private:
 ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel *metaInfo, SettingsModel *settings, QWidget *parent)
 :
 	QDialog(parent),
+	ui(new Ui::ProcessingDialog),
 	m_systemTray(new QSystemTrayIcon(QIcon(":/icons/cd_go.png"), this)),
 	m_settings(settings),
 	m_metaInfo(metaInfo),
@@ -148,15 +153,15 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 	m_firstShow(true)
 {
 	//Init the dialog, from the .ui file
-	setupUi(this);
+	ui->setupUi(this);
 	setWindowFlags(windowFlags() ^ Qt::WindowContextHelpButtonHint);
 	
 	//Update header icon
-	label_headerIcon->setPixmap(lamexp_app_icon().pixmap(label_headerIcon->size()));
+	ui->label_headerIcon->setPixmap(lamexp_app_icon().pixmap(ui->label_headerIcon->size()));
 	
 	//Setup version info
-	label_versionInfo->setText(QString().sprintf("v%d.%02d %s (Build %d)", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build()));
-	label_versionInfo->installEventFilter(this);
+	ui->label_versionInfo->setText(QString().sprintf("v%d.%02d %s (Build %d)", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build()));
+	ui->label_versionInfo->installEventFilter(this);
 
 	//Register meta type
 	qRegisterMetaType<QUuid>("QUuid");
@@ -168,29 +173,29 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 	setMinimumSize(thisRect.width(), thisRect.height());
 
 	//Enable buttons
-	connect(button_AbortProcess, SIGNAL(clicked()), this, SLOT(abortEncoding()));
+	connect(ui->button_AbortProcess, SIGNAL(clicked()), this, SLOT(abortEncoding()));
 	
 	//Init progress indicator
 	m_progressIndicator = new QMovie(":/images/Working.gif");
 	m_progressIndicator->setCacheMode(QMovie::CacheAll);
 	m_progressIndicator->setSpeed(50);
-	label_headerWorking->setMovie(m_progressIndicator);
-	progressBar->setValue(0);
+	ui->label_headerWorking->setMovie(m_progressIndicator);
+	ui->progressBar->setValue(0);
 
 	//Init progress model
 	m_progressModel = new ProgressModel();
-	view_log->setModel(m_progressModel);
-	view_log->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-	view_log->verticalHeader()->hide();
-	view_log->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-	view_log->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
-	view_log->viewport()->installEventFilter(this);
+	ui->view_log->setModel(m_progressModel);
+	ui->view_log->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+	ui->view_log->verticalHeader()->hide();
+	ui->view_log->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+	ui->view_log->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+	ui->view_log->viewport()->installEventFilter(this);
 	connect(m_progressModel, SIGNAL(rowsInserted(QModelIndex,int,int)), this, SLOT(progressModelChanged()));
 	connect(m_progressModel, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)), this, SLOT(progressModelChanged()));
 	connect(m_progressModel, SIGNAL(rowsRemoved(QModelIndex,int,int)), this, SLOT(progressModelChanged()));
 	connect(m_progressModel, SIGNAL(modelReset()), this, SLOT(progressModelChanged()));
-	connect(view_log, SIGNAL(activated(QModelIndex)), this, SLOT(logViewDoubleClicked(QModelIndex)));
-	connect(view_log->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(logViewSectionSizeChanged(int,int,int)));
+	connect(ui->view_log, SIGNAL(activated(QModelIndex)), this, SLOT(logViewDoubleClicked(QModelIndex)));
+	connect(ui->view_log->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(logViewSectionSizeChanged(int,int,int)));
 
 	//Create context menu
 	m_contextMenu = new QMenu();
@@ -216,7 +221,7 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 	}
 
 	//Create info label
-	if(m_filterInfoLabel = new QLabel(view_log))
+	if(m_filterInfoLabel = new QLabel(ui->view_log))
 	{
 		m_filterInfoLabel->setFrameShape(QFrame::NoFrame);
 		m_filterInfoLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
@@ -227,7 +232,7 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 		connect(m_filterInfoLabel, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuTriggered(QPoint)));
 		m_filterInfoLabel->hide();
 	}
-	if(m_filterInfoLabelIcon = new QLabel(view_log))
+	if(m_filterInfoLabelIcon = new QLabel(ui->view_log))
 	{
 		m_filterInfoLabelIcon->setFrameShape(QFrame::NoFrame);
 		m_filterInfoLabelIcon->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
@@ -239,8 +244,8 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 	}
 
 	//Connect context menu
-	view_log->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(view_log, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuTriggered(QPoint)));
+	ui->view_log->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(ui->view_log, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuTriggered(QPoint)));
 	connect(contextMenuDetailsAction, SIGNAL(triggered(bool)), this, SLOT(contextMenuDetailsActionTriggered()));
 	connect(contextMenuShowFileAction, SIGNAL(triggered(bool)), this, SLOT(contextMenuShowFileActionTriggered()));
 	for(size_t i = 0; i < 5; i++)
@@ -259,7 +264,7 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 	}
 
 	//Translate
-	label_headerStatus->setText(QString("<b>%1</b><br>%2").arg(tr("Encoding Files"), tr("Your files are being encoded, please be patient...")));
+	ui->label_headerStatus->setText(QString("<b>%1</b><br>%2").arg(tr("Encoding Files"), tr("Your files are being encoded, please be patient...")));
 	
 	//Enable system tray icon
 	connect(m_systemTray, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(systemTrayActivated(QSystemTrayIcon::ActivationReason)));
@@ -282,9 +287,7 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel 
 
 ProcessingDialog::~ProcessingDialog(void)
 {
-	fprintf(stderr, "BUMP 1\n"); fflush(stderr);
-	
-	view_log->setModel(NULL);
+	ui->view_log->setModel(NULL);
 
 	if(m_progressIndicator)
 	{
@@ -319,8 +322,6 @@ ProcessingDialog::~ProcessingDialog(void)
 		}
 	}
 
-	fprintf(stderr, "BUMP 2\n"); fflush(stderr);
-
 	while(!m_threadList.isEmpty())
 	{
 		ProcessThread *thread = m_threadList.takeFirst();
@@ -328,8 +329,6 @@ ProcessingDialog::~ProcessingDialog(void)
 		thread->wait(15000);
 		delete thread;
 	}
-
-	fprintf(stderr, "BUMP 3\n"); fflush(stderr);
 
 	LAMEXP_DELETE(m_progressIndicator);
 	LAMEXP_DELETE(m_systemTray);
@@ -342,12 +341,10 @@ ProcessingDialog::~ProcessingDialog(void)
 	LAMEXP_DELETE(m_contextMenu);
 	LAMEXP_DELETE(m_progressModel);
 
-	fprintf(stderr, "BUMP 4\n"); fflush(stderr);
-
 	WinSevenTaskbar::setOverlayIcon(this, NULL);
 	WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNoState);
 
-	fprintf(stderr, "BUMP 5\n"); fflush(stderr);
+	LAMEXP_DELETE(ui);
 }
 
 ////////////////////////////////////////////////////////////
@@ -363,8 +360,8 @@ void ProcessingDialog::showEvent(QShowEvent *event)
 		static const char *NA = " N/A";
 	
 		setCloseButtonEnabled(false);
-		button_closeDialog->setEnabled(false);
-		button_AbortProcess->setEnabled(false);
+		ui->button_closeDialog->setEnabled(false);
+		ui->button_AbortProcess->setEnabled(false);
 		m_systemTray->setVisible(true);
 	
 		if(!SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS))
@@ -372,9 +369,9 @@ void ProcessingDialog::showEvent(QShowEvent *event)
 			SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 		}
 
-		label_cpu->setText(NA);
-		label_disk->setText(NA);
-		label_ram->setText(NA);
+		ui->label_cpu->setText(NA);
+		ui->label_disk->setText(NA);
+		ui->label_ram->setText(NA);
 
 		QTimer::singleShot(1000, this, SLOT(initEncoding()));
 		m_firstShow = false;
@@ -386,7 +383,7 @@ void ProcessingDialog::showEvent(QShowEvent *event)
 
 void ProcessingDialog::closeEvent(QCloseEvent *event)
 {
-	if(!button_closeDialog->isEnabled())
+	if(!ui->button_closeDialog->isEnabled())
 	{
 		event->ignore();
 	}
@@ -400,20 +397,20 @@ bool ProcessingDialog::eventFilter(QObject *obj, QEvent *event)
 {
 	static QColor defaultColor = QColor();
 
-	if(obj == label_versionInfo)
+	if(obj == ui->label_versionInfo)
 	{
 		if(event->type() == QEvent::Enter)
 		{
-			QPalette palette = label_versionInfo->palette();
+			QPalette palette = ui->label_versionInfo->palette();
 			defaultColor = palette.color(QPalette::Normal, QPalette::WindowText);
 			palette.setColor(QPalette::Normal, QPalette::WindowText, Qt::red);
-			label_versionInfo->setPalette(palette);
+			ui->label_versionInfo->setPalette(palette);
 		}
 		else if(event->type() == QEvent::Leave)
 		{
-			QPalette palette = label_versionInfo->palette();
+			QPalette palette = ui->label_versionInfo->palette();
 			palette.setColor(QPalette::Normal, QPalette::WindowText, defaultColor);
-			label_versionInfo->setPalette(palette);
+			ui->label_versionInfo->setPalette(palette);
 		}
 		else if(event->type() == QEvent::MouseButtonPress)
 		{
@@ -457,7 +454,7 @@ void ProcessingDialog::resizeEvent(QResizeEvent *event)
 {
 	if(event) QDialog::resizeEvent(event);
 
-	if(QWidget *port = view_log->viewport())
+	if(QWidget *port = ui->view_log->viewport())
 	{
 		QRect geom = port->geometry();
 		m_filterInfoLabel->setGeometry(geom.left() + 16, geom.top() + 16, geom.width() - 32, 48);
@@ -487,16 +484,18 @@ void ProcessingDialog::initEncoding(void)
 	m_userAborted = false;
 	m_forcedAbort = false;
 	m_playList.clear();
-	
-	CHANGE_BACKGROUND_COLOR(frame_header, QColor(Qt::white));
+
+	DecoderRegistry::configureDecoders(m_settings);
+
+	CHANGE_BACKGROUND_COLOR(ui->frame_header, QColor(Qt::white));
 	SET_PROGRESS_TEXT(tr("Encoding files, please wait..."));
 	m_progressIndicator->start();
 	
-	button_closeDialog->setEnabled(false);
-	button_AbortProcess->setEnabled(true);
-	progressBar->setRange(0, m_pendingJobs.count());
-	checkBox_shutdownComputer->setEnabled(true);
-	checkBox_shutdownComputer->setChecked(false);
+	ui->button_closeDialog->setEnabled(false);
+	ui->button_AbortProcess->setEnabled(true);
+	ui->progressBar->setRange(0, m_pendingJobs.count());
+	ui->checkBox_shutdownComputer->setEnabled(true);
+	ui->checkBox_shutdownComputer->setChecked(false);
 
 	WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNormalState);
 	WinSevenTaskbar::setTaskbarProgress(this, 0, m_pendingJobs.count());
@@ -552,7 +551,7 @@ void ProcessingDialog::abortEncoding(bool force)
 {
 	m_userAborted = true;
 	if(force) m_forcedAbort = true;
-	button_AbortProcess->setEnabled(false);
+	ui->button_AbortProcess->setEnabled(false);
 	SET_PROGRESS_TEXT(tr("Aborted! Waiting for running jobs to terminate..."));
 
 	for(int i = 0; i < m_threadList.count(); i++)
@@ -564,12 +563,12 @@ void ProcessingDialog::abortEncoding(bool force)
 void ProcessingDialog::doneEncoding(void)
 {
 	m_runningThreads--;
-	progressBar->setValue(progressBar->value() + 1);
+	ui->progressBar->setValue(ui->progressBar->value() + 1);
 	
 	if(!m_userAborted)
 	{
-		SET_PROGRESS_TEXT(tr("Encoding: %1 files of %2 completed so far, please wait...").arg(QString::number(progressBar->value()), QString::number(progressBar->maximum())));
-		WinSevenTaskbar::setTaskbarProgress(this, progressBar->value(), progressBar->maximum());
+		SET_PROGRESS_TEXT(tr("Encoding: %n file(s) of %1 completed so far, please wait...", "", ui->progressBar->value()).arg(QString::number(ui->progressBar->maximum())));
+		WinSevenTaskbar::setTaskbarProgress(this, ui->progressBar->value(), ui->progressBar->maximum());
 	}
 	
 	int index = m_threadList.indexOf(dynamic_cast<ProcessThread*>(QWidget::sender()));
@@ -603,10 +602,10 @@ void ProcessingDialog::doneEncoding(void)
 	
 	if(m_userAborted)
 	{
-		CHANGE_BACKGROUND_COLOR(frame_header, QColor("#FFF3BA"));
+		CHANGE_BACKGROUND_COLOR(ui->frame_header, QColor("#FFF3BA"));
 		WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarErrorState);
 		WinSevenTaskbar::setOverlayIcon(this, &QIcon(":/icons/error.png"));
-		SET_PROGRESS_TEXT((m_succeededJobs.count() > 0) ? tr("Process was aborted by the user after %1 file(s)!").arg(QString::number(m_succeededJobs.count())) : tr("Process was aborted prematurely by the user!"));
+		SET_PROGRESS_TEXT((m_succeededJobs.count() > 0) ? tr("Process was aborted by the user after %n file(s)!", "", m_succeededJobs.count()) : tr("Process was aborted prematurely by the user!"));
 		m_systemTray->showMessage(tr("LameXP - Aborted"), tr("Process was aborted by the user."), QSystemTrayIcon::Warning);
 		m_systemTray->setIcon(QIcon(":/icons/cd_delete.png"));
 		QApplication::processEvents();
@@ -629,16 +628,16 @@ void ProcessingDialog::doneEncoding(void)
 
 		if(m_failedJobs.count() > 0)
 		{
-			CHANGE_BACKGROUND_COLOR(frame_header, QColor("#FFBABA"));
+			CHANGE_BACKGROUND_COLOR(ui->frame_header, QColor("#FFBABA"));
 			WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarErrorState);
 			WinSevenTaskbar::setOverlayIcon(this, &QIcon(":/icons/exclamation.png"));
 			if(m_skippedJobs.count() > 0)
 			{
-				SET_PROGRESS_TEXT(tr("Error: %1 of %2 files failed (%3 files skipped). Double-click failed items for detailed information!").arg(QString::number(m_failedJobs.count()), QString::number(m_failedJobs.count() + m_succeededJobs.count() + m_skippedJobs.count()), QString::number(m_skippedJobs.count())));
+				SET_PROGRESS_TEXT(tr("Error: %1 of %n file(s) failed (%2). Double-click failed items for detailed information!", "", m_failedJobs.count() + m_succeededJobs.count() + m_skippedJobs.count()).arg(QString::number(m_failedJobs.count()), tr("%n file(s) skipped", "", m_skippedJobs.count())));
 			}
 			else
 			{
-				SET_PROGRESS_TEXT(tr("Error: %1 of %2 files failed. Double-click failed items for detailed information!").arg(QString::number(m_failedJobs.count()), QString::number(m_failedJobs.count() + m_succeededJobs.count())));
+				SET_PROGRESS_TEXT(tr("Error: %1 of %n file(s) failed. Double-click failed items for detailed information!", "", m_failedJobs.count() + m_succeededJobs.count()).arg(QString::number(m_failedJobs.count())));
 			}
 			m_systemTray->showMessage(tr("LameXP - Error"), tr("At least one file has failed!"), QSystemTrayIcon::Critical);
 			m_systemTray->setIcon(QIcon(":/icons/cd_delete.png"));
@@ -647,12 +646,12 @@ void ProcessingDialog::doneEncoding(void)
 		}
 		else
 		{
-			CHANGE_BACKGROUND_COLOR(frame_header, QColor("#E0FFE2"));
+			CHANGE_BACKGROUND_COLOR(ui->frame_header, QColor("#E0FFE2"));
 			WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNormalState);
 			WinSevenTaskbar::setOverlayIcon(this, &QIcon(":/icons/accept.png"));
 			if(m_skippedJobs.count() > 0)
 			{
-				SET_PROGRESS_TEXT(tr("All files completed successfully. Skipped %1 files.").arg(QString::number(m_skippedJobs.count())));
+				SET_PROGRESS_TEXT(tr("All files completed successfully. Skipped %n file(s).", "", m_skippedJobs.count()));
 			}
 			else
 			{
@@ -666,19 +665,19 @@ void ProcessingDialog::doneEncoding(void)
 	}
 	
 	setCloseButtonEnabled(true);
-	button_closeDialog->setEnabled(true);
-	button_AbortProcess->setEnabled(false);
-	checkBox_shutdownComputer->setEnabled(false);
+	ui->button_closeDialog->setEnabled(true);
+	ui->button_AbortProcess->setEnabled(false);
+	ui->checkBox_shutdownComputer->setEnabled(false);
 
 	m_progressModel->restoreHiddenItems();
-	view_log->scrollToBottom();
+	ui->view_log->scrollToBottom();
 	m_progressIndicator->stop();
-	progressBar->setValue(progressBar->maximum());
-	WinSevenTaskbar::setTaskbarProgress(this, progressBar->value(), progressBar->maximum());
+	ui->progressBar->setValue(ui->progressBar->maximum());
+	WinSevenTaskbar::setTaskbarProgress(this, ui->progressBar->value(), ui->progressBar->maximum());
 
 	QApplication::restoreOverrideCursor();
 
-	if(!m_userAborted && checkBox_shutdownComputer->isChecked())
+	if(!m_userAborted && ui->checkBox_shutdownComputer->isChecked())
 	{
 		if(shutdownComputer())
 		{
@@ -720,7 +719,7 @@ void ProcessingDialog::progressModelChanged(void)
 		QTimer::singleShot(0, this, SLOT(progressViewFilterChanged()));
 	}
 
-	QTimer::singleShot(0, view_log, SLOT(scrollToBottom()));
+	QTimer::singleShot(0, ui->view_log, SLOT(scrollToBottom()));
 }
 
 void ProcessingDialog::logViewDoubleClicked(const QModelIndex &index)
@@ -751,7 +750,7 @@ void ProcessingDialog::logViewSectionSizeChanged(int logicalIndex, int oldSize, 
 {
 	if(logicalIndex == 1)
 	{
-		if(QHeaderView *hdr = view_log->horizontalHeader())
+		if(QHeaderView *hdr = ui->view_log->horizontalHeader())
 		{
 			hdr->setMinimumSectionSize(qMax(hdr->minimumSectionSize(), hdr->sectionSize(1)));
 		}
@@ -771,14 +770,14 @@ void ProcessingDialog::contextMenuTriggered(const QPoint &pos)
 
 void ProcessingDialog::contextMenuDetailsActionTriggered(void)
 {
-	QModelIndex index = view_log->indexAt(view_log->viewport()->mapFromGlobal(m_contextMenu->pos()));
-	logViewDoubleClicked(index.isValid() ? index : view_log->currentIndex());
+	QModelIndex index = ui->view_log->indexAt(ui->view_log->viewport()->mapFromGlobal(m_contextMenu->pos()));
+	logViewDoubleClicked(index.isValid() ? index : ui->view_log->currentIndex());
 }
 
 void ProcessingDialog::contextMenuShowFileActionTriggered(void)
 {
-	QModelIndex index = view_log->indexAt(view_log->viewport()->mapFromGlobal(m_contextMenu->pos()));
-	const QUuid &jobId = m_progressModel->getJobId(index.isValid() ? index : view_log->currentIndex());
+	QModelIndex index = ui->view_log->indexAt(ui->view_log->viewport()->mapFromGlobal(m_contextMenu->pos()));
+	const QUuid &jobId = m_progressModel->getJobId(index.isValid() ? index : ui->view_log->currentIndex());
 	QString filePath = m_playList.value(jobId, QString());
 
 	if(filePath.isEmpty())
@@ -827,7 +826,7 @@ void ProcessingDialog::contextMenuFilterActionTriggered(void)
 			m_progressViewFilter = action->data().toInt();
 			progressViewFilterChanged();
 			QTimer::singleShot(0, this, SLOT(progressViewFilterChanged()));
-			QTimer::singleShot(0, view_log, SLOT(scrollToBottom()));
+			QTimer::singleShot(0, ui->view_log, SLOT(scrollToBottom()));
 			action->setChecked(true);
 		}
 	}
@@ -840,11 +839,11 @@ void ProcessingDialog::progressViewFilterChanged(void)
 {
 	bool matchFound = false;
 
-	for(int i = 0; i < view_log->model()->rowCount(); i++)
+	for(int i = 0; i < ui->view_log->model()->rowCount(); i++)
 	{
 		QModelIndex index = (m_progressViewFilter >= 0) ? m_progressModel->index(i, 0) : QModelIndex();
 		const bool bHide = index.isValid() ? (m_progressModel->getJobState(index) != m_progressViewFilter) : false;
-		view_log->setRowHidden(i, bHide); matchFound = matchFound || (!bHide);
+		ui->view_log->setRowHidden(i, bHide); matchFound = matchFound || (!bHide);
 	}
 
 	if((m_progressViewFilter >= 0) && (!matchFound))
@@ -1051,7 +1050,6 @@ AbstractEncoder *ProcessingDialog::makeEncoder(bool *nativeResampling)
 			opusEncoder->setOptimizeFor(m_settings->opusOptimizeFor());
 			opusEncoder->setEncodeComplexity(m_settings->opusComplexity());
 			opusEncoder->setFrameSize(m_settings->opusFramesize());
-			opusEncoder->setExpAnalysisOn(m_settings->opusExpAnalysis());
 			opusEncoder->setCustomParams(m_settings->customParametersOpus());
 			encoder = opusEncoder;
 		}
@@ -1198,15 +1196,15 @@ void ProcessingDialog::systemTrayActivated(QSystemTrayIcon::ActivationReason rea
 void ProcessingDialog::cpuUsageHasChanged(const double val)
 {
 	
-	this->label_cpu->setText(QString().sprintf(" %d%%", qRound(val * 100.0)));
-	UPDATE_MIN_WIDTH(label_cpu);
+	ui->label_cpu->setText(QString().sprintf(" %d%%", qRound(val * 100.0)));
+	UPDATE_MIN_WIDTH(ui->label_cpu);
 }
 
 void ProcessingDialog::ramUsageHasChanged(const double val)
 {
 	
-	this->label_ram->setText(QString().sprintf(" %d%%", qRound(val * 100.0)));
-	UPDATE_MIN_WIDTH(label_ram);
+	ui->label_ram->setText(QString().sprintf(" %d%%", qRound(val * 100.0)));
+	UPDATE_MIN_WIDTH(ui->label_ram);
 }
 
 void ProcessingDialog::diskUsageHasChanged(const quint64 val)
@@ -1221,8 +1219,8 @@ void ProcessingDialog::diskUsageHasChanged(const quint64 val)
 		postfix++;
 	}
 
-	this->label_disk->setText(QString().sprintf(" %3.1f %s", space, postfixStr[postfix]));
-	UPDATE_MIN_WIDTH(label_disk);
+	ui->label_disk->setText(QString().sprintf(" %3.1f %s", space, postfixStr[postfix]));
+	UPDATE_MIN_WIDTH(ui->label_disk);
 }
 
 bool ProcessingDialog::shutdownComputer(void)
@@ -1283,27 +1281,28 @@ QString ProcessingDialog::time2text(const double timeVal) const
 {
 	double intPart = 0;
 	double frcPart = modf(timeVal, &intPart);
-	int x = 0, y = 0; QString a, b;
 
 	QTime time = QTime().addSecs(qRound(intPart)).addMSecs(qRound(frcPart * 1000.0));
 
+	QString a, b;
+
 	if(time.hour() > 0)
 	{
-		x = time.hour();   a = tr("hour(s)");
-		y = time.minute(); b = tr("minute(s)");
+		a = tr("%n hour(s)", "", time.hour());
+		b = tr("%n minute(s)", "", time.minute());
 	}
 	else if(time.minute() > 0)
 	{
-		x = time.minute(); a = tr("minute(s)");
-		y = time.second(); b = tr("second(s)");
+		a = tr("%n minute(s)", "", time.minute());
+		b = tr("%n second(s)", "", time.second());
 	}
 	else
 	{
-		x = time.second(); a = tr("second(s)");
-		y = time.msec();   b = tr("millisecond(s)");
+		a = tr("%n second(s)", "", time.second());
+		b = tr("%n millisecond(s)", "", time.msec());
 	}
 
-	return QString("%1 %2, %3 %4").arg(QString::number(x), a, QString::number(y), b);
+	return QString("%1, %2").arg(a, b);
 }
 
 ////////////////////////////////////////////////////////////

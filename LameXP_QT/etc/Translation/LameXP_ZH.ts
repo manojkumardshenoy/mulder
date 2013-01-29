@@ -422,10 +422,6 @@
         <translation>扫描提示工作表时出现了意外的错误 !</translation>
     </message>
     <message>
-        <source>Imported %1 track(s) from the Cue Sheet and skipped %2 track(s).</source>
-        <translation>导入 %1 从提示表轨道,并跳过 %2 轨道.</translation>
-    </message>
-    <message>
         <source>Cue Sheet Completed</source>
         <translation>完成提示表</translation>
     </message>
@@ -444,10 +440,6 @@
     <message>
         <source>Abort</source>
         <translation>中止</translation>
-    </message>
-    <message>
-        <source>Process was aborted by the user after %1 track(s)!</source>
-        <translation>用户终止了 %1 个轨道进程 !</translation>
     </message>
     <message>
         <source>(System Default)</source>
@@ -476,6 +468,24 @@
     <message>
         <source>New Folder</source>
         <translation>新文件夹</translation>
+    </message>
+    <message numerus="yes">
+        <source>Process was aborted by the user after %n track(s)!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Imported %n track(s) from the Cue Sheet.</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Skipped %n track(s).</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -894,20 +904,12 @@
         <translation>访问被拒绝</translation>
     </message>
     <message>
-        <source>%1 file(s) have been rejected, because read access was not granted!</source>
-        <translation>%1 文件都被拒绝,因为读访问权限不允许!</translation>
-    </message>
-    <message>
         <source>This usually means the file is locked by another process.</source>
         <translation>通常这意味着该文件由另一个进程锁定.</translation>
     </message>
     <message>
         <source>Files Rejected</source>
         <translation>文件被拒绝</translation>
-    </message>
-    <message>
-        <source>%1 file(s) have been rejected, because the file format could not be recognized!</source>
-        <translation>%1 文件被拒绝,因为文件格式分辨不出!</translation>
     </message>
     <message>
         <source>This usually means the file is damaged or the file format is not supported.</source>
@@ -1406,10 +1408,6 @@
         <translation>更多实例</translation>
     </message>
     <message>
-        <source>%1 Instance(s)</source>
-        <translation>%1 个实例</translation>
-    </message>
-    <message>
         <source> Temp Directory </source>
         <translation>临时目录</translation>
     </message>
@@ -1436,10 +1434,6 @@
     <message>
         <source>Cannot write to the selected directory. Please choose another directory!</source>
         <translation>无法写入所选目录.请选择另一个目录 !</translation>
-    </message>
-    <message>
-        <source>%1 file(s) have been rejected, because they are dummy CDDA files!</source>
-        <translation>%1 个文件已被拒绝,因为它们是虚拟的 CDDA 文件 !</translation>
     </message>
     <message>
         <source>We recommend using %1 for that purpose.</source>
@@ -1616,10 +1610,6 @@
     <message>
         <source>Cue Sheet</source>
         <translation>提示表</translation>
-    </message>
-    <message>
-        <source>%1 file(s) have been rejected, because they appear to be Cue Sheet images!</source>
-        <translation>%1 个文件已被拒绝,因为他们似乎是提示表映像文件!</translation>
     </message>
     <message>
         <source>Please use LameXP&apos;s Cue Sheet wizard for importing Cue Sheet files.</source>
@@ -1926,28 +1916,12 @@
         <translation> Opus 编码器选项 </translation>
     </message>
     <message>
-        <source>Optimize for Signal Type:</source>
-        <translation>优化信号类型:</translation>
-    </message>
-    <message>
         <source>Encoding Complexity:</source>
         <translation>编码复杂度:</translation>
     </message>
     <message>
-        <source>Music</source>
-        <translation>音乐</translation>
-    </message>
-    <message>
-        <source>(Undefined)</source>
-        <translation>(未定义)</translation>
-    </message>
-    <message>
         <source>Frame Size:</source>
         <translation>帧大小:</translation>
-    </message>
-    <message>
-        <source>Use Experimental Encoder Perceptual Tuning</source>
-        <translation>使用实验编码调整感知</translation>
     </message>
     <message>
         <source>OpusEnc:</source>
@@ -1992,6 +1966,48 @@
     <message>
         <source>Revert</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Up One Level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Go To Parent Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disable Opus-Decoder Resampling (i.e. always output as 48.000 Hz)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n file(s) have been rejected, because read access was not granted!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n file(s) have been rejected, because they are dummy CDDA files!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n file(s) have been rejected, because they appear to be Cue Sheet images!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n file(s) have been rejected, because the file format could not be recognized!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n Instance(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -2374,16 +2390,8 @@
         <translation>中止! 正在等待运行项目终止...</translation>
     </message>
     <message>
-        <source>Encoding: %1 files of %2 completed so far, please wait...</source>
-        <translation>编码:到目前为止,已完成的 %2/%1 ,请稍候...</translation>
-    </message>
-    <message>
         <source>Creating the playlist file, please wait...</source>
         <translation>创建播放列表文件,请稍候...</translation>
-    </message>
-    <message>
-        <source>Process was aborted by the user after %1 file(s)!</source>
-        <translation>进程被用户终止了 %1 个文件 !</translation>
     </message>
     <message>
         <source>LameXP - Aborted</source>
@@ -2392,10 +2400,6 @@
     <message>
         <source>Process was aborted by the user.</source>
         <translation>进程被用户终止.</translation>
-    </message>
-    <message>
-        <source>Error: %1 of %2 files failed. Double-click failed items for detailed information!</source>
-        <translation>错误: %1 的 %2 文件失败.双击失败的项目的详细信息 !</translation>
     </message>
     <message>
         <source>LameXP - Error</source>
@@ -2462,22 +2466,6 @@
         <translation>过程完成了 %1.</translation>
     </message>
     <message>
-        <source>hour(s)</source>
-        <translation>小时</translation>
-    </message>
-    <message>
-        <source>minute(s)</source>
-        <translation>分钟</translation>
-    </message>
-    <message>
-        <source>second(s)</source>
-        <translation>秒</translation>
-    </message>
-    <message>
-        <source>millisecond(s)</source>
-        <translation>毫秒</translation>
-    </message>
-    <message>
         <source>Filter Log Items</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2502,16 +2490,68 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Error: %1 of %2 files failed (%3 files skipped). Double-click failed items for detailed information!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>All files completed successfully. Skipped %1 files.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>None of the items matches the current filtering rules</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>Process was aborted by the user after %n file(s)!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hour(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minute(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n second(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n millisecond(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Encoding: %n file(s) of %1 completed so far, please wait...</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Error: %1 of %n file(s) failed (%2). Double-click failed items for detailed information!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n file(s) skipped</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Error: %1 of %n file(s) failed. Double-click failed items for detailed information!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>All files completed successfully. Skipped %n file(s).</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
     </message>
 </context>
 <context>

@@ -38,7 +38,6 @@
 #include <QDate>
 #include <QMutex>
 #include <QDir>
-#include <QInputDialog>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Main function
@@ -58,7 +57,7 @@ static int lamexp_main(int argc, char* argv[])
 
 	//Print version info
 	qDebug("LameXP - Audio Encoder Front-End v%d.%02d %s (Build #%03d)", lamexp_version_major(), lamexp_version_minor(), lamexp_version_release(), lamexp_version_build());
-	qDebug("Copyright (c) 2004-%04d LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved.", qMax(lamexp_version_date().year(),QDate::currentDate().year()));
+	qDebug("Copyright (c) 2004-%04d LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved.", qMax(lamexp_version_date().year(), lamexp_current_date_safe().year()));
 	qDebug("Built on %s at %s with %s for Win-%s.\n", lamexp_version_date().toString(Qt::ISODate).toLatin1().constData(), lamexp_version_time(), lamexp_version_compiler(), lamexp_version_arch());
 	
 	//print license info
@@ -89,7 +88,7 @@ static int lamexp_main(int argc, char* argv[])
 	qDebug("   CPU signature  :  Family: %d, Model: %d, Stepping: %d", cpuFeatures.family, cpuFeatures.model, cpuFeatures.stepping);
 	qDebug("CPU capabilities  :  MMX: %s, SSE: %s, SSE2: %s, SSE3: %s, SSSE3: %s, x64: %s", LAMEXP_BOOL2STR(cpuFeatures.mmx), LAMEXP_BOOL2STR(cpuFeatures.sse), LAMEXP_BOOL2STR(cpuFeatures.sse2), LAMEXP_BOOL2STR(cpuFeatures.sse3), LAMEXP_BOOL2STR(cpuFeatures.ssse3), LAMEXP_BOOL2STR(cpuFeatures.x64));
 	qDebug(" Number of CPU's  :  %d\n", cpuFeatures.count);
-	
+
 	//Initialize Qt
 	if(!lamexp_init_qt(argc, argv))
 	{
@@ -99,9 +98,10 @@ static int lamexp_main(int argc, char* argv[])
 	//Check for expiration
 	if(lamexp_version_demo())
 	{
-		if(QDate::currentDate().addDays(1) < lamexp_version_date())
+		const QDate currentDate = lamexp_current_date_safe();
+		if(currentDate.addDays(1) < lamexp_version_date())
 		{
-			qFatal("System's date (%s) is before LameXP build date (%s). Huh?", QDate::currentDate().toString(Qt::ISODate).toLatin1().constData(), lamexp_version_date().toString(Qt::ISODate).toLatin1().constData());
+			qFatal("System's date (%s) is before LameXP build date (%s). Huh?", currentDate.toString(Qt::ISODate).toLatin1().constData(), lamexp_version_date().toString(Qt::ISODate).toLatin1().constData());
 		}
 		qWarning(QString("Note: This demo (pre-release) version of LameXP will expire at %1.\n").arg(lamexp_version_expires().toString(Qt::ISODate)).toLatin1().constData());
 	}
@@ -150,7 +150,7 @@ static int lamexp_main(int argc, char* argv[])
 	FileListModel *fileListModel = new FileListModel();
 	AudioFileModel *metaInfo = new AudioFileModel();
 	SettingsModel *settingsModel = new SettingsModel();
-	
+
 	//Show splash screen
 	InitializationThread *poInitializationThread = new InitializationThread(&cpuFeatures);
 	SplashScreen::showSplash(poInitializationThread);
@@ -234,24 +234,21 @@ static int _main(int argc, char* argv[])
 			fflush(stdout);
 			fflush(stderr);
 			fprintf(stderr, "\nGURU MEDITATION !!!\n\nException error message: %s\n", error);
-			FatalAppExit(0, L"Unhandeled C++ exception error, application will exit!");
-			TerminateProcess(GetCurrentProcess(), -1);
+			lamexp_fatal_exit(L"Unhandeled C++ exception error, application will exit!");
 		}
 		catch(int error)
 		{
 			fflush(stdout);
 			fflush(stderr);
 			fprintf(stderr, "\nGURU MEDITATION !!!\n\nException error code: 0x%X\n", error);
-			FatalAppExit(0, L"Unhandeled C++ exception error, application will exit!");
-			TerminateProcess(GetCurrentProcess(), -1);
+			lamexp_fatal_exit(L"Unhandeled C++ exception error, application will exit!");
 		}
 		catch(...)
 		{
 			fflush(stdout);
 			fflush(stderr);
 			fprintf(stderr, "\nGURU MEDITATION !!!\n");
-			FatalAppExit(0, L"Unhandeled C++ exception error, application will exit!");
-			TerminateProcess(GetCurrentProcess(), -1);
+			lamexp_fatal_exit(L"Unhandeled C++ exception error, application will exit!");
 		}
 		return iResult;
 	}
@@ -278,8 +275,7 @@ int main(int argc, char* argv[])
 			fflush(stdout);
 			fflush(stderr);
 			fprintf(stderr, "\nGURU MEDITATION !!!\n\nUnhandeled structured exception error! [code: 0x%X]\n", GetExceptionCode());
-			FatalAppExit(0, L"Unhandeled structured exception error, application will exit!");
-			TerminateProcess(GetCurrentProcess(), -1);
+			lamexp_fatal_exit(L"Unhandeled structured exception error, application will exit!");
 		}
 	}
 }

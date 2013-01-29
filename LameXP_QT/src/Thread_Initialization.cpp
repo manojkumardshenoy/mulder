@@ -217,6 +217,7 @@ void InitializationThread::run()
 		pool->setMaxThreadCount(idealThreadCount * 2);
 	}
 	
+	LockedFile::selfTest();
 	ExtractorTask::clearFlags();
 
 	QTime timer;
@@ -312,7 +313,7 @@ void InitializationThread::run()
 void InitializationThread::delay(void)
 {
 	const char *temp = "|/-\\";
-	printf("Thread is doing something important... ?\b", temp[4]);
+	printf("Thread is doing something important... ?\b");
 
 	for(int i = 0; i < 20; i++)
 	{
@@ -746,7 +747,7 @@ void InitializationThread::selfTest(void)
 				qDebug("%02i -> %s", ++n, g_lamexp_tools[i].pcName);
 			}
 		}
-		if(n != 28)
+		if(n != 27)
 		{
 			qFatal("Tool count mismatch !!!");
 		}

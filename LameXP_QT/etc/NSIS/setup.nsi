@@ -19,9 +19,14 @@
 ; // http://www.gnu.org/licenses/gpl-2.0.txt
 ; ///////////////////////////////////////////////////////////////////////////////
 
+
 ;--------------------------------
 ;Basic Defines
 ;--------------------------------
+
+!ifndef NSIS_UNICODE
+  !error "NSIS_UNICODE is undefined, please compile with Unicode NSIS !!!"
+!endif
 
 !ifndef LAMEXP_VERSION
   !error "LAMEXP_VERSION is not defined !!!"
@@ -75,6 +80,7 @@
 
 !include `MUI2.nsh`
 !include `WinVer.nsh`
+!include `x64.nsh`
 !include `StdUtils.nsh`
 
 
@@ -269,34 +275,60 @@ Function .onInit
 		Quit
 	${EndIf}
 
+	; --------
+	
+	# Running on Windows NT family?
+	${IfNot} ${IsNT}
+		MessageBox MB_TOPMOST|MB_ICONSTOP "Sorry, this application does *not* support Windows 9x or Windows ME!"
+		ExecShell "open" "http://windows.microsoft.com/"
+		Quit
+	${EndIf}
+
+	# Running on Windows XP or later?
+	${If} ${AtMostWin2000}
+		MessageBox MB_TOPMOST|MB_ICONSTOP "Sorry, but your operating system is *not* supported anymore.$\nInstallation will be aborted!$\n$\nThe minimum required platform is Windows XP (Service Pack 3)."
+		ExecShell "open" "http://windows.microsoft.com/"
+		Quit
+	${EndIf}
+
+	# If on Windows XP, is the required Service Pack installed?
+	${If} ${IsWinXP}
+		${IfNot} ${RunningX64} # Windows XP 32-Bit, requires Service Pack 3
+		${AndIf} ${AtMostServicePack} 2
+			MessageBox MB_TOPMOST|MB_ICONEXCLAMATION "This application requires Windows XP with Service Pack 3 installed.$\nWindows XP *without* Service Pack 3 reached end-of-life on 2010-07-13.$\nCurrent Windows XP (Service Pack 3) will be supported until 2014-04-08.$\n$\nPlease install Service Pack 3 now or just run Windows Update!"
+			${If} ${Cmd} `MessageBox MB_TOPMOST|MB_ICONQUESTION|MB_YESNO "Do you want to download Service Pack 3 for Windows XP now?" IDYES`
+				ExecShell "open" "http://www.microsoft.com/en-us/download/details.aspx?id=24"
+			${Else}
+				ExecShell "open" "http://windowsupdate.microsoft.com/"
+			${EndIf}
+			Quit
+		${EndIf}
+		${If} ${RunningX64} # Windows XP 64-Bit, requires Service Pack 2
+		${AndIf} ${AtMostServicePack} 1
+			MessageBox MB_TOPMOST|MB_ICONEXCLAMATION "This application requires Windows XP x64 Edition with Service Pack 2 installed.$\nWindows XP x64 Edition *without* Service Pack 2 reached end-of-life on 2009-04-14.$\nCurrent Windows XP x64 Edition (Service Pack 2) will be supported until 2014-04-08.$\n$\nPlease install Service Pack 2 now or just run Windows Update!"
+			${If} ${Cmd} `MessageBox MB_TOPMOST|MB_ICONQUESTION|MB_YESNO "Do you want to download Service Pack 2 for Windows XP x64 Edition now?" IDYES`
+				ExecShell "open" "http://www.microsoft.com/en-us/download/details.aspx?id=17791"
+			${Else}
+				ExecShell "open" "http://windowsupdate.microsoft.com/"
+			${EndIf}
+			Quit
+		${EndIf}
+	${EndIf}
+
+	; --------
+
 	${StdUtils.GetParameter} $R0 "Update" "?"
 	${If} "$R0" == "?"
 		!insertmacro MUI_LANGDLL_DISPLAY
 	${EndIf}
 
 	; --------
-	
-	${IfNot} ${IsNT}
-		MessageBox MB_TOPMOST|MB_ICONSTOP "Sorry, this application does NOT support Windows 9x or Windows ME!"
-		Quit
-	${EndIf}
-
-	${If} ${AtMostWinNT4}
-		${StdUtils.GetParameter} $R0 "Update" "?"
-		${If} $R0 == "?"
-			MessageBox MB_TOPMOST|MB_ICONSTOP "Sorry, your platform is not supported anymore. Installation aborted!$\nThe minimum required platform is Windows 2000."
-		${Else}
-			MessageBox MB_TOPMOST|MB_ICONSTOP "Sorry, your platform is not supported anymore. Update not possible!$\nThe minimum required platform is Windows 2000."
-		${EndIf}
-		Quit
-	${EndIf}
-	
-	; --------
 
 	UserInfo::GetAccountType
 	Pop $0
 	${If} $0 != "Admin"
 		MessageBox MB_ICONSTOP|MB_TOPMOST "Your system requires administrative permissions in order to install this software."
+		SetErrorLevel 740 ;ERROR_ELEVATION_REQUIRED
 		Quit
 	${EndIf}
 	
@@ -327,6 +359,7 @@ Function un.onInit
 	Pop $0
 	${If} $0 != "Admin"
 		MessageBox MB_ICONSTOP|MB_TOPMOST "Your system requires administrative permissions in order to install this software."
+		SetErrorLevel 740 ;ERROR_ELEVATION_REQUIRED
 		Quit
 	${EndIf}
 FunctionEnd

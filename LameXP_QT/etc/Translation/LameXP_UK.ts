@@ -178,11 +178,11 @@
     </message>
     <message>
         <source>Copyright (c) 2011 LoRd_MuldeR &lt;mulder2@gmx.de&gt;. Some rights reserved.</source>
-        <translation>Всі права належать 2011 LoRd_MuldeR &lt;mulder2@gmx.de&gt;. Деякі права захищені.</translation>
+        <translation>Всі права належать 2011 LoRd_MuldeR&lt;mulder2@gmx.de&gt;. Деякі права захищені.</translation>
     </message>
     <message>
         <source>By Jory Stone &lt;jcsston@toughguy.net&gt; and LoRd_MuldeR &lt;mulder2@gmx.de&gt;.</source>
-        <translation>За участі Jory Stone &lt;jcsston@toughguy.net&gt; і LoRd_MuldeR &lt;mulder2@gmx.de&gt;.</translation>
+        <translation>За участі Jory Stone &lt;jcsston@toughguy.net&gt; і LoRd_MuldeR&lt;mulder2@gmx.de&gt;.</translation>
     </message>
     <message>
         <source>wma2wav - Dump WMA files to Wave Audio</source>
@@ -282,11 +282,11 @@
     </message>
     <message>
         <source>refalac - Win32 command line ALAC encoder/decoder</source>
-        <translation type="unfinished"></translation>
+        <translation>refalac - ALAC кодер/декодер для Win32, що використовує інтерфейс командного рядка</translation>
     </message>
     <message>
         <source>The ALAC reference implementation by Apple is available under the Apache license.</source>
-        <translation type="unfinished"></translation>
+        <translation>Оригінальна реалізація ALAC від Apple доступна під ліцензією Apache.</translation>
     </message>
 </context>
 <context>
@@ -435,16 +435,8 @@
         <translation>Розділення файлу(-ів), будь ласка, зачекайте...</translation>
     </message>
     <message>
-        <source>Process was aborted by the user after %1 track(s)!</source>
-        <translation>Процес було перервано користувачем після %1 доріжки(-ок)!</translation>
-    </message>
-    <message>
         <source>An unexpected error has occured while splitting the Cue Sheet!</source>
         <translation>Виникла неочікувана помилка під час розділення списку Cue!</translation>
-    </message>
-    <message>
-        <source>Imported %1 track(s) from the Cue Sheet and skipped %2 track(s).</source>
-        <translation>Імпортовано %1 доріжок(-и, -у) зі списку Cue і пропущено %2 доріжку(-и, -ок).</translation>
     </message>
     <message>
         <source>Cue Sheet Completed</source>
@@ -477,6 +469,30 @@
     <message>
         <source>New Folder</source>
         <translation>Нова тека</translation>
+    </message>
+    <message numerus="yes">
+        <source>Process was aborted by the user after %n track(s)!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Imported %n track(s) from the Cue Sheet.</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Skipped %n track(s).</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -868,7 +884,7 @@
     </message>
     <message>
         <source>Enable 2-Pass Processing (ABR Mode)</source>
-        <translation>Задіяти обробку у 2 етапи (ABR Mode)</translation>
+        <translation>Задіяти обробку у 2 етапи (Режим ABR)</translation>
     </message>
     <message>
         <source>Select AAC Profile:</source>
@@ -1043,20 +1059,12 @@
         <translation>Доступ заборонено</translation>
     </message>
     <message>
-        <source>%1 file(s) have been rejected, because read access was not granted!</source>
-        <translation>%1 файл(и, ів) було пропущено, так як не гарантувався доступ на читання до них!</translation>
-    </message>
-    <message>
         <source>This usually means the file is locked by another process.</source>
         <translation>Це зазвичай означає, що файл заблоковано іншим процесом.</translation>
     </message>
     <message>
         <source>Files Rejected</source>
         <translation>Файли пропущено</translation>
-    </message>
-    <message>
-        <source>%1 file(s) have been rejected, because the file format could not be recognized!</source>
-        <translation>%1 файл(и, ів) було пропущено, так як не був розпізнаний формат файлу!</translation>
     </message>
     <message>
         <source>This usually means the file is damaged or the file format is not supported.</source>
@@ -1439,10 +1447,6 @@
         <translation>Відкрити дерево тек...</translation>
     </message>
     <message>
-        <source>%1 file(s) have been rejected, because they are dummy CDDA files!</source>
-        <translation>%1 файл(и, ів) було пропущено, тому що вони є фіктивними файлами CDDA!</translation>
-    </message>
-    <message>
         <source>Sorry, LameXP cannot extract audio tracks from an Audio-CD at present.</source>
         <translation>Вибачте, але LameXP наразі не може витягнути аудіодоріжки з Audio-CD.</translation>
     </message>
@@ -1469,10 +1473,6 @@
     <message>
         <source>Add Folder</source>
         <translation>Додати теку</translation>
-    </message>
-    <message>
-        <source>%1 Instance(s)</source>
-        <translation>%1 Копія (ї, й)</translation>
     </message>
     <message>
         <source>Cannot write to the selected directory. Please choose another directory!</source>
@@ -1581,10 +1581,6 @@
     <message>
         <source>Cue Sheet</source>
         <translation>Списки Cue</translation>
-    </message>
-    <message>
-        <source>%1 file(s) have been rejected, because they appear to be Cue Sheet images!</source>
-        <translation>%1 файл(и, ів) було пропущено, тому що вони скоріш за все є образами списків Cue!</translation>
     </message>
     <message>
         <source>Please use LameXP&apos;s Cue Sheet wizard for importing Cue Sheet files.</source>
@@ -1927,28 +1923,12 @@
         <translation>Налаштування кодера Opus</translation>
     </message>
     <message>
-        <source>Optimize for Signal Type:</source>
-        <translation>Оптимізувати відносно типу сигнала:</translation>
-    </message>
-    <message>
         <source>Encoding Complexity:</source>
         <translation>Складність кодування:</translation>
     </message>
     <message>
-        <source>Music</source>
-        <translation>Музика</translation>
-    </message>
-    <message>
-        <source>(Undefined)</source>
-        <translation>(Невизначено)</translation>
-    </message>
-    <message>
         <source>Frame Size:</source>
         <translation>Розмір кадру:</translation>
-    </message>
-    <message>
-        <source>Use Experimental Encoder Perceptual Tuning</source>
-        <translation>Використовувати експериментальне сприйняттєве налагодження кодера</translation>
     </message>
     <message>
         <source>OpusEnc:</source>
@@ -1960,39 +1940,91 @@
     </message>
     <message>
         <source> Overwrite Mode </source>
-        <translation type="unfinished"></translation>
+        <translation>Режим перезапису</translation>
     </message>
     <message>
         <source>Overwrite Existing File</source>
-        <translation type="unfinished"></translation>
+        <translation>Перезаписувати існуючий файл</translation>
     </message>
     <message>
         <source>Skip File</source>
-        <translation type="unfinished"></translation>
+        <translation>Пропускати файл</translation>
     </message>
     <message>
         <source>Keep Both Files (Default)</source>
-        <translation type="unfinished"></translation>
+        <translation>Зберігати обидва файла (Типово)</translation>
     </message>
     <message>
         <source>If Target File Already Exists:</source>
-        <translation type="unfinished"></translation>
+        <translation>Якщо цільовий файл вже існує:</translation>
     </message>
     <message>
         <source>Overwrite Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Режим перезапису</translation>
     </message>
     <message>
         <source>Warning: This mode may overwrite existing files with no way to revert!</source>
-        <translation type="unfinished"></translation>
+        <translation>Попередження: Цей режим може перезаписати існуючі файли без можливості відмінити зміни!</translation>
     </message>
     <message>
         <source>Continue</source>
-        <translation type="unfinished"></translation>
+        <translation>Продовжити</translation>
     </message>
     <message>
         <source>Revert</source>
-        <translation type="unfinished"></translation>
+        <translation>Відмінити</translation>
+    </message>
+    <message>
+        <source>Up One Level</source>
+        <translation>На рівень вище</translation>
+    </message>
+    <message>
+        <source>Go To Parent Directory</source>
+        <translation>Перейти до кореневої теки</translation>
+    </message>
+    <message>
+        <source>Disable Opus-Decoder Resampling (i.e. always output as 48.000 Hz)</source>
+        <translation>Вимкнути зміну частоти дискретизації декодером Opus (тобто заборонити отримання завжди на виході 48000 Гц)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n file(s) have been rejected, because read access was not granted!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n file(s) have been rejected, because they are dummy CDDA files!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n file(s) have been rejected, because they appear to be Cue Sheet images!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n file(s) have been rejected, because the file format could not be recognized!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n Instance(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -2317,23 +2349,23 @@
     </message>
     <message>
         <source>Skipped.</source>
-        <translation type="unfinished"></translation>
+        <translation>Пропущено.</translation>
     </message>
     <message>
         <source>Target output file already exists, going to skip this file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Вихідний цільовий файл вже існує, спроба пропустити цей файл:</translation>
     </message>
     <message>
         <source>If you don&apos;t want existing files to be skipped, please change the overwrite mode!</source>
-        <translation type="unfinished"></translation>
+        <translation>Якщо ви не хочете, щоб існуючі файли були пропущені, будь ласка, змініть режим перезапису!</translation>
     </message>
     <message>
         <source>Target output file already exists, going to delete existing file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Вихідний цільовий файл вже існує, спроба видалити існуючий файл:</translation>
     </message>
     <message>
         <source>Failed to delete existing target file, will save to another file name!</source>
-        <translation type="unfinished"></translation>
+        <translation>Неможливо видалити існуючий файл, збереження буде проведено до файла з іншою назвою!</translation>
     </message>
 </context>
 <context>
@@ -2379,16 +2411,8 @@
         <translation>Перервано! Чекаємо на завершення запущених завдань...</translation>
     </message>
     <message>
-        <source>Encoding: %1 files of %2 completed so far, please wait...</source>
-        <translation>Кодування: %1 файлів з %2 оброблено, будь ласка, зачекайте...</translation>
-    </message>
-    <message>
         <source>Creating the playlist file, please wait...</source>
         <translation>Йде створення списку відтворення, будь ласка, зачекайте...</translation>
-    </message>
-    <message>
-        <source>Process was aborted by the user after %1 file(s)!</source>
-        <translation>Процес було перервано користувачем після %1 файла(-ів)!</translation>
     </message>
     <message>
         <source>Process was aborted prematurely by the user!</source>
@@ -2401,10 +2425,6 @@
     <message>
         <source>Process was aborted by the user.</source>
         <translation>Процес було перервано користувачем.</translation>
-    </message>
-    <message>
-        <source>Error: %1 of %2 files failed. Double-click failed items for detailed information!</source>
-        <translation>Помилка:збій при обробці %1 з %2 файлів. Подвійний клік мишею на записах зі збоєм для відображення детальної інформації!</translation>
     </message>
     <message>
         <source>LameXP - Error</source>
@@ -2463,56 +2483,112 @@
         <translation>Процес тривав %1.</translation>
     </message>
     <message>
-        <source>hour(s)</source>
-        <translation>годин(-у, -и)</translation>
-    </message>
-    <message>
-        <source>minute(s)</source>
-        <translation>хвилин(-у, -и)</translation>
-    </message>
-    <message>
-        <source>second(s)</source>
-        <translation>секунд(-у, -и)</translation>
-    </message>
-    <message>
-        <source>millisecond(s)</source>
-        <translation>мілісекунд(-у, -и)</translation>
-    </message>
-    <message>
         <source>Filter Log Items</source>
-        <translation type="unfinished"></translation>
+        <translation>Фільтрувати записи журналу</translation>
     </message>
     <message>
         <source>Show Running Only</source>
-        <translation type="unfinished"></translation>
+        <translation>Відображати лише запущені</translation>
     </message>
     <message>
         <source>Show Succeeded Only</source>
-        <translation type="unfinished"></translation>
+        <translation>Відображати лише завершені успішно</translation>
     </message>
     <message>
         <source>Show Failed Only</source>
-        <translation type="unfinished"></translation>
+        <translation>Відображати лише завершені невдачею</translation>
     </message>
     <message>
         <source>Show Skipped Only</source>
-        <translation type="unfinished"></translation>
+        <translation>Відображати лише пропущені</translation>
     </message>
     <message>
         <source>Show All Items</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Error: %1 of %2 files failed (%3 files skipped). Double-click failed items for detailed information!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>All files completed successfully. Skipped %1 files.</source>
-        <translation type="unfinished"></translation>
+        <translation>Відображати всі записи</translation>
     </message>
     <message>
         <source>None of the items matches the current filtering rules</source>
-        <translation type="unfinished"></translation>
+        <translation>Жодного запису не підпадає під поточні правила фільтрування</translation>
+    </message>
+    <message numerus="yes">
+        <source>Process was aborted by the user after %n file(s)!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n hour(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n minute(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n second(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n millisecond(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Encoding: %n file(s) of %1 completed so far, please wait...</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Error: %1 of %n file(s) failed (%2). Double-click failed items for detailed information!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n file(s) skipped</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Error: %1 of %n file(s) failed. Double-click failed items for detailed information!</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>All files completed successfully. Skipped %n file(s).</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
     </message>
 </context>
 <context>

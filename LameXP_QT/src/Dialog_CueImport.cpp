@@ -21,6 +21,10 @@
 
 #include "Dialog_CueImport.h"
 
+//UIC includes
+#include "../tmp/UIC_CueSheetImport.h"
+
+//LameXP includes
 #include "Global.h"
 #include "Model_CueSheet.h"
 #include "Model_AudioFile.h"
@@ -28,8 +32,10 @@
 #include "Dialog_WorkingBanner.h"
 #include "Thread_FileAnalyzer.h"
 #include "Thread_CueSplitter.h"
+#include "Registry_Decoder.h"
 #include "LockedFile.h"
 
+//Qt includes
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QTimer>
@@ -46,14 +52,16 @@
 // Constructor & Destructor
 ////////////////////////////////////////////////////////////
 
-CueImportDialog::CueImportDialog(QWidget *parent, FileListModel *fileList, const QString &cueFile)
+CueImportDialog::CueImportDialog(QWidget *parent, FileListModel *fileList, const QString &cueFile, const SettingsModel *settings)
 :
 	QDialog(parent),
+	ui(new Ui::CueSheetImport),
+	m_fileList(fileList),
 	m_cueFileName(cueFile),
-	m_fileList(fileList)
+	m_settings(settings)
 {
 	//Init the dialog, from the .ui file
-	setupUi(this);
+	ui->setupUi(this);
 
 	//Fix size
 	setMinimumSize(this->size());
@@ -64,25 +72,26 @@ CueImportDialog::CueImportDialog(QWidget *parent, FileListModel *fileList, const
 	connect(m_model, SIGNAL(modelReset()), this, SLOT(modelChanged()));
 	
 	//Setup table view
-	treeView->setModel(m_model);
-	treeView->header()->setStretchLastSection(false);
-	treeView->header()->setResizeMode(QHeaderView::ResizeToContents);
-	treeView->header()->setResizeMode(1, QHeaderView::Stretch);
-	treeView->header()->setMovable(false);
-	treeView->setItemsExpandable(false);
+	ui->treeView->setModel(m_model);
+	ui->treeView->header()->setStretchLastSection(false);
+	ui->treeView->header()->setResizeMode(QHeaderView::ResizeToContents);
+	ui->treeView->header()->setResizeMode(1, QHeaderView::Stretch);
+	ui->treeView->header()->setMovable(false);
+	ui->treeView->setItemsExpandable(false);
 
 	//Enable up/down button
-	connect(imprtButton, SIGNAL(clicked()), this, SLOT(importButtonClicked()));
-	connect(browseButton, SIGNAL(clicked()), this, SLOT(browseButtonClicked()));
-	connect(loadOtherButton, SIGNAL(clicked()), this, SLOT(loadOtherButtonClicked()));
+	connect(ui->imprtButton, SIGNAL(clicked()), this, SLOT(importButtonClicked()));
+	connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(browseButtonClicked()));
+	connect(ui->loadOtherButton, SIGNAL(clicked()), this, SLOT(loadOtherButtonClicked()));
 
 	//Translate
-	labelHeaderText->setText(QString("<b>%1</b><br>%2").arg(tr("Import Cue Sheet"), tr("The following Cue Sheet will be split and imported into LameXP.")));
+	ui->labelHeaderText->setText(QString("<b>%1</b><br>%2").arg(tr("Import Cue Sheet"), tr("The following Cue Sheet will be split and imported into LameXP.")));
 }
 
 CueImportDialog::~CueImportDialog(void)
 {
 	LAMEXP_DELETE(m_model);
+	LAMEXP_DELETE(ui);
 }
 
 ////////////////////////////////////////////////////////////
@@ -222,10 +231,10 @@ int CueImportDialog::exec(void)
 
 void CueImportDialog::modelChanged(void)
 {
-	treeView->expandAll();
-	editOutputDir->setText(QDir::toNativeSeparators(m_outputDir));
-	labelArtist->setText(m_model->getAlbumPerformer().isEmpty() ? tr("Unknown Artist") : m_model->getAlbumPerformer());
-	labelAlbum->setText(m_model->getAlbumTitle().isEmpty() ? tr("Unknown Album") : m_model->getAlbumTitle());
+	ui->treeView->expandAll();
+	ui->editOutputDir->setText(QDir::toNativeSeparators(m_outputDir));
+	ui->labelArtist->setText(m_model->getAlbumPerformer().isEmpty() ? tr("Unknown Artist") : m_model->getAlbumPerformer());
+	ui->labelAlbum->setText(m_model->getAlbumTitle().isEmpty() ? tr("Unknown Album") : m_model->getAlbumTitle());
 }
 
 void CueImportDialog::browseButtonClicked(void)
@@ -391,12 +400,14 @@ void CueImportDialog::splitFiles(void)
 	connect(splitter, SIGNAL(progressMaxChanged(unsigned int)), progress, SLOT(setProgressMax(unsigned int)), Qt::QueuedConnection);
 	connect(progress, SIGNAL(userAbort()), splitter, SLOT(abortProcess()), Qt::DirectConnection);
 
+	DecoderRegistry::configureDecoders(m_settings);
+
 	progress->show(tr("Splitting file(s), please wait..."), splitter);
 	progress->close();
 
-	if(splitter->getAborted())	
+	if(splitter->getAborted())
 	{
-		QMessageBox::warning(this, tr("Cue Sheet Error"), tr("Process was aborted by the user after %1 track(s)!").arg(QString::number(splitter->getTracksSuccess())));
+		QMessageBox::warning(this, tr("Cue Sheet Error"), tr("Process was aborted by the user after %n track(s)!", "", splitter->getTracksSuccess()));
 	}
 	else if(!splitter->getSuccess())
 	{
@@ -404,7 +415,7 @@ void CueImportDialog::splitFiles(void)
 	}
 	else
 	{
-		QString text = QString("<nobr>%1</nobr>").arg(tr("Imported %1 track(s) from the Cue Sheet and skipped %2 track(s).").arg(QString::number(splitter->getTracksSuccess()), QString::number(splitter->getTracksSkipped() /*+ nTracksSkipped*/)));
+		QString text = QString("<nobr>%1 %2</nobr>").arg(tr("Imported %n track(s) from the Cue Sheet.", "", splitter->getTracksSuccess()), tr("Skipped %n track(s).", "", splitter->getTracksSkipped()));
 		QMessageBox::information(this, tr("Cue Sheet Completed"), text);
 	}
 

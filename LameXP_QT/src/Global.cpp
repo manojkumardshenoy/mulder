@@ -51,6 +51,7 @@
 
 //LameXP includes
 #include "Resource.h"
+#include "Config.h"
 #include "LockedFile.h"
 
 //CRT includes
@@ -70,10 +71,8 @@
 #include <Objbase.h>
 #include <PowrProf.h>
 
-//Debug only includes
-#if LAMEXP_DEBUG
+//Process API
 #include <Psapi.h>
-#endif
 
 //Initialize static Qt plugins
 #ifdef QT_NODLL
@@ -162,14 +161,22 @@ static bool g_lamexp_console_attached = false;
 	#if (_MSC_VER == 1700)
 		#if (_MSC_FULL_VER < 170050727)
 			static const char *g_lamexp_version_compiler = "MSVC 2012-Beta";
+		#elif (_MSC_FULL_VER < 170051020)
+			static const char *g_lamexp_version_compiler = "MSVC 2012-RTM";
+		#elif (_MSC_FULL_VER < 170051106)
+			static const char *g_lamexp_version_compiler = "MSVC 2012-U1 CTP";
+		#elif (_MSC_FULL_VER == 170051106)
+			static const char *g_lamexp_version_compiler = "MSVC 2012-U1";
 		#else
-			static const char *g_lamexp_version_compiler = "MSVC 2012";
+			#error Compiler version is not supported yet!
 		#endif
 	#elif (_MSC_VER == 1600)
-		#if (_MSC_FULL_VER >= 160040219)
+		#if (_MSC_FULL_VER < 160040219)
+			static const char *g_lamexp_version_compiler = "MSVC 2010-RTM";
+		#elif (_MSC_FULL_VER == 160040219)
 			static const char *g_lamexp_version_compiler = "MSVC 2010-SP1";
 		#else
-			static const char *g_lamexp_version_compiler = "MSVC 2010";
+			#error Compiler version is not supported yet!
 		#endif
 	#elif (_MSC_VER == 1500)
 		#if (_MSC_FULL_VER >= 150030729)
@@ -305,6 +312,10 @@ static const DWORD g_main_thread_id = GetCurrentThreadId();
 
 //Log file
 static FILE *g_lamexp_log_file = NULL;
+
+//Localization
+const char* LAMEXP_DEFAULT_LANGID = "en";
+const char* LAMEXP_DEFAULT_TRANSLATION = "LameXP_EN.qm";
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBAL FUNCTIONS
@@ -470,14 +481,7 @@ bool lamexp_detect_wine(void)
  */
 LONG WINAPI lamexp_exception_handler(__in struct _EXCEPTION_POINTERS *ExceptionInfo)
 {
-	if(GetCurrentThreadId() != g_main_thread_id)
-	{
-		HANDLE mainThread = OpenThread(THREAD_TERMINATE, FALSE, g_main_thread_id);
-		if(mainThread) TerminateThread(mainThread, ULONG_MAX);
-	}
-	
-	FatalAppExit(0, L"Unhandeled exception handler invoked, application will exit!");
-	TerminateProcess(GetCurrentProcess(), -1);
+	lamexp_fatal_exit(L"Unhandeled exception handler invoked, application will exit!");
 	return LONG_MAX;
 }
 
@@ -486,15 +490,7 @@ LONG WINAPI lamexp_exception_handler(__in struct _EXCEPTION_POINTERS *ExceptionI
  */
 void lamexp_invalid_param_handler(const wchar_t* exp, const wchar_t* fun, const wchar_t* fil, unsigned int, uintptr_t)
 {
-	if(GetCurrentThreadId() != g_main_thread_id)
-	{
-		HANDLE mainThread = OpenThread(THREAD_TERMINATE, FALSE, g_main_thread_id);
-		if(mainThread) TerminateThread(mainThread, ULONG_MAX);
-		
-	}
-	
-	FatalAppExit(0, L"Invalid parameter handler invoked, application will exit!");
-	TerminateProcess(GetCurrentProcess(), -1);
+	lamexp_fatal_exit(L"Invalid parameter handler invoked, application will exit!");
 }
 
 /*
@@ -515,7 +511,9 @@ static void lamexp_console_color(FILE* file, WORD attributes)
 void lamexp_message_handler(QtMsgType type, const char *msg)
 {
 	static const char *GURU_MEDITATION = "\n\nGURU MEDITATION !!!\n\n";
-	
+
+	if(msg == NULL) return;
+
 	QMutexLocker lock(&g_lamexp_message_mutex);
 
 	if(g_lamexp_log_file)
@@ -581,19 +579,10 @@ void lamexp_message_handler(QtMsgType type, const char *msg)
 		OutputDebugStringA(temp.toLatin1().constData());
 	}
 
-	if(type == QtCriticalMsg || type == QtFatalMsg)
+	if((type == QtCriticalMsg) || (type == QtFatalMsg))
 	{
 		lock.unlock();
-
-		if(GetCurrentThreadId() != g_main_thread_id)
-		{
-			HANDLE mainThread = OpenThread(THREAD_TERMINATE, FALSE, g_main_thread_id);
-			if(mainThread) TerminateThread(mainThread, ULONG_MAX);
-		}
-
-		MessageBoxW(NULL, QWCHAR(QString::fromUtf8(msg)), L"LameXP - GURU MEDITATION", MB_ICONERROR | MB_TOPMOST | MB_TASKMODAL);
-		FatalAppExit(0, L"The application has encountered a critical error and will exit now!");
-		TerminateProcess(GetCurrentProcess(), -1);
+		lamexp_fatal_exit(L"The application has encountered a critical error and will exit now!", QWCHAR(QString::fromUtf8(msg)));
 	}
 }
 
@@ -833,15 +822,7 @@ static unsigned int __stdcall lamexp_debug_thread_proc(LPVOID lpParameter)
 	{
 		Sleep(250);
 	}
-	if(HANDLE thrd = OpenThread(THREAD_TERMINATE, FALSE, g_main_thread_id))
-	{
-		if(TerminateThread(thrd, -1))
-		{
-			FatalAppExit(0, L"Not a debug build. Please unload debugger and try again!");
-		}
-		CloseHandle(thrd);
-	}
-	TerminateProcess(GetCurrentProcess(), -1);
+	lamexp_fatal_exit(L"Not a debug build. Please unload debugger and try again!");
 	return 666;
 }
 
@@ -852,8 +833,7 @@ static HANDLE lamexp_debug_thread_init(void)
 {
 	if(lamexp_check_for_debugger())
 	{
-		FatalAppExit(0, L"Not a debug build. Please unload debugger and try again!");
-		TerminateProcess(GetCurrentProcess(), -1);
+		lamexp_fatal_exit(L"Not a debug build. Please unload debugger and try again!");
 	}
 
 	return (HANDLE) _beginthreadex(NULL, 0, lamexp_debug_thread_proc, NULL, 0, NULL);
@@ -1003,8 +983,7 @@ static bool lamexp_event_filter(void *message, long *result)
 {
 	if((!(LAMEXP_DEBUG)) && lamexp_check_for_debugger())
 	{
-		FatalAppExit(0, L"Not a debug build. Please unload debugger and try again!");
-		TerminateProcess(GetCurrentProcess(), -1);
+		lamexp_fatal_exit(L"Not a debug build. Please unload debugger and try again!");
 	}
 	
 	switch(reinterpret_cast<MSG*>(message)->message)
@@ -1759,10 +1738,11 @@ unsigned int lamexp_translation_country(const QString &langId)
 bool lamexp_install_translator(const QString &langId)
 {
 	bool success = false;
+	const QString qmFileToPath(":/localization/%1");
 
 	if(langId.isEmpty() || langId.toLower().compare(LAMEXP_DEFAULT_LANGID) == 0)
 	{
-		success = lamexp_install_translator_from_file(QString());
+		success = lamexp_install_translator_from_file(qmFileToPath.arg(LAMEXP_DEFAULT_TRANSLATION));
 	}
 	else
 	{
@@ -1772,7 +1752,7 @@ bool lamexp_install_translator(const QString &langId)
 
 		if(!qmFile.isEmpty())
 		{
-			success = lamexp_install_translator_from_file(QString(":/localization/%1").arg(qmFile));
+			success = lamexp_install_translator_from_file(qmFileToPath.arg(qmFile));
 		}
 		else
 		{
@@ -2275,6 +2255,69 @@ unsigned int lamexp_rand(void)
 }
 
 /*
+ * Determines the current date, resistant against certain manipulations
+ */
+QDate lamexp_current_date_safe(void)
+{
+	const DWORD MAX_PROC = 1024;
+	DWORD *processes = new DWORD[MAX_PROC];
+	DWORD bytesReturned = 0;
+	
+	if(!EnumProcesses(processes, sizeof(DWORD) * MAX_PROC, &bytesReturned))
+	{
+		LAMEXP_DELETE_ARRAY(processes);
+		return QDate::currentDate();
+	}
+
+	const DWORD procCount = bytesReturned / sizeof(DWORD);
+	ULARGE_INTEGER lastStartTime;
+	memset(&lastStartTime, 0, sizeof(ULARGE_INTEGER));
+
+	for(DWORD i = 0; i < procCount; i++)
+	{
+		HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, processes[i]);
+		if(hProc)
+		{
+			FILETIME processTime[4];
+			if(GetProcessTimes(hProc, &processTime[0], &processTime[1], &processTime[2], &processTime[3]))
+			{
+				ULARGE_INTEGER timeCreation;
+				timeCreation.LowPart = processTime[0].dwLowDateTime;
+				timeCreation.HighPart = processTime[0].dwHighDateTime;
+				if(timeCreation.QuadPart > lastStartTime.QuadPart)
+				{
+					lastStartTime.QuadPart = timeCreation.QuadPart;
+				}
+			}
+			CloseHandle(hProc);
+		}
+	}
+
+	LAMEXP_DELETE_ARRAY(processes);
+	
+	FILETIME lastStartTime_fileTime;
+	lastStartTime_fileTime.dwHighDateTime = lastStartTime.HighPart;
+	lastStartTime_fileTime.dwLowDateTime = lastStartTime.LowPart;
+
+	FILETIME lastStartTime_localTime;
+	if(!FileTimeToLocalFileTime(&lastStartTime_fileTime, &lastStartTime_localTime))
+	{
+		memcpy(&lastStartTime_localTime, &lastStartTime_fileTime, sizeof(FILETIME));
+	}
+	
+	SYSTEMTIME lastStartTime_system;
+	if(!FileTimeToSystemTime(&lastStartTime_localTime, &lastStartTime_system))
+	{
+		memset(&lastStartTime_system, 0, sizeof(SYSTEMTIME));
+		lastStartTime_system.wYear = 1970; lastStartTime_system.wMonth = lastStartTime_system.wDay = 1;
+	}
+
+	const QDate currentDate = QDate::currentDate();
+	const QDate processDate = QDate(lastStartTime_system.wYear, lastStartTime_system.wMonth, lastStartTime_system.wDay);
+	return (currentDate >= processDate) ? currentDate : processDate;
+}
+
+/*
  * Entry point checks
  */
 static DWORD lamexp_entry_check(void);
@@ -2285,8 +2328,7 @@ static DWORD lamexp_entry_check(void)
 	volatile DWORD retVal = 0xA199B5AF;
 	if(g_lamexp_entry_check_flag != 0x8761F64D)
 	{
-		FatalAppExit(0, L"Application initialization has failed, take care!");
-		TerminateProcess(GetCurrentProcess(), -1);
+		lamexp_fatal_exit(L"Application initialization has failed, take care!");
 	}
 	return retVal;
 }
@@ -2302,14 +2344,11 @@ extern "C"
 	{
 		if((!LAMEXP_DEBUG) && lamexp_check_for_debugger())
 		{
-			FatalAppExit(0, L"Not a debug build. Please unload debugger and try again!");
-			TerminateProcess(GetCurrentProcess(), -1);
+			lamexp_fatal_exit(L"Not a debug build. Please unload debugger and try again!");
 		}
-
 		if(g_lamexp_entry_check_flag != 0x789E09B2)
 		{
-			FatalAppExit(0, L"Application initialization has failed, take care!");
-			TerminateProcess(GetCurrentProcess(), -1);
+			lamexp_fatal_exit(L"Application initialization has failed, take care!");
 		}
 
 		//Zero *before* constructors are called
@@ -2327,6 +2366,38 @@ extern "C"
 		//Now initialize the C Runtime library!
 		return WinMainCRTStartup();
 	}
+}
+
+/*
+ * Fatal application exit
+ */
+#pragma intrinsic(_InterlockedExchange)
+void lamexp_fatal_exit(const wchar_t* exitMessage, const wchar_t* errorBoxMessage)
+{
+	static volatile long bFatalFlag = 0L;
+
+	if(_InterlockedExchange(&bFatalFlag, 1L) == 0L)
+	{
+		if(GetCurrentThreadId() != g_main_thread_id)
+		{
+			HANDLE mainThread = OpenThread(THREAD_TERMINATE, FALSE, g_main_thread_id);
+			if(mainThread) TerminateThread(mainThread, ULONG_MAX);
+		}
+	
+		if(errorBoxMessage)
+		{
+			MessageBoxW(NULL, errorBoxMessage, L"LameXP - GURU MEDITATION", MB_ICONERROR | MB_TOPMOST | MB_TASKMODAL);
+		}
+
+		for(;;)
+		{
+			FatalAppExit(0, exitMessage);
+			TerminateProcess(GetCurrentProcess(), -1);
+		}
+	}
+
+	TerminateThread(GetCurrentThread(), -1);
+	Sleep(INFINITE);
 }
 
 /*

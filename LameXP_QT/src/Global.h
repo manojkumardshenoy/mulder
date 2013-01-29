@@ -144,7 +144,8 @@ unsigned int lamexp_translation_country(const QString &langId);
 bool lamexp_install_translator_from_file(const QString &qmFile);
 bool lamexp_install_translator(const QString &language);
 QStringList lamexp_available_codepages(bool noAliases = true);
-static const char* LAMEXP_DEFAULT_LANGID = "en";
+extern const char* LAMEXP_DEFAULT_LANGID;
+extern const char* LAMEXP_DEFAULT_TRANSLATION;
 
 //Auxiliary functions
 bool lamexp_clean_folder(const QString &folderPath);
@@ -158,6 +159,8 @@ const QString lamexp_clean_filename(const QString &str);
 const QString lamexp_clean_filepath(const QString &str);
 void lamexp_seed_rand(void);
 unsigned int lamexp_rand(void);
+QDate lamexp_current_date_safe(void);
+void lamexp_fatal_exit(const wchar_t* exitMessage, const wchar_t* errorBoxMessage = NULL);
 
 //Debug-only functions
 SIZE_T lamexp_dbg_private_bytes(void);
@@ -220,7 +223,7 @@ while(0)
 
 //Check for CPU-compatibility options
 #if !defined(_M_X64) && defined(_MSC_VER) && defined(_M_IX86_FP)
-	#if (_M_IX86_FP != 0) && (_MSC_VER < 1700)
+	#if (_M_IX86_FP != 0)
 		#error We should not enabled SSE or SSE2 in release builds!
 	#endif
 #endif
