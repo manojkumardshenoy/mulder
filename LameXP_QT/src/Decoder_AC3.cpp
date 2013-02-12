@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2013 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ bool AC3Decoder::decode(const QString &sourceFile, const QString &outputFile, vo
 	QStringList args;
 
 	args << QDir::toNativeSeparators(sourceFile);
-	args << "-w" << QDir::toNativeSeparators(outputFile);
+	args << "-i" << "-w" << QDir::toNativeSeparators(outputFile);
 
 	if(!startProcess(process, m_binary, args))
 	{
@@ -57,7 +57,7 @@ bool AC3Decoder::decode(const QString &sourceFile, const QString &outputFile, vo
 	bool bTimeout = false;
 	bool bAborted = false;
 
-	QRegExp regExp("\\[(\\s*)(\\d+)\\.(\\d+)%\\]");
+	QRegExp regExp("\\b(\\s*)(\\d+)\\.(\\d+)%(\\s+)Frames");
 
 	while(process.state() != QProcess::NotRunning)
 	{
@@ -121,6 +121,13 @@ bool AC3Decoder::isFormatSupported(const QString &containerType, const QString &
 			return true;
 		}
 	}
+	if(containerType.compare("E-AC-3", Qt::CaseInsensitive) == 0)
+	{
+		if(formatType.compare("E-AC-3", Qt::CaseInsensitive) == 0)
+		{
+			return true;
+		}
+	}
 	else if(containerType.compare("DTS", Qt::CaseInsensitive) == 0)
 	{
 		if(formatType.compare("DTS", Qt::CaseInsensitive) == 0)
@@ -130,7 +137,7 @@ bool AC3Decoder::isFormatSupported(const QString &containerType, const QString &
 	}
 	else if(containerType.compare("Wave", Qt::CaseInsensitive) == 0)
 	{
-		if(formatType.compare("AC-3", Qt::CaseInsensitive) == 0 || formatType.compare("DTS", Qt::CaseInsensitive) == 0)
+		if(formatType.compare("AC-3", Qt::CaseInsensitive) == 0 || formatType.compare("E-AC-3", Qt::CaseInsensitive) == 0 || formatType.compare("DTS", Qt::CaseInsensitive) == 0)
 		{
 			return true;
 		}
@@ -141,6 +148,6 @@ bool AC3Decoder::isFormatSupported(const QString &containerType, const QString &
 
 QStringList AC3Decoder::supportedTypes(void)
 {
-	return QStringList() << "AC-3 / ATSC A/52 (*.ac3 *.wav)" << "Digital Theater System (*.dts)";
+	return QStringList() << "AC-3 / ATSC A/52 (*.ac3 *.eac3 *.wav)" << "Digital Theater System (*.dts)";
 }
 
