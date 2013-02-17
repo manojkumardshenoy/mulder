@@ -56,6 +56,7 @@
 ;--------------------------------------------------------------------------------
 
 !include `MUI2.nsh`
+!include `InstallOptions.nsh`
 !include `WinVer.nsh`
 !include `x64.nsh`
 !include `StdUtils.nsh`
@@ -107,6 +108,7 @@ ReserveFile "${NSISDIR}\Plugins\UserInfo.dll"
 ;--------------------------------------------------------------------------------
 
 Var StartMenuFolder
+Var SelectedCPUType
 
 
 ;--------------------------------------------------------------------------------
@@ -173,7 +175,8 @@ VIAddVersionKey "Website" "${MPlayerWebSite}"
 !insertmacro MUI_PAGE_LICENSE "Docs\License.txt"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder
-Page Custom LockedListShow
+Page Custom SelectCPUPage_Show SelectCPUPage_Validate ""
+Page Custom LockedListPage_Show
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
@@ -182,7 +185,7 @@ Page Custom LockedListShow
 !define MUI_FINISHPAGE_TITLE_3LINES
 !insertmacro MUI_UNPAGE_WELCOME
 !insertmacro MUI_UNPAGE_CONFIRM
-UninstPage Custom un.LockedListShow
+UninstPage Custom un.LockedListPage_Show
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_UNPAGE_FINISH
 
@@ -204,6 +207,9 @@ UninstPage Custom un.LockedListShow
 ;--------------------------------------------------------------------------------
 
 Function .onInit
+	InitPluginsDir
+	StrCpy $SelectedCPUType 6 ;generic
+
 	System::Call 'kernel32::CreateMutexA(i 0, i 0, t "{B800490C-C100-4B12-9F09-1A54DF063049}") i .r1 ?e'
 	Pop $0
 	${If} $0 <> 0
@@ -238,11 +244,14 @@ Function .onInit
 	${EndIf}
 	
 	; --------
-
-	InitPluginsDir
+	
+	!insertmacro MUI_LANGDLL_DISPLAY
+	!insertmacro INSTALLOPTIONS_EXTRACT_AS "Dialogs\Page_CPU.ini" "Page_CPU.ini"
 FunctionEnd
 
 Function un.onInit
+	InitPluginsDir
+
 	System::Call 'kernel32::CreateMutexA(i 0, i 0, t "{B800490C-C100-4B12-9F09-1A54DF063049}") i .r1 ?e'
 	Pop $0
 	${If} $0 <> 0
@@ -259,6 +268,10 @@ Function un.onInit
 		SetErrorLevel 740 ;ERROR_ELEVATION_REQUIRED
 		Quit
 	${EndIf}
+
+	; --------
+	
+	!insertmacro MUI_LANGDLL_DISPLAY
 FunctionEnd
 
 
@@ -430,7 +443,7 @@ SectionEnd
 ; LOCKED-LIST PLUGIN
 ;--------------------------------------------------------------------------------
 
-Function LockedListShow
+Function LockedListPage_Show
 	; !insertmacro MUI_HEADER_TEXT "$(LAMEXP_LANG_LOCKEDLIST_HEADER)" "$(LAMEXP_LANG_LOCKEDLIST_TEXT)"
 	; !insertmacro GetExecutableName $R0
 	; LockedList::AddModule "\$R0"
@@ -440,7 +453,7 @@ Function LockedListShow
 	; Pop $R0
 FunctionEnd
 
-Function un.LockedListShow
+Function un.LockedListPage_Show
 	; !insertmacro MUI_HEADER_TEXT "$(LAMEXP_LANG_LOCKEDLIST_HEADER)" "$(LAMEXP_LANG_LOCKEDLIST_TEXT)"
 	; LockedList::AddModule "\LameXP.exe"
 	; LockedList::AddModule "\Uninstall.exe"
@@ -450,7 +463,30 @@ FunctionEnd
 
 
 ;--------------------------------------------------------------------------------
-; LOCKED-LIST PLUGIN
+; CUSTOME PAGE: CPU SELECTOR
+;--------------------------------------------------------------------------------
+
+Function SelectCPUPage_Show
+	${IfThen} $SelectedCPUType < 2 ${|} StrCpy $SelectedCPUType 6 ${|}
+	${IfThen} $SelectedCPUType > 6 ${|} StrCpy $SelectedCPUType 6 ${|}
+
+	${For} $0 2 6
+		${If} $0 == $SelectedCPUType
+			WriteINIStr "$PLUGINSDIR\Page_CPU.ini" "Field $0" "State" "1"
+		${Else}
+			WriteINIStr "$PLUGINSDIR\Page_CPU.ini" "Field $0" "State" "0"
+		${EndIf}
+	${Next}
+
+	!insertmacro INSTALLOPTIONS_DISPLAY "Page_CPU.ini"
+FunctionEnd
+
+Function SelectCPUPage_Validate
+FunctionEnd
+
+
+;--------------------------------------------------------------------------------
+; FINISHED
 ;--------------------------------------------------------------------------------
 
 Function RunAppFunction
