@@ -3,6 +3,8 @@
 REM Build Number (adjust manually!)
 set "BUILD_NO=100"
 
+set "MPLAYER_REVISION=35910"
+
 REM Path to NSIS, Unicode version highly recommended!
 set "MAKE_NSIS=D:\NSIS\_Unicode\makensis.exe"
 
@@ -34,6 +36,6 @@ REM Create outputfolder, if not exists yet
 mkdir "%~dp0\.Release" 2> NUL
 
 REM Build main installer
-"%MAKE_NSIS%" "/DMPLAYER_BUILDNO=%BUILD_NO%" "/DMPLAYER_DATE=%ISO_DATE%" "/DUPX_PATH=%UPX_PATH%" "/DMPLAYER_OUTFILE=%~dp0\.Release\MPUI.%ISO_DATE%.exe" "%~dp0\MPUI_Setup.nsi"
+"%MAKE_NSIS%" "/DMPLAYER_BUILDNO=%BUILD_NO%" "/DMPLAYER_DATE=%ISO_DATE%" "/DMPLAYER_REVISION=%MPLAYER_REVISION%" "/DUPX_PATH=%UPX_PATH%" "/DMPLAYER_OUTFILE=%~dp0\.Release\MPUI.%ISO_DATE%.exe" "%~dp0\MPUI_Setup.nsi"
 
 pause
