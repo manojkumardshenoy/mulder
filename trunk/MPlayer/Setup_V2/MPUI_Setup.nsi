@@ -32,6 +32,10 @@
   !error "MPLAYER_BUILDNO is not defined !!!"
 !endif
 
+!ifndef MPLAYER_REVISION
+  !error "MPLAYER_REVISION is not defined !!!"
+!endif
+
 !ifndef MPLAYER_DATE
   !error "MPLAYER_DATE is not defined !!!"
 !endif
@@ -94,6 +98,7 @@ SetCompressorDictSize 96
 ;--------------------------------------------------------------------------------
 
 ReserveFile "${NSISDIR}\Plugins\Aero.dll"
+ReserveFile "${NSISDIR}\Plugins\Banner.dll"
 ReserveFile "${NSISDIR}\Plugins\LangDLL.dll"
 ReserveFile "${NSISDIR}\Plugins\LockedList.dll"
 ReserveFile "${NSISDIR}\Plugins\nsDialogs.dll"
@@ -123,8 +128,8 @@ VIProductVersion "${PRODUCT_VERSION_DATE}.${MPLAYER_BUILDNO}"
 VIAddVersionKey "Author" "LoRd_MuldeR <mulder2@gmx.de>"
 VIAddVersionKey "Comments" "This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version."
 VIAddVersionKey "CompanyName" "Free Software Foundation"
-VIAddVersionKey "FileDescription" "LameXP v${LAMEXP_VERSION} ${LAMEXP_INSTTYPE}-${LAMEXP_PATCH} [Build #${LAMEXP_BUILD}]"
-VIAddVersionKey "FileVersion" "${PRODUCT_VERSION_DATE}.${LAMEXP_BUILD} (${LAMEXP_VERSION})"
+VIAddVersionKey "FileDescription" "MPlayer for Windows (Build #${MPLAYER_BUILD})"
+VIAddVersionKey "FileVersion" "${PRODUCT_VERSION_DATE}.${MPLAYER_BUILD} (${MPLAYER_VERSION})"
 VIAddVersionKey "LegalCopyright" "Copyright 2000-2013 The MPlayer Project"
 VIAddVersionKey "LegalTrademarks" "GNU"
 VIAddVersionKey "OriginalFilename" "MPUI-Setup.exe"
@@ -176,6 +181,7 @@ VIAddVersionKey "Website" "${MPlayerWebSite}"
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "Docs\License.txt"
 !insertmacro MUI_PAGE_DIRECTORY
+!insertmacro  MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder
 Page Custom SelectCPUPage_Show SelectCPUPage_Validate ""
 Page Custom LockedListPage_Show
@@ -301,21 +307,56 @@ FunctionEnd
 
 Section "-PreInit"
 	SetShellVarContext all
-	SetOutPath "$INSTDIR"
 SectionEnd
 
-Section "!Install Files"
-	!insertmacro PrintProgress "$(MPLAYER_LANG_STATUS_INSTFILES)"
+Section "!MPlayer r${MPLAYER_REVISION}"
+	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_MPLAYER)"
+	SetOutPath "$INSTDIR"
+	
+	; MPlayer.exe
+	${If} $SelectedCPUType == 2
+		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE) core2"
+		File "Builds\MPlayer-core2\MPlayer.exe"
+	${EndIf}
+	${If} $SelectedCPUType == 3
+		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE) corei7"
+		File "Builds\MPlayer-corei7\MPlayer.exe"
+	${EndIf}
+	${If} $SelectedCPUType == 4
+		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE) k8-sse3"
+		File "Builds\MPlayer-k8-sse3\MPlayer.exe"
+	${EndIf}
+	${If} $SelectedCPUType == 5
+		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE) bdver1"
+		File "Builds\MPlayer-bdver1\MPlayer.exe"
+	${EndIf}
+	${If} $SelectedCPUType == 6
+		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE) generic"
+		File "Builds\MPlayer-generic\MPlayer.exe"
+	${EndIf}
+	
+	; Other MPlayer-related files
+	File "Builds\MPlayer-generic\dsnative.dll"
+	SetOutPath "$INSTDIR\mplayer"
+	File "Builds\MPlayer-generic\mplayer\config"
+	SetOutPath "$INSTDIR\fonts"
+	File "Builds\MPlayer-generic\fonts\fonts.conf"
+	SetOutPath "$INSTDIR\fonts\conf.d"
+	File "Builds\MPlayer-generic\fonts\conf.d\*.conf"
+	
+	; Set file access rights
+	${MakeFilePublic} "$INSTDIR\mplayer\config"
+	${MakeFilePublic} "$INSTDIR\fonts\fonts.conf"
 SectionEnd
 
 Section "-Write Uinstaller"
-	!insertmacro PrintProgress "$(MPLAYER_LANG_STATUS_MAKEUNINST)"
+	${PrintProgress} "$(MPLAYER_LANG_STATUS_MAKEUNINST)"
 	WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
 
 Section "-Create Shortcuts"
 	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
-		!insertmacro PrintProgress "$(MPLAYER_LANG_STATUS_SHORTCUTS)"
+		${PrintProgress} "$(MPLAYER_LANG_STATUS_SHORTCUTS)"
 		CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
 		
 		SetShellVarContext current
@@ -336,22 +377,22 @@ Section "-Create Shortcuts"
 
 		${If} ${FileExists} "$SMPROGRAMS\$StartMenuFolder\SMPlayer.lnk"
 			${StdUtils.InvokeShellVerb} $R1 "$SMPROGRAMS\$StartMenuFolder" "SMPlayer.lnk" ${StdUtils.Const.ISV_PinToTaskbar}
-			DetailPrint 'Pin: "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk" -> $R1'
+			DetailPrint 'Pin: "$SMPROGRAMS\$StartMenuFolder\SMPlayer.lnk" -> $R1'
 		${EndIf}
 	!insertmacro MUI_STARTMENU_WRITE_END
 SectionEnd
 
 Section "-Update Registry"
-	!insertmacro PrintProgress "$(LAMEXP_LANG_STATUS_REGISTRY)"
+	${PrintProgress} "$(MPLAYER_LANG_STATUS_REGISTRY)"
 
-	;WriteRegStr HKLM "${MyRegPath}" "InstallLocation" "$INSTDIR"
-	;WriteRegStr HKLM "${MyRegPath}" "ExecutableName" "$R0"
-	;WriteRegStr HKLM "${MyRegPath}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
-	;WriteRegStr HKLM "${MyRegPath}" "DisplayName" "LameXP"
+	WriteRegStr HKLM "${MPlayerRegPath}" "InstallLocation" "$INSTDIR"
+	WriteRegStr HKLM "${MPlayerRegPath}" "ExecutableName" "$R0"
+	WriteRegStr HKLM "${MPlayerRegPath}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
+	WriteRegStr HKLM "${MPlayerRegPath}" "DisplayName" "MPlayer for Windows"
 SectionEnd
 
 Section "-Finished"
-	!insertmacro PrintProgress "$(MUI_TEXT_FINISH_TITLE)."
+	${PrintStatus} "$(MUI_TEXT_FINISH_TITLE)"
 SectionEnd
 
 
@@ -361,7 +402,7 @@ SectionEnd
 
 Section "Uninstall"
 	SetOutPath "$INSTDIR"
-	!insertmacro PrintProgress "$(MPLAYER_LANG_STATUS_UNINSTALL)"
+	${PrintProgress} "$(MPLAYER_LANG_STATUS_UNINSTALL)"
 
 	; --------------
 	; Startmenu
@@ -434,11 +475,11 @@ Section "Uninstall"
 	; DeleteRegValue HKLM "${MyRegPath}" "StartmenuFolder"
 	; DeleteRegValue HKLM "${MyRegPath}" "SetupLanguage"
 	
-	; MessageBox MB_YESNO|MB_TOPMOST "$(LAMEXP_LANG_UNINST_PERSONAL)" IDNO +3
+	; MessageBox MB_YESNO|MB_TOPMOST "$(MPLAYER_LANG_UNINST_PERSONAL)" IDNO +3
 	; Delete "$LOCALAPPDATA\LoRd_MuldeR\LameXP - Audio Encoder Front-End\config.ini"
 	; Delete "$INSTDIR\*.ini"
 
-	!insertmacro PrintProgress "$(MUI_UNTEXT_FINISH_TITLE)."
+	${PrintStatus} "$(MUI_UNTEXT_FINISH_TITLE)."
 SectionEnd
 
 
@@ -447,20 +488,20 @@ SectionEnd
 ;--------------------------------------------------------------------------------
 
 Function LockedListPage_Show
-	; !insertmacro MUI_HEADER_TEXT "$(LAMEXP_LANG_LOCKEDLIST_HEADER)" "$(LAMEXP_LANG_LOCKEDLIST_TEXT)"
+	; !insertmacro MUI_HEADER_TEXT "$(MPLAYER_LANG_LOCKEDLIST_HEADER)" "$(MPLAYER_LANG_LOCKEDLIST_TEXT)"
 	; !insertmacro GetExecutableName $R0
 	; LockedList::AddModule "\$R0"
 	; LockedList::AddModule "\Uninstall.exe"
 	; LockedList::AddModule "\Au_.exe"
-	; LockedList::Dialog /autonext /heading "$(LAMEXP_LANG_LOCKEDLIST_HEADING)" /noprograms "$(LAMEXP_LANG_LOCKEDLIST_NOPROG)" /searching  "$(LAMEXP_LANG_LOCKEDLIST_SEARCH)" /colheadings "$(LAMEXP_LANG_LOCKEDLIST_COLHDR1)" "$(LAMEXP_LANG_LOCKEDLIST_COLHDR2)"
+	; LockedList::Dialog /autonext /heading "$(MPLAYER_LANG_LOCKEDLIST_HEADING)" /noprograms "$(MPLAYER_LANG_LOCKEDLIST_NOPROG)" /searching  "$(MPLAYER_LANG_LOCKEDLIST_SEARCH)" /colheadings "$(MPLAYER_LANG_LOCKEDLIST_COLHDR1)" "$(MPLAYER_LANG_LOCKEDLIST_COLHDR2)"
 	; Pop $R0
 FunctionEnd
 
 Function un.LockedListPage_Show
-	; !insertmacro MUI_HEADER_TEXT "$(LAMEXP_LANG_LOCKEDLIST_HEADER)" "$(LAMEXP_LANG_LOCKEDLIST_TEXT)"
+	; !insertmacro MUI_HEADER_TEXT "$(MPLAYER_LANG_LOCKEDLIST_HEADER)" "$(MPLAYER_LANG_LOCKEDLIST_TEXT)"
 	; LockedList::AddModule "\LameXP.exe"
 	; LockedList::AddModule "\Uninstall.exe"
-	; LockedList::Dialog /autonext /heading "$(LAMEXP_LANG_LOCKEDLIST_HEADING)" /noprograms "$(LAMEXP_LANG_LOCKEDLIST_NOPROG)" /searching  "$(LAMEXP_LANG_LOCKEDLIST_SEARCH)" /colheadings "$(LAMEXP_LANG_LOCKEDLIST_COLHDR1)" "$(LAMEXP_LANG_LOCKEDLIST_COLHDR2)"
+	; LockedList::Dialog /autonext /heading "$(MPLAYER_LANG_LOCKEDLIST_HEADING)" /noprograms "$(MPLAYER_LANG_LOCKEDLIST_NOPROG)" /searching  "$(MPLAYER_LANG_LOCKEDLIST_SEARCH)" /colheadings "$(MPLAYER_LANG_LOCKEDLIST_COLHDR1)" "$(MPLAYER_LANG_LOCKEDLIST_COLHDR2)"
 	; Pop $R0
 FunctionEnd
 
@@ -498,7 +539,7 @@ Function SelectCPUPage_Validate
 	; Read new selection from dialog
 	${For} $0 2 6
 		ReadINIStr $1 "$PLUGINSDIR\Page_CPU.ini" "Field $0" "State"
-		${IfThen} State == 1 ${|} StrCpy $SelectedCPUType $0 ${|}
+		${IfThen} $1 == 1 ${|} StrCpy $SelectedCPUType $0 ${|}
 	${Next}
 	
 	${If} $SelectedCPUType < 2
@@ -510,7 +551,8 @@ FunctionEnd
 
 Function DetectCPUType
 	StrCpy $DetectedCPUType 6 ;generic
-
+	Banner::show /NOUNLOAD "$(MPLAYER_LANG_DETECTING)"
+	
 	; Check supported features
 	${CPUFeatures.GetVendor} $0
 	${CPUFeatures.CheckFeature} "MMX1"   $1
@@ -554,6 +596,8 @@ Function DetectCPUType
 			${EndIf}
 		${EndIf}
 	${EndIf}
+	
+	Banner::destroy
 FunctionEnd
 
 

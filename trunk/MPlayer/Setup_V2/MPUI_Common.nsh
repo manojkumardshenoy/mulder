@@ -19,24 +19,40 @@
 ; // http://www.gnu.org/licenses/gpl-2.0.txt
 ; ///////////////////////////////////////////////////////////////////////////////
 
-!macro PrintProgress Text
+!define PrintProgress "!insertmacro _PrintProgress"
+!define PrintStatus "!insertmacro _PrintStatus"
+
+!macro _PrintProgress Text
 	SetDetailsPrint textonly
-	DetailPrint '${Text}'
+	DetailPrint '${Text}, $(MPLAYER_LANG_STATUS_WAIT)...'
 	SetDetailsPrint listonly
-	Sleep 1000
+	DetailPrint '--- ${Text} ---'
+	Sleep 333
 !macroend
 
-!macro CreateWebLink ShortcutFile TargetURL
+!macro _PrintStatus Text
+	SetDetailsPrint textonly
+	DetailPrint '${Text}.'
+	SetDetailsPrint listonly
+	DetailPrint '--- ${Text} ---'
+	Sleep 333
+!macroend
+
+; ----------------------------------------------------------------------------
+
+!define CreateWebLink "!insertmacro _CreateWebLink"
+
+!macro _CreateWebLink ShortcutFile TargetURL
 	Push $0
 	Push $1
 	StrCpy $0 "${ShortcutFile}"
 	StrCpy $1 "${TargetURL}"
-	Call _CreateWebLink
+	Call _Imp_CreateWebLink
 	Pop $1
 	Pop $0
 !macroend
 
-Function _CreateWebLink
+Function _Imp_CreateWebLink
 	FlushINI "$0"
 	SetFileAttributes "$0" FILE_ATTRIBUTE_NORMAL
 	DeleteINISec "$0" "DEFAULT"
@@ -53,4 +69,18 @@ FunctionEnd
 !macro DisableNextButton TmpVar
 	GetDlgItem ${TmpVar} $HWNDPARENT 1
 	EnableWindow ${TmpVar} 0
+!macroend
+
+; ----------------------------------------------------------------------------
+
+!define MakeFilePublic "!insertmacro _MakeFilePublic"
+
+!macro _MakeFilePublic filename
+	${IfNot} ${FileExists} "${filename}"
+		Push $R0
+		FileOpen $R0 "${filename}" w
+		FileClose $R0
+		Pop $R0
+	${EndIf}
+	AccessControl::GrantOnFile "${filename}" "(S-1-1-0)" "FullAccess"
 !macroend
