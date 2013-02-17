@@ -60,6 +60,7 @@
 !include `WinVer.nsh`
 !include `x64.nsh`
 !include `StdUtils.nsh`
+!include `CPUFeatures.nsh`
 !include `MPUI_Common.nsh`
 
 
@@ -108,6 +109,7 @@ ReserveFile "${NSISDIR}\Plugins\UserInfo.dll"
 ;--------------------------------------------------------------------------------
 
 Var StartMenuFolder
+Var DetectedCPUType
 Var SelectedCPUType
 
 
@@ -208,7 +210,8 @@ UninstPage Custom un.LockedListPage_Show
 
 Function .onInit
 	InitPluginsDir
-	StrCpy $SelectedCPUType 6 ;generic
+	StrCpy $SelectedCPUType 0
+	StrCpy $DetectedCPUType 0
 
 	System::Call 'kernel32::CreateMutexA(i 0, i 0, t "{B800490C-C100-4B12-9F09-1A54DF063049}") i .r1 ?e'
 	Pop $0
@@ -467,9 +470,17 @@ FunctionEnd
 ;--------------------------------------------------------------------------------
 
 Function SelectCPUPage_Show
-	${IfThen} $SelectedCPUType < 2 ${|} StrCpy $SelectedCPUType 6 ${|}
-	${IfThen} $SelectedCPUType > 6 ${|} StrCpy $SelectedCPUType 6 ${|}
+	; Detect CPU type, if not detected yet
+	${If} $DetectedCPUType < 2
+	${OrIf} $DetectedCPUType > 6
+		Call DetectCPUType
+	${EndIf}
 
+	; Make sure the current selection is valid
+	${IfThen} $SelectedCPUType < 2 ${|} StrCpy $SelectedCPUType $DetectedCPUType ${|}
+	${IfThen} $SelectedCPUType > 6 ${|} StrCpy $SelectedCPUType $DetectedCPUType ${|}
+
+	; Apply current selection to dialog
 	${For} $0 2 6
 		${If} $0 == $SelectedCPUType
 			WriteINIStr "$PLUGINSDIR\Page_CPU.ini" "Field $0" "State" "1"
@@ -482,6 +493,67 @@ Function SelectCPUPage_Show
 FunctionEnd
 
 Function SelectCPUPage_Validate
+	StrCpy $SelectedCPUType 0
+	
+	; Read new selection from dialog
+	${For} $0 2 6
+		ReadINIStr $1 "$PLUGINSDIR\Page_CPU.ini" "Field $0" "State"
+		${IfThen} State == 1 ${|} StrCpy $SelectedCPUType $0 ${|}
+	${Next}
+	
+	${If} $SelectedCPUType < 2
+	${OrIf} $SelectedCPUType > 6
+		MessageBox MB_ICONSTOP "Invalid selection!"
+		Abort
+	${EndIf}
+FunctionEnd
+
+Function DetectCPUType
+	StrCpy $DetectedCPUType 6 ;generic
+
+	; Check supported features
+	${CPUFeatures.GetVendor} $0
+	${CPUFeatures.CheckFeature} "MMX1"   $1
+	${CPUFeatures.CheckFeature} "SSE3"   $2
+	${CPUFeatures.CheckFeature} "SSSE3"  $3
+	${CPUFeatures.CheckFeature} "SSE4.2" $4
+	${CPUFeatures.CheckFeature} "AVX1"   $5
+	${CPUFeatures.CheckFeature} "FMA4"   $6
+	
+	!ifdef CPU_DETECT_DEBUG
+		MessageBox MB_TOPMOST `Vendor = $0`
+		MessageBox MB_TOPMOST `"MMX1" = $1`
+		MessageBox MB_TOPMOST `"SSE3" = $2`
+		MessageBox MB_TOPMOST `"SSSE3" = $3`
+		MessageBox MB_TOPMOST `"SSE4.2" = $4`
+		MessageBox MB_TOPMOST `""AVX1" = $5`
+		MessageBox MB_TOPMOST `"FMA4" = $6`
+	!endif
+	
+	; Make sure we have at least MMX
+	${IfThen} $1 != "yes" ${|} Return ${|}
+
+	; Select the "best" model for Intel's
+	${If} $0 == "Intel"
+		${If} $2 == "yes" 
+		${AndIf} $3 == "yes" 
+			StrCpy $DetectedCPUType 2 ;Core2
+			${IfThen} $4 == "yes" ${|} StrCpy $DetectedCPUType 3 ${|} ;Nehalem
+		${EndIf}
+	${EndIf}
+
+	; Select the "best" model for AMD's
+	${If} $0 == "AMD"
+		${If} $2 == "yes" 
+			StrCpy $DetectedCPUType 4 ;K8+SSE3
+			${If} $3 == "yes" 
+			${AndIf} $4 == "yes" 
+			${AndIf} $5 == "yes" 
+			${AndIf} $6 == "yes" 
+				StrCpy $DetectedCPUType 5 ;Bulldozer
+			${EndIf}
+		${EndIf}
+	${EndIf}
 FunctionEnd
 
 
