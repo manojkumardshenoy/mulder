@@ -3,6 +3,8 @@
 REM Build Number and other version info
 set "BUILD_NO=100"
 set "MPLAYER_REVISION=35910"
+set "SMPLAYER_VERSION=0.8.3 (SVN-r5072)"
+set "MPUI_VERSION=v1.2-pre3 (Build 38)"
 set "CODECS_DATE=2011-01-31"
 
 REM Path to NSIS, Unicode version highly recommended!
@@ -36,9 +38,19 @@ REM Create outputfolder, if not exists yet
 mkdir "%~dp0\.Release" 2> NUL
 
 REM Build main installer
-"%MAKE_NSIS%" "/DMPLAYER_BUILDNO=%BUILD_NO%" "/DMPLAYER_DATE=%ISO_DATE%" "/DMPLAYER_REVISION=%MPLAYER_REVISION%" "/DCODECS_DATE=%CODECS_DATE%" "/DUPX_PATH=%UPX_PATH%" "/DMPLAYER_OUTFILE=%~dp0\.Release\MPUI.%ISO_DATE%.sfx" "%~dp0\MPUI_Setup.nsi"
+"%MAKE_NSIS%" "/DMPLAYER_BUILDNO=%BUILD_NO%" "/DMPLAYER_DATE=%ISO_DATE%" "/DMPLAYER_REVISION=%MPLAYER_REVISION%" "/DSMPLAYER_VERSION=%SMPLAYER_VERSION%" "/DMPUI_VERSION=%MPUI_VERSION%" "/DCODECS_DATE=%CODECS_DATE%" "/DUPX_PATH=%UPX_PATH%" "/DMPLAYER_OUTFILE=%~dp0\.Release\MPUI.%ISO_DATE%.sfx" "%~dp0\MPUI_Setup.nsi"
+
+if errorlevel 1 (
+	pause
+	goto:eof
+)
 
 REM Build installer wrapper
 "%MAKE_NSIS%" "/DMPLAYER_BUILDNO=%BUILD_NO%" "/DMPLAYER_DATE=%ISO_DATE%" "/DMPLAYER_REVISION=%MPLAYER_REVISION%" "/DUPX_PATH=%UPX_PATH%" "/DMPLAYER_SRCFILE=%~dp0\.Release\MPUI.%ISO_DATE%.sfx" "/DMPLAYER_OUTFILE=%~dp0\.Release\MPUI.%ISO_DATE%.exe" "%~dp0\MPUI_Wrapper.nsi"
+
+if errorlevel 1 (
+	pause
+	goto:eof
+)
 
 pause

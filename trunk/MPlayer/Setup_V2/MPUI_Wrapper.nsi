@@ -105,7 +105,6 @@ ReserveFile "${NSISDIR}\Plugins\nsExec.dll"
 ReserveFile "${NSISDIR}\Plugins\StdUtils.dll"
 ReserveFile "${NSISDIR}\Plugins\System.dll"
 ReserveFile "${NSISDIR}\Plugins\UserInfo.dll"
-ReserveFile "Dialogs\Page_CPU.ini"
 
 
 ;--------------------------------------------------------------------------------

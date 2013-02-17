@@ -40,6 +40,14 @@
   !error "MPLAYER_DATE is not defined !!!"
 !endif
 
+!ifndef SMPLAYER_VERSION
+  !error "SMPLAYER_VERSION is not defined !!!"
+!endif
+
+!ifndef MPUI_VERSION
+  !error "MPUI_VERSION is not defined !!!"
+!endif
+
 !ifndef CODECS_DATE
   !error "CODECS_DATE is not defined !!!"
 !endif
@@ -57,19 +65,6 @@
 
 ;Web-Site
 !define MPlayerWebSite "http://mplayerhq.hu/"
-
-
-;--------------------------------------------------------------------------------
-; INCLUDES
-;--------------------------------------------------------------------------------
-
-!include `MUI2.nsh`
-!include `InstallOptions.nsh`
-!include `WinVer.nsh`
-!include `x64.nsh`
-!include `StdUtils.nsh`
-!include `CPUFeatures.nsh`
-!include `MPUI_Common.nsh`
 
 
 ;--------------------------------------------------------------------------------
@@ -114,6 +109,20 @@ ReserveFile "${NSISDIR}\Plugins\StdUtils.dll"
 ReserveFile "${NSISDIR}\Plugins\System.dll"
 ReserveFile "${NSISDIR}\Plugins\UserInfo.dll"
 ReserveFile "Dialogs\Page_CPU.ini"
+ReserveFile "Resources\Splash.gif"
+
+
+;--------------------------------------------------------------------------------
+; INCLUDES
+;--------------------------------------------------------------------------------
+
+!include `MUI2.nsh`
+!include `InstallOptions.nsh`
+!include `WinVer.nsh`
+!include `x64.nsh`
+!include `StdUtils.nsh`
+!include `CPUFeatures.nsh`
+!include `MPUI_Common.nsh`
 
 
 ;--------------------------------------------------------------------------------
@@ -223,10 +232,12 @@ UninstPage Custom un.LockedListPage_Show
 ;--------------------------------------------------------------------------------
 
 Function .onInit
-	InitPluginsDir
 	StrCpy $SelectedCPUType 0
 	StrCpy $DetectedCPUType 0
+	InitPluginsDir
 
+	; --------
+	
 	System::Call 'kernel32::CreateMutexA(i 0, i 0, t "{B800490C-C100-4B12-9F09-1A54DF063049}") i .r1 ?e'
 	Pop $0
 	${If} $0 <> 0
@@ -264,6 +275,12 @@ Function .onInit
 	
 	!insertmacro MUI_LANGDLL_DISPLAY
 	!insertmacro INSTALLOPTIONS_EXTRACT_AS "Dialogs\Page_CPU.ini" "Page_CPU.ini"
+
+	; --------
+
+	File "/oname=$PLUGINSDIR\Splash.gif" "Resources\Splash.gif"
+	newadvsplash::show 3000 1000 500 -1 /NOCANCEL "$PLUGINSDIR\Splash.gif"
+	Delete /REBOOTOK "$PLUGINSDIR\Splash.gif"
 FunctionEnd
 
 Function un.onInit
@@ -317,6 +334,20 @@ Section "-PreInit"
 	SetShellVarContext all
 SectionEnd
 
+Section "-Clean Up"
+	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_CLEAN)"
+	
+	Delete "$INSTDIR\MPlayer.exe"
+	Delete "$INSTDIR\SMPlayer_portable.exe"
+	Delete "$INSTDIR\MPUI.exe"
+	
+	Delete "$INSTDIR\*.dll"
+	Delete "$INSTDIR\*.ini"
+	Delete "$INSTDIR\*.txt"
+	Delete "$INSTDIR\*.html"
+	Delete "$INSTDIR\*.htm"
+SectionEnd
+
 Section "!MPlayer r${MPLAYER_REVISION}"
 	SectionIn RO
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_MPLAYER)"
@@ -324,23 +355,23 @@ Section "!MPlayer r${MPLAYER_REVISION}"
 	
 	; MPlayer.exe
 	${If} $SelectedCPUType == 2
-		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE) core2"
+		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE): core2"
 		File "Builds\MPlayer-core2\MPlayer.exe"
 	${EndIf}
 	${If} $SelectedCPUType == 3
-		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE) corei7"
+		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE): corei7"
 		File "Builds\MPlayer-corei7\MPlayer.exe"
 	${EndIf}
 	${If} $SelectedCPUType == 4
-		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE) k8-sse3"
+		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE): k8-sse3"
 		File "Builds\MPlayer-k8-sse3\MPlayer.exe"
 	${EndIf}
 	${If} $SelectedCPUType == 5
-		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE) bdver1"
+		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE): bdver1"
 		File "Builds\MPlayer-bdver1\MPlayer.exe"
 	${EndIf}
 	${If} $SelectedCPUType == 6
-		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE) generic"
+		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE): generic"
 		File "Builds\MPlayer-generic\MPlayer.exe"
 	${EndIf}
 	
@@ -356,6 +387,42 @@ Section "!MPlayer r${MPLAYER_REVISION}"
 	; Set file access rights
 	${MakeFilePublic} "$INSTDIR\mplayer\config"
 	${MakeFilePublic} "$INSTDIR\fonts\fonts.conf"
+SectionEnd
+
+Section "!MPUI $(MPLAYER_LANG_FRONT_END) v${MPUI_VERSION}"
+	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_CODECS)"
+	
+	; Extract files
+	SetOutPath "$INSTDIR"
+	File "MPUI\MPUI.exe"
+
+	; Set file access rights
+	${MakeFilePublic} "$INSTDIR\MPUI.ini"
+SectionEnd
+
+Section "!SMPlayer $(MPLAYER_LANG_FRONT_END) v${SMPLAYER_VERSION}"
+	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_CODECS)"
+
+	; Extract files
+	SetOutPath "$INSTDIR"
+	File "SMPlayer\SMPlayer.exe"
+	File "SMPlayer\libgcc_s_dw2-1.dll"
+	File "SMPlayer\mingwm10.dll"
+	File "SMPlayer\QtCore4.dll"
+	File "SMPlayer\QtGui4.dll"
+	File "SMPlayer\QtNetwork4.dll"
+	File "SMPlayer\QtXml4.dll"
+	File "SMPlayer\zlib1.dll"
+
+	; Set file access rights
+	${MakeFilePublic} "$INSTDIR\SMPlayer.ini"
+	${MakeFilePublic} "$INSTDIR\favorites.m3u8"
+	${MakeFilePublic} "$INSTDIR\radio.m3u8"
+	${MakeFilePublic} "$INSTDIR\tv.m3u8"
+	
+	; Setup initial config
+	WriteINIStr "$INSTDIR\SMPlayer.ini" "%General" "mplayer_bin" "$INSTDIR\MPlayer.exe"
+	WriteINIStr "$INSTDIR\SMPlayer.ini" "%General" "driver\vo" "direct3d"
 SectionEnd
 
 Section "!$(MPLAYER_LANG_BIN_CODECS) r${CODECS_DATE}"
@@ -405,6 +472,21 @@ Section "-Create Shortcuts"
 	!insertmacro MUI_STARTMENU_WRITE_END
 SectionEnd
 
+Section "$(MPLAYER_LANG_COMPRESS_FILES)"
+	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_COMPRESS)"
+	
+	File "/oname=$PLUGINSDIR\UPX.exe" "Utils\UPX.exe"
+	
+	${PackAll} "$INSTDIR" "*.exe"
+	${PackAll} "$INSTDIR" "*.dll"
+	${PackAll} "$INSTDIR\codecs" "*.acm"
+	${PackAll} "$INSTDIR\codecs" "*.ax"
+	${PackAll} "$INSTDIR\codecs" "*.dll"
+	${PackAll} "$INSTDIR\codecs" "*.qtx"
+
+	Delete "$PLUGINSDIR\UPX.exe"
+SectionEnd
+
 Section "-Update Font Cache"
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_FONTCACHE)"
 	
@@ -426,7 +508,6 @@ Section "-Update Registry"
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_REGISTRY)"
 	
 	WriteRegStr HKLM "${MPlayerRegPath}" "InstallLocation" "$INSTDIR"
-	WriteRegStr HKLM "${MPlayerRegPath}" "ExecutableName" "$R0"
 	WriteRegStr HKLM "${MPlayerRegPath}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
 	WriteRegStr HKLM "${MPlayerRegPath}" "DisplayName" "MPlayer for Windows"
 SectionEnd
@@ -564,6 +645,10 @@ Function SelectCPUPage_Show
 	${IfThen} $SelectedCPUType < 2 ${|} StrCpy $SelectedCPUType $DetectedCPUType ${|}
 	${IfThen} $SelectedCPUType > 6 ${|} StrCpy $SelectedCPUType $DetectedCPUType ${|}
 
+	; Translate
+	WriteINIStr "$PLUGINSDIR\Page_CPU.ini" "Field 1" "Text" "$(MPLAYER_LANG_SELECT_CPU_TYPE)"
+	WriteINIStr "$PLUGINSDIR\Page_CPU.ini" "Field 7" "Text" "$(MPLAYER_LANG_SELECT_CPU_HINT)"
+	
 	; Apply current selection to dialog
 	${For} $0 2 6
 		${If} $0 == $SelectedCPUType

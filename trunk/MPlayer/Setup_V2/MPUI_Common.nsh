@@ -73,6 +73,36 @@ FunctionEnd
 
 ; ----------------------------------------------------------------------------
 
+!define PackAll "!insertmacro _PackAll"
+
+!macro _PackAll path filter
+	Push "${filter}"
+	Push "${path}"
+	Call _Imp_PackAll
+!macroend
+
+Function _Imp_PackAll
+	Exch $0
+	Exch
+	Exch $1
+	Push $2
+
+	ClearErrors
+	FindFirst $1 $2 "$0\$1"
+
+	${DoUntil} ${Errors}
+		DetailPrint "$(MPLAYER_LANG_COMPRESSING): $2"
+		NsExec::Exec '"$PLUGINSDIR\UPX.exe" "$0\$2"'
+		FindNext $1 $2
+	${Loop}
+
+	Pop $2
+	Pop $1
+	Pop $0
+FunctionEnd
+  
+; ----------------------------------------------------------------------------
+  
 !define MakeFilePublic "!insertmacro _MakeFilePublic"
 
 !macro _MakeFilePublic filename
