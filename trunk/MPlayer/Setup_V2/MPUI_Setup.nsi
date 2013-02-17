@@ -40,6 +40,10 @@
   !error "MPLAYER_DATE is not defined !!!"
 !endif
 
+!ifndef CODECS_DATE
+  !error "CODECS_DATE is not defined !!!"
+!endif
+
 !ifndef MPLAYER_OUTFILE
   !error "MPLAYER_OUTFILE is not defined !!!"
 !endif
@@ -99,6 +103,8 @@ SetCompressorDictSize 96
 
 ReserveFile "${NSISDIR}\Plugins\Aero.dll"
 ReserveFile "${NSISDIR}\Plugins\Banner.dll"
+ReserveFile "${NSISDIR}\Plugins\CPUFeatures.dll"
+ReserveFile "${NSISDIR}\Plugins\InstallOptions.dll"
 ReserveFile "${NSISDIR}\Plugins\LangDLL.dll"
 ReserveFile "${NSISDIR}\Plugins\LockedList.dll"
 ReserveFile "${NSISDIR}\Plugins\nsDialogs.dll"
@@ -107,6 +113,7 @@ ReserveFile "${NSISDIR}\Plugins\StartMenu.dll"
 ReserveFile "${NSISDIR}\Plugins\StdUtils.dll"
 ReserveFile "${NSISDIR}\Plugins\System.dll"
 ReserveFile "${NSISDIR}\Plugins\UserInfo.dll"
+ReserveFile "Dialogs\Page_CPU.ini"
 
 
 ;--------------------------------------------------------------------------------
@@ -128,8 +135,8 @@ VIProductVersion "${PRODUCT_VERSION_DATE}.${MPLAYER_BUILDNO}"
 VIAddVersionKey "Author" "LoRd_MuldeR <mulder2@gmx.de>"
 VIAddVersionKey "Comments" "This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version."
 VIAddVersionKey "CompanyName" "Free Software Foundation"
-VIAddVersionKey "FileDescription" "MPlayer for Windows (Build #${MPLAYER_BUILD})"
-VIAddVersionKey "FileVersion" "${PRODUCT_VERSION_DATE}.${MPLAYER_BUILD} (${MPLAYER_VERSION})"
+VIAddVersionKey "FileDescription" "MPlayer for Windows (Build #${MPLAYER_BUILDNO})"
+VIAddVersionKey "FileVersion" "${PRODUCT_VERSION_DATE}.${MPLAYER_BUILDNO}"
 VIAddVersionKey "LegalCopyright" "Copyright 2000-2013 The MPlayer Project"
 VIAddVersionKey "LegalTrademarks" "GNU"
 VIAddVersionKey "OriginalFilename" "MPUI-Setup.exe"
@@ -169,6 +176,7 @@ VIAddVersionKey "Website" "${MPlayerWebSite}"
 !define MUI_CUSTOMFUNCTION_GUIINIT MyGuiInit
 !define MUI_CUSTOMFUNCTION_UNGUIINIT un.MyGuiInit
 !define MUI_LANGDLL_ALWAYSSHOW
+!define MUI_COMPONENTSPAGE_SMALLDESC
 
 
 ;--------------------------------------------------------------------------------
@@ -310,6 +318,7 @@ Section "-PreInit"
 SectionEnd
 
 Section "!MPlayer r${MPLAYER_REVISION}"
+	SectionIn RO
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_MPLAYER)"
 	SetOutPath "$INSTDIR"
 	
@@ -349,7 +358,21 @@ Section "!MPlayer r${MPLAYER_REVISION}"
 	${MakeFilePublic} "$INSTDIR\fonts\fonts.conf"
 SectionEnd
 
-Section "-Write Uinstaller"
+Section "!$(MPLAYER_LANG_BIN_CODECS) r${CODECS_DATE}"
+	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_CODECS)"
+	SetOutPath "$INSTDIR\codecs"
+	
+	File "Codecs\*.0"
+	File "Codecs\*.acm"
+	File "Codecs\*.ax"
+	File "Codecs\*.dll"
+	File "Codecs\*.qtx"
+	File "Codecs\*.so"
+	File "Codecs\*.vwp"
+	File "Codecs\*.xa"
+SectionEnd
+
+Section "-Write Uninstaller"
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_MAKEUNINST)"
 	WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
@@ -382,9 +405,26 @@ Section "-Create Shortcuts"
 	!insertmacro MUI_STARTMENU_WRITE_END
 SectionEnd
 
+Section "-Update Font Cache"
+	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_FONTCACHE)"
+	
+	SetShellVarContext current
+	Delete "$APPDATA\fontconfig\cache\*.*"
+	Delete "$LOCALAPPDATA\fontconfig\cache\*.*"
+	
+	SetShellVarContext all
+	Delete "$APPDATA\fontconfig\cache\*.*"
+	Delete "$LOCALAPPDATA\fontconfig\cache\*.*"
+
+	File "/oname=$PLUGINSDIR\Sample.avi" "Resources\Sample.avi"
+	DetailPrint "$(MPLAYER_LANG_UPDATING_FONTCACHE)"
+	NsExec::Exec '"$INSTDIR\MPlayer.exe" -fontconfig -ass -vo null -ao null "$PLUGINSDIR\Sample.avi"'
+	Delete "Resources\Sample.avi"
+SectionEnd
+
 Section "-Update Registry"
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_REGISTRY)"
-
+	
 	WriteRegStr HKLM "${MPlayerRegPath}" "InstallLocation" "$INSTDIR"
 	WriteRegStr HKLM "${MPlayerRegPath}" "ExecutableName" "$R0"
 	WriteRegStr HKLM "${MPlayerRegPath}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
@@ -404,6 +444,9 @@ Section "Uninstall"
 	SetOutPath "$INSTDIR"
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_UNINSTALL)"
 
+	MessageBox MB_TOPMOST|MB_ICONSTOP "Uninstall not implemented yet, sorry :-("
+	Abort
+	
 	; --------------
 	; Startmenu
 	; --------------
@@ -479,7 +522,7 @@ Section "Uninstall"
 	; Delete "$LOCALAPPDATA\LoRd_MuldeR\LameXP - Audio Encoder Front-End\config.ini"
 	; Delete "$INSTDIR\*.ini"
 
-	${PrintStatus} "$(MUI_UNTEXT_FINISH_TITLE)."
+	${PrintStatus} "$(MUI_UNTEXT_FINISH_TITLE)"
 SectionEnd
 
 

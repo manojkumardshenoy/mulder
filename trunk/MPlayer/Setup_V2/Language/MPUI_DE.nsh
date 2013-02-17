@@ -19,9 +19,15 @@
 ; // http://www.gnu.org/licenses/gpl-2.0.txt
 ; ///////////////////////////////////////////////////////////////////////////////
 
-LangString MPLAYER_LANG_DETECTING                ${LANG_GERMAN} "CPU-Typ wird ermittelt, bitte warten..."
+LangString MPLAYER_LANG_BIN_CODECS               ${LANG_GERMAN} "Binäre Codecs"
+LangString MPLAYER_LANG_DETECTING                ${LANG_GERMAN} "CPU-Typ wird ermittelt..."
 LangString MPLAYER_LANG_STATUS_WAIT              ${LANG_GERMAN} "bitte warten"
 LangString MPLAYER_LANG_STATUS_INST_MPLAYER      ${LANG_GERMAN} "Installiere MPlayer"
+LangString MPLAYER_LANG_STATUS_INST_CODECS       ${LANG_GERMAN} "Installiere binäre Codecs"
 LangString MPLAYER_LANG_STATUS_MAKEUNINST        ${LANG_GERMAN} "Schreibe Deinstallationsprogramm"
+LangString MPLAYER_LANG_STATUS_INST_FONTCACHE    ${LANG_GERMAN} "Aktualisiere Font-Cache"
 LangString MPLAYER_LANG_STATUS_REGISTRY          ${LANG_GERMAN} "Registrierung wird aktualisiert"
+LangString MPLAYER_LANG_STATUS_SHORTCUTS         ${LANG_GERMAN} "Erzeuge Verknüpfungen"
+LangString MPLAYER_LANG_STATUS_UNINSTALL         ${LANG_GERMAN} "Deinstalliere MPlayer"
 LangString MPLAYER_LANG_SELECTED_TYPE            ${LANG_GERMAN} "Ausgewählter CPU-Typ:"
+LangString MPLAYER_LANG_UPDATING_FONTCACHE       ${LANG_GERMAN} "Der Font-Cache wird aktualisiert..."
