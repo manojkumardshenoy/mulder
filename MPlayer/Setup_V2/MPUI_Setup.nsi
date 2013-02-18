@@ -120,9 +120,13 @@ ReserveFile "Resources\Splash.gif"
 !include `InstallOptions.nsh`
 !include `WinVer.nsh`
 !include `x64.nsh`
+!include `StrFunc.nsh`
 !include `StdUtils.nsh`
 !include `CPUFeatures.nsh`
 !include `MPUI_Common.nsh`
+
+; Enable functions
+${StrRep}
 
 
 ;--------------------------------------------------------------------------------
@@ -346,6 +350,19 @@ Section "-Clean Up"
 	Delete "$INSTDIR\*.txt"
 	Delete "$INSTDIR\*.html"
 	Delete "$INSTDIR\*.htm"
+	Delete "$INSTDIR\*.ass"
+	Delete "$INSTDIR\*.m3u8"
+	Delete "$INSTDIR\mplayer\config"
+	Delete "$INSTDIR\mplayer\codecs.conf"
+	
+	; Now deal with Virtual Store
+	StrCpy $0 "$INSTDIR" "" 3
+	StrCpy $0 "$LOCALAPPDATA\VirtualStore\$0"
+	Delete "$0\*.ini"
+	Delete "$0\*.ass"
+	Delete "$0\*.m3u8"
+	Delete "$0\mplayer\config"
+	Delete "$0\mplayer\codecs.conf"
 SectionEnd
 
 Section "!MPlayer r${MPLAYER_REVISION}"
@@ -377,12 +394,16 @@ Section "!MPlayer r${MPLAYER_REVISION}"
 	
 	; Other MPlayer-related files
 	File "Builds\MPlayer-generic\dsnative.dll"
+	File "/oname=Manual.html" "Builds\MPlayer-generic\MPlayer.man.html"
+	File "Docs\Readme.html"
 	SetOutPath "$INSTDIR\mplayer"
 	File "Builds\MPlayer-generic\mplayer\config"
 	SetOutPath "$INSTDIR\fonts"
 	File "Builds\MPlayer-generic\fonts\fonts.conf"
 	SetOutPath "$INSTDIR\fonts\conf.d"
 	File "Builds\MPlayer-generic\fonts\conf.d\*.conf"
+	
+	
 	
 	; Set file access rights
 	${MakeFilePublic} "$INSTDIR\mplayer\config"
@@ -419,10 +440,13 @@ Section "!SMPlayer $(MPLAYER_LANG_FRONT_END) v${SMPLAYER_VERSION}"
 	${MakeFilePublic} "$INSTDIR\favorites.m3u8"
 	${MakeFilePublic} "$INSTDIR\radio.m3u8"
 	${MakeFilePublic} "$INSTDIR\tv.m3u8"
+	${MakeFilePublic} "$INSTDIR\styles.ass"
 	
 	; Setup initial config
-	WriteINIStr "$INSTDIR\SMPlayer.ini" "%General" "mplayer_bin" "$INSTDIR\MPlayer.exe"
+	${StrRep} $0 "$INSTDIR\MPlayer.exe" "\" "/"
+	WriteINIStr "$INSTDIR\SMPlayer.ini" "%General" "mplayer_bin" "$0"
 	WriteINIStr "$INSTDIR\SMPlayer.ini" "%General" "driver\vo" "direct3d"
+	WriteINIStr "$INSTDIR\SMPlayer.ini" "gui" "style" "Plastique"
 SectionEnd
 
 Section "!$(MPLAYER_LANG_BIN_CODECS) r${CODECS_DATE}"
@@ -735,14 +759,16 @@ FunctionEnd
 
 Function RunAppFunction
 	!insertmacro DisableNextButton $R0
-	;!insertmacro GetExecutableName $R0
-	;${StdUtils.ExecShellAsUser} $R1 "$INSTDIR" "explore" ""
-	;${StdUtils.ExecShellAsUser} $R1 "$INSTDIR\$R0" "open" "--first-run"
+	${If} ${FileExists} "$INSTDIR\SMPlayer.exe"
+		${StdUtils.ExecShellAsUser} $R0 "$INSTDIR\SMPlayer.exe" "open" "http://metal-office.rautemusik.fm"
+	${Else}
+		${StdUtils.ExecShellAsUser} $R0 "$INSTDIR\MPUI.exe" "open" "http://metal-office.rautemusik.fm"
+	${EndIf}
 FunctionEnd
 
 Function ShowReadmeFunction
 	!insertmacro DisableNextButton $R0
-	;${StdUtils.ExecShellAsUser} $R1 "$INSTDIR\FAQ.html" "open" ""
+	${StdUtils.ExecShellAsUser} $R0 "$INSTDIR\Readme.html" "open" ""
 FunctionEnd
 
 
