@@ -279,7 +279,9 @@ Function .onInit
 	
 	!insertmacro MUI_LANGDLL_DISPLAY
 	!insertmacro INSTALLOPTIONS_EXTRACT_AS "Dialogs\Page_CPU.ini" "Page_CPU.ini"
-
+	
+	${IfCmd} MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_OKCANCEL|MB_DEFBUTTON2 "Note: This is an early pre-release version for test only!" IDCANCEL ${||} Quit ${|}
+	
 	; --------
 
 	File "/oname=$PLUGINSDIR\Splash.gif" "Resources\Splash.gif"
@@ -341,10 +343,7 @@ SectionEnd
 Section "-Clean Up"
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_CLEAN)"
 	
-	Delete "$INSTDIR\MPlayer.exe"
-	Delete "$INSTDIR\SMPlayer_portable.exe"
-	Delete "$INSTDIR\MPUI.exe"
-	
+	Delete "$INSTDIR\*.exe"
 	Delete "$INSTDIR\*.dll"
 	Delete "$INSTDIR\*.ini"
 	Delete "$INSTDIR\*.txt"
@@ -353,7 +352,7 @@ Section "-Clean Up"
 	Delete "$INSTDIR\*.ass"
 	Delete "$INSTDIR\*.m3u8"
 	Delete "$INSTDIR\mplayer\config"
-	Delete "$INSTDIR\mplayer\codecs.conf"
+	Delete "$INSTDIR\mplayer\*.conf"
 	
 	; Now deal with Virtual Store
 	StrCpy $0 "$INSTDIR" "" 3
@@ -362,7 +361,21 @@ Section "-Clean Up"
 	Delete "$0\*.ass"
 	Delete "$0\*.m3u8"
 	Delete "$0\mplayer\config"
-	Delete "$0\mplayer\codecs.conf"
+	Delete "$0\mplayer\*.conf"
+	
+	; Make sure MPlayer isn't running
+	${Do}
+		Delete "$INSTDIR\MPlayer.exe"
+		Delete "$INSTDIR\SMPlayer.exe"
+		Delete "$INSTDIR\MPUI.exe"
+		${If} ${FileExists} "$INSTDIR\MPlayer.exe"
+		${OrIf} ${FileExists} "$INSTDIR\SMPlayer.exe"
+		${OrIf} ${FileExists} "$INSTDIR\MPUI.exe"
+			${IfCmd} MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_OKCANCEL "$(MPLAYER_LANG_STILL_RUNNING)" IDCANCEL ${||} Abort ${|}
+		${Else}
+			${Break}
+		${EndIf}
+	${Loop}
 SectionEnd
 
 Section "!MPlayer r${MPLAYER_REVISION}"
@@ -402,8 +415,6 @@ Section "!MPlayer r${MPLAYER_REVISION}"
 	File "Builds\MPlayer-generic\fonts\fonts.conf"
 	SetOutPath "$INSTDIR\fonts\conf.d"
 	File "Builds\MPlayer-generic\fonts\conf.d\*.conf"
-	
-	
 	
 	; Set file access rights
 	${MakeFilePublic} "$INSTDIR\mplayer\config"
@@ -449,7 +460,7 @@ Section "!SMPlayer $(MPLAYER_LANG_FRONT_END) v${SMPLAYER_VERSION}"
 	WriteINIStr "$INSTDIR\SMPlayer.ini" "gui" "style" "Plastique"
 SectionEnd
 
-Section "!$(MPLAYER_LANG_BIN_CODECS) r${CODECS_DATE}"
+Section "!$(MPLAYER_LANG_BIN_CODECS) (${CODECS_DATE})"
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_CODECS)"
 	SetOutPath "$INSTDIR\codecs"
 	
@@ -474,20 +485,27 @@ Section "-Create Shortcuts"
 		CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
 		
 		SetShellVarContext current
-		
 		Delete "$SMPROGRAMS\$StartMenuFolder\*.lnk"
 		Delete "$SMPROGRAMS\$StartMenuFolder\*.pif"
 		Delete "$SMPROGRAMS\$StartMenuFolder\*.url"
 		
 		SetShellVarContext all
-		
 		Delete "$SMPROGRAMS\$StartMenuFolder\*.lnk"
 		Delete "$SMPROGRAMS\$StartMenuFolder\*.pif"
 		Delete "$SMPROGRAMS\$StartMenuFolder\*.url"
 
-		;CreateShortCut "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk" "$INSTDIR\$R0" "" "$INSTDIR\$R0" 0
+		${If} ${FileExists} "$INSTDIR\MPUI.exe"
+			CreateShortCut "$SMPROGRAMS\$StartMenuFolder\MPUI.lnk" "$INSTDIR\MPUI.exe"
+		${EndIf}
+		${If} ${FileExists} "$INSTDIR\SMPlayer.exe"
+			CreateShortCut "$SMPROGRAMS\$StartMenuFolder\SMPlayer.lnk" "$INSTDIR\SMPlayer.exe"
+		${EndIf}
 
-		;!insertmacro CreateWebLink "$SMPROGRAMS\$StartMenuFolder\Official LameXP Homepage.url" "http://mulder.dummwiedeutsch.de/"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Readme.lnk" "$INSTDIR\Readme.html"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Manual.lnk" "$INSTDIR\Manual.html"
+		
+		${CreateWebLink} "$SMPROGRAMS\$StartMenuFolder\MPlayer Web-Site.url" "http://www.mplayerhq.hu/"
+		${CreateWebLink} "$SMPROGRAMS\$StartMenuFolder\MuldeR's Web-Site.url" "http://www.mulder.at.gg/"
 
 		${If} ${FileExists} "$SMPROGRAMS\$StartMenuFolder\SMPlayer.lnk"
 			${StdUtils.InvokeShellVerb} $R1 "$SMPROGRAMS\$StartMenuFolder" "SMPlayer.lnk" ${StdUtils.Const.ISV_PinToTaskbar}

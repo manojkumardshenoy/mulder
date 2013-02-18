@@ -4,7 +4,7 @@ REM Build Number and other version info
 set "BUILD_NO=100"
 set "MPLAYER_REVISION=35910"
 set "SMPLAYER_VERSION=0.8.3 (SVN-r5072)"
-set "MPUI_VERSION=v1.2-pre3 (Build 38)"
+set "MPUI_VERSION=1.2-pre3 (Build 38)"
 set "CODECS_DATE=2011-01-31"
 
 REM Path to NSIS, Unicode version highly recommended!

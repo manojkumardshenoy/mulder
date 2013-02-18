@@ -40,3 +40,4 @@ LangString MPLAYER_LANG_STATUS_SHORTCUTS         ${LANG_ENGLISH} "Creating short
 LangString MPLAYER_LANG_STATUS_UNINSTALL         ${LANG_ENGLISH} "Uninstalling MPlayer"
 LangString MPLAYER_LANG_SELECTED_TYPE            ${LANG_ENGLISH} "Selected CPU type"
 LangString MPLAYER_LANG_UPDATING_FONTCACHE       ${LANG_ENGLISH} "The font-cache is being updated..."
+LangString MPLAYER_LANG_STILL_RUNNING            ${LANG_ENGLISH} "Could not delete old MPlayer. Is MPlayer still running?$\nPlease close MPlayer and try again!"
