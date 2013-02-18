@@ -69,4 +69,3 @@ LangString MPLAYER_LANG_INSTTYPE_COMPLETE        ${LANG_GERMAN} "Vollständige In
 LangString MPLAYER_LANG_INSTTYPE_MINIMAL         ${LANG_GERMAN} "Minimale Installation"
 LangString MPLAYER_LANG_SELCHANGE                ${LANG_GERMAN} "Sie müssen entweder MPUI oder SMPlayer auswählen!"
 LangString MPLAYER_LANG_UNINSTALL_OLDVER         ${LANG_GERMAN} "Eine alte Version von MPlayer für Windows muss zunächst entfernt werden!$\nKlicken Sie auf 'OK' um die Deinstallation zu starten..."
-LangString MPLAYER_LANG_UNINSTALL_WAIT           ${LANG_GERMAN} "Bitte klicken Sie auf 'OK' sobald die Deinstallation fertig ist!"

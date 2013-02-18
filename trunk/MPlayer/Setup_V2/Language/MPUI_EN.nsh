@@ -69,4 +69,3 @@ LangString MPLAYER_LANG_INSTTYPE_COMPLETE        ${LANG_ENGLISH} "Complete Insta
 LangString MPLAYER_LANG_INSTTYPE_MINIMAL         ${LANG_ENGLISH} "Minimal Installation"
 LangString MPLAYER_LANG_SELCHANGE                ${LANG_ENGLISH} "You must select either MPUI or SMPlayer!"
 LangString MPLAYER_LANG_UNINSTALL_OLDVER         ${LANG_ENGLISH} "An old version of MPlayer for Windows has to be uninstalled first!$\nClick 'OK' in order to launch the uninstaller..."
-LangString MPLAYER_LANG_UNINSTALL_WAIT           ${LANG_ENGLISH} "Please 'OK' after uninstall has completed!"
