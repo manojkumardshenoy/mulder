@@ -360,14 +360,19 @@ Section "-Clean Up"
 	
 	; Uninstall old version (Setup v1)
 	ClearErrors
-	ReadRegStr $0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{DB9E4EAB-2717-499F-8D56-4CC8A644AB60}" "UninstallString"
+	ReadRegStr $0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{DB9E4EAB-2717-499F-8D56-4CC8A644AB60}" "InstallLocation"
 	${IfNot} ${Errors}
 		MessageBox MB_ICONINFORMATION|MB_OK "$(MPLAYER_LANG_UNINSTALL_OLDVER)"
-		ExecWait `$0`
-		Sleep 3000
-		MessageBox MB_ICONEXCLAMATION|MB_OK "$(MPLAYER_LANG_UNINSTALL_WAIT)"
-		DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{DB9E4EAB-2717-499F-8D56-4CC8A644AB60}"
+		File "/oname=$PLUGINSDIR\Uninstall-V1.exe" "Resources\Uninstall-V1.exe"
+		HideWindow
+		ExecWait '"$PLUGINSDIR\Uninstall-V1.exe" _?=$0'
+		Delete "$PLUGINSDIR\Uninstall-V1.exe"
+		BringToFront
 	${EndIf}
+	
+	; Clean registry
+	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{DB9E4EAB-2717-499F-8D56-4CC8A644AB60}"
+	DeleteRegValue HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "MPlayerForWindows_UpdateReminder"
 
 	; Clean the install folder
 	Delete "$INSTDIR\*.exe"
@@ -712,6 +717,7 @@ Section "Uninstall"
 	RMDir /r "$INSTDIR\fonts"
 	RMDir /r "$INSTDIR\imageformats"
 	RMDir /r "$INSTDIR\legal_stuff"
+	RMDir /r "$INSTDIR\locale"
 	RMDir /r "$INSTDIR\mplayer"
 	RMDir /r "$INSTDIR\shortcuts"
 	RMDir /r "$INSTDIR\themes"
