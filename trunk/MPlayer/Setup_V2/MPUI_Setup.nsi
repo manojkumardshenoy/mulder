@@ -75,8 +75,8 @@ RequestExecutionLevel admin
 ShowInstDetails show
 ShowUninstDetails show
 
-Name "MPlayer for Windows ${MPLAYER_DATE} (Build #${MPLAYER_BUILDNO})"
-Caption "MPlayer for Windows ${MPLAYER_DATE} (Build #${MPLAYER_BUILDNO})"
+Name "$(MPLAYER_LANG_MPLAYER_WIN32) ${MPLAYER_DATE} (Build #${MPLAYER_BUILDNO})"
+Caption "$(MPLAYER_LANG_MPLAYER_WIN32) ${MPLAYER_DATE} (Build #${MPLAYER_BUILDNO})"
 BrandingText "MPlayer-Win32 (Build #${MPLAYER_BUILDNO})"
 InstallDir "$PROGRAMFILES\MPlayer for Windows"
 InstallDirRegKey HKLM "${MPlayerRegPath}" "InstallLocation"
@@ -358,6 +358,18 @@ SectionEnd
 Section "-Clean Up"
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_CLEAN)"
 	
+	; Uninstall old version (Setup v1)
+	ClearErrors
+	ReadRegStr $0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{DB9E4EAB-2717-499F-8D56-4CC8A644AB60}" "UninstallString"
+	${IfNot} ${Errors}
+		MessageBox MB_ICONINFORMATION|MB_OK "$(MPLAYER_LANG_UNINSTALL_OLDVER)"
+		ExecWait `$0`
+		Sleep 3000
+		MessageBox MB_ICONEXCLAMATION|MB_OK "$(MPLAYER_LANG_UNINSTALL_WAIT)"
+		DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{DB9E4EAB-2717-499F-8D56-4CC8A644AB60}"
+	${EndIf}
+
+	; Clean the install folder
 	Delete "$INSTDIR\*.exe"
 	Delete "$INSTDIR\*.dll"
 	Delete "$INSTDIR\*.ini"
