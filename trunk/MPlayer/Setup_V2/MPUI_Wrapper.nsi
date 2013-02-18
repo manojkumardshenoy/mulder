@@ -44,13 +44,16 @@
   !error "UPX_PATH is not defined !!!"
 !endif
 
-;Web-Site
+; Web-Site
 !define MyWebSite "http://mulder.at.gg/"
 
+; Temp file name
+!define TempFileName "$PLUGINSDIR\MPUI-Installer-r${MPLAYER_BUILDNO}.exe"
 
-;--------------------------------
-;Includes
-;--------------------------------
+
+;--------------------------------------------------------------------------------
+; INCLUDES
+;--------------------------------------------------------------------------------
 
 !include `LogicLib.nsh`
 !include `StdUtils.nsh`
@@ -64,11 +67,12 @@ XPStyle on
 RequestExecutionLevel user
 InstallColors /windows
 
-Name "MPlayer for Windows (Build #${MPLAYER_BUILDNO})"
-OutFile "${MPLAYER_OUTFILE}"
+Name "MPlayer for Windows ${MPLAYER_DATE} (Build #${MPLAYER_BUILDNO})"
+Caption "MPlayer for Windows ${MPLAYER_DATE} (Build #${MPLAYER_BUILDNO})"
 BrandingText "MPlayer-Win32 (Build #${MPLAYER_BUILDNO})"
 Icon "${NSISDIR}\Contrib\Graphics\Icons\orange-install.ico"
 ChangeUI all "${NSISDIR}\Contrib\UIs\sdbarker_tiny.exe"
+OutFile "${MPLAYER_OUTFILE}"
 
 ShowInstDetails show
 AutoCloseWindow true
@@ -138,7 +142,7 @@ Section "-LaunchTheInstaller"
 	
 	InitPluginsDir
 	SetOutPath "$PLUGINSDIR"
-	File "/oname=$PLUGINSDIR\MPUI-SETUP-r${MPLAYER_BUILDNO}.exe" "${MPLAYER_SRCFILE}"
+	File "/oname=${TempFileName}" "${MPLAYER_SRCFILE}"
 	
 	; --------
 
@@ -151,34 +155,34 @@ Section "-LaunchTheInstaller"
 
 	; --------
 
-	RunTryAgain:
-	
-	DetailPrint "ExecShellWait: $PLUGINSDIR\MPUI-SETUP-r${MPLAYER_BUILDNO}.exe"
-	${StdUtils.ExecShellWait} $R1 "$PLUGINSDIR\MPUI-SETUP-r${MPLAYER_BUILDNO}.exe" "open" '$R9'
-	DetailPrint "Result: $R1"
-	
-	StrCmp $R1 "error" RunFailed
-	StrCmp $R1 "no_wait" RunSuccess
-	Sleep 333
-	HideWindow
-	${StdUtils.WaitForProc} $R1
-	Goto RunSuccess
+	${Do}
+		DetailPrint "ExecShellWait: ${TempFileName}"
+		${StdUtils.ExecShellWait} $R1 "${TempFileName}" "open" '$R9'
+		DetailPrint "Result: $R1"
+		
+		${IfThen} $R1 == "no_wait" ${|} Goto SetupCompleted ${|}
+		
+		${If} $R1 != "error"
+			Sleep 333
+			HideWindow
+			${StdUtils.WaitForProc} $R1
+			Goto SetupCompleted
+		${EndIf}
+		
+		MessageBox MB_RETRYCANCEL|MB_ICONSTOP|MB_TOPMOST "Failed to launch the installer. Please try again!" IDCANCEL FallbackMode
+	${Loop}
 	
 	; --------
 
-	RunFailed:
-
-	MessageBox MB_RETRYCANCEL|MB_ICONSTOP|MB_TOPMOST "Failed to launch the installer. Please try again!" IDRETRY RunTryAgain
-
-	; --------
+	FallbackMode:
 
 	ClearErrors
-	ExecShell "open" "$PLUGINSDIR\MPUI-SETUP-r${MPLAYER_BUILDNO}.exe" '$R9' SW_SHOWNORMAL
-	IfErrors 0 RunSuccess
+	ExecShell "open" "${TempFileName}" '$R9' SW_SHOWNORMAL
+	IfErrors 0 SetupCompleted
 
 	ClearErrors
-	ExecShell "" "$PLUGINSDIR\MPUI-SETUP-r${MPLAYER_BUILDNO}.exe" '$R9' SW_SHOWNORMAL
-	IfErrors 0 RunSuccess
+	ExecShell "" "${TempFileName}" '$R9' SW_SHOWNORMAL
+	IfErrors 0 SetupCompleted
 
 	; --------
 
@@ -190,7 +194,12 @@ Section "-LaunchTheInstaller"
 
 	; --------
 	
-	RunSuccess:
+	SetupCompleted:
 
-	Delete /REBOOTOK "$PLUGINSDIR\MPUI-SETUP-r${MPLAYER_BUILDNO}.exe"
+	${For} $R0 1 5
+		Delete "${TempFileName}"
+		Sleep 333
+	${Next}
+	
+	Delete /REBOOTOK "${TempFileName}"
 SectionEnd

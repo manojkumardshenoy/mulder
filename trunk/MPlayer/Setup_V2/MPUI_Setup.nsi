@@ -88,7 +88,7 @@ OutFile "${MPLAYER_OUTFILE}"
 ;--------------------------------------------------------------------------------
 
 SetCompressor /SOLID LZMA
-SetCompressorDictSize 96
+SetCompressorDictSize 128
 
 !packhdr "$%TEMP%\exehead.tmp" '"${UPX_PATH}\upx.exe" --brute "$%TEMP%\exehead.tmp"'
 
@@ -128,8 +128,6 @@ ReserveFile "Resources\Splash.gif"
 
 ; Enable functions
 ${StrRep}
-!insertmacro INSTALLOPTIONS_FUNCTION_READ_CONVERT
-!insertmacro INSTALLOPTIONS_FUNCTION_WRITE_CONVERT
 
 
 ;--------------------------------------------------------------------------------
@@ -139,6 +137,7 @@ ${StrRep}
 Var StartMenuFolder
 Var DetectedCPUType
 Var SelectedCPUType
+Var SelectedTweaks
 
 
 ;--------------------------------------------------------------------------------
@@ -249,6 +248,8 @@ InstType "$(MPLAYER_LANG_INSTTYPE_MINIMAL)"
 Function .onInit
 	StrCpy $SelectedCPUType 0
 	StrCpy $DetectedCPUType 0
+	StrCpy $SelectedTweaks 0
+
 	InitPluginsDir
 
 	; --------
@@ -362,6 +363,7 @@ Section "-Clean Up"
 	Delete "$INSTDIR\*.htm"
 	Delete "$INSTDIR\*.ass"
 	Delete "$INSTDIR\*.m3u8"
+	Delete "$INSTDIR\*.tag"
 	Delete "$INSTDIR\mplayer\config"
 	Delete "$INSTDIR\mplayer\*.conf"
 	
@@ -388,7 +390,7 @@ Section "-Clean Up"
 	${Loop}
 SectionEnd
 
-Section "!MPlayer r${MPLAYER_REVISION}"
+Section "!MPlayer r${MPLAYER_REVISION}" SECID_MPLAYER
 	SectionIn 1 2 RO
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_MPLAYER)"
 	SetOutPath "$INSTDIR"
@@ -431,25 +433,35 @@ Section "!MPlayer r${MPLAYER_REVISION}"
 	SetOutPath "$INSTDIR\legal_stuff"
 	File "Docs\legal_stuff\*.txt"
 	
+	; Write version tag
+	Delete "$INSTDIR\version.tag"
+	WriteINIStr "$INSTDIR\version.tag" "mplayer_version" "build_no" "${MPLAYER_BUILDNO}"
+	WriteINIStr "$INSTDIR\version.tag" "mplayer_version" "pkg_date" "${MPLAYER_DATE}"
+	SetFileAttributes "$INSTDIR\version.tag" FILE_ATTRIBUTE_READONLY
+	
 	; Set file access rights
 	${MakeFilePublic} "$INSTDIR\mplayer\config"
 	${MakeFilePublic} "$INSTDIR\fonts\fonts.conf"
 SectionEnd
 
-Section "!MPUI $(MPLAYER_LANG_FRONT_END) v${MPUI_VERSION}"
-	SectionIn 1 2 RO
-	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_CODECS)"
+Section "!MPUI $(MPLAYER_LANG_FRONT_END) v${MPUI_VERSION}" SECID_MPUI
+	SectionIn 1 2
+	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_MPUI)"
 	
 	; Extract files
 	SetOutPath "$INSTDIR"
 	File "MPUI\MPUI.exe"
 
+	; Extract locales
+	SetOutPath "$INSTDIR\locale"
+	File "MPUI\locale\*.txt"
+
 	; Set file access rights
 	${MakeFilePublic} "$INSTDIR\MPUI.ini"
 SectionEnd
 
-Section "!SMPlayer $(MPLAYER_LANG_FRONT_END) v${SMPLAYER_VERSION}"
-	SectionIn 1 RO
+Section "!SMPlayer $(MPLAYER_LANG_FRONT_END) v${SMPLAYER_VERSION}" SECID_SMPLAYER
+	SectionIn 1
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_CODECS)"
 
 	; SMPlayer files
@@ -486,11 +498,13 @@ Section "!SMPlayer $(MPLAYER_LANG_FRONT_END) v${SMPLAYER_VERSION}"
 	${StrRep} $0 "$INSTDIR\MPlayer.exe" "\" "/"
 	WriteINIStr "$INSTDIR\SMPlayer.ini" "%General" "mplayer_bin" "$0"
 	WriteINIStr "$INSTDIR\SMPlayer.ini" "%General" "driver\vo" "direct3d"
+	WriteINIStr "$INSTDIR\SMPlayer.ini" "gui" "gui" "DefaultGUI"
+	WriteINIStr "$INSTDIR\SMPlayer.ini" "gui" "iconset" "Oxygen-Refit"
 	WriteINIStr "$INSTDIR\SMPlayer.ini" "gui" "style" "Plastique"
 SectionEnd
 
 Section "!$(MPLAYER_LANG_BIN_CODECS) (${CODECS_DATE})"
-	SectionIn 1 RO
+	SectionIn 1
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_CODECS)"
 
 	SetOutPath "$INSTDIR\codecs"
@@ -547,6 +561,7 @@ Section "-Create Shortcuts"
 SectionEnd
 
 Section "$(MPLAYER_LANG_COMPRESS_FILES)"
+	SectionIn 1 2
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_COMPRESS)"
 	
 	File "/oname=$PLUGINSDIR\UPX.exe" "Utils\UPX.exe"
@@ -640,16 +655,17 @@ Section "Uninstall"
 	Delete /REBOOTOK "$INSTDIR\*.htm"
 	Delete /REBOOTOK "$INSTDIR\*.ass"
 	Delete /REBOOTOK "$INSTDIR\*.m3u8"
-	RMDir /r "$INSTDIR/codecs"
-	RMDir /r "$INSTDIR/fonts"
-	RMDir /r "$INSTDIR/imageformats"
-	RMDir /r "$INSTDIR/legal_stuff"
-	RMDir /r "$INSTDIR/mplayer"
-	RMDir /r "$INSTDIR/shortcuts"
-	RMDir /r "$INSTDIR/themes"
-	RMDir /r "$INSTDIR/translations"
+	Delete /REBOOTOK "$INSTDIR\*.tag"
+	RMDir /r "$INSTDIR\codecs"
+	RMDir /r "$INSTDIR\fonts"
+	RMDir /r "$INSTDIR\imageformats"
+	RMDir /r "$INSTDIR\legal_stuff"
+	RMDir /r "$INSTDIR\mplayer"
+	RMDir /r "$INSTDIR\shortcuts"
+	RMDir /r "$INSTDIR\themes"
+	RMDir /r "$INSTDIR\translations"
 	RMDir "$INSTDIR"
-	
+
 	; Virtual Store
 	${GetVirtualStorePath} $0 "$INSTDIR"
 	${If} ${FileExists} "$0\*.*"
@@ -661,6 +677,21 @@ Section "Uninstall"
 
 	${PrintStatus} "$(MUI_UNTEXT_FINISH_TITLE)"
 SectionEnd
+
+
+;--------------------------------------------------------------------------------
+; SECTION SELECTION CHANGED
+;--------------------------------------------------------------------------------
+
+Function .onSelChange
+	${IfNot} ${SectionIsSelected} ${SECID_MPUI}
+	${AndIfNot} ${SectionIsSelected} ${SECID_SMPLAYER}
+		MessageBox MB_TOPMOST|MB_ICONEXCLAMATION "$(MPLAYER_LANG_SELCHANGE)"
+		SectionGetFlags ${SECID_MPUI} $0
+		IntOp $0 $0 | ${SF_SELECTED}
+		SectionSetFlags ${SECID_MPUI} $0
+	${EndIf}
+FunctionEnd
 
 
 ;--------------------------------------------------------------------------------
@@ -694,8 +725,8 @@ Function SelectCPUPage_Show
 	${If} $DetectedCPUType < 2
 	${OrIf} $DetectedCPUType > 6
 		Call DetectCPUType
-		!insertmacro INSTALLOPTIONS_READ_CONVERT $0 "Page_CPU.ini" "Field $DetectedCPUType" "Text"
-		!insertmacro INSTALLOPTIONS_WRITE_CONVERT "Page_CPU.ini" "Field $DetectedCPUType" "Text" "$0  <---"
+		!insertmacro INSTALLOPTIONS_READ $0 "Page_CPU.ini" "Field $DetectedCPUType" "Text"
+		!insertmacro INSTALLOPTIONS_WRITE "Page_CPU.ini" "Field $DetectedCPUType" "Text" "$0  <---"
 	${EndIf}
 
 	; Make sure the current selection is valid
@@ -703,15 +734,15 @@ Function SelectCPUPage_Show
 	${IfThen} $SelectedCPUType > 6 ${|} StrCpy $SelectedCPUType $DetectedCPUType ${|}
 
 	; Translate
-	!insertmacro INSTALLOPTIONS_WRITE_CONVERT "Page_CPU.ini" "Field 1" "Text" "$(MPLAYER_LANG_SELECT_CPU_TYPE)"
-	!insertmacro INSTALLOPTIONS_WRITE_CONVERT "Page_CPU.ini" "Field 7" "Text" "$(MPLAYER_LANG_SELECT_CPU_HINT)"
+	!insertmacro INSTALLOPTIONS_WRITE "Page_CPU.ini" "Field 1" "Text" "$(MPLAYER_LANG_SELECT_CPU_TYPE)"
+	!insertmacro INSTALLOPTIONS_WRITE "Page_CPU.ini" "Field 7" "Text" "$(MPLAYER_LANG_SELECT_CPU_HINT)"
 	
 	; Apply current selection to dialog
 	${For} $0 2 6
 		${If} $0 == $SelectedCPUType
-			!insertmacro INSTALLOPTIONS_WRITE_CONVERT "Page_CPU.ini" "Field $0" "State" "1"
+			!insertmacro INSTALLOPTIONS_WRITE "Page_CPU.ini" "Field $0" "State" "1"
 		${Else}
-			!insertmacro INSTALLOPTIONS_WRITE_CONVERT "Page_CPU.ini" "Field $0" "State" "0"
+			!insertmacro INSTALLOPTIONS_WRITE "Page_CPU.ini" "Field $0" "State" "0"
 		${EndIf}
 	${Next}
 
@@ -723,7 +754,7 @@ Function SelectCPUPage_Validate
 	
 	; Read new selection from dialog
 	${For} $0 2 6
-		!insertmacro INSTALLOPTIONS_READ_CONVERT $1 "$PLUGINSDIR\Page_CPU.ini" "Field $0" "State"
+		!insertmacro INSTALLOPTIONS_READ $1 "Page_CPU.ini" "Field $0" "State"
 		${IfThen} $1 == 1 ${|} StrCpy $SelectedCPUType $0 ${|}
 	${Next}
 	

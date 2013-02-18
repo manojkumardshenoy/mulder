@@ -56,3 +56,4 @@ LangString MPLAYER_LANG_SHORTCUT_SITE_MPWIN32    ${LANG_ENGLISH} "MPlayer on Win
 LangString MPLAYER_LANG_SHORTCUT_SITE_MPLAYER    ${LANG_ENGLISH} "Official MPlayer Web-Site"
 LangString MPLAYER_LANG_INSTTYPE_COMPLETE        ${LANG_ENGLISH} "Complete Installation"
 LangString MPLAYER_LANG_INSTTYPE_MINIMAL         ${LANG_ENGLISH} "Minimal Installation"
+LangString MPLAYER_LANG_SELCHANGE                ${LANG_ENGLISH} "You must select either MPUI or SMPlayer!"
