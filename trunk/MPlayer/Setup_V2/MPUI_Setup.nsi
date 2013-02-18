@@ -87,7 +87,7 @@ OutFile "${MPLAYER_OUTFILE}"
 ; COMPRESSOR
 ;--------------------------------------------------------------------------------
 
-SetCompressor /SOLID LZMA
+SetCompressor /SOLID /FINAL LZMA
 SetCompressorDictSize 128
 
 !packhdr "$%TEMP%\exehead.tmp" '"${UPX_PATH}\upx.exe" --brute "$%TEMP%\exehead.tmp"'
@@ -207,6 +207,7 @@ VIAddVersionKey "Website" "${MPlayerWebSite}"
 !insertmacro  MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder
 Page Custom SelectCPUPage_Show SelectCPUPage_Validate ""
+Page Custom SetTweaksPage_Show SetTweaksPage_Validate ""
 Page Custom LockedListPage_Show
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
@@ -290,7 +291,9 @@ Function .onInit
 	; --------
 	
 	!insertmacro MUI_LANGDLL_DISPLAY
-	!insertmacro INSTALLOPTIONS_EXTRACT_AS "Dialogs\Page_CPU.ini" "Page_CPU.ini"
+	
+	!insertmacro INSTALLOPTIONS_EXTRACT_AS "Dialogs\Page_CPU.ini"    "Page_CPU.ini"
+	!insertmacro INSTALLOPTIONS_EXTRACT_AS "Dialogs\Page_Tweaks.ini" "Page_Tweaks.ini"
 	
 	${IfCmd} MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_OKCANCEL|MB_DEFBUTTON2 "Note: This is an early pre-release version for test only!" IDCANCEL ${||} Quit ${|}
 	
@@ -458,6 +461,9 @@ Section "!MPUI $(MPLAYER_LANG_FRONT_END) v${MPUI_VERSION}" SECID_MPUI
 
 	; Set file access rights
 	${MakeFilePublic} "$INSTDIR\MPUI.ini"
+	
+	; Setup initial config
+	WriteINIStr "$INSTDIR\MPUI.ini" "MPUI" "Params" "-vo direct3d"
 SectionEnd
 
 Section "!SMPlayer $(MPLAYER_LANG_FRONT_END) v${SMPLAYER_VERSION}" SECID_SMPLAYER
@@ -558,6 +564,40 @@ Section "-Create Shortcuts"
 			DetailPrint 'Pin: "$SMPROGRAMS\$StartMenuFolder\SMPlayer.lnk" -> $R1'
 		${EndIf}
 	!insertmacro MUI_STARTMENU_WRITE_END
+SectionEnd
+
+Section "-ApplyTweaks"
+	${PrintProgress} "$(MPLAYER_LANG_STATUS_TWEAKS)"
+	DetailPrint "$(MPLAYER_LANG_APPLYING_TWEAKS)"
+
+	IntOp $0 $SelectedTweaks & 1
+	${If} $0 != 0
+		${If} ${FileExists} "$INSTDIR\SMPlayer.ini"
+			WriteINIStr "$INSTDIR\SMPlayer.ini" "gui" "gui" "SkinGUI"
+			WriteINIStr "$INSTDIR\SMPlayer.ini" "gui" "iconset" "Gonzo"
+		${EndIf}
+	${EndIf}
+
+	IntOp $0 $SelectedTweaks & 2
+	${If} $0 != 0
+		${If} ${FileExists} "$INSTDIR\MPUI.ini"
+			WriteINIStr "$INSTDIR\MPUI.ini" "MPUI" "Params" "-vo gl:yuv=3"
+		${EndIf}
+		${If} ${FileExists} "$INSTDIR\SMPlayer.ini"
+			WriteINIStr "$INSTDIR\SMPlayer.ini" "%General" "driver\vo" "gl:yuv=3"
+		${EndIf}
+	${EndIf}
+
+	IntOp $0 $SelectedTweaks & 4
+	${If} $0 != 0
+		${If} ${FileExists} "$INSTDIR\MPUI.ini"
+			ReadINIStr $1 "$INSTDIR\MPUI.ini" "MPUI" "Params"
+			WriteINIStr "$INSTDIR\MPUI.ini" "MPUI" "Params" "$1 -af volnorm=2"
+		${EndIf}
+		${If} ${FileExists} "$INSTDIR\SMPlayer.ini"
+			WriteINIStr "$INSTDIR\SMPlayer.ini" "defaults" "initial_volnorm" "true"
+		${EndIf}
+	${EndIf}
 SectionEnd
 
 Section "$(MPLAYER_LANG_COMPRESS_FILES)"
@@ -746,6 +786,7 @@ Function SelectCPUPage_Show
 		${EndIf}
 	${Next}
 
+	!insertmacro MUI_HEADER_TEXT "$(MPLAYER_LANG_SELECT_CPU_HEAD)" "$(MPLAYER_LANG_SELECT_CPU_TEXT)"
 	!insertmacro INSTALLOPTIONS_DISPLAY "Page_CPU.ini"
 FunctionEnd
 
@@ -814,6 +855,46 @@ Function DetectCPUType
 	${EndIf}
 	
 	Banner::destroy
+FunctionEnd
+
+
+;--------------------------------------------------------------------------------
+; CUSTOME PAGE: TWEAKS
+;--------------------------------------------------------------------------------
+
+Function SetTweaksPage_Show
+	; Apply current selection to dialog
+	StrCpy $0 1
+	${For} $1 2 4
+		IntOp $2 $0 & $SelectedTweaks
+		${If} $2 != 0
+			!insertmacro INSTALLOPTIONS_WRITE "Page_Tweaks.ini" "Field $1" "State" "1"
+		${Else}
+			!insertmacro INSTALLOPTIONS_WRITE "Page_Tweaks.ini" "Field $1" "State" "0"
+		${EndIf}
+		IntOp $0 $0 << 1
+	${Next}
+	
+	; Translate
+	!insertmacro INSTALLOPTIONS_WRITE "Page_Tweaks.ini" "Field 1" "Text" "$(MPLAYER_LANG_TWEAKS_HINT)"
+	!insertmacro INSTALLOPTIONS_WRITE "Page_Tweaks.ini" "Field 2" "Text" "$(MPLAYER_LANG_TWEAKS_SKINNEDUI)"
+	!insertmacro INSTALLOPTIONS_WRITE "Page_Tweaks.ini" "Field 3" "Text" "$(MPLAYER_LANG_TWEAKS_OPENGL)"
+	!insertmacro INSTALLOPTIONS_WRITE "Page_Tweaks.ini" "Field 4" "Text" "$(MPLAYER_LANG_TWEAKS_VOLNORM)"
+
+	!insertmacro MUI_HEADER_TEXT "$(MPLAYER_LANG_TWEAKS_HEAD)" "$(MPLAYER_LANG_TWEAKS_TEXT)"
+	!insertmacro INSTALLOPTIONS_DISPLAY "Page_Tweaks.ini"
+FunctionEnd
+
+Function SetTweaksPage_Validate
+	StrCpy $SelectedTweaks 0
+	
+	; Read new selection from dialog
+	StrCpy $0 1
+	${For} $1 2 4
+		!insertmacro INSTALLOPTIONS_READ $2 "Page_Tweaks.ini" "Field $1" "State"
+		${IfThen} $2 == 1 ${|} IntOp $SelectedTweaks $SelectedTweaks | $0 ${|}
+		IntOp $0 $0 << 1
+	${Next}
 FunctionEnd
 
 
