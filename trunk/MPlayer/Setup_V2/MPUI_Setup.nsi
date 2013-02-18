@@ -128,6 +128,8 @@ ReserveFile "Resources\Splash.gif"
 
 ; Enable functions
 ${StrRep}
+!insertmacro INSTALLOPTIONS_FUNCTION_READ_CONVERT
+!insertmacro INSTALLOPTIONS_FUNCTION_WRITE_CONVERT
 
 
 ;--------------------------------------------------------------------------------
@@ -230,6 +232,14 @@ UninstPage Custom un.LockedListPage_Show
 ; Translation files
 !include "Language\MPUI_EN.nsh"
 !include "Language\MPUI_DE.nsh"
+
+
+;--------------------------------------------------------------------------------
+; INSTALL TYPES
+;--------------------------------------------------------------------------------
+
+InstType "$(MPLAYER_LANG_INSTTYPE_COMPLETE)"
+InstType "$(MPLAYER_LANG_INSTTYPE_MINIMAL)"
 
 
 ;--------------------------------------------------------------------------------
@@ -356,8 +366,7 @@ Section "-Clean Up"
 	Delete "$INSTDIR\mplayer\*.conf"
 	
 	; Now deal with Virtual Store
-	StrCpy $0 "$INSTDIR" "" 3
-	StrCpy $0 "$LOCALAPPDATA\VirtualStore\$0"
+	${GetVirtualStorePath} $0 "$INSTDIR"
 	Delete "$0\*.ini"
 	Delete "$0\*.ass"
 	Delete "$0\*.m3u8"
@@ -380,7 +389,7 @@ Section "-Clean Up"
 SectionEnd
 
 Section "!MPlayer r${MPLAYER_REVISION}"
-	SectionIn RO
+	SectionIn 1 2 RO
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_MPLAYER)"
 	SetOutPath "$INSTDIR"
 	
@@ -428,6 +437,7 @@ Section "!MPlayer r${MPLAYER_REVISION}"
 SectionEnd
 
 Section "!MPUI $(MPLAYER_LANG_FRONT_END) v${MPUI_VERSION}"
+	SectionIn 1 2 RO
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_CODECS)"
 	
 	; Extract files
@@ -439,6 +449,7 @@ Section "!MPUI $(MPLAYER_LANG_FRONT_END) v${MPUI_VERSION}"
 SectionEnd
 
 Section "!SMPlayer $(MPLAYER_LANG_FRONT_END) v${SMPLAYER_VERSION}"
+	SectionIn 1 RO
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_CODECS)"
 
 	; SMPlayer files
@@ -460,7 +471,8 @@ Section "!SMPlayer $(MPLAYER_LANG_FRONT_END) v${SMPLAYER_VERSION}"
 	SetOutPath "$INSTDIR\shortcuts"
 	File "SMPlayer\shortcuts\*.keys"
 	SetOutPath "$INSTDIR\themes"
-	File /r "SMPlayer\themes\*.*"
+	File /r "SMPlayer\themes\*.css"
+	File /r "SMPlayer\themes\*.png"
 
 	; Set file access rights
 	${MakeFilePublic} "$INSTDIR\SMPlayer.ini"
@@ -478,7 +490,9 @@ Section "!SMPlayer $(MPLAYER_LANG_FRONT_END) v${SMPLAYER_VERSION}"
 SectionEnd
 
 Section "!$(MPLAYER_LANG_BIN_CODECS) (${CODECS_DATE})"
+	SectionIn 1 RO
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_CODECS)"
+
 	SetOutPath "$INSTDIR\codecs"
 	
 	File "Codecs\*.0"
@@ -518,11 +532,12 @@ Section "-Create Shortcuts"
 			CreateShortCut "$SMPROGRAMS\$StartMenuFolder\SMPlayer.lnk" "$INSTDIR\SMPlayer.exe"
 		${EndIf}
 
-		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Readme.lnk" "$INSTDIR\Readme.html"
-		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Manual.lnk" "$INSTDIR\Manual.html"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_README).lnk" "$INSTDIR\Readme.html"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_MANUAL).lnk" "$INSTDIR\Manual.html"
 		
-		${CreateWebLink} "$SMPROGRAMS\$StartMenuFolder\MPlayer Web-Site.url" "http://www.mplayerhq.hu/"
-		${CreateWebLink} "$SMPROGRAMS\$StartMenuFolder\MuldeR's Web-Site.url" "http://www.mulder.at.gg/"
+		${CreateWebLink} "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_SITE_MULDERS).url" "http://www.mulder.at.gg/"
+		${CreateWebLink} "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_SITE_MPWIN32).url" "http://oss.netfarm.it/mplayer-win32.php"
+		${CreateWebLink} "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_SITE_MPLAYER).url" "http://www.mplayerhq.hu/"
 
 		${If} ${FileExists} "$SMPROGRAMS\$StartMenuFolder\SMPlayer.lnk"
 			${StdUtils.InvokeShellVerb} $R1 "$SMPROGRAMS\$StartMenuFolder" "SMPlayer.lnk" ${StdUtils.Const.ISV_PinToTaskbar}
@@ -566,6 +581,7 @@ SectionEnd
 Section "-Update Registry"
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_REGISTRY)"
 	
+	DetailPrint "$(MPLAYER_LANG_WRITING_REGISTRY)"
 	WriteRegStr HKLM "${MPlayerRegPath}" "InstallLocation" "$INSTDIR"
 	WriteRegStr HKLM "${MPlayerRegPath}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
 	WriteRegStr HKLM "${MPlayerRegPath}" "DisplayName" "MPlayer for Windows"
@@ -588,83 +604,60 @@ Section "Uninstall"
 	SetOutPath "$INSTDIR"
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_UNINSTALL)"
 
-	MessageBox MB_TOPMOST|MB_ICONSTOP "Uninstall not implemented yet, sorry :-("
-	Abort
-	
-	; --------------
 	; Startmenu
-	; --------------
-	
-	; !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder
-	; ${IfNot} "$StartMenuFolder" == ""
-		; SetShellVarContext current
-		; ${If} ${FileExists} "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk"
-			; ${StdUtils.InvokeShellVerb} $R1 "$SMPROGRAMS\$StartMenuFolder" "LameXP.lnk" ${StdUtils.Const.ISV_UnpinFromTaskbar}
-			; DetailPrint 'Unpin: "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk" -> $R1'
-		; ${EndIf}
-		; ${If} ${FileExists} "$SMPROGRAMS\$StartMenuFolder\*.*"
-			; Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.lnk"
-			; Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.url"
-			; RMDir "$SMPROGRAMS\$StartMenuFolder"
-		; ${EndIf}
-		
-		; SetShellVarContext all
-		; ${If} ${FileExists} "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk"
-			; ${StdUtils.InvokeShellVerb} $R1 "$SMPROGRAMS\$StartMenuFolder" "LameXP.lnk" ${StdUtils.Const.ISV_UnpinFromTaskbar}
-			; DetailPrint 'Unpin: "$SMPROGRAMS\$StartMenuFolder\LameXP.lnk" -> $R1'
-		; ${EndIf}
-		; ${If} ${FileExists} "$SMPROGRAMS\$StartMenuFolder\*.*"
-			; Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.lnk"
-			; Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.url"
-			; RMDir "$SMPROGRAMS\$StartMenuFolder"
-		; ${EndIf}
-	; ${EndIf}
+	!insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder
+	${IfNot} "$StartMenuFolder" == ""
+		SetShellVarContext current
+		${If} ${FileExists} "$SMPROGRAMS\$StartMenuFolder\SMPlayer.lnk"
+			${StdUtils.InvokeShellVerb} $R1 "$SMPROGRAMS\$StartMenuFolder" "SMPlayer.lnk" ${StdUtils.Const.ISV_UnpinFromTaskbar}
+			DetailPrint 'Unpin: "$SMPROGRAMS\$StartMenuFolder\SMPlayer.lnk" -> $R1'
+		${EndIf}
+		${If} ${FileExists} "$SMPROGRAMS\$StartMenuFolder\*.*"
+			Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.lnk"
+			Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.url"
+			Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.pif"
+			RMDir "$SMPROGRAMS\$StartMenuFolder"
+		${EndIf}
+		SetShellVarContext all
+		${If} ${FileExists} "$SMPROGRAMS\$StartMenuFolder\SMPlayer.lnk"
+			${StdUtils.InvokeShellVerb} $R1 "$SMPROGRAMS\$StartMenuFolder" "SMPlayer.lnk" ${StdUtils.Const.ISV_UnpinFromTaskbar}
+			DetailPrint 'Unpin: "$SMPROGRAMS\$StartMenuFolder\SMPlayer.lnk" -> $R1'
+		${EndIf}
+		${If} ${FileExists} "$SMPROGRAMS\$StartMenuFolder\*.*"
+			Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.lnk"
+			Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.url"
+			Delete /REBOOTOK "$SMPROGRAMS\$StartMenuFolder\*.pif"
+			RMDir "$SMPROGRAMS\$StartMenuFolder"
+		${EndIf}
+	${EndIf}
 
-	; --------------
 	; Files
-	; --------------
-
-	; ReadRegStr $R0 HKLM "${MyRegPath}" "ExecutableName"
-	; ${IfThen} "$R0" == "" ${|} StrCpy $R0 "LameXP.exe" ${|}
-
-	; Delete /REBOOTOK "$INSTDIR\LameXP.exe"
-	; Delete /REBOOTOK "$INSTDIR\$R0"
-	; Delete /REBOOTOK "$INSTDIR\LameXP-Portable.exe"
-	; Delete /REBOOTOK "$INSTDIR\LameXP.exe.sig"
-	; Delete /REBOOTOK "$INSTDIR\LameXP*"
+	Delete /REBOOTOK "$INSTDIR\*.exe"
+	Delete /REBOOTOK "$INSTDIR\*.dll"
+	Delete /REBOOTOK "$INSTDIR\*.ini"
+	Delete /REBOOTOK "$INSTDIR\*.txt"
+	Delete /REBOOTOK "$INSTDIR\*.html"
+	Delete /REBOOTOK "$INSTDIR\*.htm"
+	Delete /REBOOTOK "$INSTDIR\*.ass"
+	Delete /REBOOTOK "$INSTDIR\*.m3u8"
+	RMDir /r "$INSTDIR/codecs"
+	RMDir /r "$INSTDIR/fonts"
+	RMDir /r "$INSTDIR/imageformats"
+	RMDir /r "$INSTDIR/legal_stuff"
+	RMDir /r "$INSTDIR/mplayer"
+	RMDir /r "$INSTDIR/shortcuts"
+	RMDir /r "$INSTDIR/themes"
+	RMDir /r "$INSTDIR/translations"
+	RMDir "$INSTDIR"
 	
-	; Delete /REBOOTOK "$INSTDIR\Changelog.htm"
-	; Delete /REBOOTOK "$INSTDIR\Changelog.html"
-	; Delete /REBOOTOK "$INSTDIR\Contributors.txt"
-	; Delete /REBOOTOK "$INSTDIR\Copying.txt"
-	; Delete /REBOOTOK "$INSTDIR\FAQ.html"
-	; Delete /REBOOTOK "$INSTDIR\Howto.html"
-	; Delete /REBOOTOK "$INSTDIR\LameEnc.sys"
-	; Delete /REBOOTOK "$INSTDIR\License.txt"
-	; Delete /REBOOTOK "$INSTDIR\Manual.html"
-	; Delete /REBOOTOK "$INSTDIR\Readme.htm"
-	; Delete /REBOOTOK "$INSTDIR\ReadMe.txt"
-	; Delete /REBOOTOK "$INSTDIR\PRE_RELEASE_INFO.txt"
-	; Delete /REBOOTOK "$INSTDIR\Settings.cfg"
-	; Delete /REBOOTOK "$INSTDIR\Translate.html"
-	; Delete /REBOOTOK "$INSTDIR\Uninstall.exe"
+	; Virtual Store
+	${GetVirtualStorePath} $0 "$INSTDIR"
+	${If} ${FileExists} "$0\*.*"
+		RMDir /r "$0"
+	${EndIf}
 
-	; RMDir "$INSTDIR"
-
-	; --------------
 	; Registry
-	; --------------
-	
-	; DeleteRegValue HKLM "${MyRegPath}" "InstallLocation"
-	; DeleteRegValue HKLM "${MyRegPath}" "ExecutableName"
-	; DeleteRegValue HKLM "${MyRegPath}" "UninstallString"
-	; DeleteRegValue HKLM "${MyRegPath}" "DisplayName"
-	; DeleteRegValue HKLM "${MyRegPath}" "StartmenuFolder"
-	; DeleteRegValue HKLM "${MyRegPath}" "SetupLanguage"
-	
-	; MessageBox MB_YESNO|MB_TOPMOST "$(MPLAYER_LANG_UNINST_PERSONAL)" IDNO +3
-	; Delete "$LOCALAPPDATA\LoRd_MuldeR\LameXP - Audio Encoder Front-End\config.ini"
-	; Delete "$INSTDIR\*.ini"
+	DeleteRegKey HKLM "${MPlayerRegPath}"
 
 	${PrintStatus} "$(MUI_UNTEXT_FINISH_TITLE)"
 SectionEnd
@@ -674,22 +667,21 @@ SectionEnd
 ; LOCKED-LIST PLUGIN
 ;--------------------------------------------------------------------------------
 
+!macro LockedListPage_Function
+	!insertmacro MUI_HEADER_TEXT "$(MPLAYER_LANG_LOCKEDLIST_HEADER)" "$(MPLAYER_LANG_LOCKEDLIST_TEXT)"
+	LockedList::AddModule "\MPlayer.exe"
+	LockedList::AddModule "\SMPlayer.exe"
+	LockedList::AddModule "\MPUI.exe"
+	LockedList::Dialog /autonext /heading "$(MPLAYER_LANG_LOCKEDLIST_HEADING)" /noprograms "$(MPLAYER_LANG_LOCKEDLIST_NOPROG)" /searching  "$(MPLAYER_LANG_LOCKEDLIST_SEARCH)" /colheadings "$(MPLAYER_LANG_LOCKEDLIST_COLHDR1)" "$(MPLAYER_LANG_LOCKEDLIST_COLHDR2)"
+	Pop $R0
+!macroend
+
 Function LockedListPage_Show
-	; !insertmacro MUI_HEADER_TEXT "$(MPLAYER_LANG_LOCKEDLIST_HEADER)" "$(MPLAYER_LANG_LOCKEDLIST_TEXT)"
-	; !insertmacro GetExecutableName $R0
-	; LockedList::AddModule "\$R0"
-	; LockedList::AddModule "\Uninstall.exe"
-	; LockedList::AddModule "\Au_.exe"
-	; LockedList::Dialog /autonext /heading "$(MPLAYER_LANG_LOCKEDLIST_HEADING)" /noprograms "$(MPLAYER_LANG_LOCKEDLIST_NOPROG)" /searching  "$(MPLAYER_LANG_LOCKEDLIST_SEARCH)" /colheadings "$(MPLAYER_LANG_LOCKEDLIST_COLHDR1)" "$(MPLAYER_LANG_LOCKEDLIST_COLHDR2)"
-	; Pop $R0
+	!insertmacro LockedListPage_Function
 FunctionEnd
 
 Function un.LockedListPage_Show
-	; !insertmacro MUI_HEADER_TEXT "$(MPLAYER_LANG_LOCKEDLIST_HEADER)" "$(MPLAYER_LANG_LOCKEDLIST_TEXT)"
-	; LockedList::AddModule "\LameXP.exe"
-	; LockedList::AddModule "\Uninstall.exe"
-	; LockedList::Dialog /autonext /heading "$(MPLAYER_LANG_LOCKEDLIST_HEADING)" /noprograms "$(MPLAYER_LANG_LOCKEDLIST_NOPROG)" /searching  "$(MPLAYER_LANG_LOCKEDLIST_SEARCH)" /colheadings "$(MPLAYER_LANG_LOCKEDLIST_COLHDR1)" "$(MPLAYER_LANG_LOCKEDLIST_COLHDR2)"
-	; Pop $R0
+	!insertmacro LockedListPage_Function
 FunctionEnd
 
 
@@ -702,8 +694,8 @@ Function SelectCPUPage_Show
 	${If} $DetectedCPUType < 2
 	${OrIf} $DetectedCPUType > 6
 		Call DetectCPUType
-		ReadINIStr $0 "$PLUGINSDIR\Page_CPU.ini" "Field $DetectedCPUType" "Text"
-		WriteINIStr "$PLUGINSDIR\Page_CPU.ini" "Field $DetectedCPUType" "Text" "$0 <---"
+		!insertmacro INSTALLOPTIONS_READ_CONVERT $0 "Page_CPU.ini" "Field $DetectedCPUType" "Text"
+		!insertmacro INSTALLOPTIONS_WRITE_CONVERT "Page_CPU.ini" "Field $DetectedCPUType" "Text" "$0  <---"
 	${EndIf}
 
 	; Make sure the current selection is valid
@@ -711,15 +703,15 @@ Function SelectCPUPage_Show
 	${IfThen} $SelectedCPUType > 6 ${|} StrCpy $SelectedCPUType $DetectedCPUType ${|}
 
 	; Translate
-	WriteINIStr "$PLUGINSDIR\Page_CPU.ini" "Field 1" "Text" "$(MPLAYER_LANG_SELECT_CPU_TYPE)"
-	WriteINIStr "$PLUGINSDIR\Page_CPU.ini" "Field 7" "Text" "$(MPLAYER_LANG_SELECT_CPU_HINT)"
+	!insertmacro INSTALLOPTIONS_WRITE_CONVERT "Page_CPU.ini" "Field 1" "Text" "$(MPLAYER_LANG_SELECT_CPU_TYPE)"
+	!insertmacro INSTALLOPTIONS_WRITE_CONVERT "Page_CPU.ini" "Field 7" "Text" "$(MPLAYER_LANG_SELECT_CPU_HINT)"
 	
 	; Apply current selection to dialog
 	${For} $0 2 6
 		${If} $0 == $SelectedCPUType
-			WriteINIStr "$PLUGINSDIR\Page_CPU.ini" "Field $0" "State" "1"
+			!insertmacro INSTALLOPTIONS_WRITE_CONVERT "Page_CPU.ini" "Field $0" "State" "1"
 		${Else}
-			WriteINIStr "$PLUGINSDIR\Page_CPU.ini" "Field $0" "State" "0"
+			!insertmacro INSTALLOPTIONS_WRITE_CONVERT "Page_CPU.ini" "Field $0" "State" "0"
 		${EndIf}
 	${Next}
 
@@ -731,13 +723,13 @@ Function SelectCPUPage_Validate
 	
 	; Read new selection from dialog
 	${For} $0 2 6
-		ReadINIStr $1 "$PLUGINSDIR\Page_CPU.ini" "Field $0" "State"
+		!insertmacro INSTALLOPTIONS_READ_CONVERT $1 "$PLUGINSDIR\Page_CPU.ini" "Field $0" "State"
 		${IfThen} $1 == 1 ${|} StrCpy $SelectedCPUType $0 ${|}
 	${Next}
 	
 	${If} $SelectedCPUType < 2
 	${OrIf} $SelectedCPUType > 6
-		MessageBox MB_ICONSTOP "Invalid selection!"
+		MessageBox MB_ICONSTOP "Oups, invalid selection detected!"
 		Abort
 	${EndIf}
 FunctionEnd
