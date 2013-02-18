@@ -19,6 +19,7 @@
 ; // http://www.gnu.org/licenses/gpl-2.0.txt
 ; ///////////////////////////////////////////////////////////////////////////////
 
+LangString MPLAYER_LANG_MPLAYER_WIN32            ${LANG_GERMAN} "MPlayer für Windows"
 LangString MPLAYER_LANG_BIN_CODECS               ${LANG_GERMAN} "Binäre Codecs"
 LangString MPLAYER_LANG_FRONT_END                ${LANG_GERMAN} "Oberfläche"
 LangString MPLAYER_LANG_COMPRESS_FILES           ${LANG_GERMAN} "Programmdateien optimieren"
@@ -67,3 +68,5 @@ LangString MPLAYER_LANG_SHORTCUT_SITE_MPLAYER    ${LANG_GERMAN} "Offizielle MPla
 LangString MPLAYER_LANG_INSTTYPE_COMPLETE        ${LANG_GERMAN} "Vollständige Installation"
 LangString MPLAYER_LANG_INSTTYPE_MINIMAL         ${LANG_GERMAN} "Minimale Installation"
 LangString MPLAYER_LANG_SELCHANGE                ${LANG_GERMAN} "Sie müssen entweder MPUI oder SMPlayer auswählen!"
+LangString MPLAYER_LANG_UNINSTALL_OLDVER         ${LANG_GERMAN} "Eine alte Version von MPlayer für Windows muss zunächst entfernt werden!$\nKlicken Sie auf 'OK' um die Deinstallation zu starten..."
+LangString MPLAYER_LANG_UNINSTALL_WAIT           ${LANG_GERMAN} "Bitte klicken Sie auf 'OK' sobald die Deinstallation fertig ist!"
