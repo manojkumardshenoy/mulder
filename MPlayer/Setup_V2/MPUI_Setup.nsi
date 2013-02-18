@@ -408,14 +408,19 @@ Section "!MPlayer r${MPLAYER_REVISION}"
 	
 	; Other MPlayer-related files
 	File "Builds\MPlayer-generic\dsnative.dll"
-	File "/oname=Manual.html" "Builds\MPlayer-generic\MPlayer.man.html"
-	File "Docs\Readme.html"
 	SetOutPath "$INSTDIR\mplayer"
 	File "Builds\MPlayer-generic\mplayer\config"
 	SetOutPath "$INSTDIR\fonts"
 	File "Builds\MPlayer-generic\fonts\fonts.conf"
 	SetOutPath "$INSTDIR\fonts\conf.d"
 	File "Builds\MPlayer-generic\fonts\conf.d\*.conf"
+	
+	; Documents
+	SetOutPath "$INSTDIR"
+	File "/oname=Manual.html" "Builds\MPlayer-generic\MPlayer.man.html"
+	File "Docs\Readme.html"
+	SetOutPath "$INSTDIR\legal_stuff"
+	File "Docs\legal_stuff\*.txt"
 	
 	; Set file access rights
 	${MakeFilePublic} "$INSTDIR\mplayer\config"
@@ -436,7 +441,7 @@ SectionEnd
 Section "!SMPlayer $(MPLAYER_LANG_FRONT_END) v${SMPLAYER_VERSION}"
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_CODECS)"
 
-	; Extract files
+	; SMPlayer files
 	SetOutPath "$INSTDIR"
 	File "SMPlayer\SMPlayer.exe"
 	File "SMPlayer\libgcc_s_dw2-1.dll"
@@ -447,12 +452,23 @@ Section "!SMPlayer $(MPLAYER_LANG_FRONT_END) v${SMPLAYER_VERSION}"
 	File "SMPlayer\QtXml4.dll"
 	File "SMPlayer\zlib1.dll"
 
+	; Additional SMPlayer files
+	SetOutPath "$INSTDIR\translations"
+	File "SMPlayer\translations\*.qm"
+	SetOutPath "$INSTDIR\imageformats"
+	File "SMPlayer\imageformats\*.dll"
+	SetOutPath "$INSTDIR\shortcuts"
+	File "SMPlayer\shortcuts\*.keys"
+	SetOutPath "$INSTDIR\themes"
+	File /r "SMPlayer\themes\*.*"
+
 	; Set file access rights
 	${MakeFilePublic} "$INSTDIR\SMPlayer.ini"
 	${MakeFilePublic} "$INSTDIR\favorites.m3u8"
 	${MakeFilePublic} "$INSTDIR\radio.m3u8"
 	${MakeFilePublic} "$INSTDIR\tv.m3u8"
 	${MakeFilePublic} "$INSTDIR\styles.ass"
+	${MakeFilePublic} "$INSTDIR\shortcuts\default.keys"
 	
 	; Setup initial config
 	${StrRep} $0 "$INSTDIR\MPlayer.exe" "\" "/"
