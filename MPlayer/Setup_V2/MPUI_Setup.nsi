@@ -75,11 +75,12 @@ RequestExecutionLevel admin
 ShowInstDetails show
 ShowUninstDetails show
 
-Name "MPlayer for Windows (Build #${MPLAYER_BUILDNO})"
-OutFile "${MPLAYER_OUTFILE}"
+Name "MPlayer for Windows ${MPLAYER_DATE} (Build #${MPLAYER_BUILDNO})"
+Caption "MPlayer for Windows ${MPLAYER_DATE} (Build #${MPLAYER_BUILDNO})"
 BrandingText "MPlayer-Win32 (Build #${MPLAYER_BUILDNO})"
 InstallDir "$PROGRAMFILES\MPlayer for Windows"
 InstallDirRegKey HKLM "${MPlayerRegPath}" "InstallLocation"
+OutFile "${MPLAYER_OUTFILE}"
 
 
 ;--------------------------------------------------------------------------------
@@ -164,10 +165,10 @@ VIAddVersionKey "Website" "${MPlayerWebSite}"
 
 !define MUI_ABORTWARNING
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT HKLM
-!define MUI_STARTMENUPAGE_REGISTRY_KEY "${MPlayerWebSite}"
+!define MUI_STARTMENUPAGE_REGISTRY_KEY "${MPlayerRegPath}"
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "StartmenuFolder"
 !define MUI_LANGDLL_REGISTRY_ROOT HKLM
-!define MUI_LANGDLL_REGISTRY_KEY "${MPlayerWebSite}"
+!define MUI_LANGDLL_REGISTRY_KEY "${MPlayerRegPath}"
 !define MUI_LANGDLL_REGISTRY_VALUENAME "SetupLanguage"
 !define MUI_STARTMENUPAGE_DEFAULTFOLDER "MPlayer for Windows"
 !define MUI_FINISHPAGE_NOAUTOCLOSE
@@ -552,6 +553,10 @@ Section "-Update Registry"
 	WriteRegStr HKLM "${MPlayerRegPath}" "InstallLocation" "$INSTDIR"
 	WriteRegStr HKLM "${MPlayerRegPath}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
 	WriteRegStr HKLM "${MPlayerRegPath}" "DisplayName" "MPlayer for Windows"
+	WriteRegStr HKLM "${MPlayerRegPath}" "URLInfoAbout" "http://mulder.at.gg/"
+	WriteRegStr HKLM "${MPlayerRegPath}" "URLUpdateInfo" "http://mulder.at.gg/"
+	WriteRegDWORD HKLM "${MPlayerRegPath}" "NoModify" 1
+	WriteRegDWORD HKLM "${MPlayerRegPath}" "NoRepair" 1
 SectionEnd
 
 Section "-Finished"
@@ -681,6 +686,8 @@ Function SelectCPUPage_Show
 	${If} $DetectedCPUType < 2
 	${OrIf} $DetectedCPUType > 6
 		Call DetectCPUType
+		ReadINIStr $0 "$PLUGINSDIR\Page_CPU.ini" "Field $DetectedCPUType" "Text"
+		WriteINIStr "$PLUGINSDIR\Page_CPU.ini" "Field $DetectedCPUType" "Text" "$0 <---"
 	${EndIf}
 
 	; Make sure the current selection is valid
@@ -778,9 +785,9 @@ FunctionEnd
 Function RunAppFunction
 	!insertmacro DisableNextButton $R0
 	${If} ${FileExists} "$INSTDIR\SMPlayer.exe"
-		${StdUtils.ExecShellAsUser} $R0 "$INSTDIR\SMPlayer.exe" "open" "http://metal-office.rautemusik.fm"
+		${StdUtils.ExecShellAsUser} $R0 "$INSTDIR\SMPlayer.exe" "open" "http://lounge-office.rautemusik.fm/"
 	${Else}
-		${StdUtils.ExecShellAsUser} $R0 "$INSTDIR\MPUI.exe" "open" "http://metal-office.rautemusik.fm"
+		${StdUtils.ExecShellAsUser} $R0 "$INSTDIR\MPUI.exe" "open" "http://lounge-office.rautemusik.fm/"
 	${EndIf}
 FunctionEnd
 
