@@ -40,3 +40,4 @@ LangString MPLAYER_LANG_STATUS_SHORTCUTS         ${LANG_GERMAN} "Erzeuge Verknüp
 LangString MPLAYER_LANG_STATUS_UNINSTALL         ${LANG_GERMAN} "Deinstalliere MPlayer"
 LangString MPLAYER_LANG_SELECTED_TYPE            ${LANG_GERMAN} "Ausgewählter CPU-Typ"
 LangString MPLAYER_LANG_UPDATING_FONTCACHE       ${LANG_GERMAN} "Der Font-Cache wird aktualisiert..."
+LangString MPLAYER_LANG_STILL_RUNNING            ${LANG_GERMAN} "MPlayer konnte nicht gelöscht werden. Läuft MPlayer noch?$\nBitte MPlayer schließen und erneut versuchen!"
