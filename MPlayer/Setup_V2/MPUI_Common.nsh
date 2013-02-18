@@ -114,3 +114,12 @@ FunctionEnd
 	${EndIf}
 	AccessControl::GrantOnFile "${filename}" "(S-1-1-0)" "FullAccess"
 !macroend
+
+; ----------------------------------------------------------------------------
+
+!define GetVirtualStorePath "!insertmacro _GetVirtualStorePath"
+
+!macro _GetVirtualStorePath out path
+	StrCpy ${out} '${path}' "" 3
+	StrCpy ${out} '$LOCALAPPDATA\VirtualStore\$0'
+!macroend
