@@ -60,10 +60,10 @@
   !error "UPX_PATH is not defined !!!"
 !endif
 
-;UUID
+; UUID
 !define MPlayerRegPath "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{97D341C8-B0D1-4E4A-A49A-C30B52F168E9}"
 
-;Web-Site
+; Web-Site
 !define MPlayerWebSite "http://mplayerhq.hu/"
 
 
@@ -203,11 +203,12 @@ VIAddVersionKey "Website" "${MPlayerWebSite}"
 !define MUI_FINISHPAGE_TITLE_3LINES
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "Docs\License.txt"
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW CheckForUpdate
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro  MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder
-Page Custom SelectCPUPage_Show SelectCPUPage_Validate ""
-Page Custom SetTweaksPage_Show SetTweaksPage_Validate ""
+Page Custom SelectCPUPage_Show SelectCPUPage_Validate
+Page Custom SetTweaksPage_Show
 Page Custom LockedListPage_Show
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
@@ -295,7 +296,9 @@ Function .onInit
 	!insertmacro INSTALLOPTIONS_EXTRACT_AS "Dialogs\Page_CPU.ini"    "Page_CPU.ini"
 	!insertmacro INSTALLOPTIONS_EXTRACT_AS "Dialogs\Page_Tweaks.ini" "Page_Tweaks.ini"
 	
-	${IfCmd} MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_OKCANCEL|MB_DEFBUTTON2 "Note: This is an early pre-release version for test only!" IDCANCEL ${||} Quit ${|}
+	!ifdef PRE_RELEASE
+		${IfCmd} MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_OKCANCEL|MB_DEFBUTTON2 "Note: This is an early pre-release version for test only!" IDCANCEL ${||} Quit ${|}
+	!endif
 	
 	; --------
 
@@ -351,14 +354,13 @@ FunctionEnd
 ; INSTALL SECTIONS
 ;--------------------------------------------------------------------------------
 
-Section "-PreInit"
-	SetShellVarContext all
-SectionEnd
-
 Section "-Clean Up"
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_CLEAN)"
-	
-	; Uninstall old version (Setup v1)
+
+	SetShellVarContext all
+	SetOutPath "$INSTDIR"
+
+	; Uninstall old version (aka "Setup v1")
 	ClearErrors
 	ReadRegStr $0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{DB9E4EAB-2717-499F-8D56-4CC8A644AB60}" "InstallLocation"
 	${IfNot} ${Errors}
@@ -369,10 +371,25 @@ Section "-Clean Up"
 		Delete "$PLUGINSDIR\Uninstall-V1.exe"
 		BringToFront
 	${EndIf}
-	
+
 	; Clean registry
 	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{DB9E4EAB-2717-499F-8D56-4CC8A644AB60}"
+	DeleteRegKey HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{DB9E4EAB-2717-499F-8D56-4CC8A644AB60}"
 	DeleteRegValue HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "MPlayerForWindows_UpdateReminder"
+	DeleteRegValue HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "MPlayerForWindows_UpdateReminder"
+
+	; Make sure MPlayer isn't running
+	${Do}
+		ClearErrors
+		Delete "$INSTDIR\MPlayer.exe"
+		Delete "$INSTDIR\SMPlayer.exe"
+		Delete "$INSTDIR\MPUI.exe"
+		${If} ${Errors}
+			${IfCmd} MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_OKCANCEL "$(MPLAYER_LANG_STILL_RUNNING)" IDCANCEL ${||} Abort ${|}
+		${Else}
+			${Break}
+		${EndIf}
+	${Loop}
 
 	; Clean the install folder
 	Delete "$INSTDIR\*.exe"
@@ -394,27 +411,20 @@ Section "-Clean Up"
 	Delete "$0\*.m3u8"
 	Delete "$0\mplayer\config"
 	Delete "$0\mplayer\*.conf"
-	
-	; Make sure MPlayer isn't running
-	${Do}
-		Delete "$INSTDIR\MPlayer.exe"
-		Delete "$INSTDIR\SMPlayer.exe"
-		Delete "$INSTDIR\MPUI.exe"
-		${If} ${FileExists} "$INSTDIR\MPlayer.exe"
-		${OrIf} ${FileExists} "$INSTDIR\SMPlayer.exe"
-		${OrIf} ${FileExists} "$INSTDIR\MPUI.exe"
-			${IfCmd} MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_OKCANCEL "$(MPLAYER_LANG_STILL_RUNNING)" IDCANCEL ${||} Abort ${|}
-		${Else}
-			${Break}
-		${EndIf}
-	${Loop}
 SectionEnd
 
 Section "!MPlayer r${MPLAYER_REVISION}" SECID_MPLAYER
 	SectionIn 1 2 RO
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_MPLAYER)"
 	SetOutPath "$INSTDIR"
-	
+
+	; Assert
+	${If} $SelectedCPUType < 2
+	${OrIf} $SelectedCPUType > 6
+		MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_OK "Internal error: Invalid CPU type selection detected!"
+		Abort
+	${EndIf}
+
 	; MPlayer.exe
 	${If} $SelectedCPUType == 2
 		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE): core2"
@@ -436,8 +446,9 @@ Section "!MPlayer r${MPLAYER_REVISION}" SECID_MPLAYER
 		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE): generic"
 		File "Builds\MPlayer-generic\MPlayer.exe"
 	${EndIf}
-	
+
 	; Other MPlayer-related files
+	File ".Compile\Updater.exe"
 	File "Builds\MPlayer-generic\dsnative.dll"
 	SetOutPath "$INSTDIR\mplayer"
 	File "Builds\MPlayer-generic\mplayer\config"
@@ -445,20 +456,29 @@ Section "!MPlayer r${MPLAYER_REVISION}" SECID_MPLAYER
 	File "Builds\MPlayer-generic\fonts\fonts.conf"
 	SetOutPath "$INSTDIR\fonts\conf.d"
 	File "Builds\MPlayer-generic\fonts\conf.d\*.conf"
-	
+
 	; Documents
 	SetOutPath "$INSTDIR"
+	File "GPL.txt"
 	File "/oname=Manual.html" "Builds\MPlayer-generic\MPlayer.man.html"
 	File "Docs\Readme.html"
 	SetOutPath "$INSTDIR\legal_stuff"
 	File "Docs\legal_stuff\*.txt"
-	
+
 	; Write version tag
-	Delete "$INSTDIR\version.tag"
+	${Do}
+		ClearErrors
+		Delete "$INSTDIR\version.tag"
+		${If} ${Errors}
+			${IfCmd} MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_OKCANCEL "$(MPLAYER_LANG_TAG_WRITE)" IDCANCEL ${||} Abort ${|}
+		${Else}
+			${Break}
+		${EndIf}
+	${Loop}
 	WriteINIStr "$INSTDIR\version.tag" "mplayer_version" "build_no" "${MPLAYER_BUILDNO}"
 	WriteINIStr "$INSTDIR\version.tag" "mplayer_version" "pkg_date" "${MPLAYER_DATE}"
 	SetFileAttributes "$INSTDIR\version.tag" FILE_ATTRIBUTE_READONLY
-	
+
 	; Set file access rights
 	${MakeFilePublic} "$INSTDIR\mplayer\config"
 	${MakeFilePublic} "$INSTDIR\fonts\fonts.conf"
@@ -480,7 +500,11 @@ Section "!MPUI $(MPLAYER_LANG_FRONT_END) v${MPUI_VERSION}" SECID_MPUI
 	${MakeFilePublic} "$INSTDIR\MPUI.ini"
 	
 	; Setup initial config
+	ClearErrors
 	WriteINIStr "$INSTDIR\MPUI.ini" "MPUI" "Params" "-vo direct3d"
+	${If} ${Errors}
+		${IfCmd} MessageBox MB_TOPMOST|MB_ICONSTOP|MB_DEFBUTTON2|MB_OKCANCEL "$(MPLAYER_LANG_CONFIG_MPUI)" IDCANCEL ${||} Abort ${|}
+	${EndIf}
 SectionEnd
 
 Section "!SMPlayer $(MPLAYER_LANG_FRONT_END) v${SMPLAYER_VERSION}" SECID_SMPLAYER
@@ -519,11 +543,15 @@ Section "!SMPlayer $(MPLAYER_LANG_FRONT_END) v${SMPLAYER_VERSION}" SECID_SMPLAYE
 	
 	; Setup initial config
 	${StrRep} $0 "$INSTDIR\MPlayer.exe" "\" "/"
+	ClearErrors
 	WriteINIStr "$INSTDIR\SMPlayer.ini" "%General" "mplayer_bin" "$0"
 	WriteINIStr "$INSTDIR\SMPlayer.ini" "%General" "driver\vo" "direct3d"
 	WriteINIStr "$INSTDIR\SMPlayer.ini" "gui" "gui" "DefaultGUI"
 	WriteINIStr "$INSTDIR\SMPlayer.ini" "gui" "iconset" "Oxygen-Refit"
 	WriteINIStr "$INSTDIR\SMPlayer.ini" "gui" "style" "Plastique"
+	${If} ${Errors}
+		${IfCmd} MessageBox MB_TOPMOST|MB_ICONSTOP|MB_DEFBUTTON2|MB_OKCANCEL "$(MPLAYER_LANG_CONFIG_SMPLAYER)" IDCANCEL ${||} Abort ${|}
+	${EndIf}
 SectionEnd
 
 Section "!$(MPLAYER_LANG_BIN_CODECS) (${CODECS_DATE})"
@@ -569,6 +597,7 @@ Section "-Create Shortcuts"
 			CreateShortCut "$SMPROGRAMS\$StartMenuFolder\SMPlayer.lnk" "$INSTDIR\SMPlayer.exe"
 		${EndIf}
 
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_UPDATE).lnk" "$INSTDIR\Updater.exe"
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_README).lnk" "$INSTDIR\Readme.html"
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_MANUAL).lnk" "$INSTDIR\Manual.html"
 		
@@ -661,6 +690,32 @@ Section "-Update Registry"
 	WriteRegStr HKLM "${MPlayerRegPath}" "URLUpdateInfo" "http://mulder.at.gg/"
 	WriteRegDWORD HKLM "${MPlayerRegPath}" "NoModify" 1
 	WriteRegDWORD HKLM "${MPlayerRegPath}" "NoRepair" 1
+	
+	; Reset auto update interval
+	DeleteRegValue HKLM "${MPlayerRegPath}" "LastUpdateCheck"
+	DeleteRegValue HKCU "${MPlayerRegPath}" "LastUpdateCheck"
+SectionEnd
+
+Section "$(MPLAYER_LANG_INST_AUTOUPDATE)" SECID_AUTOUPDATE
+	SectionIn 1 2
+	DetailPrint "$(MPLAYER_LANG_WRITING_REGISTRY)"
+	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "MPlayerForWindows_AutoUpdateV2" '"$INSTDIR\Updater.exe" /AutoCheck'
+SectionEnd
+
+Section "-Protect Files"
+	SetFileAttributes "$INSTDIR\MPlayer.exe" FILE_ATTRIBUTE_READONLY
+	SetFileAttributes "$INSTDIR\dsnative.dll" FILE_ATTRIBUTE_READONLY
+	SetFileAttributes "$INSTDIR\MPUI.exe" FILE_ATTRIBUTE_READONLY
+	SetFileAttributes "$INSTDIR\SMPlayer.exe" FILE_ATTRIBUTE_READONLY
+	SetFileAttributes "$INSTDIR\Updater.exe" FILE_ATTRIBUTE_READONLY
+	SetFileAttributes "$INSTDIR\QtCore4.dll" FILE_ATTRIBUTE_READONLY
+	SetFileAttributes "$INSTDIR\QtGui4.dll" FILE_ATTRIBUTE_READONLY
+	SetFileAttributes "$INSTDIR\QtNetwork4.dll" FILE_ATTRIBUTE_READONLY
+	SetFileAttributes "$INSTDIR\QtXml4.dll" FILE_ATTRIBUTE_READONLY
+	SetFileAttributes "$INSTDIR\dsnative.dll" FILE_ATTRIBUTE_READONLY
+	SetFileAttributes "$INSTDIR\libgcc_s_dw2-1.dll" FILE_ATTRIBUTE_READONLY
+	SetFileAttributes "$INSTDIR\mingwm10.dll" FILE_ATTRIBUTE_READONLY
+	SetFileAttributes "$INSTDIR\zlib1.dll" FILE_ATTRIBUTE_READONLY
 SectionEnd
 
 Section "-Finished"
@@ -732,6 +787,7 @@ Section "Uninstall"
 
 	; Registry
 	DeleteRegKey HKLM "${MPlayerRegPath}"
+	DeleteRegKey HKCU "${MPlayerRegPath}"
 
 	${PrintStatus} "$(MUI_UNTEXT_FINISH_TITLE)"
 SectionEnd
@@ -749,6 +805,16 @@ Function .onSelChange
 		IntOp $0 $0 | ${SF_SELECTED}
 		SectionSetFlags ${SECID_MPUI} $0
 	${EndIf}
+
+	${IfNot} ${SectionIsSelected} ${SECID_AUTOUPDATE}
+		StrCpy $0 "nope"
+		${IfCmd} MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_YESNO|MB_DEFBUTTON2 "$(MPLAYER_LANG_SEL_AUTOUPDATE)" IDNO ${||} StrCpy $0 "ok" ${|}
+		${If} "$0" == "ok"
+			SectionGetFlags ${SECID_AUTOUPDATE} $0
+			IntOp $0 $0 | ${SF_SELECTED}
+			SectionSetFlags ${SECID_AUTOUPDATE} $0
+		${EndIf}
+	${EndIf}
 FunctionEnd
 
 
@@ -761,7 +827,7 @@ FunctionEnd
 	LockedList::AddModule "\MPlayer.exe"
 	LockedList::AddModule "\SMPlayer.exe"
 	LockedList::AddModule "\MPUI.exe"
-	LockedList::Dialog /autonext /heading "$(MPLAYER_LANG_LOCKEDLIST_HEADING)" /noprograms "$(MPLAYER_LANG_LOCKEDLIST_NOPROG)" /searching  "$(MPLAYER_LANG_LOCKEDLIST_SEARCH)" /colheadings "$(MPLAYER_LANG_LOCKEDLIST_COLHDR1)" "$(MPLAYER_LANG_LOCKEDLIST_COLHDR2)"
+	LockedList::Dialog /autonext /ignore "$(MPLAYER_LANG_IGNORE)" /heading "$(MPLAYER_LANG_LOCKEDLIST_HEADING)" /noprograms "$(MPLAYER_LANG_LOCKEDLIST_NOPROG)" /searching  "$(MPLAYER_LANG_LOCKEDLIST_SEARCH)" /colheadings "$(MPLAYER_LANG_LOCKEDLIST_COLHDR1)" "$(MPLAYER_LANG_LOCKEDLIST_COLHDR2)"
 	Pop $R0
 !macroend
 
@@ -804,21 +870,29 @@ Function SelectCPUPage_Show
 		${EndIf}
 	${Next}
 
+	; Display dialog
 	!insertmacro MUI_HEADER_TEXT "$(MPLAYER_LANG_SELECT_CPU_HEAD)" "$(MPLAYER_LANG_SELECT_CPU_TEXT)"
 	!insertmacro INSTALLOPTIONS_DISPLAY "Page_CPU.ini"
-FunctionEnd
 
-Function SelectCPUPage_Validate
-	StrCpy $SelectedCPUType 0
-	
 	; Read new selection from dialog
+	StrCpy $SelectedCPUType 0
 	${For} $0 2 6
 		!insertmacro INSTALLOPTIONS_READ $1 "Page_CPU.ini" "Field $0" "State"
 		${IfThen} $1 == 1 ${|} StrCpy $SelectedCPUType $0 ${|}
 	${Next}
+FunctionEnd
+
+Function SelectCPUPage_Validate
+	; Read new selection from dialog
+	StrCpy $2 0
+	${For} $0 2 6
+		!insertmacro INSTALLOPTIONS_READ $1 "Page_CPU.ini" "Field $0" "State"
+		${IfThen} $1 == 1 ${|} StrCpy $2 $0 ${|}
+	${Next}
 	
-	${If} $SelectedCPUType < 2
-	${OrIf} $SelectedCPUType > 6
+	; Validate selection
+	${If} $2 < 2
+	${OrIf} $2 > 6
 		MessageBox MB_ICONSTOP "Oups, invalid selection detected!"
 		Abort
 	${EndIf}
@@ -899,13 +973,10 @@ Function SetTweaksPage_Show
 	!insertmacro INSTALLOPTIONS_WRITE "Page_Tweaks.ini" "Field 3" "Text" "$(MPLAYER_LANG_TWEAKS_OPENGL)"
 	!insertmacro INSTALLOPTIONS_WRITE "Page_Tweaks.ini" "Field 4" "Text" "$(MPLAYER_LANG_TWEAKS_VOLNORM)"
 
+	; Display dialog
 	!insertmacro MUI_HEADER_TEXT "$(MPLAYER_LANG_TWEAKS_HEAD)" "$(MPLAYER_LANG_TWEAKS_TEXT)"
 	!insertmacro INSTALLOPTIONS_DISPLAY "Page_Tweaks.ini"
-FunctionEnd
 
-Function SetTweaksPage_Validate
-	StrCpy $SelectedTweaks 0
-	
 	; Read new selection from dialog
 	StrCpy $0 1
 	${For} $1 2 4
@@ -913,6 +984,22 @@ Function SetTweaksPage_Validate
 		${IfThen} $2 == 1 ${|} IntOp $SelectedTweaks $SelectedTweaks | $0 ${|}
 		IntOp $0 $0 << 1
 	${Next}
+FunctionEnd
+
+
+;--------------------------------------------------------------------------------
+; CHECK FOR UPDATE MODE
+;--------------------------------------------------------------------------------
+
+Function CheckForUpdate
+	${StdUtils.GetParameter} $0 "Update" "?"
+	${IfNot} "$0" == "?"
+		FindWindow $1 "#32770" "" $HWNDPARENT
+		GetDlgItem $2 $1 1019
+		EnableWindow $2 0
+		GetDlgItem $2 $1 1001
+		EnableWindow $2 0
+	${EndIf}
 FunctionEnd
 
 
