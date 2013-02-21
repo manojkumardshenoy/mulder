@@ -136,6 +136,7 @@ ${StrRep}
 
 Var StartMenuFolder
 Var DetectedCPUType
+Var DetectedCPUCores
 Var SelectedCPUType
 Var SelectedTweaks
 
@@ -250,6 +251,7 @@ InstType "$(MPLAYER_LANG_INSTTYPE_MINIMAL)"
 Function .onInit
 	StrCpy $SelectedCPUType 0
 	StrCpy $DetectedCPUType 0
+	StrCpy $DetectedCPUCores 0
 	StrCpy $SelectedTweaks 0
 
 	InitPluginsDir
@@ -302,9 +304,11 @@ Function .onInit
 	
 	; --------
 
-	File "/oname=$PLUGINSDIR\Splash.gif" "Resources\Splash.gif"
-	newadvsplash::show 3000 1000 500 -1 /NOCANCEL "$PLUGINSDIR\Splash.gif"
-	Delete /REBOOTOK "$PLUGINSDIR\Splash.gif"
+	${IfNot} ${Silent}
+		File "/oname=$PLUGINSDIR\Splash.gif" "Resources\Splash.gif"
+		newadvsplash::show 3000 1000 500 -1 /NOCANCEL "$PLUGINSDIR\Splash.gif"
+		Delete /REBOOTOK "$PLUGINSDIR\Splash.gif"
+	${EndIf}
 FunctionEnd
 
 Function un.onInit
@@ -418,34 +422,33 @@ Section "!MPlayer r${MPLAYER_REVISION}" SECID_MPLAYER
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_INST_MPLAYER)"
 	SetOutPath "$INSTDIR"
 
-	; Assert
-	${If} $SelectedCPUType < 2
-	${OrIf} $SelectedCPUType > 6
-		MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_OK "Internal error: Invalid CPU type selection detected!"
-		Abort
+	; Detect
+	${If} ${Silent}
+		Call DetectCPUType
+		StrCpy $SelectedCPUType $DetectedCPUType
 	${EndIf}
 
 	; MPlayer.exe
-	${If} $SelectedCPUType == 2
-		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE): core2"
-		File "Builds\MPlayer-core2\MPlayer.exe"
-	${EndIf}
-	${If} $SelectedCPUType == 3
-		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE): corei7"
-		File "Builds\MPlayer-corei7\MPlayer.exe"
-	${EndIf}
-	${If} $SelectedCPUType == 4
-		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE): k8-sse3"
-		File "Builds\MPlayer-k8-sse3\MPlayer.exe"
-	${EndIf}
-	${If} $SelectedCPUType == 5
-		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE): bdver1"
-		File "Builds\MPlayer-bdver1\MPlayer.exe"
-	${EndIf}
-	${If} $SelectedCPUType == 6
-		DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE): generic"
-		File "Builds\MPlayer-generic\MPlayer.exe"
-	${EndIf}
+	${Select} $SelectedCPUType
+		${Case} "2"
+			DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE): core2"
+			File "Builds\MPlayer-core2\MPlayer.exe"
+		${Case} "3"
+			DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE): corei7"
+			File "Builds\MPlayer-corei7\MPlayer.exe"
+		${Case} "4"
+			DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE): k8-sse3"
+			File "Builds\MPlayer-k8-sse3\MPlayer.exe"
+		${Case} "5"
+			DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE): bdver1"
+			File "Builds\MPlayer-bdver1\MPlayer.exe"
+		${Case} "6"
+			DetailPrint "$(MPLAYER_LANG_SELECTED_TYPE): generic"
+			File "Builds\MPlayer-generic\MPlayer.exe"
+		${CaseElse}
+			MessageBox MB_TOPMOST|MB_ICONEXCLAMATION|MB_OK "Internal error: Invalid CPU type selection detected!"
+			Abort
+	${EndSelect}
 
 	; Other MPlayer-related files
 	File ".Compile\Updater.exe"
@@ -498,10 +501,10 @@ Section "!MPUI $(MPLAYER_LANG_FRONT_END) v${MPUI_VERSION}" SECID_MPUI
 
 	; Set file access rights
 	${MakeFilePublic} "$INSTDIR\MPUI.ini"
-	
+
 	; Setup initial config
 	ClearErrors
-	WriteINIStr "$INSTDIR\MPUI.ini" "MPUI" "Params" "-vo direct3d"
+	WriteINIStr "$INSTDIR\MPUI.ini" "MPUI" "Params" "-vo direct3d -lavdopts threads=$DetectedCPUCores"
 	${If} ${Errors}
 		${IfCmd} MessageBox MB_TOPMOST|MB_ICONSTOP|MB_DEFBUTTON2|MB_OKCANCEL "$(MPLAYER_LANG_CONFIG_MPUI)" IDCANCEL ${||} Abort ${|}
 	${EndIf}
@@ -549,6 +552,7 @@ Section "!SMPlayer $(MPLAYER_LANG_FRONT_END) v${SMPLAYER_VERSION}" SECID_SMPLAYE
 	WriteINIStr "$INSTDIR\SMPlayer.ini" "gui" "gui" "DefaultGUI"
 	WriteINIStr "$INSTDIR\SMPlayer.ini" "gui" "iconset" "Oxygen-Refit"
 	WriteINIStr "$INSTDIR\SMPlayer.ini" "gui" "style" "Plastique"
+	WriteINIStr "$INSTDIR\SMPlayer.ini" "performance" "threads" "$DetectedCPUCores"
 	${If} ${Errors}
 		${IfCmd} MessageBox MB_TOPMOST|MB_ICONSTOP|MB_DEFBUTTON2|MB_OKCANCEL "$(MPLAYER_LANG_CONFIG_SMPLAYER)" IDCANCEL ${||} Abort ${|}
 	${EndIf}
@@ -592,12 +596,14 @@ Section "-Create Shortcuts"
 
 		${If} ${FileExists} "$INSTDIR\MPUI.exe"
 			CreateShortCut "$SMPROGRAMS\$StartMenuFolder\MPUI.lnk" "$INSTDIR\MPUI.exe"
+			CreateShortCut "$DESKTOP\MPUI.lnk" "$INSTDIR\MPUI.exe"
 		${EndIf}
 		${If} ${FileExists} "$INSTDIR\SMPlayer.exe"
 			CreateShortCut "$SMPROGRAMS\$StartMenuFolder\SMPlayer.lnk" "$INSTDIR\SMPlayer.exe"
+			CreateShortCut "$DESKTOP\SMPlayer.lnk" "$INSTDIR\SMPlayer.exe"
 		${EndIf}
 
-		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_UPDATE).lnk" "$INSTDIR\Updater.exe"
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_UPDATE).lnk" "$INSTDIR\Updater.exe" "/L=$LANGUAGE"
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_README).lnk" "$INSTDIR\Readme.html"
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_MANUAL).lnk" "$INSTDIR\Manual.html"
 		
@@ -627,7 +633,7 @@ Section "-ApplyTweaks"
 	IntOp $0 $SelectedTweaks & 2
 	${If} $0 != 0
 		${If} ${FileExists} "$INSTDIR\MPUI.ini"
-			WriteINIStr "$INSTDIR\MPUI.ini" "MPUI" "Params" "-vo gl:yuv=3"
+			WriteINIStr "$INSTDIR\MPUI.ini" "MPUI" "Params" "-vo gl:yuv=3 -lavdopts threads=$DetectedCPUCores"
 		${EndIf}
 		${If} ${FileExists} "$INSTDIR\SMPlayer.ini"
 			WriteINIStr "$INSTDIR\SMPlayer.ini" "%General" "driver\vo" "gl:yuv=3"
@@ -699,7 +705,7 @@ SectionEnd
 Section "$(MPLAYER_LANG_INST_AUTOUPDATE)" SECID_AUTOUPDATE
 	SectionIn 1 2
 	DetailPrint "$(MPLAYER_LANG_WRITING_REGISTRY)"
-	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "MPlayerForWindows_AutoUpdateV2" '"$INSTDIR\Updater.exe" /AutoCheck'
+	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "MPlayerForWindows_AutoUpdateV2" '"$INSTDIR\Updater.exe" /L=$LANGUAGE /AutoCheck'
 SectionEnd
 
 Section "-Protect Files"
@@ -758,6 +764,10 @@ Section "Uninstall"
 		${EndIf}
 	${EndIf}
 
+	; Desktop icons
+	Delete /REBOOTOK "$DESKTOP\MPUI.lnk"
+	Delete /REBOOTOK "$DESKTOP\SMPlayer.lnk"
+	
 	; Files
 	Delete /REBOOTOK "$INSTDIR\*.exe"
 	Delete /REBOOTOK "$INSTDIR\*.dll"
@@ -900,7 +910,14 @@ FunctionEnd
 
 Function DetectCPUType
 	StrCpy $DetectedCPUType 6 ;generic
+	StrCpy $DetectedCPUCores 2
+	
 	Banner::show /NOUNLOAD "$(MPLAYER_LANG_DETECTING)"
+	
+	${CPUFeatures.GetCount} $0
+	${IfNot} $0 == "error"
+		StrCpy $DetectedCPUCores $0
+	${EndIf}
 	
 	; Check supported features
 	${CPUFeatures.GetVendor} $0
@@ -1019,6 +1036,10 @@ FunctionEnd
 Function ShowReadmeFunction
 	!insertmacro DisableNextButton $R0
 	${StdUtils.ExecShellAsUser} $R0 "$INSTDIR\Readme.html" "open" ""
+FunctionEnd
+
+Function .onInstSuccess
+	${StdUtils.ExecShellAsUser} $R0 "$SMPROGRAMS\$StartMenuFolder" "explore" ""
 FunctionEnd
 
 

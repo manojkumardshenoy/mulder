@@ -90,14 +90,16 @@ SubCaption 4 " "
 ; ----------------------------------------------------------------------------
 
 ReserveFile "${NSISDIR}\Plugins\Aero.dll"
-ReserveFile "${NSISDIR}\Plugins\System.dll"
 ReserveFile "${NSISDIR}\Plugins\inetc.dll"
-ReserveFile "${NSISDIR}\Plugins\StdUtils.dll"
+ReserveFile "${NSISDIR}\Plugins\LangDLL.dll"
 ReserveFile "${NSISDIR}\Plugins\nsExec.dll"
+ReserveFile "${NSISDIR}\Plugins\StdUtils.dll"
+ReserveFile "${NSISDIR}\Plugins\System.dll"
 
 ; ----------------------------------------------------------------------------
 
 Function .onInit
+	; AutoCheck support
 	${StdUtils.GetParameter} $0 "AutoCheck" "?"
 	${IfNot} "$0" == "?"
 		ClearErrors
@@ -108,6 +110,25 @@ Function .onInit
 			${IfThen} $2 < $1 ${|} Quit ${|}
 		${EndIf}
 	${EndIf}
+
+	; Handle command-line
+	${StdUtils.GetParameter} $0 "L" "?"
+	${If} "$0" == "${LANG_ENGLISH}"
+	${OrIf} "$0" == "${LANG_GERMAN}"
+		StrCpy $LANGUAGE "$0"
+		Return
+	${EndIf}
+
+	; Language selection dialog
+	Push ""
+	Push ${LANG_ENGLISH}
+	Push English
+	Push ${LANG_GERMAN}
+	Push German
+	Push A
+	LangDLL::LangDialog "Updater Language" "Please select the language:"
+	Pop $LANGUAGE
+	${IfThen} $LANGUAGE == "cancel" ${|} Quit ${|}
 FunctionEnd
 
 Function .onGuiInit
@@ -173,8 +194,13 @@ SectionEnd
 Section "-Select Mirror"
 	${SetStatus} "$(MPLAYER_LANG_UPD_STATUS_MIRROR)"
 	StrCpy $Update_MirrorURL "http://www.example.com/"
-	${StdUtils.RandMinMax} $0 0 8
-	
+
+	; Randomize some more
+	${For} $1 1 42
+		${StdUtils.RandMax} $0 8
+	${Next}
+
+	; Select the mirror now!
 	${Select} $0
 		${Case} "0"
 			StrCpy $Update_MirrorURL "http://mulder.brhack.net/"
@@ -273,5 +299,5 @@ SectionEnd
 ; ----------------------------------------------------------------------------
 
 Function .onInstFailed
-	${IfCmd} MessageBox MB_ICONQUESTION|MB_TOPMOST|MB_YESNO "$(MPLAYER_LANG_UPD_FAILED)" IDYES ${||} Exec `"$EXEPATH"` ${|}
+	${IfCmd} MessageBox MB_ICONQUESTION|MB_TOPMOST|MB_YESNO "$(MPLAYER_LANG_UPD_FAILED)" IDYES ${||} Exec `"$EXEPATH" /L=$LANGUAGE` ${|}
 FunctionEnd
