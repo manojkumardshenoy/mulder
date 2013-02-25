@@ -139,6 +139,7 @@ Var DetectedCPUType
 Var DetectedCPUCores
 Var SelectedCPUType
 Var SelectedTweaks
+Var UpdateInstall
 
 
 ;--------------------------------------------------------------------------------
@@ -253,6 +254,7 @@ Function .onInit
 	StrCpy $DetectedCPUType 0
 	StrCpy $DetectedCPUCores 0
 	StrCpy $SelectedTweaks 0
+	StrCpy $NotUpdateInstall 1
 
 	InitPluginsDir
 
@@ -372,7 +374,7 @@ Section "-Clean Up"
 		File "/oname=$PLUGINSDIR\Uninstall-V1.exe" "Resources\Uninstall-V1.exe"
 		HideWindow
 		ExecWait '"$PLUGINSDIR\Uninstall-V1.exe" _?=$0'
-		Delete "$PLUGINSDIR\Uninstall-V1.exe"
+		Delete /REBOOTOK "$PLUGINSDIR\Uninstall-V1.exe"
 		BringToFront
 	${EndIf}
 
@@ -450,8 +452,11 @@ Section "!MPlayer r${MPLAYER_REVISION}" SECID_MPLAYER
 			Abort
 	${EndSelect}
 
-	; Other MPlayer-related files
+	; Utilities
 	File ".Compile\Updater.exe"
+	File "Resources\AppRegGUI.exe"
+
+	; Other MPlayer-related files
 	File "Builds\MPlayer-generic\dsnative.dll"
 	SetOutPath "$INSTDIR\mplayer"
 	File "Builds\MPlayer-generic\mplayer\config"
@@ -505,6 +510,7 @@ Section "!MPUI $(MPLAYER_LANG_FRONT_END) v${MPUI_VERSION}" SECID_MPUI
 	; Setup initial config
 	ClearErrors
 	WriteINIStr "$INSTDIR\MPUI.ini" "MPUI" "Params" "-vo direct3d -lavdopts threads=$DetectedCPUCores"
+	WriteINIStr "$INSTDIR\MPUI.ini" "MPUI" "Locale" "$(MPLAYER_LANG_MPUI_DEFAULT_LANGUAGE)"
 	${If} ${Errors}
 		${IfCmd} MessageBox MB_TOPMOST|MB_ICONSTOP|MB_DEFBUTTON2|MB_OKCANCEL "$(MPLAYER_LANG_CONFIG_MPUI)" IDCANCEL ${||} Abort ${|}
 	${EndIf}
@@ -606,6 +612,10 @@ Section "-Create Shortcuts"
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_UPDATE).lnk" "$INSTDIR\Updater.exe" "/L=$LANGUAGE"
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_README).lnk" "$INSTDIR\Readme.html"
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_MANUAL).lnk" "$INSTDIR\Manual.html"
+
+		${If} ${AtLeastWinVista}
+			CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_APPREG).lnk" "$INSTDIR\AppRegGUI.exe"
+		${EndIf}
 		
 		${CreateWebLink} "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_SITE_MULDERS).url" "http://www.mulder.at.gg/"
 		${CreateWebLink} "$SMPROGRAMS\$StartMenuFolder\$(MPLAYER_LANG_SHORTCUT_SITE_MPWIN32).url" "http://oss.netfarm.it/mplayer-win32.php"
@@ -687,16 +697,79 @@ SectionEnd
 
 Section "-Update Registry"
 	${PrintProgress} "$(MPLAYER_LANG_STATUS_REGISTRY)"
-	
 	DetailPrint "$(MPLAYER_LANG_WRITING_REGISTRY)"
+
+	; Clean up
+	DeleteRegKey HKLM "${MPlayerRegPath}"
+	DeleteRegKey HKCU "${MPlayerRegPath}"
+	DeleteRegValue HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "MPlayerForWindows_AutoUpdateV2"
+	DeleteRegValue HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "MPlayerForWindows_AutoUpdateV2"
+
+	; Uninstaller
 	WriteRegStr HKLM "${MPlayerRegPath}" "InstallLocation" "$INSTDIR"
 	WriteRegStr HKLM "${MPlayerRegPath}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
-	WriteRegStr HKLM "${MPlayerRegPath}" "DisplayName" "MPlayer for Windows"
+	WriteRegStr HKLM "${MPlayerRegPath}" "DisplayName" "$(MPLAYER_LANG_MPLAYER_WIN32)"
+	WriteRegStr HKLM "${MPlayerRegPath}" "DisplayIcon" "$INSTDIR\MPlayer.exe,0"
+	WriteRegStr HKLM "${MPlayerRegPath}" "DisplayVersion" "${MPLAYER_DATE}"
 	WriteRegStr HKLM "${MPlayerRegPath}" "URLInfoAbout" "http://mulder.at.gg/"
 	WriteRegStr HKLM "${MPlayerRegPath}" "URLUpdateInfo" "http://mulder.at.gg/"
+	WriteRegStr HKLM "${MPlayerRegPath}" "Publisher" "The MPlayer Team"
 	WriteRegDWORD HKLM "${MPlayerRegPath}" "NoModify" 1
 	WriteRegDWORD HKLM "${MPlayerRegPath}" "NoRepair" 1
-	
+
+	; Shell
+	DeleteRegKey HKCR "MPlayerForWindowsV2.File"
+	DeleteRegKey HKLM "SOFTWARE\Classes\MPlayerForWindowsV2.File"
+	DeleteRegKey HKCU "SOFTWARE\Classes\MPlayerForWindowsV2.File"
+	${If} ${FileExists} "$INSTDIR\MPUI.exe"
+		WriteRegStr HKLM "SOFTWARE\Classes\MPlayerForWindowsV2.File\shell\open\command" "" '"$INSTDIR\MPUI.exe" "%1"'
+		WriteRegStr HKLM "SOFTWARE\Classes\MPlayerForWindowsV2.File\shell\open\DefaultIcon" "" "$INSTDIR\MPUI.exe,0"
+	${EndIf}
+	${If} ${FileExists} "$INSTDIR\SMPlayer.exe"
+		WriteRegStr HKLM "SOFTWARE\Classes\MPlayerForWindowsV2.File\shell\open\command" "" '"$INSTDIR\SMPlayer.exe" "%1"'
+		WriteRegStr HKLM "SOFTWARE\Classes\MPlayerForWindowsV2.File\shell\open\DefaultIcon" "" "$INSTDIR\SMPlayer.exe,1"
+	${EndIf}
+
+	; Register App
+	DeleteRegValue HKCU "SOFTWARE\RegisteredApplications" "MPlayerForWindowsV2"
+	WriteRegStr HKLM "SOFTWARE\RegisteredApplications" "MPlayerForWindowsV2" "${MPlayerRegPath}\Capabilities"
+
+	; Capabilities
+	WriteRegStr HKLM "${MPlayerRegPath}\Capabilities" "ApplicationName" "$(MPLAYER_LANG_MPLAYER_WIN32)"
+	WriteRegStr HKLM "${MPlayerRegPath}\Capabilities" "ApplicationDescription" "$(MPLAYER_LANG_MPLAYER_WIN32)"
+	WriteRegStr HKLM "${MPlayerRegPath}\Capabilities" "ApplicationDescription" "$(MPLAYER_LANG_MPLAYER_WIN32)"
+
+	; File Associations
+	${RegisterFileExtCapability} "256"
+	${RegisterFileExtCapability} "3GP"
+	${RegisterFileExtCapability} "ASF"
+	${RegisterFileExtCapability} "AVI"
+	${RegisterFileExtCapability} "BIN"
+	${RegisterFileExtCapability} "DAT"
+	${RegisterFileExtCapability} "DIVX"
+	${RegisterFileExtCapability} "EVO"
+	${RegisterFileExtCapability} "FLV"
+	${RegisterFileExtCapability} "M2V"
+	${RegisterFileExtCapability} "M2TS"
+	${RegisterFileExtCapability} "MKA"
+	${RegisterFileExtCapability} "MKV"
+	${RegisterFileExtCapability} "MOV"
+	${RegisterFileExtCapability} "MP2"
+	${RegisterFileExtCapability} "MP3"
+	${RegisterFileExtCapability} "MP4"
+	${RegisterFileExtCapability} "MPEG"
+	${RegisterFileExtCapability} "MPG"
+	${RegisterFileExtCapability} "MPV"
+	${RegisterFileExtCapability} "NSV"
+	${RegisterFileExtCapability} "OGG"
+	${RegisterFileExtCapability} "OGM"
+	${RegisterFileExtCapability} "RM"
+	${RegisterFileExtCapability} "RMVB"
+	${RegisterFileExtCapability} "TS"
+	${RegisterFileExtCapability} "VOB"
+	${RegisterFileExtCapability} "WAV"
+	${RegisterFileExtCapability} "WMV"
+
 	; Reset auto update interval
 	DeleteRegValue HKLM "${MPlayerRegPath}" "LastUpdateCheck"
 	DeleteRegValue HKCU "${MPlayerRegPath}" "LastUpdateCheck"
@@ -795,9 +868,20 @@ Section "Uninstall"
 		RMDir /r "$0"
 	${EndIf}
 
-	; Registry
+	; Registry Keys
 	DeleteRegKey HKLM "${MPlayerRegPath}"
 	DeleteRegKey HKCU "${MPlayerRegPath}"
+	DeleteRegValue HKLM "SOFTWARE\RegisteredApplications" "MPlayerForWindowsV2"
+	DeleteRegValue HKCU "SOFTWARE\RegisteredApplications" "MPlayerForWindowsV2"
+
+	; Auto Update
+	DeleteRegValue HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "MPlayerForWindows_AutoUpdateV2"
+	DeleteRegValue HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "MPlayerForWindows_AutoUpdateV2"
+	
+	; Shell
+	DeleteRegKey HKCR "MPlayerForWindowsV2.File"
+	DeleteRegKey HKLM "SOFTWARE\Classes\MPlayerForWindowsV2.File"
+	DeleteRegKey HKCU "SOFTWARE\Classes\MPlayerForWindowsV2.File"
 
 	${PrintStatus} "$(MUI_UNTEXT_FINISH_TITLE)"
 SectionEnd
@@ -1021,15 +1105,33 @@ FunctionEnd
 ; CHECK FOR UPDATE MODE
 ;--------------------------------------------------------------------------------
 
+!macro EnablePathEditable flag show_msg
+	${IfNot} $NotUpdateInstall == ${flag}
+		FindWindow $1 "#32770" "" $HWNDPARENT
+		GetDlgItem $2 $1 1019
+		EnableWindow $2 ${flag}
+		GetDlgItem $2 $1 1001
+		EnableWindow $2 ${flag}
+		!if ${show_msg} == 1
+			MessageBox MB_OK|MB_ICONINFORMATION "$(MPLAYER_LANG_FORCE_UPDATE)" /SD IDOK
+		!endif
+		StrCpy $NotUpdateInstall ${flag}
+	${EndIf}
+!macroend
+
 Function CheckForUpdate
 	${StdUtils.GetParameter} $0 "Update" "?"
 	${IfNot} "$0" == "?"
-		FindWindow $1 "#32770" "" $HWNDPARENT
-		GetDlgItem $2 $1 1019
-		EnableWindow $2 0
-		GetDlgItem $2 $1 1001
-		EnableWindow $2 0
+		!insertmacro EnablePathEditable 0 0
+		Return
 	${EndIf}
+	
+	${If} ${FileExists} "$INSTDIR\MPlayer.exe"
+		!insertmacro EnablePathEditable 0 1
+		Return
+	${EndIf}
+
+	!insertmacro EnablePathEditable 1 0
 FunctionEnd
 
 
