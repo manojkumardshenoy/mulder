@@ -28,6 +28,21 @@ static bool g_bVerbose;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#undef ENABLE_DEBUG_STUFF
+
+#ifdef ENABLE_DEBUG_STUFF
+	#define DEBUG_MSG(FMT,...) do \
+	{ \
+		TCHAR _buffer[512]; _sntprintf(_buffer, 512, FMT, __VA_ARGS__); \
+		MessageBox(NULL, _buffer, _T(__FUNCTION__), MB_TOPMOST); \
+	} \
+	while(0)
+#else
+	#define DEBUG_MSG(FMT,...) __noop()
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+
 static RTL_CRITICAL_SECTION g_mutex;
 
 BOOL WINAPI DllMain(HANDLE hInst, ULONG ul_reason_for_call, LPVOID lpReserved)
@@ -203,15 +218,19 @@ NSISFUNC(CheckCPUFeature)
 
 	if(popstring(str) != 0)
 	{
+		DEBUG_MSG(_T("Error!"));
 		pushstring(_T("error"));
 		delete [] str;
 		return;
 	}
 
+	DEBUG_MSG(_T("CheckCPUFeature:\n%s"), str);
+
 	UINT32_T flag = name2flag(str);
 
 	if(flag == 0)
 	{
+		DEBUG_MSG(_T("Error!"));
 		pushstring(_T("error"));
 		delete [] str;
 		return;
@@ -220,6 +239,7 @@ NSISFUNC(CheckCPUFeature)
 	UINT32_T features, vendor;
 	INIT_CPU_FEATURES(features, vendor);
 
+	DEBUG_MSG(_T("Result: %s"), (features & flag) ? _T("yes") : _T("no"));
 	pushstring((features & flag) ? _T("yes") : _T("no"));
 
 	delete [] str;
@@ -235,10 +255,13 @@ NSISFUNC(CheckAllCPUFeatures)
 
 	if(popstring(str) != 0)
 	{
+		DEBUG_MSG(_T("Error!"));
 		pushstring(_T("error"));
 		delete [] str;
 		return;
 	}
+	
+	DEBUG_MSG(_T("CheckAllCPUFeatures:\n%s"), str);
 
 	UINT32_T features, vendor;
 	INIT_CPU_FEATURES(features, vendor);
@@ -248,6 +271,7 @@ NSISFUNC(CheckAllCPUFeatures)
 
 	if(token == NULL)
 	{
+		DEBUG_MSG(_T("Error!"));
 		pushstring(_T("error"));
 		delete [] str;
 		return;
@@ -257,10 +281,12 @@ NSISFUNC(CheckAllCPUFeatures)
 
 	while(token)
 	{
+		DEBUG_MSG(_T("Checking: %s"), token);
 		UINT32_T flag = name2flag(token);
 
 		if(flag == 0)
 		{
+			DEBUG_MSG(_T("Error!"));
 			pushstring(_T("error"));
 			delete [] str;
 			return;
@@ -270,6 +296,7 @@ NSISFUNC(CheckAllCPUFeatures)
 		token = _tcstok(NULL, DELIM);
 	}
 
+	DEBUG_MSG(_T("Result: %s"), bHaveAll ? _T("yes") : _T("no"));
 	pushstring(bHaveAll ? _T("yes") : _T("no"));
 
 	delete [] str;

@@ -141,4 +141,11 @@ Section
 	${If} ${CPUSupportsAll} "MMX1,AVX1"
 		DetailPrint "This CPU spports MMX+AVX"
 	${EndIf}
+
+	${If} ${CPUIsIntel}
+		DetailPrint "This CPU is an Intel"
+	${EndIf}
+	${If} ${CPUIsAMD}
+		DetailPrint "This CPU is an AMD"
+	${EndIf}
 SectionEnd
