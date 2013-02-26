@@ -101,4 +101,22 @@
 		!insertmacro _== $_LOGICLIB_TEMP `yes` `${_t}` `${_f}`
 	!macroend
 	!define CPUSupportsAll `"" CPUSupportsAll`
+	
+	; ${If} ${CPUIsIntel} ... ${EndIf}
+	!macro _CPUIsIntel _a _b _t _f
+		!insertmacro _LOGICLIB_TEMP
+		CPUFeatures::GetCPUVendor /NOUNLOAD
+		pop $_LOGICLIB_TEMP
+		!insertmacro _== $_LOGICLIB_TEMP `Intel` `${_t}` `${_f}`
+	!macroend
+	!define CPUIsIntel `"" CPUIsIntel ""`
+
+	; ${If} ${CPUIsAMD} ... ${EndIf}
+	!macro _CPUIsAMD _a _b _t _f
+		!insertmacro _LOGICLIB_TEMP
+		CPUFeatures::GetCPUVendor /NOUNLOAD
+		pop $_LOGICLIB_TEMP
+		!insertmacro _== $_LOGICLIB_TEMP `AMD` `${_t}` `${_f}`
+	!macroend
+	!define CPUIsAMD `"" CPUIsAMD ""`
 !endif
