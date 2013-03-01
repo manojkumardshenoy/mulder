@@ -723,11 +723,11 @@ Section "-Update Registry"
 	DeleteRegKey HKCU "SOFTWARE\Classes\MPlayerForWindowsV2.File"
 	${If} ${FileExists} "$INSTDIR\MPUI.exe"
 		WriteRegStr HKLM "SOFTWARE\Classes\MPlayerForWindowsV2.File\shell\open\command" "" '"$INSTDIR\MPUI.exe" "%1"'
-		WriteRegStr HKLM "SOFTWARE\Classes\MPlayerForWindowsV2.File\shell\open\DefaultIcon" "" "$INSTDIR\MPUI.exe,0"
+		WriteRegStr HKLM "SOFTWARE\Classes\MPlayerForWindowsV2.File\DefaultIcon" "" "$INSTDIR\MPUI.exe,0"
 	${EndIf}
 	${If} ${FileExists} "$INSTDIR\SMPlayer.exe"
 		WriteRegStr HKLM "SOFTWARE\Classes\MPlayerForWindowsV2.File\shell\open\command" "" '"$INSTDIR\SMPlayer.exe" "%1"'
-		WriteRegStr HKLM "SOFTWARE\Classes\MPlayerForWindowsV2.File\shell\open\DefaultIcon" "" "$INSTDIR\SMPlayer.exe,1"
+		WriteRegStr HKLM "SOFTWARE\Classes\MPlayerForWindowsV2.File\DefaultIcon" "" "$INSTDIR\SMPlayer.exe,1"
 	${EndIf}
 
 	; Register App
@@ -996,26 +996,25 @@ Function DetectCPUType
 	StrCpy $DetectedCPUType 6 ;generic
 	StrCpy $DetectedCPUCores 2
 
-	Banner::show /NOUNLOAD "$(MPLAYER_LANG_DETECTING)"
+	${IfNot} ${Silent}
+		Banner::show /NOUNLOAD "$(MPLAYER_LANG_DETECTING)"
+	${EndIf}
 
 	${CPUFeatures.GetCount} $0
 	${IfNot} $0 == "error"
 		StrCpy $DetectedCPUCores $0
 	${EndIf}
 
-	; Check supported features
-	${CPUFeatures.GetVendor} $0
-	${CPUFeatures.CheckFeature} "MMX1"   $1
-	${CPUFeatures.CheckFeature} "3DNOW"  $2
-	${CPUFeatures.CheckFeature} "SSE3"   $3
-	${CPUFeatures.CheckFeature} "SSSE3"  $4
-	${CPUFeatures.CheckFeature} "SSE4.2" $5
-	${CPUFeatures.CheckFeature} "AVX1"   $6
-	${CPUFeatures.CheckFeature} "FMA4"   $7
-
-	Banner::destroy
-
+	; Debug Code
 	!ifdef CPU_DETECT_DEBUG
+		${CPUFeatures.GetVendor} $0
+		${CPUFeatures.CheckFeature} "MMX1"   $1
+		${CPUFeatures.CheckFeature} "3DNOW"  $2
+		${CPUFeatures.CheckFeature} "SSE3"   $3
+		${CPUFeatures.CheckFeature} "SSSE3"  $4
+		${CPUFeatures.CheckFeature} "SSE4.2" $5
+		${CPUFeatures.CheckFeature} "AVX1"   $6
+		${CPUFeatures.CheckFeature} "FMA4"   $7
 		StrCpy $9 `Vendor = $0`
 		StrCpy $9 `$9$\n"MMX1" = $1`
 		StrCpy $9 `$9$\n"3DNOW" = $2`
@@ -1028,39 +1027,36 @@ Function DetectCPUType
 	!endif
 
 	; Make sure we have at least MMX
-	${IfThen} $1 != "yes" ${|} Return ${|}
+	${IfNot} ${CPUSupports} "MMX1"
+		Banner::destroy
+		Return
+	${EndIf}
 
 	; Select the "best" model for Intel's
-	${If} $0 == "Intel"
+	${If} ${CPUIsIntel}
 		; Core2 (SSE3 + SSSE3)
-		${If} $3 == "yes" 
-		${AndIf} $4 == "yes" 
+		${If} ${CPUSupportsAll} "SSE3,SSSE3"
 			StrCpy $DetectedCPUType 2 ;
 		${EndIf}
 		; Nehalem (SSE3 + SSSE3 + SSE4.2)
-		${If} $3 == "yes" 
-		${AndIf} $4 == "yes" 
-		${AndIf} $5 == "yes" 
+		${If} ${CPUSupportsAll} "SSE3,SSSE3,SSE4.2"
 			StrCpy $DetectedCPUType 3
 		${EndIf}
 	${EndIf}
 
 	; Select the "best" model for AMD's
-	${If} $0 == "AMD"
+	${If} ${CPUIsAMD}
 		; K8+SSE3 (3DNow! + SSE3)
-		${If} $2 == "yes" 
-		${AndIf} $3 == "yes" 
+		${If} ${CPUSupportsAll} "3DNOW,SSE3"
 			StrCpy $DetectedCPUType 4
 		${EndIf}
 		; Bulldozer (SSE3 + SSSE3 + SSE4.2 + AVX + FMA4)
-		${If} $3 == "yes" 
-		${AndIf} $4 == "yes" 
-		${AndIf} $5 == "yes" 
-		${AndIf} $6 == "yes" 
-		${AndIf} $7 == "yes" 
+		${If} ${CPUSupportsAll} "SSE3,SSSE3,SSE4.2,AVX1,FMA4"
 			StrCpy $DetectedCPUType 5
 		${EndIf}
 	${EndIf}
+	
+	Banner::destroy
 FunctionEnd
 
 
@@ -1106,12 +1102,12 @@ FunctionEnd
 ;--------------------------------------------------------------------------------
 
 !macro EnablePathEditable flag show_msg
-!if ${show_msg} == 1
 	${IfNot} $NotUpdateInstall == ${flag}
-		MessageBox MB_OK|MB_ICONINFORMATION "$(MPLAYER_LANG_FORCE_UPDATE)" /SD IDOK
+		!if ${show_msg} == 1
+			MessageBox MB_OK|MB_ICONINFORMATION "$(MPLAYER_LANG_FORCE_UPDATE)" /SD IDOK
+		!endif
 		StrCpy $NotUpdateInstall ${flag}
 	${EndIf}
-!endif
 	FindWindow $1 "#32770" "" $HWNDPARENT
 	GetDlgItem $2 $1 1019
 	EnableWindow $2 ${flag}
