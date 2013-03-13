@@ -152,7 +152,7 @@ while(0)
 
 #define LINK(URL) QString("<a href=\"%1\">%2</a>").arg(URL).arg(QString(URL).replace("-", "&minus;"))
 #define FSLINK(PATH) QString("<a href=\"file:///%1\">%2</a>").arg(PATH).arg(QString(PATH).replace("-", "&minus;"))
-#define USE_NATIVE_FILE_DIALOG (lamexp_themes_enabled() || ((QSysInfo::windowsVersion() & QSysInfo::WV_NT_based) < QSysInfo::WV_XP))
+//#define USE_NATIVE_FILE_DIALOG (lamexp_themes_enabled() || ((QSysInfo::windowsVersion() & QSysInfo::WV_NT_based) < QSysInfo::WV_XP))
 #define CENTER_CURRENT_OUTPUT_FOLDER_DELAYED QTimer::singleShot(125, this, SLOT(centerOutputFolderModel()))
 
 static const DWORD IDM_ABOUTBOX = 0xEFF0;
@@ -1931,7 +1931,7 @@ void MainWindow::importCueSheetActionTriggered(bool checked)
 			int result = 0;
 			QString selectedCueFile;
 
-			if(USE_NATIVE_FILE_DIALOG)
+			if(lamexp_themes_enabled())
 			{
 				selectedCueFile = QFileDialog::getOpenFileName(this, tr("Open Cue Sheet"), m_settings->mostRecentInputPath(), QString("%1 (*.cue)").arg(tr("Cue Sheet File")));
 			}
@@ -2155,7 +2155,7 @@ void MainWindow::addFilesButtonClicked(void)
 
 	TEMP_HIDE_DROPBOX
 	(
-		if(USE_NATIVE_FILE_DIALOG)
+		if(lamexp_themes_enabled())
 		{
 			QStringList fileTypeFilters = DecoderRegistry::getSupportedTypes();
 			QStringList selectedFiles = QFileDialog::getOpenFileNames(this, tr("Add file(s)"), m_settings->mostRecentInputPath(), fileTypeFilters.join(";;"));
@@ -2197,7 +2197,7 @@ void MainWindow::openFolderActionActivated(void)
 	{
 		TEMP_HIDE_DROPBOX
 		(
-			if(USE_NATIVE_FILE_DIALOG)
+			if(lamexp_themes_enabled())
 			{
 				selectedFolder = QFileDialog::getExistingDirectory(this, tr("Add Folder"), m_settings->mostRecentInputPath());
 			}
@@ -2459,7 +2459,7 @@ void MainWindow::exportCsvContextActionTriggered(void)
 	(
 		QString selectedCsvFile;
 	
-		if(USE_NATIVE_FILE_DIALOG)
+		if(lamexp_themes_enabled())
 		{
 			selectedCsvFile = QFileDialog::getSaveFileName(this, tr("Save CSV file"), m_settings->mostRecentInputPath(), QString("%1 (*.csv)").arg(tr("CSV File")));
 		}
@@ -2510,7 +2510,7 @@ void MainWindow::importCsvContextActionTriggered(void)
 	(
 		QString selectedCsvFile;
 	
-		if(USE_NATIVE_FILE_DIALOG)
+		if(lamexp_themes_enabled())
 		{
 			selectedCsvFile = QFileDialog::getOpenFileName(this, tr("Open CSV file"), m_settings->mostRecentInputPath(), QString("%1 (*.csv)").arg(tr("CSV File")));
 		}
@@ -3367,8 +3367,21 @@ void MainWindow::updateRCMode(int id)
 		switch(m_settings->compressionRCMode())
 		{
 		case SettingsModel::VBRMode:
-			ui->sliderBitrate->setMinimum(0);
-			ui->sliderBitrate->setMaximum(20);
+			if(m_qaacEncoderAvailable)
+			{
+				ui->sliderBitrate->setMinimum(0);
+				ui->sliderBitrate->setMaximum(32);
+			}
+			else if(m_fhgEncoderAvailable)
+			{
+				ui->sliderBitrate->setMinimum(1);
+				ui->sliderBitrate->setMaximum(6);
+			}
+			else
+			{
+				ui->sliderBitrate->setMinimum(0);
+				ui->sliderBitrate->setMaximum(20);
+			}
 			break;
 		default:
 			ui->sliderBitrate->setMinimum(4);
@@ -3421,7 +3434,18 @@ void MainWindow::updateBitrate(int value)
 			ui->labelBitrate->setText(tr("Quality Level %1").arg(value));
 			break;
 		case SettingsModel::AACEncoder:
-			ui->labelBitrate->setText(tr("Quality Level %1").arg(QString().sprintf("%.2f", static_cast<double>(value * 5) / 100.0)));
+			if(m_qaacEncoderAvailable)
+			{
+				ui->labelBitrate->setText(tr("Quality Level %1").arg(QString::number(qBound(0, value * 4 , 127))));
+			}
+			else if(m_fhgEncoderAvailable)
+			{
+				ui->labelBitrate->setText(tr("Quality Level %1").arg(QString::number(value)));
+			}
+			else
+			{
+				ui->labelBitrate->setText(tr("Quality Level %1").arg(QString().sprintf("%.2f", static_cast<double>(value) / 20.0)));
+			}
 			break;
 		case SettingsModel::FLACEncoder:
 			ui->labelBitrate->setText(tr("Compression %1").arg(value));
@@ -3512,17 +3536,14 @@ void MainWindow::updateLameAlgoQuality(int value)
 
 	switch(value)
 	{
-	case 4:
-		text = tr("Best Quality (Very Slow)");
-		break;
 	case 3:
-		text = tr("High Quality (Recommended)");
+		text = tr("Best Quality (Slow)");
 		break;
 	case 2:
-		text = tr("Average Quality (Default)");
+		text = tr("High Quality (Recommended)");
 		break;
 	case 1:
-		text = tr("Low Quality (Fast)");
+		text = tr("Acceptable Quality (Fast)");
 		break;
 	case 0:
 		text = tr("Poor Quality (Very Fast)");
@@ -3535,7 +3556,7 @@ void MainWindow::updateLameAlgoQuality(int value)
 		ui->labelLameAlgoQuality->setText(text);
 	}
 
-	bool warning = (value == 0), notice = (value == 4);
+	bool warning = (value == 0), notice = (value == 3);
 	ui->labelLameAlgoQualityWarning->setVisible(warning);
 	ui->labelLameAlgoQualityWarningIcon->setVisible(warning);
 	ui->labelLameAlgoQualityNotice->setVisible(notice);
@@ -3853,7 +3874,7 @@ void MainWindow::browseCustomTempFolderButtonClicked(void)
 {
 	QString newTempFolder;
 
-	if(USE_NATIVE_FILE_DIALOG)
+	if(lamexp_themes_enabled())
 	{
 		newTempFolder = QFileDialog::getExistingDirectory(this, QString(), m_settings->customTempPath());
 	}
