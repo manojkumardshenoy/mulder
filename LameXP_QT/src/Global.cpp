@@ -165,8 +165,10 @@ static bool g_lamexp_console_attached = false;
 			static const char *g_lamexp_version_compiler = "MSVC 2012-RTM";
 		#elif (_MSC_FULL_VER < 170051106)
 			static const char *g_lamexp_version_compiler = "MSVC 2012-U1 CTP";
-		#elif (_MSC_FULL_VER == 170051106)
+		#elif (_MSC_FULL_VER < 170060315)
 			static const char *g_lamexp_version_compiler = "MSVC 2012-U1";
+		#elif (_MSC_FULL_VER == 170060315)
+			static const char *g_lamexp_version_compiler = "MSVC 2012-U2";
 		#else
 			#error Compiler version is not supported yet!
 		#endif
@@ -212,6 +214,7 @@ static bool g_lamexp_console_attached = false;
 //Official web-site URL
 static const char *g_lamexp_website_url = "http://lamexp.sourceforge.net/";
 static const char *g_lamexp_support_url = "http://forum.doom9.org/showthread.php?t=157726";
+static const char *g_lamexp_mulders_url = "http://muldersoft.com/";
 
 //Tool versions (expected versions!)
 static const unsigned int g_lamexp_toolver_neroaac = VER_LAMEXP_TOOL_NEROAAC;
@@ -350,6 +353,7 @@ unsigned int lamexp_toolver_coreaudio(void) { return g_lamexp_toolver_coreaudio;
  * URL getters
  */
 const char *lamexp_website_url(void) { return g_lamexp_website_url; }
+const char *lamexp_mulders_url(void) { return g_lamexp_mulders_url; }
 const char *lamexp_support_url(void) { return g_lamexp_support_url; }
 
 /*
@@ -657,7 +661,7 @@ void lamexp_init_console(const QStringList &argv)
 			//-------------------------------------------------------------------
 			const int flags = _O_WRONLY | _O_U8TEXT;
 			int hCrtStdOut = _open_osfhandle((intptr_t) GetStdHandle(STD_OUTPUT_HANDLE), flags);
-			int hCrtStdErr = _open_osfhandle((intptr_t) GetStdHandle(STD_ERROR_HANDLE), flags);
+			int hCrtStdErr = _open_osfhandle((intptr_t) GetStdHandle(STD_ERROR_HANDLE),  flags);
 			FILE *hfStdOut = (hCrtStdOut >= 0) ? _fdopen(hCrtStdOut, "wb") : NULL;
 			FILE *hfStdErr = (hCrtStdErr >= 0) ? _fdopen(hCrtStdErr, "wb") : NULL;
 			if(hfStdOut) { *stdout = *hfStdOut; std::cout.rdbuf(new std::filebuf(hfStdOut)); }

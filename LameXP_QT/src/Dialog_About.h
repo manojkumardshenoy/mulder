@@ -54,6 +54,7 @@ public slots:
 	void moveDisque(void);
 	void tabChanged(int index);
 	void adjustSize(void);
+	void geometryUpdated(void);
 
 protected:
 	virtual void showEvent(QShowEvent *e);
@@ -71,6 +72,9 @@ private:
 	QLabel *m_disque;
 	QTimer * m_disqueTimer;
 	bool m_disqueFlags[2];
+	QPoint m_disquePos;
+	QRect m_disqueBound;
+	double m_discOpacity;
 	QPixmap *m_cartoon[4];
 	bool m_rotateNext;
 	__int64 m_disqueDelay;
