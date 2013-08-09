@@ -21,34 +21,41 @@
 
 #pragma once
 
-#include "thread_encode.h"
+#include <QString>
 
-#include "QAbstractItemModel"
-#include <QUuid>
-#include <QStringList>
-#include <QMap>
-
-class LogFileModel : public QAbstractItemModel
+static const struct
 {
-	Q_OBJECT
-		
+	const char *pcExt;
+	const char *pcStr;
+}
+X264_FILE_TYPE_FILTERS[] =
+{
+	{ "mkv", "Matroska Files" },
+	{ "mp4", "MPEG-4 Part 14 Container" },
+	{ "264", "H.264 Elementary Stream"},
+};
+
+class RecentlyUsed
+{
 public:
-	LogFileModel(const QString &sourceName, const QString &outputName, const QString &configName);
-	~LogFileModel(void);
+	RecentlyUsed(void);
 
-	virtual int columnCount(const QModelIndex &parent) const;
-	virtual int rowCount(const QModelIndex &parent) const;
-	virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-	virtual QModelIndex index(int row, int column, const QModelIndex &parent) const;
-	virtual QModelIndex parent (const QModelIndex &index) const;
-	virtual QVariant data(const QModelIndex &index, int role) const;
+	static void initRecentlyUsed(RecentlyUsed *recentlyUsed);
+	static void loadRecentlyUsed(RecentlyUsed *recentlyUsed);
+	static void saveRecentlyUsed(RecentlyUsed *recentlyUsed);
 
-	void copyToClipboard(void);
+	//Getter
+	QString sourceDirectory(void) { return m_sourceDirectory; }
+	QString outputDirectory(void) { return m_outputDirectory; }
+	int filterIndex(void) { return m_filterIndex; }
+
+	//Setter
+	void setSourceDirectory(const QString &sourceDirectory) { m_sourceDirectory = sourceDirectory; }
+	void setOutputDirectory(const QString &outputDirectory) { m_outputDirectory = outputDirectory; }
+	void setFilterIndex(const int filterIndex) { m_filterIndex = filterIndex; }
 
 protected:
-	QStringList m_lines;
-	bool m_firstLine;
-
-public slots:
-	void addLogMessage(const QUuid &jobId, const QString &text);
+	QString m_sourceDirectory;
+	QString m_outputDirectory;
+	int m_filterIndex;
 };

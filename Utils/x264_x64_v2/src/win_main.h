@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Simple x264 Launcher
-// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2013 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,15 +22,17 @@
 #pragma once
 
 #include "uic_win_main.h"
-#include "thread_ipc.h"
-#include "thread_encode.h"
-#include "win_preferences.h"
+
 #include "global.h"
+#include "model_status.h"
 
 class JobListModel;
 class OptionsModel;
 class QFile;
 class QLibrary;
+class PreferencesModel;
+class RecentlyUsed;
+class IPCThread;
 
 class MainWindow: public QMainWindow, private Ui::MainWindow
 {
@@ -51,28 +53,37 @@ protected:
 
 private:
 	bool m_firstShow;
+	bool m_skipVersionTest;
+	bool m_abortOnTimeout;
+
 	QLabel *m_label;
 	IPCThread *m_ipcThread;
-	QLibrary *m_avsLib;
 
 	JobListModel *m_jobList;
 	OptionsModel *m_options;
 	QStringList *m_droppedFiles;
 	QList<QFile*> m_toolsList;
 	
-	PreferencesDialog::Preferences m_preferences;
+	PreferencesModel *m_preferences;
+	RecentlyUsed *m_recentlyUsed;
+
+	QString m_vapoursynthPath;
 
 	const x264_cpu_t *const m_cpuFeatures;
 	const QString m_appDir;
 	
-	void updateButtons(EncodeThread::JobStatus status);
-	void updateTaskbar(EncodeThread::JobStatus status, const QIcon &icon);
+	bool createJob(QString &sourceFileName, QString &outputFileName, OptionsModel *options, bool &runImmediately, const bool restart = false, int fileNo = -1, int fileTotal = 0, bool *applyToAll = NULL);
+	bool createJobMultiple(const QStringList &filePathIn);
+
+	bool appendJob(const QString &sourceFileName, const QString &outputFileName, OptionsModel *options, const bool runImmediately);
+	void updateButtons(JobStatus status);
+	void updateTaskbar(JobStatus status, const QIcon &icon);
 	unsigned int countPendingJobs(void);
 	unsigned int countRunningJobs(void);
-	double detectAvisynthVersion(QLibrary *avsLib, DWORD *errorCode = NULL);
 
 private slots:
-	void addButtonPressed(const QString &filePathIn = QString(), const QString &filePathOut = QString(), OptionsModel *options = NULL, int fileNo = -1, int fileTotal = 0, bool *ok = NULL);
+	void addButtonPressed();
+	void openActionTriggered();
 	void abortButtonPressed(void);
 	void browseButtonPressed(void);
 	void deleteButtonPressed(void);

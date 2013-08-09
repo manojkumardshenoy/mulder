@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Simple x264 Launcher
-// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2013 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,31 +23,17 @@
 
 #include "uic_win_preferences.h"
 
+class PreferencesModel;
+
 class PreferencesDialog : public QDialog, private Ui::PreferencesDialog
 {
 	Q_OBJECT
 
 public:
-	typedef struct
-	{
-		bool autoRunNextJob;
-		unsigned int maxRunningJobCount;
-		bool shutdownComputer;
-		bool use10BitEncoding;
-		bool useAvisyth64Bit;
-		bool saveLogFiles;
-		bool saveToSourcePath;
-	}
-	Preferences;
-
-	PreferencesDialog(QWidget *parent, Preferences *preferences, bool x64);
+	PreferencesDialog(QWidget *parent, PreferencesModel *preferences, bool x64);
 	~PreferencesDialog(void);
 
 	const bool m_x64;
-
-	static void initPreferences(Preferences *preferences);
-	static void loadPreferences(Preferences *preferences);
-	static void savePreferences(Preferences *preferences);
 
 protected:
 	virtual void done(int n);
@@ -57,9 +43,10 @@ protected:
 	void emulateMouseEvent(QObject *object, QEvent *event, QWidget *source, QWidget *target);
 
 private:
-	Preferences *m_preferences;
+	PreferencesModel *m_preferences;
 
 private slots:
 	void resetButtonPressed(void);
 	void use10BitEncodingToggled(bool checked);
+	void disableWarningsToggled(bool checked);
 };

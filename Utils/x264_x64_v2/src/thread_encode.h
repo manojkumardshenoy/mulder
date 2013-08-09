@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Simple x264 Launcher
-// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2013 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include "model_status.h"
+
 #include <QThread>
 #include <QUuid>
 #include <QMutex>
@@ -35,25 +37,7 @@ class EncodeThread : public QThread
 	Q_OBJECT
 
 public:
-	enum JobStatus
-	{
-		JobStatus_Enqueued = 0,
-		JobStatus_Starting = 1,
-		JobStatus_Indexing = 2,
-		JobStatus_Running = 3,
-		JobStatus_Running_Pass1 = 4,
-		JobStatus_Running_Pass2 = 5,
-		JobStatus_Completed = 6,
-		JobStatus_Failed = 7,
-		JobStatus_Pausing = 8,
-		JobStatus_Paused = 9,
-		JobStatus_Resuming = 10,
-		JobStatus_Aborting = 11,
-		JobStatus_Aborted = 12,
-		JobStatus_Undefined = 666
-	};
-	
-	EncodeThread(const QString &sourceFileName, const QString &outputFileName, const OptionsModel *options, const QString &binDir, bool x264_x64, bool x264_10bit, bool avs2yuv_x64);
+	EncodeThread(const QString &sourceFileName, const QString &outputFileName, const OptionsModel *options, const QString &binDir, const QString &vpsDir, const bool &x264_x64, const bool &x264_10bit, const bool &avs2yuv_x64, const bool &skipVersionTest, const int &processPriroity, const bool &abortOnTimeout);
 	~EncodeThread(void);
 
 	QUuid getId(void) { return this->m_jobId; };
@@ -89,9 +73,21 @@ protected:
 	const QString m_outputFileName;
 	const OptionsModel *m_options;
 	const QString m_binDir;
+	const QString m_vpsDir;
 	const bool m_x264_x64;
 	const bool m_x264_10bit;
 	const bool m_avs2yuv_x64;
+	const bool m_skipVersionTest;
+	const int m_processPriority;
+	const bool m_abortOnTimeout;
+
+	//Types
+	enum inputType_t
+	{
+		INPUT_NATIVE = 0,
+		INPUT_AVISYN = 1,
+		INPUT_VAPOUR = 2
+	};
 
 	//Flags
 	volatile bool m_abort;
@@ -113,11 +109,13 @@ protected:
 	
 	//Encode functions
 	void encode(void);
-	bool runEncodingPass(bool x264_x64, bool x264_10bit, bool avs2yuv_x64, bool usePipe, unsigned int frames, const QString &indexFile, int pass = 0, const QString &passLogFile = QString());
+	bool runEncodingPass(bool x264_x64, bool x264_10bit, bool avs2yuv_x64, int inputType, unsigned int frames, const QString &indexFile, int pass = 0, const QString &passLogFile = QString());
 	QStringList buildCommandLine(bool usePipe, bool use10Bit, unsigned int frames, const QString &indexFile, int pass = 0, const QString &passLogFile = QString());
 	unsigned int checkVersionX264(bool use_x64, bool use_10bit, bool &modified);
 	unsigned int checkVersionAvs2yuv(bool x64);
-	bool checkProperties(bool x64, unsigned int &frames);
+	bool checkVersionVapoursynth(void);
+	bool checkPropertiesAvisynth(bool x64, unsigned int &frames);
+	bool checkPropertiesVapoursynth(unsigned int &frames);
 
 	//Auxiallary Stuff
 	void log(const QString &text) { emit messageLogged(m_jobId, text); }
@@ -132,9 +130,11 @@ protected:
 	//Static functions
 	static QString commandline2string(const QString &program, const QStringList &arguments);
 	static QString sizeToString(qint64 size);
+	static void setPorcessPriority(void *processId, int priroity);
+	static int getInputType(const QString &fileExt);
 
 signals:
-	void statusChanged(const QUuid &jobId, EncodeThread::JobStatus newStatus);
+	void statusChanged(const QUuid &jobId, JobStatus newStatus);
 	void progressChanged(const QUuid &jobId, unsigned int newProgress);
 	void messageLogged(const QUuid &jobId, const QString &text);
 	void detailsChanged(const QUuid &jobId, const QString &details);

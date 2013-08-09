@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Simple x264 Launcher
-// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2013 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,16 +19,21 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "model_jobList.h"
 #include "global.h"
+#include "model_jobList.h"
 #include "thread_encode.h"
 #include "model_options.h"
+#include "model_preferences.h"
+#include "resource.h"
 
 #include <QIcon>
 #include <QFileInfo>
 
-JobListModel::JobListModel(void)
+#include <Mmsystem.h>
+
+JobListModel::JobListModel(PreferencesModel *preferences)
 {
+	m_preferences = preferences;
 }
 
 JobListModel::~JobListModel(void)
@@ -108,43 +113,43 @@ QVariant JobListModel::data(const QModelIndex &index, int role) const
 			case 1:
 				switch(m_status.value(m_jobs.at(index.row())))
 				{
-				case EncodeThread::JobStatus_Enqueued:
+				case JobStatus_Enqueued:
 					return QVariant::fromValue<QString>(tr("Enqueued."));
 					break;
-				case EncodeThread::JobStatus_Starting:
+				case JobStatus_Starting:
 					return QVariant::fromValue<QString>(tr("Starting..."));
 					break;
-				case EncodeThread::JobStatus_Indexing:
+				case JobStatus_Indexing:
 					return QVariant::fromValue<QString>(tr("Indexing..."));
 					break;
-				case EncodeThread::JobStatus_Running:
+				case JobStatus_Running:
 					return QVariant::fromValue<QString>(tr("Running..."));
 					break;
-				case EncodeThread::JobStatus_Running_Pass1:
+				case JobStatus_Running_Pass1:
 					return QVariant::fromValue<QString>(tr("Running... (Pass 1)"));
 					break;
-				case EncodeThread::JobStatus_Running_Pass2:
+				case JobStatus_Running_Pass2:
 					return QVariant::fromValue<QString>(tr("Running... (Pass 2)"));
 					break;
-				case EncodeThread::JobStatus_Completed:
+				case JobStatus_Completed:
 					return QVariant::fromValue<QString>(tr("Completed."));
 					break;
-				case EncodeThread::JobStatus_Failed:
+				case JobStatus_Failed:
 					return QVariant::fromValue<QString>(tr("Failed!"));
 					break;
-				case EncodeThread::JobStatus_Pausing:
+				case JobStatus_Pausing:
 					return QVariant::fromValue<QString>(tr("Pausing..."));
 					break;
-				case EncodeThread::JobStatus_Paused:
+				case JobStatus_Paused:
 					return QVariant::fromValue<QString>(tr("Paused."));
 					break;
-				case EncodeThread::JobStatus_Resuming:
+				case JobStatus_Resuming:
 					return QVariant::fromValue<QString>(tr("Resuming..."));
 					break;
-				case EncodeThread::JobStatus_Aborting:
+				case JobStatus_Aborting:
 					return QVariant::fromValue<QString>(tr("Aborting..."));
 					break;
-				case EncodeThread::JobStatus_Aborted:
+				case JobStatus_Aborted:
 					return QVariant::fromValue<QString>(tr("Aborted!"));
 					break;
 				default:
@@ -170,39 +175,39 @@ QVariant JobListModel::data(const QModelIndex &index, int role) const
 		{
 			switch(m_status.value(m_jobs.at(index.row())))
 			{
-			case EncodeThread::JobStatus_Enqueued:
+			case JobStatus_Enqueued:
 				return QIcon(":/buttons/hourglass.png");
 				break;
-			case EncodeThread::JobStatus_Starting:
+			case JobStatus_Starting:
 				return QIcon(":/buttons/lightning.png");
 				break;
-			case EncodeThread::JobStatus_Indexing:
+			case JobStatus_Indexing:
 				return QIcon(":/buttons/find.png");
 				break;
-			case EncodeThread::JobStatus_Running:
-			case EncodeThread::JobStatus_Running_Pass1:
-			case EncodeThread::JobStatus_Running_Pass2:
+			case JobStatus_Running:
+			case JobStatus_Running_Pass1:
+			case JobStatus_Running_Pass2:
 				return QIcon(":/buttons/play.png");
 				break;
-			case EncodeThread::JobStatus_Completed:
+			case JobStatus_Completed:
 				return QIcon(":/buttons/accept.png");
 				break;
-			case EncodeThread::JobStatus_Failed:
+			case JobStatus_Failed:
 				return QIcon(":/buttons/exclamation.png");
 				break;
-			case EncodeThread::JobStatus_Pausing:
+			case JobStatus_Pausing:
 				return QIcon(":/buttons/clock_pause.png");
 				break;
-			case EncodeThread::JobStatus_Paused:
+			case JobStatus_Paused:
 				return QIcon(":/buttons/suspended.png");
 				break;
-			case EncodeThread::JobStatus_Resuming:
+			case JobStatus_Resuming:
 				return QIcon(":/buttons/clock_play.png");
 				break;
-			case EncodeThread::JobStatus_Aborting:
+			case JobStatus_Aborting:
 				return QIcon(":/buttons/clock_stop.png");
 				break;
-			case EncodeThread::JobStatus_Aborted:
+			case JobStatus_Aborted:
 				return QIcon(":/buttons/error.png");
 				break;
 			default:
@@ -222,7 +227,6 @@ QVariant JobListModel::data(const QModelIndex &index, int role) const
 QModelIndex JobListModel::insertJob(EncodeThread *thread)
 {
 	QUuid id = thread->getId();
-	LogFileModel *logFile = NULL;
 
 	if(m_jobs.contains(id))
 	{
@@ -268,18 +272,20 @@ QModelIndex JobListModel::insertJob(EncodeThread *thread)
 		}
 		break;
 	}
-
+	
+	LogFileModel *logFile = new LogFileModel(thread->sourceFileName(), thread->outputFileName(), config);
+	
 	beginInsertRows(QModelIndex(), m_jobs.count(), m_jobs.count());
 	m_jobs.append(id);
 	m_name.insert(id, jobName);
-	m_status.insert(id, EncodeThread::JobStatus_Enqueued);
+	m_status.insert(id, JobStatus_Enqueued);
 	m_progress.insert(id, 0);
 	m_threads.insert(id, thread);
-	m_logFile.insert(id, (logFile = new LogFileModel));
+	m_logFile.insert(id, logFile);
 	m_details.insert(id, tr("Not started yet."));
 	endInsertRows();
 
-	connect(thread, SIGNAL(statusChanged(QUuid, EncodeThread::JobStatus)), this, SLOT(updateStatus(QUuid, EncodeThread::JobStatus)), Qt::QueuedConnection);
+	connect(thread, SIGNAL(statusChanged(QUuid, JobStatus)), this, SLOT(updateStatus(QUuid, JobStatus)), Qt::QueuedConnection);
 	connect(thread, SIGNAL(progressChanged(QUuid, unsigned int)), this, SLOT(updateProgress(QUuid, unsigned int)), Qt::QueuedConnection);
 	connect(thread, SIGNAL(messageLogged(QUuid, QString)), logFile, SLOT(addLogMessage(QUuid, QString)), Qt::QueuedConnection);
 	connect(thread, SIGNAL(detailsChanged(QUuid, QString)), this, SLOT(updateDetails(QUuid, QString)), Qt::QueuedConnection);
@@ -292,9 +298,9 @@ bool JobListModel::startJob(const QModelIndex &index)
 	if(index.isValid() && index.row() >= 0 && index.row() < m_jobs.count())
 	{
 		QUuid id = m_jobs.at(index.row());
-		if(m_status.value(id) == EncodeThread::JobStatus_Enqueued)
+		if(m_status.value(id) == JobStatus_Enqueued)
 		{
-			updateStatus(id, EncodeThread::JobStatus_Starting);
+			updateStatus(id, JobStatus_Starting);
 			updateDetails(id, tr("Starting up, please wait..."));
 			m_threads.value(id)->start();
 			return true;
@@ -309,11 +315,11 @@ bool JobListModel::pauseJob(const QModelIndex &index)
 	if(index.isValid() && index.row() >= 0 && index.row() < m_jobs.count())
 	{
 		QUuid id = m_jobs.at(index.row());
-		EncodeThread::JobStatus status = m_status.value(id);
-		if((status == EncodeThread::JobStatus_Indexing) || (status == EncodeThread::JobStatus_Running) ||
-			(status == EncodeThread::JobStatus_Running_Pass1) || (status == EncodeThread::JobStatus_Running_Pass2))
+		JobStatus status = m_status.value(id);
+		if((status == JobStatus_Indexing) || (status == JobStatus_Running) ||
+			(status == JobStatus_Running_Pass1) || (status == JobStatus_Running_Pass2))
 		{
-			updateStatus(id, EncodeThread::JobStatus_Pausing);
+			updateStatus(id, JobStatus_Pausing);
 			m_threads.value(id)->pauseJob();
 			return true;
 		}
@@ -327,10 +333,10 @@ bool JobListModel::resumeJob(const QModelIndex &index)
 	if(index.isValid() && index.row() >= 0 && index.row() < m_jobs.count())
 	{
 		QUuid id = m_jobs.at(index.row());
-		EncodeThread::JobStatus status = m_status.value(id);
-		if(status == EncodeThread::JobStatus_Paused)
+		JobStatus status = m_status.value(id);
+		if(status == JobStatus_Paused)
 		{
-			updateStatus(id, EncodeThread::JobStatus_Resuming);
+			updateStatus(id, JobStatus_Resuming);
 			m_threads.value(id)->resumeJob();
 			return true;
 		}
@@ -344,10 +350,10 @@ bool JobListModel::abortJob(const QModelIndex &index)
 	if(index.isValid() && index.row() >= 0 && index.row() < m_jobs.count())
 	{
 		QUuid id = m_jobs.at(index.row());
-		if(m_status.value(id) == EncodeThread::JobStatus_Indexing || m_status.value(id) == EncodeThread::JobStatus_Running ||
-			m_status.value(id) == EncodeThread::JobStatus_Running_Pass1 || EncodeThread::JobStatus_Running_Pass2)
+		if(m_status.value(id) == JobStatus_Indexing || m_status.value(id) == JobStatus_Running ||
+			m_status.value(id) == JobStatus_Running_Pass1 || JobStatus_Running_Pass2)
 		{
-			updateStatus(id, EncodeThread::JobStatus_Aborting);
+			updateStatus(id, JobStatus_Aborting);
 			m_threads.value(id)->abortJob();
 			return true;
 		}
@@ -361,8 +367,8 @@ bool JobListModel::deleteJob(const QModelIndex &index)
 	if(index.isValid() && index.row() >= 0 && index.row() < m_jobs.count())
 	{
 		QUuid id = m_jobs.at(index.row());
-		if(m_status.value(id) == EncodeThread::JobStatus_Completed || m_status.value(id) == EncodeThread::JobStatus_Failed ||
-			m_status.value(id) == EncodeThread::JobStatus_Aborted || m_status.value(id) == EncodeThread::JobStatus_Enqueued)
+		if(m_status.value(id) == JobStatus_Completed || m_status.value(id) == JobStatus_Failed ||
+			m_status.value(id) == JobStatus_Aborted || m_status.value(id) == JobStatus_Enqueued)
 		{
 			int idx = index.row();
 			QUuid id = m_jobs.at(idx);
@@ -426,14 +432,14 @@ const QString &JobListModel::getJobOutputFile(const QModelIndex &index)
 	return nullStr;
 }
 
-EncodeThread::JobStatus JobListModel::getJobStatus(const QModelIndex &index)
+JobStatus JobListModel::getJobStatus(const QModelIndex &index)
 {
 	if(index.isValid() && index.row() >= 0 && index.row() < m_jobs.count())
 	{
 		return m_status.value(m_jobs.at(index.row()));
 	}
 
-	return static_cast<EncodeThread::JobStatus>(-1);
+	return static_cast<JobStatus>(-1);
 }
 
 unsigned int JobListModel::getJobProgress(const QModelIndex &index)
@@ -473,7 +479,7 @@ QModelIndex JobListModel::getJobIndexById(const QUuid &id)
 // Slots
 ///////////////////////////////////////////////////////////////////////////////
 
-void JobListModel::updateStatus(const QUuid &jobId, EncodeThread::JobStatus newStatus)
+void JobListModel::updateStatus(const QUuid &jobId, JobStatus newStatus)
 {
 	int index = -1;
 	
@@ -481,6 +487,22 @@ void JobListModel::updateStatus(const QUuid &jobId, EncodeThread::JobStatus newS
 	{
 		m_status.insert(jobId, newStatus);
 		emit dataChanged(createIndex(index, 0), createIndex(index, 1));
+
+		if(m_preferences->enableSounds())
+		{
+			switch(newStatus)
+			{
+			case JobStatus_Completed:
+				PlaySound(MAKEINTRESOURCE(IDR_WAVE4), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+				break;
+			case JobStatus_Aborted:
+				PlaySound(MAKEINTRESOURCE(IDR_WAVE5), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+				break;
+			case JobStatus_Failed:
+				PlaySound(MAKEINTRESOURCE(IDR_WAVE6), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+				break;
+			}
+		}
 	}
 }
 
