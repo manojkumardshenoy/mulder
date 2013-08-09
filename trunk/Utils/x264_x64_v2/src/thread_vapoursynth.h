@@ -21,34 +21,46 @@
 
 #pragma once
 
-#include "thread_encode.h"
+#include <QThread>
+#include <QMutex>
 
-#include "QAbstractItemModel"
-#include <QUuid>
-#include <QStringList>
-#include <QMap>
+class QLibrary;
+class QFile;
 
-class LogFileModel : public QAbstractItemModel
+class VapourSynthCheckThread : public QThread
 {
 	Q_OBJECT
-		
+
 public:
-	LogFileModel(const QString &sourceName, const QString &outputName, const QString &configName);
-	~LogFileModel(void);
-
-	virtual int columnCount(const QModelIndex &parent) const;
-	virtual int rowCount(const QModelIndex &parent) const;
-	virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-	virtual QModelIndex index(int row, int column, const QModelIndex &parent) const;
-	virtual QModelIndex parent (const QModelIndex &index) const;
-	virtual QVariant data(const QModelIndex &index, int role) const;
-
-	void copyToClipboard(void);
+	static int detect(QString &path);
+	static void unload(void);
 
 protected:
-	QStringList m_lines;
-	bool m_firstLine;
+	VapourSynthCheckThread(void);
+	~VapourSynthCheckThread(void);
 
-public slots:
-	void addLogMessage(const QUuid &jobId, const QString &text);
+	bool getSuccess(void) { return m_success; }
+	bool getException(void) { return m_exception; }
+	QString getPath(void) { return m_vpsPath; }
+
+private slots:
+	void start(Priority priority = InheritPriority) { QThread::start(priority); }
+
+private:
+	volatile bool m_exception;
+	volatile bool m_success;
+	QString m_vpsPath;
+
+	static QMutex m_vpsLock;
+	static QFile *m_vpsExePath;
+	static QFile *m_vpsDllPath;
+	static QLibrary *m_vpsLib;
+	
+	//Entry point
+	virtual void run(void);
+
+	//Functions
+	static bool detectVapourSynthPath1(QString &path, volatile bool *exception);
+	static bool detectVapourSynthPath2(QString &path, volatile bool *exception);
+	static bool detectVapourSynthPath3(QString &path);
 };

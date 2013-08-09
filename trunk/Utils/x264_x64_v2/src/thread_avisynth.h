@@ -21,34 +21,43 @@
 
 #pragma once
 
-#include "thread_encode.h"
+#include <QThread>
+#include <QMutex>
 
-#include "QAbstractItemModel"
-#include <QUuid>
-#include <QStringList>
-#include <QMap>
+class QLibrary;
 
-class LogFileModel : public QAbstractItemModel
+class AvisynthCheckThread : public QThread
 {
 	Q_OBJECT
-		
+
 public:
-	LogFileModel(const QString &sourceName, const QString &outputName, const QString &configName);
-	~LogFileModel(void);
-
-	virtual int columnCount(const QModelIndex &parent) const;
-	virtual int rowCount(const QModelIndex &parent) const;
-	virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-	virtual QModelIndex index(int row, int column, const QModelIndex &parent) const;
-	virtual QModelIndex parent (const QModelIndex &index) const;
-	virtual QVariant data(const QModelIndex &index, int role) const;
-
-	void copyToClipboard(void);
+	static int detect(volatile double *version);
+	static void unload(void);
 
 protected:
-	QStringList m_lines;
-	bool m_firstLine;
+	AvisynthCheckThread(void);
+	~AvisynthCheckThread(void);
 
-public slots:
-	void addLogMessage(const QUuid &jobId, const QString &text);
+	bool getSuccess(void) { return m_success; }
+	bool getException(void) { return m_exception; }
+	double getVersion(void) { return m_version; }
+
+private slots:
+	void start(Priority priority = InheritPriority) { QThread::start(priority); }
+
+private:
+	volatile bool m_exception;
+	volatile bool m_success;
+	volatile double m_version;
+
+	static QMutex m_avsLock;
+	static QLibrary *m_avsLib;
+	
+	//Entry point
+	virtual void run(void);
+
+	//Functions
+	static bool detectAvisynthVersion1(volatile double *version_number, volatile bool *exception);
+	static bool detectAvisynthVersion2(volatile double *version_number, volatile bool *exception);
+	static bool detectAvisynthVersion3(volatile double *version_number);
 };

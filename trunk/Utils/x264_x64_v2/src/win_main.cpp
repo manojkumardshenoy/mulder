@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Simple x264 Launcher
-// Copyright (C) 2004-2012 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2013 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,11 +23,16 @@
 
 #include "model_jobList.h"
 #include "model_options.h"
+#include "model_preferences.h"
+#include "model_recently.h"
+#include "thread_avisynth.h"
+#include "thread_vapoursynth.h"
+#include "thread_ipc.h"
+#include "thread_encode.h"
+#include "taskbar7.h"
 #include "win_addJob.h"
 #include "win_preferences.h"
-#include "taskbar7.h"
 #include "resource.h"
-#include "avisynth_c.h"
 
 #include <QDate>
 #include <QTimer>
@@ -41,15 +46,18 @@
 #include <QProgressDialog>
 #include <QScrollBar>
 #include <QTextStream>
+#include <QSettings>
+#include <QFileDialog>
 
 #include <Mmsystem.h>
 
-const char *home_url = "http://mulder.brhack.net/";
+const char *home_url = "http://muldersoft.com/";
 const char *update_url = "http://code.google.com/p/mulder/downloads/list";
 const char *tpl_last = "<LAST_USED>";
 
 #define SET_FONT_BOLD(WIDGET,BOLD) { QFont _font = WIDGET->font(); _font.setBold(BOLD); WIDGET->setFont(_font); }
 #define SET_TEXT_COLOR(WIDGET,COLOR) { QPalette _palette = WIDGET->palette(); _palette.setColor(QPalette::WindowText, (COLOR)); _palette.setColor(QPalette::Text, (COLOR)); WIDGET->setPalette(_palette); }
+#define LINK(URL) "<a href=\"" URL "\">" URL "</a>"
 
 static int exceptionFilter(_EXCEPTION_RECORD *dst, _EXCEPTION_POINTERS *src) { memcpy(dst, src->ExceptionRecord, sizeof(_EXCEPTION_RECORD)); return EXCEPTION_EXECUTE_HANDLER; }
 
@@ -66,8 +74,11 @@ MainWindow::MainWindow(const x264_cpu_t *const cpuFeatures)
 	m_appDir(QApplication::applicationDirPath()),
 	m_options(NULL),
 	m_jobList(NULL),
-	m_avsLib(NULL),
 	m_droppedFiles(NULL),
+	m_preferences(NULL),
+	m_recentlyUsed(NULL),
+	m_skipVersionTest(false),
+	m_abortOnTimeout(true),
 	m_firstShow(true)
 {
 	//Init the dialog, from the .ui file
@@ -77,11 +88,15 @@ MainWindow::MainWindow(const x264_cpu_t *const cpuFeatures)
 	//Register meta types
 	qRegisterMetaType<QUuid>("QUuid");
 	qRegisterMetaType<QUuid>("DWORD");
-	qRegisterMetaType<EncodeThread::JobStatus>("EncodeThread::JobStatus");
+	qRegisterMetaType<JobStatus>("JobStatus");
 
 	//Load preferences
-	PreferencesDialog::initPreferences(&m_preferences);
-	PreferencesDialog::loadPreferences(&m_preferences);
+	m_preferences = new PreferencesModel();
+	PreferencesModel::loadPreferences(m_preferences);
+
+	//Load recently used
+	m_recentlyUsed = new RecentlyUsed();
+	RecentlyUsed::loadRecentlyUsed(m_recentlyUsed);
 
 	//Create options object
 	m_options = new OptionsModel();
@@ -110,7 +125,7 @@ MainWindow::MainWindow(const x264_cpu_t *const cpuFeatures)
 	}
 	
 	//Create model
-	m_jobList = new JobListModel();
+	m_jobList = new JobListModel(m_preferences);
 	connect(m_jobList, SIGNAL(dataChanged(QModelIndex, QModelIndex)), this, SLOT(jobChangedData(QModelIndex, QModelIndex)));
 	jobsView->setModel(m_jobList);
 	
@@ -141,14 +156,17 @@ MainWindow::MainWindow(const x264_cpu_t *const cpuFeatures)
 	connect(actionJob_Browse, SIGNAL(triggered()), this, SLOT(browseButtonPressed()));
 
 	//Enable menu
+	connect(actionOpen, SIGNAL(triggered()), this, SLOT(openActionTriggered()));
 	connect(actionAbout, SIGNAL(triggered()), this, SLOT(showAbout()));
 	connect(actionWebMulder, SIGNAL(triggered()), this, SLOT(showWebLink()));
 	connect(actionWebX264, SIGNAL(triggered()), this, SLOT(showWebLink()));
 	connect(actionWebKomisar, SIGNAL(triggered()), this, SLOT(showWebLink()));
-	connect(actionWebJarod, SIGNAL(triggered()), this, SLOT(showWebLink()));
+	connect(actionWebVideoLAN, SIGNAL(triggered()), this, SLOT(showWebLink()));
 	connect(actionWebJEEB, SIGNAL(triggered()), this, SLOT(showWebLink()));
 	connect(actionWebAvisynth32, SIGNAL(triggered()), this, SLOT(showWebLink()));
 	connect(actionWebAvisynth64, SIGNAL(triggered()), this, SLOT(showWebLink()));
+	connect(actionWebVapourSynth, SIGNAL(triggered()), this, SLOT(showWebLink()));
+	connect(actionWebVapourSynthDocs, SIGNAL(triggered()), this, SLOT(showWebLink()));
 	connect(actionWebWiki, SIGNAL(triggered()), this, SLOT(showWebLink()));
 	connect(actionWebBluRay, SIGNAL(triggered()), this, SLOT(showWebLink()));
 	connect(actionWebAvsWiki, SIGNAL(triggered()), this, SLOT(showWebLink()));
@@ -198,12 +216,10 @@ MainWindow::~MainWindow(void)
 	}
 
 	X264_DELETE(m_ipcThread);
-
-	if(m_avsLib)
-	{
-		m_avsLib->unload();
-		X264_DELETE(m_avsLib);
-	}
+	X264_DELETE(m_preferences);
+	X264_DELETE(m_recentlyUsed);
+	VapourSynthCheckThread::unload();
+	AvisynthCheckThread::unload();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -213,52 +229,41 @@ MainWindow::~MainWindow(void)
 /*
  * The "add" button was clicked
  */
-void MainWindow::addButtonPressed(const QString &filePathIn, const QString &filePathOut, OptionsModel *options, int fileNo, int fileTotal, bool *ok)
+void MainWindow::addButtonPressed()
 {
 	qDebug("MainWindow::addButtonPressed");
+	bool runImmediately = (countRunningJobs() < (m_preferences->autoRunNextJob() ? m_preferences->maxRunningJobCount() : 1));
+	QString sourceFileName, outputFileName;
 	
-	if(ok) *ok = false;
-
-	AddJobDialog *addDialog = new AddJobDialog(this, options ? options : m_options, m_cpuFeatures->x64, m_preferences.use10BitEncoding, m_preferences.saveToSourcePath);
-	addDialog->setRunImmediately(countRunningJobs() < (m_preferences.autoRunNextJob ? m_preferences.maxRunningJobCount : 1));
-	
-	if(options) addDialog->setWindowTitle(tr("Restart Job"));
-	if((fileNo >= 0) && (fileTotal > 1)) addDialog->setWindowTitle(addDialog->windowTitle().append(tr(" (File %1 of %2)").arg(QString::number(fileNo+1), QString::number(fileTotal))));
-	if(!filePathIn.isEmpty()) addDialog->setSourceFile(filePathIn);
-	if(!filePathOut.isEmpty()) addDialog->setOutputFile(filePathOut);
-
-	int result = addDialog->exec();
-	if(result == QDialog::Accepted)
+	if(createJob(sourceFileName, outputFileName, m_options, runImmediately))
 	{
-		EncodeThread *thrd = new EncodeThread
-		(
-			addDialog->sourceFile(),
-			addDialog->outputFile(),
-			options ? options : m_options,
-			QString("%1/toolset").arg(m_appDir),
-			m_cpuFeatures->x64,
-			m_preferences.use10BitEncoding,
-			m_cpuFeatures->x64 && m_preferences.useAvisyth64Bit
-		);
-
-		QModelIndex newIndex = m_jobList->insertJob(thrd);
-
-		if(newIndex.isValid())
-		{
-			if(addDialog->runImmediately())
-			{
-				jobsView->selectRow(newIndex.row());
-				QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-				m_jobList->startJob(newIndex);
-			}
-
-			if(ok) *ok = true;
-		}
-
-		m_label->setVisible(m_jobList->rowCount(QModelIndex()) == 0);
+		appendJob(sourceFileName, outputFileName, m_options, runImmediately);
 	}
-	
-	X264_DELETE(addDialog);
+}
+
+/*
+ * The "open" action was triggered
+ */
+void MainWindow::openActionTriggered()
+{
+	QStringList fileList = QFileDialog::getOpenFileNames(this, tr("Open Source File(s)"), m_recentlyUsed->sourceDirectory(), AddJobDialog::getInputFilterLst(), NULL, QFileDialog::DontUseNativeDialog);
+	if(!fileList.empty())
+	{
+		m_recentlyUsed->setSourceDirectory(QFileInfo(fileList.last()).absolutePath());
+		if(fileList.count() > 1)
+		{
+			createJobMultiple(fileList);
+		}
+		else
+		{
+			bool runImmediately = (countRunningJobs() < (m_preferences->autoRunNextJob() ? m_preferences->maxRunningJobCount() : 1));
+			QString sourceFileName(fileList.first()), outputFileName;
+			if(createJob(sourceFileName, outputFileName, m_options, runImmediately))
+			{
+				appendJob(sourceFileName, outputFileName, m_options, runImmediately);
+			}
+		}
+	}
 }
 
 /*
@@ -323,15 +328,18 @@ void MainWindow::pauseButtonPressed(bool checked)
 void MainWindow::restartButtonPressed(void)
 {
 	const QModelIndex index = jobsView->currentIndex();
-	
-	const QString &source = m_jobList->getJobSourceFile(index);
-	const QString &output = m_jobList->getJobOutputFile(index);
 	const OptionsModel *options = m_jobList->getJobOptions(index);
+	QString sourceFileName = m_jobList->getJobSourceFile(index);
+	QString outputFileName = m_jobList->getJobOutputFile(index);
 
-	if((options) && (!source.isEmpty()) && (!output.isEmpty()))
+	if((options) && (!sourceFileName.isEmpty()) && (!outputFileName.isEmpty()))
 	{
+		bool runImmediately = true;
 		OptionsModel *tempOptions = new OptionsModel(*options);
-		addButtonPressed(source, output, tempOptions);
+		if(createJob(sourceFileName, outputFileName, tempOptions, runImmediately, true))
+		{
+			appendJob(sourceFileName, outputFileName, tempOptions, runImmediately);
+		}
 		X264_DELETE(tempOptions);
 	}
 }
@@ -366,8 +374,8 @@ void MainWindow::jobSelected(const QModelIndex & current, const QModelIndex & pr
 		logView->actions().first()->setEnabled(false);
 		progressBar->setValue(0);
 		editDetails->clear();
-		updateButtons(EncodeThread::JobStatus_Undefined);
-		updateTaskbar(EncodeThread::JobStatus_Undefined, QIcon());
+		updateButtons(JobStatus_Undefined);
+		updateTaskbar(JobStatus_Undefined, QIcon());
 	}
 
 	progressBar->repaint();
@@ -384,18 +392,18 @@ void MainWindow::jobChangedData(const QModelIndex &topLeft, const  QModelIndex &
 	{
 		for(int i = topLeft.row(); i <= bottomRight.row(); i++)
 		{
-			EncodeThread::JobStatus status = m_jobList->getJobStatus(m_jobList->index(i, 0, QModelIndex()));
+			JobStatus status = m_jobList->getJobStatus(m_jobList->index(i, 0, QModelIndex()));
 			if(i == selected)
 			{
 				qDebug("Current job changed status!");
 				updateButtons(status);
 				updateTaskbar(status, m_jobList->data(m_jobList->index(i, 0, QModelIndex()), Qt::DecorationRole).value<QIcon>());
 			}
-			if((status == EncodeThread::JobStatus_Completed) || (status == EncodeThread::JobStatus_Failed))
+			if((status == JobStatus_Completed) || (status == JobStatus_Failed))
 			{
-				if(m_preferences.autoRunNextJob) QTimer::singleShot(0, this, SLOT(launchNextJob()));
-				if(m_preferences.shutdownComputer) QTimer::singleShot(0, this, SLOT(shutdownComputer()));
-				if(m_preferences.saveLogFiles) saveLogFile(m_jobList->index(i, 1, QModelIndex()));
+				if(m_preferences->autoRunNextJob()) QTimer::singleShot(0, this, SLOT(launchNextJob()));
+				if(m_preferences->shutdownComputer()) QTimer::singleShot(0, this, SLOT(shutdownComputer()));
+				if(m_preferences->saveLogFiles()) saveLogFile(m_jobList->index(i, 1, QModelIndex()));
 			}
 		}
 	}
@@ -453,6 +461,7 @@ void MainWindow::showAbout(void)
 	aboutBox.setText(text.replace("-", "&minus;"));
 	aboutBox.addButton(tr("About x264"), QMessageBox::NoRole);
 	aboutBox.addButton(tr("About AVS"), QMessageBox::NoRole);
+	aboutBox.addButton(tr("About VPY"), QMessageBox::NoRole);
 	aboutBox.addButton(tr("About Qt"), QMessageBox::NoRole);
 	aboutBox.setEscapeButton(aboutBox.addButton(tr("Close"), QMessageBox::NoRole));
 		
@@ -464,7 +473,7 @@ void MainWindow::showAbout(void)
 		case 0:
 			{
 				QString text2;
-				text2 += tr("<nobr><tt>x264 - the best H.264/AVC encoder. Copyright (c) 2003-2012 x264 project.<br>");
+				text2 += tr("<nobr><tt>x264 - the best H.264/AVC encoder. Copyright (c) 2003-2013 x264 project.<br>");
 				text2 += tr("Free software library for encoding video streams into the H.264/MPEG-4 AVC format.<br>");
 				text2 += tr("Released under the terms of the GNU General Public License.<br><br>");
 				text2 += tr("Please visit <a href=\"%1\">%1</a> for obtaining a commercial x264 license.<br>").arg("http://x264licensing.com/");
@@ -486,7 +495,7 @@ void MainWindow::showAbout(void)
 				text2 += tr("Copyright (c) 2000 Ben Rudiak-Gould and all subsequent developers.<br>");
 				text2 += tr("Released under the terms of the GNU General Public License.<br><br>");
 				text2 += tr("Please visit the web-site <a href=\"%1\">%1</a> for more information.<br>").arg("http://avisynth.org/");
-				text2 += tr("Read the <a href=\"%1\">guide</a> to get started and use the <a href=\"%2\">support forum</a> for help!<br></tt></nobr>").arg("http://avisynth.org/mediawiki/First_script", "http://forum.doom9.org/forumdisplay.php?f=33");
+				text2 += tr("Read the <a href=\"%1\">guide</a> to get started and use the <a href=\"%2\">support forum</a> for help!<br></tt></nobr>").arg("http://avisynth.nl/index.php/First_script", "http://forum.doom9.org/forumdisplay.php?f=33");
 
 				QMessageBox x264Box(this);
 				x264Box.setIconPixmap(QIcon(":/images/avisynth.png").pixmap(48,67));
@@ -498,6 +507,24 @@ void MainWindow::showAbout(void)
 			}
 			break;
 		case 2:
+			{
+				QString text2;
+				text2 += tr("<nobr><tt>VapourSynth - application for video manipulation based on Python.<br>");
+				text2 += tr("Copyright (c) 2012 Fredrik Mellbin.<br>");
+				text2 += tr("Released under the terms of the GNU Lesser General Public.<br><br>");
+				text2 += tr("Please visit the web-site <a href=\"%1\">%1</a> for more information.<br>").arg("http://www.vapoursynth.com/");
+				text2 += tr("Read the <a href=\"%1\">documentation</a> to get started and use the <a href=\"%2\">support forum</a> for help!<br></tt></nobr>").arg("http://www.vapoursynth.com/doc/", "http://forum.doom9.org/showthread.php?t=165771");
+
+				QMessageBox x264Box(this);
+				x264Box.setIconPixmap(QIcon(":/images/python.png").pixmap(48,48));
+				x264Box.setWindowTitle(tr("About VapourSynth"));
+				x264Box.setText(text2.replace("-", "&minus;"));
+				x264Box.setEscapeButton(x264Box.addButton(tr("Close"), QMessageBox::NoRole));
+				MessageBeep(MB_ICONINFORMATION);
+				x264Box.exec();
+			}
+			break;
+		case 3:
 			QMessageBox::aboutQt(this);
 			break;
 		default:
@@ -511,18 +538,20 @@ void MainWindow::showAbout(void)
  */
 void MainWindow::showWebLink(void)
 {
-	if(QObject::sender() == actionWebMulder)     QDesktopServices::openUrl(QUrl(home_url));
-	if(QObject::sender() == actionWebX264)       QDesktopServices::openUrl(QUrl("http://www.x264.com/"));
-	if(QObject::sender() == actionWebKomisar)    QDesktopServices::openUrl(QUrl("http://komisar.gin.by/"));
-	if(QObject::sender() == actionWebJarod)      QDesktopServices::openUrl(QUrl("http://www.x264.nl/"));
-	if(QObject::sender() == actionWebJEEB)       QDesktopServices::openUrl(QUrl("http://x264.fushizen.eu/"));
-	if(QObject::sender() == actionWebAvisynth32) QDesktopServices::openUrl(QUrl("http://sourceforge.net/projects/avisynth2/files/AviSynth%202.5/"));
-	if(QObject::sender() == actionWebAvisynth64) QDesktopServices::openUrl(QUrl("http://code.google.com/p/avisynth64/downloads/list"));
-	if(QObject::sender() == actionWebWiki)       QDesktopServices::openUrl(QUrl("http://mewiki.project357.com/wiki/X264_Settings"));
-	if(QObject::sender() == actionWebBluRay)     QDesktopServices::openUrl(QUrl("http://www.x264bluray.com/"));
-	if(QObject::sender() == actionWebAvsWiki)    QDesktopServices::openUrl(QUrl("http://avisynth.org/mediawiki/Main_Page#Usage"));
-	if(QObject::sender() == actionWebSupport)    QDesktopServices::openUrl(QUrl("http://forum.doom9.org/showthread.php?t=144140"));
-	if(QObject::sender() == actionWebSecret)     QDesktopServices::openUrl(QUrl("http://www.youtube.com/watch_popup?v=AXIeHY-OYNI"));
+	if(QObject::sender() == actionWebMulder)          QDesktopServices::openUrl(QUrl(home_url));
+	if(QObject::sender() == actionWebX264)            QDesktopServices::openUrl(QUrl("http://www.x264.com/"));
+	if(QObject::sender() == actionWebKomisar)         QDesktopServices::openUrl(QUrl("http://komisar.gin.by/"));
+	if(QObject::sender() == actionWebVideoLAN)        QDesktopServices::openUrl(QUrl("http://download.videolan.org/pub/x264/binaries/"));
+	if(QObject::sender() == actionWebJEEB)            QDesktopServices::openUrl(QUrl("http://x264.fushizen.eu/"));
+	if(QObject::sender() == actionWebAvisynth32)      QDesktopServices::openUrl(QUrl("http://sourceforge.net/projects/avisynth2/files/AviSynth%202.5/"));
+	if(QObject::sender() == actionWebAvisynth64)      QDesktopServices::openUrl(QUrl("http://code.google.com/p/avisynth64/downloads/list"));
+	if(QObject::sender() == actionWebVapourSynth)     QDesktopServices::openUrl(QUrl("http://www.vapoursynth.com/"));
+	if(QObject::sender() == actionWebVapourSynthDocs) QDesktopServices::openUrl(QUrl("http://www.vapoursynth.com/doc/"));
+	if(QObject::sender() == actionWebWiki)            QDesktopServices::openUrl(QUrl("http://mewiki.project357.com/wiki/X264_Settings"));
+	if(QObject::sender() == actionWebBluRay)          QDesktopServices::openUrl(QUrl("http://www.x264bluray.com/"));
+	if(QObject::sender() == actionWebAvsWiki)         QDesktopServices::openUrl(QUrl("http://avisynth.nl/index.php/Main_Page#Usage"));
+	if(QObject::sender() == actionWebSupport)         QDesktopServices::openUrl(QUrl("http://forum.doom9.org/showthread.php?t=144140"));
+	if(QObject::sender() == actionWebSecret)          QDesktopServices::openUrl(QUrl("http://www.youtube.com/watch_popup?v=AXIeHY-OYNI"));
 }
 
 /*
@@ -530,7 +559,7 @@ void MainWindow::showWebLink(void)
  */
 void MainWindow::showPreferences(void)
 {
-	PreferencesDialog *preferences = new PreferencesDialog(this, &m_preferences, m_cpuFeatures->x64);
+	PreferencesDialog *preferences = new PreferencesDialog(this, m_preferences, m_cpuFeatures->x64);
 	preferences->exec();
 	X264_DELETE(preferences);
 }
@@ -544,7 +573,7 @@ void MainWindow::launchNextJob(void)
 	
 	const int rows = m_jobList->rowCount(QModelIndex());
 
-	if(countRunningJobs() >= m_preferences.maxRunningJobCount)
+	if(countRunningJobs() >= m_preferences->maxRunningJobCount())
 	{
 		qDebug("Still have too many jobs running, won't launch next one yet!");
 		return;
@@ -555,8 +584,8 @@ void MainWindow::launchNextJob(void)
 	for(int i = 0; i < rows; i++)
 	{
 		int currentIdx = (i + startIdx) % rows;
-		EncodeThread::JobStatus status = m_jobList->getJobStatus(m_jobList->index(currentIdx, 0, QModelIndex()));
-		if(status == EncodeThread::JobStatus_Enqueued)
+		JobStatus status = m_jobList->getJobStatus(m_jobList->index(currentIdx, 0, QModelIndex()));
+		if(status == JobStatus_Enqueued)
 		{
 			if(m_jobList->startJob(m_jobList->index(currentIdx, 0, QModelIndex())))
 			{
@@ -673,7 +702,7 @@ void MainWindow::shutdownComputer(void)
  */
 void MainWindow::init(void)
 {
-	static const char *binFiles = "x264_8bit_x86.exe:x264_8bit_x64.exe:x264_10bit_x86.exe:x264_10bit_x64.exe:avs2yuv_x86.exe:avs2yuv_x64.exe";
+	static const char *binFiles = "x86/x264_8bit_x86.exe:x64/x264_8bit_x64.exe:x86/x264_10bit_x86.exe:x64/x264_10bit_x64.exe:x86/avs2yuv_x86.exe:x64/avs2yuv_x64.exe";
 	QStringList binaries = QString::fromLatin1(binFiles).split(":", QString::SkipEmptyParts);
 
 	updateLabelPos();
@@ -705,13 +734,13 @@ void MainWindow::init(void)
 		{
 			bool binaryTypeOkay = false;
 			DWORD binaryType;
-			if(GetBinaryType(QWCHAR(file->fileName()), &binaryType))
+			if(GetBinaryType(QWCHAR(QDir::toNativeSeparators(file->fileName())), &binaryType))
 			{
 				binaryTypeOkay = (binaryType == SCS_32BIT_BINARY || binaryType == SCS_64BIT_BINARY);
 			}
 			if(!binaryTypeOkay)
 			{
-				QMessageBox::critical(this, tr("Invalid File!"), tr("<nobr>At least on required tool is not a valid Win32 or Win64 binary:<br>%1<br><br>Please re-install the program in order to fix the problem!</nobr>").arg(QDir::toNativeSeparators(QString("%1/toolset/%2").arg(m_appDir, current))).replace("-", "&minus;"));
+				QMessageBox::critical(this, tr("Invalid File!"), tr("<nobr>At least on required tool is not a valid Win32 or Win64 binary:<br><tt style=\"whitespace:nowrap\">%1</tt><br><br>Please re-install the program in order to fix the problem!</nobr>").arg(QDir::toNativeSeparators(QString("%1/toolset/%2").arg(m_appDir, current))).replace("-", "&minus;"));
 				qFatal(QString("Binary is invalid: %1/toolset/%2").arg(m_appDir, current).toLatin1().constData());
 				close(); qApp->exit(-1); return;
 			}
@@ -720,7 +749,7 @@ void MainWindow::init(void)
 		else
 		{
 			X264_DELETE(file);
-			QMessageBox::critical(this, tr("File Not Found!"), tr("<nobr>At least on required tool could not be found:<br>%1<br><br>Please re-install the program in order to fix the problem!</nobr>").arg(QDir::toNativeSeparators(QString("%1/toolset/%2").arg(m_appDir, current))).replace("-", "&minus;"));
+			QMessageBox::critical(this, tr("File Not Found!"), tr("<nobr>At least on required tool could not be found:<br><tt style=\"whitespace:nowrap\">%1</tt><br><br>Please re-install the program in order to fix the problem!</nobr>").arg(QDir::toNativeSeparators(QString("%1/toolset/%2").arg(m_appDir, current))).replace("-", "&minus;"));
 			qFatal(QString("Binary not found: %1/toolset/%2").arg(m_appDir, current).toLatin1().constData());
 			close(); qApp->exit(-1); return;
 		}
@@ -766,37 +795,70 @@ void MainWindow::init(void)
 		if(val != 1) { close(); qApp->exit(-1); return; }
 	}
 
+	//Skip version check (not recommended!)
+	if(qApp->arguments().contains("--skip-x264-version-check", Qt::CaseInsensitive))
+	{
+		qWarning("x264 version check disabled, you have been warned!\n");
+		m_skipVersionTest = true;
+	}
+	
+	//Don't abort encoding process on timeout (not recommended!)
+	if(qApp->arguments().contains("--no-deadlock-detection", Qt::CaseInsensitive))
+	{
+		qWarning("Deadlock detection disabled, you have been warned!\n");
+		m_abortOnTimeout = false;
+	}
+
 	//Check for Avisynth support
 	if(!qApp->arguments().contains("--skip-avisynth-check", Qt::CaseInsensitive))
 	{
 		qDebug("[Check for Avisynth support]");
-		double avisynthVersion = 0.0;
-		if(!m_avsLib)
+		volatile double avisynthVersion = 0.0;
+		const int result = AvisynthCheckThread::detect(&avisynthVersion);
+		if(result < 0)
 		{
-			m_avsLib = new QLibrary("avisynth.dll");
+			QString text = tr("A critical error was encountered while checking your Avisynth version.").append("<br>");
+			text += tr("This is most likely caused by an erroneous Avisynth Plugin, please try to clean your Plugins folder!").append("<br>");
+			text += tr("We suggest to move all .dll and .avsi files out of your Avisynth Plugins folder and try again.");
+			int val = QMessageBox::critical(this, tr("Avisynth Error"), QString("<nobr>%1</nobr>").arg(text).replace("-", "&minus;"), tr("Quit"), tr("Ignore"));
+			if(val != 1) { close(); qApp->exit(-1); return; }
 		}
-		if(m_avsLib->load())
+		if((!result) || (avisynthVersion < 2.5))
 		{
-			DWORD errorCode = 0;
-			avisynthVersion = detectAvisynthVersion(m_avsLib, &errorCode);
-			if((avisynthVersion < 0.0) || errorCode)
+			if(!m_preferences->disableWarnings())
 			{
-				QString text = tr("A critical error (code: 0x%1) was encountered while checking your Avisynth version.").arg(QString().sprintf("%08X", errorCode)).append("<br>");
-				text += tr("This is most likely caused by an erroneous Avisynth Plugin, please try to clean your Plugins foler!").append("<br>");
-				text += tr("We suggest to move all .dll and .avsi files out of your Avisynth Plugins folder and try again.");
-				int val = QMessageBox::critical(this, tr("Avisynth Error"), QString("<nobr>%1</nobr>").arg(text).replace("-", "&minus;"), tr("Quit"), tr("Ignore"));
+				QString text = tr("It appears that Avisynth is <b>not</b> currently installed on your computer.<br>Therefore Avisynth (.avs) input will <b>not</b> be working at all!").append("<br><br>");
+				text += tr("Please download and install Avisynth:").append("<br>").append(LINK("http://sourceforge.net/projects/avisynth2/files/AviSynth%202.5/"));
+				int val = QMessageBox::warning(this, tr("Avisynth Missing"), QString("<nobr>%1</nobr>").arg(text).replace("-", "&minus;"), tr("Quit"), tr("Ignore"));
 				if(val != 1) { close(); qApp->exit(-1); return; }
 			}
 		}
-		else
+		qDebug("");
+	}
+
+	//Check for Vapoursynth support
+	if(!qApp->arguments().contains("--skip-vapoursynth-check", Qt::CaseInsensitive))
+	{
+		qDebug("[Check for Vapoursynth support]");
+		volatile double avisynthVersion = 0.0;
+		const int result = VapourSynthCheckThread::detect(m_vapoursynthPath);
+		if(result < 0)
 		{
-			qWarning("Failed to load avisynth.dll libraray!");
-		}
-		if(avisynthVersion < 2.5)
-		{
-			int val = QMessageBox::warning(this, tr("Avisynth Missing"), tr("<nobr>It appears that Avisynth is <b>not</b> currently installed on your computer.<br>Therefore Avisynth (.avs) input will <b>not</b> be working at all!<br><br>Please download and install Avisynth:<br><a href=\"http://sourceforge.net/projects/avisynth2/files/AviSynth%202.5/\">http://sourceforge.net/projects/avisynth2/files/AviSynth 2.5/</a></nobr>").replace("-", "&minus;"), tr("Quit"), tr("Ignore"));
-			m_avsLib->unload(); X264_DELETE(m_avsLib);
+			QString text = tr("A critical error was encountered while checking your Vapoursynth installation.").append("<br>");
+			text += tr("This is most likely caused by an erroneous Vapoursynth Plugin, please try to clean your Filters folder!").append("<br>");
+			text += tr("We suggest to move all .dll files out of your Vapoursynth Filters folder and try again.");
+			int val = QMessageBox::critical(this, tr("Vapoursynth Error"), QString("<nobr>%1</nobr>").arg(text).replace("-", "&minus;"), tr("Quit"), tr("Ignore"));
 			if(val != 1) { close(); qApp->exit(-1); return; }
+		}
+		if((!result) || (m_vapoursynthPath.isEmpty()))
+		{
+			if(!m_preferences->disableWarnings())
+			{
+				QString text = tr("It appears that Vapoursynth is <b>not</b> currently installed on your computer.<br>Therefore Vapoursynth (.vpy) input will <b>not</b> be working at all!").append("<br><br>");
+				text += tr("Please download and install Vapoursynth for Windows (R19 or later):").append("<br>").append(LINK("http://www.vapoursynth.com/"));
+				int val = QMessageBox::warning(this, tr("Vapoursynth Missing"), QString("<nobr>%1</nobr>").arg(text).replace("-", "&minus;"), tr("Quit"), tr("Ignore"));
+				if(val != 1) { close(); qApp->exit(-1); return; }
+			}
 		}
 		qDebug("");
 	}
@@ -834,15 +896,9 @@ void MainWindow::init(void)
 			files << QFileInfo(current).canonicalFilePath();
 		}
 	}
-	if(int totalFiles = files.count())
+	if(files.count() > 0)
 	{
-		bool ok = true; int n = 0;
-		while((!files.isEmpty()) && ok)
-		{
-			QString currentFile = files.takeFirst();
-			qDebug("Adding file: %s", currentFile.toUtf8().constData());
-			addButtonPressed(currentFile, QString(), NULL, n++, totalFiles, &ok);
-		}
+		createJobMultiple(files);
 	}
 
 	//Enable drag&drop support for this window, required for Qt v4.8.4+
@@ -882,14 +938,7 @@ void MainWindow::handleDroppedFiles(void)
 	{
 		QStringList droppedFiles(*m_droppedFiles);
 		m_droppedFiles->clear();
-		int totalFiles = droppedFiles.count();
-		bool ok = true; int n = 0;
-		while((!droppedFiles.isEmpty()) && ok)
-		{
-			QString currentFile = droppedFiles.takeFirst();
-			qDebug("Adding file: %s", currentFile.toUtf8().constData());
-			addButtonPressed(currentFile, QString(), NULL, n++, totalFiles, &ok);
-		}
+		createJobMultiple(droppedFiles);
 	}
 	qDebug("Leave from MainWindow::handleDroppedFiles!");
 }
@@ -1052,6 +1101,124 @@ void MainWindow::dropEvent(QDropEvent *event)
 ///////////////////////////////////////////////////////////////////////////////
 
 /*
+ * Creates a new job
+ */
+bool MainWindow::createJob(QString &sourceFileName, QString &outputFileName, OptionsModel *options, bool &runImmediately, const bool restart, int fileNo, int fileTotal, bool *applyToAll)
+{
+	bool okay = false;
+	AddJobDialog *addDialog = new AddJobDialog(this, options, m_recentlyUsed, m_cpuFeatures->x64, m_preferences->use10BitEncoding(), m_preferences->saveToSourcePath());
+
+	addDialog->setRunImmediately(runImmediately);
+	if(!sourceFileName.isEmpty()) addDialog->setSourceFile(sourceFileName);
+	if(!outputFileName.isEmpty()) addDialog->setOutputFile(outputFileName);
+	if(restart) addDialog->setWindowTitle(tr("Restart Job"));
+
+	const bool multiFile = (fileNo >= 0) && (fileTotal > 1);
+	if(multiFile)
+	{
+		addDialog->setSourceEditable(false);
+		addDialog->setWindowTitle(addDialog->windowTitle().append(tr(" (File %1 of %2)").arg(QString::number(fileNo+1), QString::number(fileTotal))));
+		addDialog->setApplyToAllVisible(applyToAll);
+	}
+
+	if(addDialog->exec() == QDialog::Accepted)
+	{
+		sourceFileName = addDialog->sourceFile();
+		outputFileName = addDialog->outputFile();
+		runImmediately = addDialog->runImmediately();
+		if(applyToAll)
+		{
+			*applyToAll = addDialog->applyToAll();
+		}
+		okay = true;
+	}
+
+	X264_DELETE(addDialog);
+	return okay;
+}
+
+/*
+ * Creates a new job from *multiple* files
+ */
+bool MainWindow::createJobMultiple(const QStringList &filePathIn)
+{
+	QStringList::ConstIterator iter;
+	bool applyToAll = false, runImmediately = false;
+	int counter = 0;
+
+	//Add files individually
+	for(iter = filePathIn.constBegin(); (iter != filePathIn.constEnd()) && (!applyToAll); iter++)
+	{
+		runImmediately = (countRunningJobs() < (m_preferences->autoRunNextJob() ? m_preferences->maxRunningJobCount() : 1));
+		QString sourceFileName(*iter), outputFileName;
+		if(createJob(sourceFileName, outputFileName, m_options, runImmediately, false, counter++, filePathIn.count(), &applyToAll))
+		{
+			if(appendJob(sourceFileName, outputFileName, m_options, runImmediately))
+			{
+				continue;
+			}
+		}
+		return false;
+	}
+
+	//Add remaining files
+	while(applyToAll && (iter != filePathIn.constEnd()))
+	{
+		const bool runImmediatelyTmp = runImmediately && (countRunningJobs() < (m_preferences->autoRunNextJob() ? m_preferences->maxRunningJobCount() : 1));
+		const QString sourceFileName = *iter;
+		const QString outputFileName = AddJobDialog::generateOutputFileName(sourceFileName, m_recentlyUsed->outputDirectory(), m_recentlyUsed->filterIndex(), m_preferences->saveToSourcePath());
+		if(!appendJob(sourceFileName, outputFileName, m_options, runImmediatelyTmp))
+		{
+			return false;
+		}
+		iter++;
+	}
+
+	return true;
+}
+
+
+/*
+ * Append a new job
+ */
+bool MainWindow::appendJob(const QString &sourceFileName, const QString &outputFileName, OptionsModel *options, const bool runImmediately)
+{
+	bool okay = false;
+	
+	EncodeThread *thrd = new EncodeThread
+	(
+		sourceFileName,
+		outputFileName,
+		options,
+		QString("%1/toolset").arg(m_appDir),
+		m_vapoursynthPath,
+		m_cpuFeatures->x64,
+		m_preferences->use10BitEncoding(),
+		m_cpuFeatures->x64 && m_preferences->useAvisyth64Bit(),
+		m_skipVersionTest,
+		m_preferences->processPriority(),
+		m_abortOnTimeout
+	);
+
+	QModelIndex newIndex = m_jobList->insertJob(thrd);
+
+	if(newIndex.isValid())
+	{
+		if(runImmediately)
+		{
+			jobsView->selectRow(newIndex.row());
+			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+			m_jobList->startJob(newIndex);
+		}
+
+		okay = true;
+	}
+
+	m_label->setVisible(m_jobList->rowCount(QModelIndex()) == 0);
+	return okay;
+}
+
+/*
  * Jobs that are not completed (or failed, or aborted) yet
  */
 unsigned int MainWindow::countPendingJobs(void)
@@ -1061,8 +1228,8 @@ unsigned int MainWindow::countPendingJobs(void)
 
 	for(int i = 0; i < rows; i++)
 	{
-		EncodeThread::JobStatus status = m_jobList->getJobStatus(m_jobList->index(i, 0, QModelIndex()));
-		if(status != EncodeThread::JobStatus_Completed && status != EncodeThread::JobStatus_Aborted && status != EncodeThread::JobStatus_Failed)
+		JobStatus status = m_jobList->getJobStatus(m_jobList->index(i, 0, QModelIndex()));
+		if(status != JobStatus_Completed && status != JobStatus_Aborted && status != JobStatus_Failed)
 		{
 			count++;
 		}
@@ -1081,8 +1248,8 @@ unsigned int MainWindow::countRunningJobs(void)
 
 	for(int i = 0; i < rows; i++)
 	{
-		EncodeThread::JobStatus status = m_jobList->getJobStatus(m_jobList->index(i, 0, QModelIndex()));
-		if(status != EncodeThread::JobStatus_Completed && status != EncodeThread::JobStatus_Aborted && status != EncodeThread::JobStatus_Failed && status != EncodeThread::JobStatus_Enqueued)
+		JobStatus status = m_jobList->getJobStatus(m_jobList->index(i, 0, QModelIndex()));
+		if(status != JobStatus_Completed && status != JobStatus_Aborted && status != JobStatus_Failed && status != JobStatus_Enqueued)
 		{
 			count++;
 		}
@@ -1094,50 +1261,50 @@ unsigned int MainWindow::countRunningJobs(void)
 /*
  * Update all buttons with respect to current job status
  */
-void MainWindow::updateButtons(EncodeThread::JobStatus status)
+void MainWindow::updateButtons(JobStatus status)
 {
 	qDebug("MainWindow::updateButtons(void)");
 
-	buttonStartJob->setEnabled(status == EncodeThread::JobStatus_Enqueued);
-	buttonAbortJob->setEnabled(status == EncodeThread::JobStatus_Indexing || status == EncodeThread::JobStatus_Running || status == EncodeThread::JobStatus_Running_Pass1 || status == EncodeThread::JobStatus_Running_Pass2 || status == EncodeThread::JobStatus_Paused);
-	buttonPauseJob->setEnabled(status == EncodeThread::JobStatus_Indexing || status == EncodeThread::JobStatus_Running || status == EncodeThread::JobStatus_Paused || status == EncodeThread::JobStatus_Running_Pass1 || status == EncodeThread::JobStatus_Running_Pass2);
-	buttonPauseJob->setChecked(status == EncodeThread::JobStatus_Paused || status == EncodeThread::JobStatus_Pausing);
+	buttonStartJob->setEnabled(status == JobStatus_Enqueued);
+	buttonAbortJob->setEnabled(status == JobStatus_Indexing || status == JobStatus_Running || status == JobStatus_Running_Pass1 || status == JobStatus_Running_Pass2 || status == JobStatus_Paused);
+	buttonPauseJob->setEnabled(status == JobStatus_Indexing || status == JobStatus_Running || status == JobStatus_Paused || status == JobStatus_Running_Pass1 || status == JobStatus_Running_Pass2);
+	buttonPauseJob->setChecked(status == JobStatus_Paused || status == JobStatus_Pausing);
 
-	actionJob_Delete->setEnabled(status == EncodeThread::JobStatus_Completed || status == EncodeThread::JobStatus_Aborted || status == EncodeThread::JobStatus_Failed || status == EncodeThread::JobStatus_Enqueued);
-	actionJob_Restart->setEnabled(status == EncodeThread::JobStatus_Completed || status == EncodeThread::JobStatus_Aborted || status == EncodeThread::JobStatus_Failed || status == EncodeThread::JobStatus_Enqueued);
-	actionJob_Browse->setEnabled(status == EncodeThread::JobStatus_Completed);
+	actionJob_Delete->setEnabled(status == JobStatus_Completed || status == JobStatus_Aborted || status == JobStatus_Failed || status == JobStatus_Enqueued);
+	actionJob_Restart->setEnabled(status == JobStatus_Completed || status == JobStatus_Aborted || status == JobStatus_Failed || status == JobStatus_Enqueued);
+	actionJob_Browse->setEnabled(status == JobStatus_Completed);
 
 	actionJob_Start->setEnabled(buttonStartJob->isEnabled());
 	actionJob_Abort->setEnabled(buttonAbortJob->isEnabled());
 	actionJob_Pause->setEnabled(buttonPauseJob->isEnabled());
 	actionJob_Pause->setChecked(buttonPauseJob->isChecked());
 
-	editDetails->setEnabled(status != EncodeThread::JobStatus_Paused);
+	editDetails->setEnabled(status != JobStatus_Paused);
 }
 
 /*
  * Update the taskbar with current job status
  */
-void MainWindow::updateTaskbar(EncodeThread::JobStatus status, const QIcon &icon)
+void MainWindow::updateTaskbar(JobStatus status, const QIcon &icon)
 {
 	qDebug("MainWindow::updateTaskbar(void)");
 
 	switch(status)
 	{
-	case EncodeThread::JobStatus_Undefined:
+	case JobStatus_Undefined:
 		WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNoState);
 		break;
-	case EncodeThread::JobStatus_Aborting:
-	case EncodeThread::JobStatus_Starting:
-	case EncodeThread::JobStatus_Pausing:
-	case EncodeThread::JobStatus_Resuming:
+	case JobStatus_Aborting:
+	case JobStatus_Starting:
+	case JobStatus_Pausing:
+	case JobStatus_Resuming:
 		WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarIndeterminateState);
 		break;
-	case EncodeThread::JobStatus_Aborted:
-	case EncodeThread::JobStatus_Failed:
+	case JobStatus_Aborted:
+	case JobStatus_Failed:
 		WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarErrorState);
 		break;
-	case EncodeThread::JobStatus_Paused:
+	case JobStatus_Paused:
 		WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarPausedState);
 		break;
 	default:
@@ -1147,10 +1314,10 @@ void MainWindow::updateTaskbar(EncodeThread::JobStatus status, const QIcon &icon
 
 	switch(status)
 	{
-	case EncodeThread::JobStatus_Aborting:
-	case EncodeThread::JobStatus_Starting:
-	case EncodeThread::JobStatus_Pausing:
-	case EncodeThread::JobStatus_Resuming:
+	case JobStatus_Aborting:
+	case JobStatus_Starting:
+	case JobStatus_Pausing:
+	case JobStatus_Resuming:
 		break;
 	default:
 		WinSevenTaskbar::setTaskbarProgress(this, progressBar->value(), progressBar->maximum());
@@ -1158,83 +1325,4 @@ void MainWindow::updateTaskbar(EncodeThread::JobStatus status, const QIcon &icon
 	}
 
 	WinSevenTaskbar::setOverlayIcon(this, icon.isNull() ? NULL : &icon);
-}
-
-/*
- * Detect Avisynth version
- */
-double MainWindow::detectAvisynthVersion(QLibrary *avsLib, DWORD *errorCode)
-{
-	qDebug("detectAvisynthVersion(QLibrary *avsLib)");
-	if(errorCode) *errorCode = 0;
-	double version_number = 0.0;
-	EXCEPTION_RECORD exceptionRecord;
-	
-	__try
-	{
-		avs_create_script_environment_func avs_create_script_environment_ptr = (avs_create_script_environment_func) avsLib->resolve("avs_create_script_environment");
-		avs_invoke_func avs_invoke_ptr = (avs_invoke_func) avsLib->resolve("avs_invoke");
-		avs_function_exists_func avs_function_exists_ptr = (avs_function_exists_func) avsLib->resolve("avs_function_exists");
-		avs_delete_script_environment_func avs_delete_script_environment_ptr = (avs_delete_script_environment_func) avsLib->resolve("avs_delete_script_environment");
-		avs_release_value_func avs_release_value_ptr = (avs_release_value_func) avsLib->resolve("avs_release_value");
-
-		//volatile int x = 0, y = 0; x = 42 / y;
-
-		if((avs_create_script_environment_ptr != NULL) && (avs_invoke_ptr != NULL) && (avs_function_exists_ptr != NULL))
-		{
-			qDebug("avs_create_script_environment_ptr(AVS_INTERFACE_25)");
-			AVS_ScriptEnvironment* avs_env = avs_create_script_environment_ptr(AVS_INTERFACE_25);
-			if(avs_env != NULL)
-			{
-				qDebug("avs_function_exists_ptr(avs_env, \"VersionNumber\")");
-				if(avs_function_exists_ptr(avs_env, "VersionNumber"))
-				{
-					qDebug("avs_invoke_ptr(avs_env, \"VersionNumber\", avs_new_value_array(NULL, 0), NULL)");
-					AVS_Value avs_version = avs_invoke_ptr(avs_env, "VersionNumber", avs_new_value_array(NULL, 0), NULL);
-					if(!avs_is_error(avs_version))
-					{
-						if(avs_is_float(avs_version))
-						{
-							qDebug("Avisynth version: v%.2f", avs_as_float(avs_version));
-							version_number = avs_as_float(avs_version);
-							if(avs_release_value_ptr) avs_release_value_ptr(avs_version);
-						}
-						else
-						{
-							qWarning("Failed to determine version number, Avisynth didn't return a float!");
-						}
-					}
-					else
-					{
-						qWarning("Failed to determine version number, Avisynth returned an error!");
-					}
-				}
-				else
-				{
-					qWarning("The 'VersionNumber' function does not exist in your Avisynth DLL, can't determine version!");
-				}
-				if(avs_delete_script_environment_ptr != NULL)
-				{
-					avs_delete_script_environment_ptr(avs_env);
-					avs_env = NULL;
-				}
-			}
-			else
-			{
-				qWarning("The Avisynth DLL failed to create the script environment!");
-			}
-		}
-		else
-		{
-			qWarning("It seems the Avisynth DLL is missing required API functions!");
-		}
-	}
-	__except(exceptionFilter(&exceptionRecord, GetExceptionInformation()))
-	{
-		if(errorCode) *errorCode = exceptionRecord.ExceptionCode;
-		qWarning("Exception in Avisynth initialization code! (Address: %p, Code: 0x%08x)", exceptionRecord.ExceptionAddress, exceptionRecord.ExceptionCode);
-		version_number = -1.0;
-	}
-
-	return version_number;
 }

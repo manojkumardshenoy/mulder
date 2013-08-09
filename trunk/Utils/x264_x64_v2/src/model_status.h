@@ -21,34 +21,20 @@
 
 #pragma once
 
-#include "thread_encode.h"
-
-#include "QAbstractItemModel"
-#include <QUuid>
-#include <QStringList>
-#include <QMap>
-
-class LogFileModel : public QAbstractItemModel
+enum JobStatus
 {
-	Q_OBJECT
-		
-public:
-	LogFileModel(const QString &sourceName, const QString &outputName, const QString &configName);
-	~LogFileModel(void);
-
-	virtual int columnCount(const QModelIndex &parent) const;
-	virtual int rowCount(const QModelIndex &parent) const;
-	virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-	virtual QModelIndex index(int row, int column, const QModelIndex &parent) const;
-	virtual QModelIndex parent (const QModelIndex &index) const;
-	virtual QVariant data(const QModelIndex &index, int role) const;
-
-	void copyToClipboard(void);
-
-protected:
-	QStringList m_lines;
-	bool m_firstLine;
-
-public slots:
-	void addLogMessage(const QUuid &jobId, const QString &text);
+	JobStatus_Enqueued = 0,
+	JobStatus_Starting = 1,
+	JobStatus_Indexing = 2,
+	JobStatus_Running = 3,
+	JobStatus_Running_Pass1 = 4,
+	JobStatus_Running_Pass2 = 5,
+	JobStatus_Completed = 6,
+	JobStatus_Failed = 7,
+	JobStatus_Pausing = 8,
+	JobStatus_Paused = 9,
+	JobStatus_Resuming = 10,
+	JobStatus_Aborting = 11,
+	JobStatus_Aborted = 12,
+	JobStatus_Undefined = 666
 };
