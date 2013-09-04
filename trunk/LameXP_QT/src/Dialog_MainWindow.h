@@ -158,7 +158,7 @@ private slots:
 	void toneAdjustTrebleChanged(double value);
 	void toneAdjustTrebleReset(void);
 	void updateBitrate(int value);
-	void updateEncoder(int id);
+	void updateEncoder(int id = 0);
 	void updateLameAlgoQuality(int value);
 	void updateMaximumInstances(int value);
 	void updateRCMode(int id);
@@ -186,15 +186,14 @@ private:
 	bool checkForUpdates(void);
 	void initializeTranslation(void);
 	void refreshFavorites(void);
+	int getCurrentRCMode(int encoder);
+	int getCurrentQuality(int encoder);
+	int getCurrentBitrate(int encoder);
 	
 	bool m_accepted;
 	bool m_firstTimeShown;
 	uint m_outputFolderViewInitCounter;
 	bool m_outputFolderViewCentering;
-
-	const bool m_neroEncoderAvailable;
-	const bool m_fhgEncoderAvailable;
-	const bool m_qaacEncoderAvailable;
 
 	WorkingBanner *m_banner;
 	QStringList *m_delayedFileList;
@@ -232,4 +231,6 @@ private:
 	CustomEventFilter *m_evenFilterOutputFolderMouse;
 	CustomEventFilter *m_evenFilterOutputFolderView;
 	CustomEventFilter *m_evenFilterCompressionTab;
+
+	const int m_aacEncoder;
 };

@@ -54,6 +54,7 @@
 #include "Resource.h"
 #include "Config.h"
 #include "LockedFile.h"
+#include "strnatcmp.h"
 
 //CRT includes
 #include <iostream>
@@ -2426,6 +2427,31 @@ QDate lamexp_current_date_safe(void)
 	return (currentDate >= processDate) ? currentDate : processDate;
 }
 
+
+/*
+ * Natural Order String Comparison - the 'lessThan' helper function
+ */
+static bool lamexp_natural_string_sort_helper(const QString &str1, const QString &str2)
+{
+	return (strnatcmp(QWCHAR(str1), QWCHAR(str2)) < 0);
+}
+
+/*
+ * Natural Order String Comparison - the 'lessThan' helper function *with* case folding
+ */
+static bool lamexp_natural_string_sort_helper_fold_case(const QString &str1, const QString &str2)
+{
+	return (strnatcasecmp(QWCHAR(str1), QWCHAR(str2)) < 0);
+}
+
+/*
+ * Natural Order String Comparison - the main sorting function
+ */
+void lamexp_natural_string_sort(QStringList &list, const bool bIgnoreCase)
+{
+	qSort(list.begin(), list.end(), bIgnoreCase ? lamexp_natural_string_sort_helper_fold_case : lamexp_natural_string_sort_helper);
+}
+
 /*
  * Entry point checks
  */
@@ -2612,6 +2638,7 @@ static const HANDLE g_debug_thread = LAMEXP_DEBUG ? NULL : lamexp_debug_thread_i
 SIZE_T lamexp_dbg_private_bytes(void)
 {
 #if LAMEXP_DEBUG
+	for(int i = 0; i < 8; i++) _heapmin();
 	PROCESS_MEMORY_COUNTERS_EX memoryCounters;
 	memoryCounters.cb = sizeof(PROCESS_MEMORY_COUNTERS_EX);
 	GetProcessMemoryInfo(GetCurrentProcess(), (PPROCESS_MEMORY_COUNTERS) &memoryCounters, sizeof(PROCESS_MEMORY_COUNTERS_EX));
