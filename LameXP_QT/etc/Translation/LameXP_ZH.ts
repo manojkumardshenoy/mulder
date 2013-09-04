@@ -17,11 +17,11 @@
     </message>
     <message>
         <source>Accept License</source>
-        <translation>接受使用许可</translation>
+        <translation>接受使用协议</translation>
     </message>
     <message>
         <source>Decline License</source>
-        <translation>拒绝使用许可</translation>
+        <translation>拒绝使用协议</translation>
     </message>
     <message>
         <source>3rd Party S/W</source>
@@ -73,7 +73,7 @@
     </message>
     <message>
         <source>n/a</source>
-        <translation>未知</translation>
+        <translation>n/a</translation>
     </message>
     <message>
         <source>Freely available source code, simple SDK and non-restrictive licensing.</source>
@@ -201,7 +201,7 @@
     </message>
     <message>
         <source>License</source>
-        <translation>使用许可</translation>
+        <translation>使用协议</translation>
     </message>
     <message>
         <source>Programmers:</source>
@@ -229,7 +229,7 @@
     </message>
     <message>
         <source>Show License Text</source>
-        <translation>显示许可文本</translation>
+        <translation>显示协议文本</translation>
     </message>
     <message>
         <source>About Qt...</source>
@@ -324,7 +324,7 @@
     </message>
     <message>
         <source>Constant</source>
-        <translation>不变</translation>
+        <translation>固定</translation>
     </message>
     <message>
         <source>Variable</source>
@@ -937,11 +937,11 @@
     </message>
     <message>
         <source>License Declined</source>
-        <translation>拒绝许可</translation>
+        <translation>拒绝协议</translation>
     </message>
     <message>
         <source>You have declined the license. Consequently the application will exit now!</source>
-        <translation>您已拒绝许可。因此应用程序将立即退出!</translation>
+        <translation>您已拒绝协议。因此应用程序将立即退出!</translation>
     </message>
     <message>
         <source>Goodbye!</source>
@@ -993,7 +993,7 @@
     </message>
     <message>
         <source>The current version available is %1 (or later), but you still have version %2 installed.</source>
-        <translation>可用的新版本是 %1 (或更高版本),但你仍安装了版本 %2。</translation>
+        <translation>可用的新版本是 %1 (或更高版本),但您仍安装了版本 %2。</translation>
     </message>
     <message>
         <source>You can download the latest version of the Nero AAC encoder from the Nero website at:</source>
@@ -1101,7 +1101,7 @@
     </message>
     <message>
         <source>Failed to create folder</source>
-        <translation>未能创建文件夹</translation>
+        <translation>创建文件夹失败</translation>
     </message>
     <message>
         <source>The new folder could not be created:</source>
@@ -1113,7 +1113,7 @@
     </message>
     <message>
         <source>Already Running</source>
-        <translation>已在运行</translation>
+        <translation>已运行</translation>
     </message>
     <message>
         <source>LameXP is already running, please use the running instance!</source>
@@ -1193,7 +1193,7 @@
     </message>
     <message>
         <source>n/a</source>
-        <translation>未知</translation>
+        <translation>n/a</translation>
     </message>
     <message>
         <source> LAME Algorithm Quality </source>
@@ -1605,7 +1605,7 @@
     </message>
     <message>
         <source>Please use LameXP&apos;s Cue Sheet wizard for importing Cue Sheet files.</source>
-        <translation>请使用LameXP的提示表向导导入CUE表文件。</translation>
+        <translation>请使用LameXP的Cue表向导导入Cue表文件。</translation>
     </message>
     <message>
         <source>It seems that a bogus anti-virus software is slowing down the startup of LameXP.</source>
@@ -1749,7 +1749,7 @@
     </message>
     <message>
         <source>Hibernate Computer On Shutdown</source>
-        <translation>关机时休眠计算机</translation>
+        <translation>关闭时休眠计算机</translation>
     </message>
     <message>
         <source>Hibernate Computer</source>
@@ -1757,15 +1757,15 @@
     </message>
     <message>
         <source>Do you really want the computer to be hibernated on shutdown?</source>
-        <translation>你真的要电脑休眠关机?</translation>
+        <translation>你真的要关闭时休眠计算机?</translation>
     </message>
     <message>
         <source>LameXP will hibernate the computer on shutdown from now on.</source>
-        <translation>LameXP 将从现在关机时休眠计算机。</translation>
+        <translation>LameXP 将从现在起关闭时休眠计算机。</translation>
     </message>
     <message>
         <source>LameXP will &lt;i&gt;not&lt;/i&gt; hibernate the computer on shutdown from now on.</source>
-        <translation>LameXP 从今以后 &lt;i&gt;不会&lt;\/i&gt; 关机时休眠计算机。</translation>
+        <translation>LameXP 从今以后 &lt;i&gt;不会&lt;\/i&gt; 关闭时休眠计算机。</translation>
     </message>
     <message>
         <source>(Hint: Please ignore the name of the downloaded ZIP file and check the included &apos;changelog.txt&apos; instead!)</source>
@@ -1797,7 +1797,7 @@
     </message>
     <message>
         <source>Sorry, there are no meta tags that can be exported!</source>
-        <translation>抱歉,没有Mete标签可以导出!</translation>
+        <translation>抱歉,没有Meta标签可以导出!</translation>
     </message>
     <message>
         <source>Sorry, failed to open CSV file for writing!</source>
@@ -2475,7 +2475,7 @@
     </message>
     <message>
         <source>Filter Log Items</source>
-        <translation>过滤日志项目</translation>
+        <translation>筛选日志项目</translation>
     </message>
     <message>
         <source>Show Running Only</source>
@@ -2499,7 +2499,7 @@
     </message>
     <message>
         <source>None of the items matches the current filtering rules</source>
-        <translation>所有项目都不匹配当前的过滤规则</translation>
+        <translation>所有项目都不匹配当前的筛选规则</translation>
     </message>
     <message numerus="yes">
         <source>Process was aborted by the user after %n file(s)!</source>
