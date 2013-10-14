@@ -1,2 +1,0 @@
-add_subdirectory(pluginOptions)
-add_subdirectory(xvidRateCtl)

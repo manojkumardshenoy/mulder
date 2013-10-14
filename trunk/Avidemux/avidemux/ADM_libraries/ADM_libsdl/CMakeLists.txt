@@ -1,6 +1,0 @@
-SET(ADM_LIB ADM_libsdl)
-SET(${ADM_LIB}_SRCS SDLmain.m)
-
-SDLify(SDLmain.m)
-
-ADD_ADM_LIB_ALL_TARGETS(${ADM_LIB} ${${ADM_LIB}_SRCS})
