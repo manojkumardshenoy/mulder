@@ -33,7 +33,7 @@ public:
 	AC3Encoder(void);
 	~AC3Encoder(void);
 
-	virtual bool encode(const QString &sourceFile, const AudioFileModel &metaInfo, const QString &outputFile, volatile bool *abortFlag);
+	virtual bool encode(const QString &sourceFile, const AudioFileModel_MetaInfo &metaInfo, const unsigned int duration, const QString &outputFile, volatile bool *abortFlag);
 	virtual bool isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion);
 	virtual QString extension(void);
 	virtual const unsigned int *supportedChannelCount(void);
@@ -45,6 +45,9 @@ public:
 	virtual void setExponentSearchSize(int value);
 	virtual void setFastBitAllocation(bool value);
 	
+	//Encoder info
+	static const AbstractEncoderInfo *getEncoderInfo(void);
+
 private:
 	const QString m_binary;
 	int m_configAudioCodingMode;

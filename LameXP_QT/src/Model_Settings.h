@@ -92,8 +92,6 @@ public:
 	};
 
 	//Consts
-	static const int mp3Bitrates[15];
-	static const int ac3Bitrates[20];
 	static const int samplingRates[8];
 
 	//Getters & setters
@@ -109,32 +107,50 @@ public:
 	LAMEXP_MAKE_OPTION_B(bitrateManagementEnabled)
 	LAMEXP_MAKE_OPTION_I(bitrateManagementMaxRate)
 	LAMEXP_MAKE_OPTION_I(bitrateManagementMinRate)
-	LAMEXP_MAKE_OPTION_I(compressionBitrateAacEnc)
-	LAMEXP_MAKE_OPTION_I(compressionBitrateAften)
-	LAMEXP_MAKE_OPTION_I(compressionBitrateDcaEnc)
-	LAMEXP_MAKE_OPTION_I(compressionBitrateLAME)
-	LAMEXP_MAKE_OPTION_I(compressionBitrateOggEnc)
-	LAMEXP_MAKE_OPTION_I(compressionBitrateOpusEnc)
+	LAMEXP_MAKE_OPTION_I(compressionAbrBitrateAacEnc)
+	LAMEXP_MAKE_OPTION_I(compressionAbrBitrateAften)
+	LAMEXP_MAKE_OPTION_I(compressionAbrBitrateDcaEnc)
+	LAMEXP_MAKE_OPTION_I(compressionAbrBitrateFLAC)
+	LAMEXP_MAKE_OPTION_I(compressionAbrBitrateLAME)
+	LAMEXP_MAKE_OPTION_I(compressionAbrBitrateOggEnc)
+	LAMEXP_MAKE_OPTION_I(compressionAbrBitrateOpusEnc)
+	LAMEXP_MAKE_OPTION_I(compressionAbrBitrateWave)
+	LAMEXP_MAKE_OPTION_I(compressionCbrBitrateAacEnc)
+	LAMEXP_MAKE_OPTION_I(compressionCbrBitrateAften)
+	LAMEXP_MAKE_OPTION_I(compressionCbrBitrateDcaEnc)
+	LAMEXP_MAKE_OPTION_I(compressionCbrBitrateFLAC)
+	LAMEXP_MAKE_OPTION_I(compressionCbrBitrateLAME)
+	LAMEXP_MAKE_OPTION_I(compressionCbrBitrateOggEnc)
+	LAMEXP_MAKE_OPTION_I(compressionCbrBitrateOpusEnc)
+	LAMEXP_MAKE_OPTION_I(compressionCbrBitrateWave)
 	LAMEXP_MAKE_OPTION_I(compressionEncoder)
 	LAMEXP_MAKE_OPTION_I(compressionRCModeAacEnc)
 	LAMEXP_MAKE_OPTION_I(compressionRCModeAften)
+	LAMEXP_MAKE_OPTION_I(compressionRCModeDcaEnc)
+	LAMEXP_MAKE_OPTION_I(compressionRCModeFLAC)
 	LAMEXP_MAKE_OPTION_I(compressionRCModeLAME)
 	LAMEXP_MAKE_OPTION_I(compressionRCModeOggEnc)
 	LAMEXP_MAKE_OPTION_I(compressionRCModeOpusEnc)
-	LAMEXP_MAKE_OPTION_I(compressionVbrLevelAacEnc)
-	LAMEXP_MAKE_OPTION_I(compressionVbrLevelAften)
-	LAMEXP_MAKE_OPTION_I(compressionVbrLevelFLAC)
-	LAMEXP_MAKE_OPTION_I(compressionVbrLevelLAME)
-	LAMEXP_MAKE_OPTION_I(compressionVbrLevelOggEnc)
+	LAMEXP_MAKE_OPTION_I(compressionRCModeWave)
+	LAMEXP_MAKE_OPTION_I(compressionVbrQualityAacEnc)
+	LAMEXP_MAKE_OPTION_I(compressionVbrQualityAften)
+	LAMEXP_MAKE_OPTION_I(compressionVbrQualityDcaEnc)
+	LAMEXP_MAKE_OPTION_I(compressionVbrQualityFLAC)
+	LAMEXP_MAKE_OPTION_I(compressionVbrQualityLAME)
+	LAMEXP_MAKE_OPTION_I(compressionVbrQualityOggEnc)
+	LAMEXP_MAKE_OPTION_I(compressionVbrQualityOpusEnc)
+	LAMEXP_MAKE_OPTION_I(compressionVbrQualityWave)
 	LAMEXP_MAKE_OPTION_B(createPlaylist)
 	LAMEXP_MAKE_OPTION_S(currentLanguage)
 	LAMEXP_MAKE_OPTION_S(currentLanguageFile)
 	LAMEXP_MAKE_OPTION_S(customParametersAacEnc)
 	LAMEXP_MAKE_OPTION_S(customParametersAften)
+	LAMEXP_MAKE_OPTION_S(customParametersDcaEnc)
 	LAMEXP_MAKE_OPTION_S(customParametersFLAC)
 	LAMEXP_MAKE_OPTION_S(customParametersLAME)
 	LAMEXP_MAKE_OPTION_S(customParametersOggEnc)
-	LAMEXP_MAKE_OPTION_S(customParametersOpus)
+	LAMEXP_MAKE_OPTION_S(customParametersOpusEnc)
+	LAMEXP_MAKE_OPTION_S(customParametersWave)
 	LAMEXP_MAKE_OPTION_S(customTempPath)
 	LAMEXP_MAKE_OPTION_B(customTempPathEnabled)
 	LAMEXP_MAKE_OPTION_B(dropBoxWidgetEnabled)
@@ -151,7 +167,7 @@ public:
 	LAMEXP_MAKE_OPTION_B(neroAACEnable2Pass)
 	LAMEXP_MAKE_OPTION_B(neroAacNotificationsEnabled)
 	LAMEXP_MAKE_OPTION_B(normalizationFilterEnabled)
-	LAMEXP_MAKE_OPTION_I(normalizationFilterEqualizationMode)
+	LAMEXP_MAKE_OPTION_I(normalizationFilterEQMode)
 	LAMEXP_MAKE_OPTION_I(normalizationFilterMaxVolume)
 	LAMEXP_MAKE_OPTION_I(opusComplexity)
 	LAMEXP_MAKE_OPTION_B(opusDisableResample)
@@ -174,9 +190,6 @@ public:
 	//Misc
 	void validate(void);
 	void syncNow(void);
-	
-	//Static
-	static int getAacEncoder(void);
 
 private:
 	SettingsCache *m_configCache;

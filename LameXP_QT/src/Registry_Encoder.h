@@ -21,29 +21,29 @@
 
 #pragma once
 
-#include <QString>
+#include <QObject>
 
-class ArtworkModel_SharedData;
-class QMutex;
+class AbstractEncoder;
+class AbstractEncoderInfo;
+class SettingsModel;
 
-class ArtworkModel
+class EncoderRegistry : public QObject
 {
+	Q_OBJECT
+
 public:
-	ArtworkModel(void);
-	ArtworkModel(const QString &fileName, bool isOwner = true);
-	ArtworkModel(const ArtworkModel &model);
-	ArtworkModel &operator=(const ArtworkModel &model);
-	~ArtworkModel(void);
-
-	const QString &filePath(void) const;
-	bool isOwner(void) const;
-	void setFilePath(const QString &newPath, bool isOwner = true);
-	void clear(void);
+	static AbstractEncoder *createInstance(const int encoderId, const SettingsModel *settings, bool *nativeResampling);
+	static const AbstractEncoderInfo *getEncoderInfo(const int encoderId);
 	
-	inline bool isEmpty(void) const { return (m_data != NULL); }
+	static void saveEncoderMode(SettingsModel *settings, const int encoderId, const int rcMode);
+	static int loadEncoderMode(const SettingsModel *settings, const int encoderId);
+	
+	static void saveEncoderValue(SettingsModel *settings, const int encoderId, const int rcMode, const int value);
+	static int loadEncoderValue(const SettingsModel *settings, const int encoderId, const int rcMode);
 
-private:
-	const QString m_nullString;
-	ArtworkModel_SharedData *m_data;
-	QMutex *m_mutex;
+	static void saveEncoderCustomParams(SettingsModel *settings, const int encoderId, const QString params);
+	static QString loadEncoderCustomParams(const SettingsModel *settings, const int encoderId);
+
+	static void resetAllEncoders(SettingsModel *settings);
+	static int getAacEncoder(void);
 };

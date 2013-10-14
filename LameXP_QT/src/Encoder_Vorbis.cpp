@@ -27,6 +27,90 @@
 #include <QProcess>
 #include <QDir>
 
+///////////////////////////////////////////////////////////////////////////////
+// Encoder Info
+///////////////////////////////////////////////////////////////////////////////
+
+class VorbisEncoderInfo : public AbstractEncoderInfo
+{
+	virtual bool isModeSupported(int mode) const
+	{
+		switch(mode)
+		{
+		case SettingsModel::VBRMode:
+		case SettingsModel::ABRMode:
+			return true;
+			break;
+		case SettingsModel::CBRMode:
+			return false;
+			break;
+		default:
+			throw "Bad RC mode specified!";
+		}
+	}
+
+	virtual int valueCount(int mode) const
+	{
+		switch(mode)
+		{
+		case SettingsModel::VBRMode:
+			return 12;
+			break;
+		case SettingsModel::ABRMode:
+		case SettingsModel::CBRMode:
+			return 60;
+			break;
+		default:
+			throw "Bad RC mode specified!";
+		}
+	}
+
+	virtual int valueAt(int mode, int index) const
+	{
+		switch(mode)
+		{
+		case SettingsModel::VBRMode:
+			return qBound(-2, index - 2, 10);
+			break;
+		case SettingsModel::ABRMode:
+		case SettingsModel::CBRMode:
+			return qBound(32, (index + 4) * 8, 500);
+			break;
+		default:
+			throw "Bad RC mode specified!";
+		}
+	}
+
+	virtual int valueType(int mode) const
+	{
+		switch(mode)
+		{
+		case SettingsModel::VBRMode:
+			return TYPE_QUALITY_LEVEL_INT;
+			break;
+		case SettingsModel::ABRMode:
+			return TYPE_APPROX_BITRATE;
+			break;
+		case SettingsModel::CBRMode:
+			return TYPE_BITRATE;
+			break;
+		default:
+			throw "Bad RC mode specified!";
+		}
+	}
+
+	virtual const char *description(void) const
+	{
+		static const char* s_description = "OggEnc2 Vorbis Encoder (aoTuV)";
+		return s_description;
+	}
+}
+static const g_vorbisEncoderInfo;
+
+///////////////////////////////////////////////////////////////////////////////
+// Encoder implementation
+///////////////////////////////////////////////////////////////////////////////
+
 VorbisEncoder::VorbisEncoder(void)
 :
 	m_binary(lamexp_lookup_tool("oggenc2.exe"))
@@ -45,7 +129,7 @@ VorbisEncoder::~VorbisEncoder(void)
 {
 }
 
-bool VorbisEncoder::encode(const QString &sourceFile, const AudioFileModel &metaInfo, const QString &outputFile, volatile bool *abortFlag)
+bool VorbisEncoder::encode(const QString &sourceFile, const AudioFileModel_MetaInfo &metaInfo, const unsigned int duration, const QString &outputFile, volatile bool *abortFlag)
 {
 	QProcess process;
 	QStringList args;
@@ -54,10 +138,10 @@ bool VorbisEncoder::encode(const QString &sourceFile, const AudioFileModel &meta
 	switch(m_configRCMode)
 	{
 	case SettingsModel::VBRMode:
-		args << "-q" << QString::number(qMax(-2, qMin(10, m_configBitrate)));
+		args << "-q" << QString::number(qBound(-2, m_configBitrate - 2, 10));
 		break;
 	case SettingsModel::ABRMode:
-		args << "-b" << QString::number(qMax(32, qMin(500, (m_configBitrate * 8))));
+		args << "-b" << QString::number(qBound(32, (m_configBitrate + 4) * 8, 500));
 		break;
 	default:
 		throw "Bad rate-control mode!";
@@ -66,8 +150,8 @@ bool VorbisEncoder::encode(const QString &sourceFile, const AudioFileModel &meta
 
 	if((m_configBitrateMaximum > 0) && (m_configBitrateMinimum > 0) && (m_configBitrateMinimum <= m_configBitrateMaximum))
 	{
-		args << "--min-bitrate" << QString::number(qMin(qMax(m_configBitrateMinimum, 32), 500));
-		args << "--max-bitrate" << QString::number(qMin(qMax(m_configBitrateMaximum, 32), 500));
+		args << "--min-bitrate" << QString::number(qBound(32, m_configBitrateMinimum, 500));
+		args << "--max-bitrate" << QString::number(qBound(32, m_configBitrateMaximum, 500));
 	}
 
 	if(m_configSamplingRate > 0)
@@ -75,13 +159,13 @@ bool VorbisEncoder::encode(const QString &sourceFile, const AudioFileModel &meta
 		args << "--resample" << QString::number(m_configSamplingRate) << "--converter" << QString::number(0);
 	}
 
-	if(!metaInfo.fileName().isEmpty()) args << "-t" << cleanTag(metaInfo.fileName());
-	if(!metaInfo.fileArtist().isEmpty()) args << "-a" << cleanTag(metaInfo.fileArtist());
-	if(!metaInfo.fileAlbum().isEmpty()) args << "-l" << cleanTag(metaInfo.fileAlbum());
-	if(!metaInfo.fileGenre().isEmpty()) args << "-G" << cleanTag(metaInfo.fileGenre());
-	if(!metaInfo.fileComment().isEmpty()) args << "-c" << QString("comment=%1").arg(cleanTag(metaInfo.fileComment()));
-	if(metaInfo.fileYear()) args << "-d" << QString::number(metaInfo.fileYear());
-	if(metaInfo.filePosition()) args << "-N" << QString::number(metaInfo.filePosition());
+	if(!metaInfo.title().isEmpty()) args << "-t" << cleanTag(metaInfo.title());
+	if(!metaInfo.artist().isEmpty()) args << "-a" << cleanTag(metaInfo.artist());
+	if(!metaInfo.album().isEmpty()) args << "-l" << cleanTag(metaInfo.album());
+	if(!metaInfo.genre().isEmpty()) args << "-G" << cleanTag(metaInfo.genre());
+	if(!metaInfo.comment().isEmpty()) args << "-c" << QString("comment=%1").arg(cleanTag(metaInfo.comment()));
+	if(metaInfo.year()) args << "-d" << QString::number(metaInfo.year());
+	if(metaInfo.position()) args << "-N" << QString::number(metaInfo.position());
 	
 	//args << "--tv" << QString().sprintf("Encoder=LameXP v%d.%02d.%04d [%s]", lamexp_version_major(), lamexp_version_minor(), lamexp_version_build(), lamexp_version_release());
 
@@ -158,11 +242,6 @@ bool VorbisEncoder::encode(const QString &sourceFile, const AudioFileModel &meta
 	return true;
 }
 
-void VorbisEncoder::setBitrate(int bitrate)
-{
-	m_configBitrate = qMax(-2, bitrate);
-}
-
 QString VorbisEncoder::extension(void)
 {
 	return "ogg";
@@ -197,4 +276,9 @@ void VorbisEncoder::setBitrateLimits(int minimumBitrate, int maximumBitrate)
 void VorbisEncoder::setSamplingRate(int value)
 {
 	m_configSamplingRate = value;
+}
+
+const AbstractEncoderInfo *VorbisEncoder::getEncoderInfo(void)
+{
+	return &g_vorbisEncoderInfo;
 }

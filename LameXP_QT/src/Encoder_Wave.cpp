@@ -25,9 +25,92 @@
 #include "Model_Settings.h"
 
 #include <QDir>
+
+//Windows includes
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
 #include <Shellapi.h>
 
 #define FIX_SEPARATORS(STR) for(int i = 0; STR[i]; i++) { if(STR[i] == L'/') STR[i] = L'\\'; }
+
+///////////////////////////////////////////////////////////////////////////////
+// Encoder Info
+///////////////////////////////////////////////////////////////////////////////
+
+class WaveEncoderInfo : public AbstractEncoderInfo
+{
+public:
+	virtual bool isModeSupported(int mode) const
+	{
+		switch(mode)
+		{
+		case SettingsModel::VBRMode:
+		case SettingsModel::ABRMode:
+			return false;
+			break;
+		case SettingsModel::CBRMode:
+			return true;
+			break;
+		default:
+			throw "Bad RC mode specified!";
+		}
+	}
+
+	virtual int valueCount(int mode) const
+	{
+		switch(mode)
+		{
+		case SettingsModel::VBRMode:
+		case SettingsModel::ABRMode:
+		case SettingsModel::CBRMode:
+			return 0;
+			break;
+		default:
+			throw "Bad RC mode specified!";
+		}
+	}
+
+	virtual int valueAt(int mode, int index) const
+	{
+		switch(mode)
+		{
+		case SettingsModel::VBRMode:
+		case SettingsModel::ABRMode:
+		case SettingsModel::CBRMode:
+			return -1;
+			break;
+		default:
+			throw "Bad RC mode specified!";
+		}
+	}
+
+	virtual int valueType(int mode) const
+	{
+		switch(mode)
+		{
+		case SettingsModel::VBRMode:
+		case SettingsModel::ABRMode:
+		case SettingsModel::CBRMode:
+			return TYPE_UNCOMPRESSED;
+			break;
+		default:
+			throw "Bad RC mode specified!";
+		}
+	}
+
+	virtual const char *description(void) const
+	{
+		static const char* s_description = "Wave Audio (PCM)";
+		return s_description;
+	}
+}
+static const g_waveEncoderInfo;
+
+///////////////////////////////////////////////////////////////////////////////
+// Encoder implementation
+///////////////////////////////////////////////////////////////////////////////
+
 
 WaveEncoder::WaveEncoder(void)
 {
@@ -37,7 +120,7 @@ WaveEncoder::~WaveEncoder(void)
 {
 }
 
-bool WaveEncoder::encode(const QString &sourceFile, const AudioFileModel &metaInfo, const QString &outputFile, volatile bool *abortFlag)
+bool WaveEncoder::encode(const QString &sourceFile, const AudioFileModel_MetaInfo &metaInfo, const unsigned int duration, const QString &outputFile, volatile bool *abortFlag)
 {
 	SHFILEOPSTRUCTW fileOperation;
 	memset(&fileOperation, 0, sizeof(SHFILEOPSTRUCTW));
@@ -102,4 +185,9 @@ bool WaveEncoder::isFormatSupported(const QString &containerType, const QString 
 		}
 	}
 	return false;
+}
+
+const AbstractEncoderInfo *WaveEncoder::getEncoderInfo(void)
+{
+	return &g_waveEncoderInfo;
 }

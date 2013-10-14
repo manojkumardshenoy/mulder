@@ -21,29 +21,16 @@
 
 #pragma once
 
-#include <QString>
+class QProcess;
 
-class ArtworkModel_SharedData;
-class QMutex;
-
-class ArtworkModel
+class JobObject
 {
 public:
-	ArtworkModel(void);
-	ArtworkModel(const QString &fileName, bool isOwner = true);
-	ArtworkModel(const ArtworkModel &model);
-	ArtworkModel &operator=(const ArtworkModel &model);
-	~ArtworkModel(void);
+	JobObject(void);
+	~JobObject(void);
 
-	const QString &filePath(void) const;
-	bool isOwner(void) const;
-	void setFilePath(const QString &newPath, bool isOwner = true);
-	void clear(void);
-	
-	inline bool isEmpty(void) const { return (m_data != NULL); }
+	bool addProcessToJob(const QProcess *proc);
 
 private:
-	const QString m_nullString;
-	ArtworkModel_SharedData *m_data;
-	QMutex *m_mutex;
+	void *m_hJobObject;
 };

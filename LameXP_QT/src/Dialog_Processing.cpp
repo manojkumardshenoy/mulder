@@ -34,17 +34,8 @@
 #include "Thread_RAMObserver.h"
 #include "Thread_DiskObserver.h"
 #include "Dialog_LogView.h"
-#include "Encoder_AAC.h"
-#include "Encoder_AAC_FHG.h"
-#include "Encoder_AAC_QAAC.h"
-#include "Encoder_AC3.h"
-#include "Encoder_DCA.h"
-#include "Encoder_FLAC.h"
-#include "Encoder_MP3.h"
-#include "Encoder_Vorbis.h"
-#include "Encoder_Opus.h"
-#include "Encoder_Wave.h"
 #include "Registry_Decoder.h"
+#include "Registry_Encoder.h"
 #include "Filter_Downmix.h"
 #include "Filter_Normalize.h"
 #include "Filter_Resample.h"
@@ -69,8 +60,8 @@
 #include <QProgressDialog>
 #include <QResizeEvent>
 #include <QTime>
+#include <QThreadPool>
 
-#include <MMSystem.h>
 #include <math.h>
 #include <float.h>
 
@@ -140,15 +131,15 @@ private:
 // Constructor
 ////////////////////////////////////////////////////////////
 
-ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, AudioFileModel *metaInfo, SettingsModel *settings, QWidget *parent)
+ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, const AudioFileModel_MetaInfo *metaInfo, SettingsModel *settings, QWidget *parent)
 :
 	QDialog(parent),
 	ui(new Ui::ProcessingDialog),
-	m_aacEncoder(SettingsModel::getAacEncoder()),
 	m_systemTray(new QSystemTrayIcon(QIcon(":/icons/cd_go.png"), this)),
 	m_settings(settings),
 	m_metaInfo(metaInfo),
 	m_shutdownFlag(shutdownFlag_None),
+	m_threadPool(NULL),
 	m_diskObserver(NULL),
 	m_cpuObserver(NULL),
 	m_ramObserver(NULL),
@@ -325,12 +316,21 @@ ProcessingDialog::~ProcessingDialog(void)
 		}
 	}
 
-	while(!m_threadList.isEmpty())
+	//while(!m_threadList.isEmpty())
+	//{
+	//	ProcessThread *thread = m_threadList.takeFirst();
+	//	thread->terminate();
+	//	thread->wait(15000);
+	//	delete thread;
+	//}
+
+	if(m_threadPool)
 	{
-		ProcessThread *thread = m_threadList.takeFirst();
-		thread->terminate();
-		thread->wait(15000);
-		delete thread;
+		if(!m_threadPool->waitForDone(100))
+		{
+			emit abortRunningTasks();
+			m_threadPool->waitForDone();
+		}
 	}
 
 	LAMEXP_DELETE(m_progressIndicator);
@@ -343,6 +343,7 @@ ProcessingDialog::~ProcessingDialog(void)
 	LAMEXP_DELETE(m_filterInfoLabelIcon);
 	LAMEXP_DELETE(m_contextMenu);
 	LAMEXP_DELETE(m_progressModel);
+	LAMEXP_DELETE(m_threadPool);
 
 	WinSevenTaskbar::setOverlayIcon(this, NULL);
 	WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNoState);
@@ -362,15 +363,12 @@ void ProcessingDialog::showEvent(QShowEvent *event)
 	{
 		static const char *NA = " N/A";
 	
-		setCloseButtonEnabled(false);
+		lamexp_enable_close_button(this, false);
 		ui->button_closeDialog->setEnabled(false);
 		ui->button_AbortProcess->setEnabled(false);
 		m_systemTray->setVisible(true);
-	
-		if(!SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS))
-		{
-			SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
-		}
+		
+		lamexp_change_process_priority(1);
 
 		ui->label_cpu->setText(NA);
 		ui->label_disk->setText(NA);
@@ -440,7 +438,7 @@ bool ProcessingDialog::event(QEvent *e)
 			while(!close())
 			{
 				if(!m_userAborted) abortEncoding(true);
-				QApplication::processEvents(QEventLoop::WaitForMoreEvents & QEventLoop::ExcludeUserInputEvents);
+				qApp->processEvents(QEventLoop::WaitForMoreEvents | QEventLoop::ExcludeUserInputEvents);
 			}
 		}
 		m_pendingJobs.clear();
@@ -523,30 +521,115 @@ void ProcessingDialog::initEncoding(void)
 		connect(m_ramObserver, SIGNAL(currentUsageChanged(double)), this, SLOT(ramUsageHasChanged(double)), Qt::QueuedConnection);
 		m_ramObserver->start();
 	}
-	
-	unsigned int maximumInstances = qBound(0U, m_settings->maximumInstances(), MAX_INSTANCES);
-	if(maximumInstances < 1)
+
+	if(!m_threadPool)
 	{
-		lamexp_cpu_t cpuFeatures = lamexp_detect_cpu_features(lamexp_arguments());
-		maximumInstances = cores2instances(qBound(1, cpuFeatures.count, 64));
+		unsigned int maximumInstances = qBound(0U, m_settings->maximumInstances(), MAX_INSTANCES);
+		if(maximumInstances < 1)
+		{
+			lamexp_cpu_t cpuFeatures = lamexp_detect_cpu_features(lamexp_arguments());
+			maximumInstances = cores2instances(qBound(1, cpuFeatures.count, 64));
+		}
+
+		maximumInstances = qBound(1U, maximumInstances, static_cast<unsigned int>(m_pendingJobs.count()));
+		if(maximumInstances > 1)
+		{
+			m_progressModel->addSystemMessage(tr("Multi-threading enabled: Running %1 instances in parallel!").arg(QString::number(maximumInstances)));
+		}
+
+		m_threadPool = new QThreadPool();
+		m_threadPool->setMaxThreadCount(maximumInstances);
 	}
 
-	maximumInstances = qBound(1U, maximumInstances, static_cast<unsigned int>(m_pendingJobs.count()));
-	if(maximumInstances > 1)
-	{
-		m_progressModel->addSystemMessage(tr("Multi-threading enabled: Running %1 instances in parallel!").arg(QString::number(maximumInstances)));
-	}
-
-	for(unsigned int i = 0; i < maximumInstances; i++)
+	for(int i = 0; i < m_threadPool->maxThreadCount(); i++)
 	{
 		startNextJob();
-		qApp->processEvents();
+		qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+		QThread::yieldCurrentThread();
 	}
 
-	LARGE_INTEGER counter;
-	if(QueryPerformanceCounter(&counter))
+	m_timerStart = lamexp_perfcounter_value();
+}
+
+void ProcessingDialog::startNextJob(void)
+{
+	if(m_pendingJobs.isEmpty())
 	{
-		m_timerStart = counter.QuadPart;
+		qWarning("No more files left, unable to start another job!");
+		return;
+	}
+	
+	m_currentFile++;
+	m_runningThreads++;
+
+	AudioFileModel currentFile = updateMetaInfo(m_pendingJobs.takeFirst());
+	bool nativeResampling = false;
+
+	//Create encoder instance
+	AbstractEncoder *encoder = EncoderRegistry::createInstance(m_settings->compressionEncoder(), m_settings, &nativeResampling);
+
+	//Create processing thread
+	ProcessThread *thread = new ProcessThread
+	(
+		currentFile,
+		(m_settings->outputToSourceDir() ? QFileInfo(currentFile.filePath()).absolutePath() : m_settings->outputDir()),
+		(m_settings->customTempPathEnabled() ? m_settings->customTempPath() : lamexp_temp_folder2()),
+		encoder,
+		m_settings->prependRelativeSourcePath() && (!m_settings->outputToSourceDir())
+	);
+
+	//Add audio filters
+	if(m_settings->forceStereoDownmix())
+	{
+		thread->addFilter(new DownmixFilter());
+	}
+	if((m_settings->samplingRate() > 0) && !nativeResampling)
+	{
+		if(SettingsModel::samplingRates[m_settings->samplingRate()] != currentFile.techInfo().audioSamplerate() || currentFile.techInfo().audioSamplerate() == 0)
+		{
+			thread->addFilter(new ResampleFilter(SettingsModel::samplingRates[m_settings->samplingRate()]));
+		}
+	}
+	if((m_settings->toneAdjustBass() != 0) || (m_settings->toneAdjustTreble() != 0))
+	{
+		thread->addFilter(new ToneAdjustFilter(m_settings->toneAdjustBass(), m_settings->toneAdjustTreble()));
+	}
+	if(m_settings->normalizationFilterEnabled())
+	{
+		thread->addFilter(new NormalizeFilter(m_settings->normalizationFilterMaxVolume(), m_settings->normalizationFilterEQMode()));
+	}
+	if(m_settings->renameOutputFilesEnabled() && (!m_settings->renameOutputFilesPattern().simplified().isEmpty()))
+	{
+		thread->setRenamePattern(m_settings->renameOutputFilesPattern());
+	}
+	if(m_settings->overwriteMode() != SettingsModel::Overwrite_KeepBoth)
+	{
+		thread->setOverwriteMode((m_settings->overwriteMode() == SettingsModel::Overwrite_SkipFile), (m_settings->overwriteMode() == SettingsModel::Overwrite_Replaces));
+	}
+
+	m_allJobs.append(thread->getId());
+	
+	//Connect thread signals
+	connect(thread, SIGNAL(processFinished()), this, SLOT(doneEncoding()), Qt::QueuedConnection);
+	connect(thread, SIGNAL(processStateInitialized(QUuid,QString,QString,int)), m_progressModel, SLOT(addJob(QUuid,QString,QString,int)), Qt::QueuedConnection);
+	connect(thread, SIGNAL(processStateChanged(QUuid,QString,int)), m_progressModel, SLOT(updateJob(QUuid,QString,int)), Qt::QueuedConnection);
+	connect(thread, SIGNAL(processStateFinished(QUuid,QString,int)), this, SLOT(processFinished(QUuid,QString,int)), Qt::QueuedConnection);
+	connect(thread, SIGNAL(processMessageLogged(QUuid,QString)), m_progressModel, SLOT(appendToLog(QUuid,QString)), Qt::QueuedConnection);
+	connect(this, SIGNAL(abortRunningTasks()), thread, SLOT(abort()), Qt::DirectConnection);
+
+	//Initialize thread object
+	if(!thread->init())
+	{
+		qFatal("Fatal Error: Thread initialization has failed!");
+	}
+
+	//Update GUI
+	qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+
+	//Give it a go!
+	if(!thread->start(m_threadPool))
+	{
+		qWarning("Job failed to start or file was skipped!");
 	}
 }
 
@@ -556,11 +639,7 @@ void ProcessingDialog::abortEncoding(bool force)
 	if(force) m_forcedAbort = true;
 	ui->button_AbortProcess->setEnabled(false);
 	SET_PROGRESS_TEXT(tr("Aborted! Waiting for running jobs to terminate..."));
-
-	for(int i = 0; i < m_threadList.count(); i++)
-	{
-		m_threadList.at(i)->abort();
-	}
+	emit abortRunningTasks();
 }
 
 void ProcessingDialog::doneEncoding(void)
@@ -574,22 +653,16 @@ void ProcessingDialog::doneEncoding(void)
 		WinSevenTaskbar::setTaskbarProgress(this, ui->progressBar->value(), ui->progressBar->maximum());
 	}
 	
-	int index = m_threadList.indexOf(dynamic_cast<ProcessThread*>(QWidget::sender()));
-	if(index >= 0)
+	if((!m_pendingJobs.isEmpty()) && (!m_userAborted))
 	{
-		m_threadList.takeAt(index)->deleteLater();
-	}
-
-	if(!m_pendingJobs.isEmpty() && !m_userAborted)
-	{
-		startNextJob();
-		qDebug("Running jobs: %u", m_runningThreads);
+		QTimer::singleShot(0, this, SLOT(startNextJob()));
+		qDebug("%d files left, starting next job...", m_pendingJobs.count());
 		return;
 	}
 	
 	if(m_runningThreads > 0)
 	{
-		qDebug("Running jobs: %u", m_runningThreads);
+		qDebug("No files left, but still have %u running jobs.", m_runningThreads);
 		return;
 	}
 
@@ -599,7 +672,7 @@ void ProcessingDialog::doneEncoding(void)
 	if(!m_userAborted && m_settings->createPlaylist() && !m_settings->outputToSourceDir())
 	{
 		SET_PROGRESS_TEXT(tr("Creating the playlist file, please wait..."));
-		QApplication::processEvents();
+		qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
 		writePlayList();
 	}
 	
@@ -611,20 +684,21 @@ void ProcessingDialog::doneEncoding(void)
 		SET_PROGRESS_TEXT((m_succeededJobs.count() > 0) ? tr("Process was aborted by the user after %n file(s)!", "", m_succeededJobs.count()) : tr("Process was aborted prematurely by the user!"));
 		m_systemTray->showMessage(tr("LameXP - Aborted"), tr("Process was aborted by the user."), QSystemTrayIcon::Warning);
 		m_systemTray->setIcon(QIcon(":/icons/cd_delete.png"));
-		QApplication::processEvents();
-		if(m_settings->soundsEnabled() && !m_forcedAbort)
+		qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+		if(m_settings->soundsEnabled() && (!m_forcedAbort))
 		{
-			PlaySound(MAKEINTRESOURCE(IDR_WAVE_ABORTED), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
+			lamexp_play_sound(IDR_WAVE_ABORTED, false);
 		}
 	}
 	else
 	{
-		LARGE_INTEGER counter, frequency;
-		if(QueryPerformanceCounter(&counter) && QueryPerformanceFrequency(&frequency))
+		const __int64 counter = lamexp_perfcounter_value();
+		const __int64 frequency  = lamexp_perfcounter_frequ();
+		if((counter >= 0I64) && (frequency >= 0))
 		{
-			if((m_timerStart > 0I64) && (frequency.QuadPart > 0I64) && (m_timerStart < counter.QuadPart))
+			if((m_timerStart >= 0I64) && (m_timerStart < counter))
 			{
-				double timeElapsed = static_cast<double>(counter.QuadPart - m_timerStart) / static_cast<double>(frequency.QuadPart);
+				double timeElapsed = static_cast<double>(counter - m_timerStart) / static_cast<double>(frequency);
 				m_progressModel->addSystemMessage(tr("Process finished after %1.").arg(time2text(timeElapsed)), ProgressModel::SysMsg_Performance);
 			}
 		}
@@ -644,8 +718,8 @@ void ProcessingDialog::doneEncoding(void)
 			}
 			m_systemTray->showMessage(tr("LameXP - Error"), tr("At least one file has failed!"), QSystemTrayIcon::Critical);
 			m_systemTray->setIcon(QIcon(":/icons/cd_delete.png"));
-			QApplication::processEvents();
-			if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_ERROR), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
+			qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+			if(m_settings->soundsEnabled()) lamexp_play_sound(IDR_WAVE_ERROR, false);
 		}
 		else
 		{
@@ -662,12 +736,12 @@ void ProcessingDialog::doneEncoding(void)
 			}
 			m_systemTray->showMessage(tr("LameXP - Done"), tr("All files completed successfully."), QSystemTrayIcon::Information);
 			m_systemTray->setIcon(QIcon(":/icons/cd_add.png"));
-			QApplication::processEvents();
-			if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_SUCCESS), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
+			qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+			if(m_settings->soundsEnabled()) lamexp_play_sound(IDR_WAVE_SUCCESS, false);
 		}
 	}
 	
-	setCloseButtonEnabled(true);
+	lamexp_enable_close_button(this, true);
 	ui->button_closeDialog->setEnabled(true);
 	ui->button_AbortProcess->setEnabled(false);
 	ui->checkBox_shutdownComputer->setEnabled(false);
@@ -745,7 +819,7 @@ void ProcessingDialog::logViewDoubleClicked(const QModelIndex &index)
 	}
 	else
 	{
-		MessageBeep(MB_ICONWARNING);
+		lamexp_beep(lamexp_beep_warning);
 	}
 }
 
@@ -785,7 +859,7 @@ void ProcessingDialog::contextMenuShowFileActionTriggered(void)
 
 	if(filePath.isEmpty())
 	{
-		MessageBeep(MB_ICONWARNING);
+		lamexp_beep(lamexp_beep_warning);
 		return;
 	}
 
@@ -816,7 +890,7 @@ void ProcessingDialog::contextMenuShowFileActionTriggered(void)
 	else
 	{
 		qWarning("File not found: %s", filePath.toLatin1().constData());
-		MessageBeep(MB_ICONERROR);
+		lamexp_beep(lamexp_beep_error);
 	}
 }
 
@@ -872,239 +946,6 @@ void ProcessingDialog::progressViewFilterChanged(void)
 // Private Functions
 ////////////////////////////////////////////////////////////
 
-void ProcessingDialog::startNextJob(void)
-{
-	if(m_pendingJobs.isEmpty())
-	{
-		return;
-	}
-	
-	m_currentFile++;
-	AudioFileModel currentFile = updateMetaInfo(m_pendingJobs.takeFirst());
-	bool nativeResampling = false;
-
-	//Create encoder instance
-	AbstractEncoder *encoder = makeEncoder(&nativeResampling);
-
-	//Create processing thread
-	ProcessThread *thread = new ProcessThread
-	(
-		currentFile,
-		(m_settings->outputToSourceDir() ? QFileInfo(currentFile.filePath()).absolutePath() : m_settings->outputDir()),
-		(m_settings->customTempPathEnabled() ? m_settings->customTempPath() : lamexp_temp_folder2()),
-		encoder,
-		m_settings->prependRelativeSourcePath() && (!m_settings->outputToSourceDir())
-	);
-
-	//Add audio filters
-	if(m_settings->forceStereoDownmix())
-	{
-		thread->addFilter(new DownmixFilter());
-	}
-	if((m_settings->samplingRate() > 0) && !nativeResampling)
-	{
-		if(SettingsModel::samplingRates[m_settings->samplingRate()] != currentFile.formatAudioSamplerate() || currentFile.formatAudioSamplerate() == 0)
-		{
-			thread->addFilter(new ResampleFilter(SettingsModel::samplingRates[m_settings->samplingRate()]));
-		}
-	}
-	if((m_settings->toneAdjustBass() != 0) || (m_settings->toneAdjustTreble() != 0))
-	{
-		thread->addFilter(new ToneAdjustFilter(m_settings->toneAdjustBass(), m_settings->toneAdjustTreble()));
-	}
-	if(m_settings->normalizationFilterEnabled())
-	{
-		thread->addFilter(new NormalizeFilter(m_settings->normalizationFilterMaxVolume(), m_settings->normalizationFilterEqualizationMode()));
-	}
-	if(m_settings->renameOutputFilesEnabled() && (!m_settings->renameOutputFilesPattern().simplified().isEmpty()))
-	{
-		thread->setRenamePattern(m_settings->renameOutputFilesPattern());
-	}
-	if(m_settings->overwriteMode() != SettingsModel::Overwrite_KeepBoth)
-	{
-		thread->setOverwriteMode((m_settings->overwriteMode() == SettingsModel::Overwrite_SkipFile), (m_settings->overwriteMode() == SettingsModel::Overwrite_Replaces));
-	}
-
-	m_threadList.append(thread);
-	m_allJobs.append(thread->getId());
-	
-	//Connect thread signals
-	connect(thread, SIGNAL(finished()), this, SLOT(doneEncoding()), Qt::QueuedConnection);
-	connect(thread, SIGNAL(processStateInitialized(QUuid,QString,QString,int)), m_progressModel, SLOT(addJob(QUuid,QString,QString,int)), Qt::QueuedConnection);
-	connect(thread, SIGNAL(processStateChanged(QUuid,QString,int)), m_progressModel, SLOT(updateJob(QUuid,QString,int)), Qt::QueuedConnection);
-	connect(thread, SIGNAL(processStateFinished(QUuid,QString,int)), this, SLOT(processFinished(QUuid,QString,int)), Qt::QueuedConnection);
-	connect(thread, SIGNAL(processMessageLogged(QUuid,QString)), m_progressModel, SLOT(appendToLog(QUuid,QString)), Qt::QueuedConnection);
-	
-	//Give it a go!
-	m_runningThreads++;
-	thread->start();
-
-	//Give thread some advance
-	for(unsigned int i = 0; i < MAX_INSTANCES; i++)
-	{
-		QThread::yieldCurrentThread();
-	}
-}
-
-AbstractEncoder *ProcessingDialog::makeEncoder(bool *nativeResampling)
-{
-	int rcMode = -1;
-	AbstractEncoder *encoder =  NULL;
-	*nativeResampling = false;
-
-	switch(m_settings->compressionEncoder())
-	{
-	/*-------- MP3Encoder /*--------*/
-	case SettingsModel::MP3Encoder:
-		{
-			MP3Encoder *mp3Encoder = new MP3Encoder();
-			mp3Encoder->setRCMode(rcMode = m_settings->compressionRCModeLAME());
-			mp3Encoder->setBitrate(IS_VBR(rcMode) ? m_settings->compressionVbrLevelLAME() : m_settings->compressionBitrateLAME());
-			mp3Encoder->setAlgoQuality(m_settings->lameAlgoQuality());
-			if(m_settings->bitrateManagementEnabled())
-			{
-				mp3Encoder->setBitrateLimits(m_settings->bitrateManagementMinRate(), m_settings->bitrateManagementMaxRate());
-			}
-			if(m_settings->samplingRate() > 0)
-			{
-				mp3Encoder->setSamplingRate(SettingsModel::samplingRates[m_settings->samplingRate()]);
-				*nativeResampling = true;
-			}
-			mp3Encoder->setChannelMode(m_settings->lameChannelMode());
-			mp3Encoder->setCustomParams(m_settings->customParametersLAME());
-			encoder = mp3Encoder;
-		}
-		break;
-	/*-------- VorbisEncoder /*--------*/
-	case SettingsModel::VorbisEncoder:
-		{
-			VorbisEncoder *vorbisEncoder = new VorbisEncoder();
-			vorbisEncoder->setRCMode(rcMode = m_settings->compressionRCModeOggEnc());
-			vorbisEncoder->setBitrate(IS_VBR(rcMode) ? m_settings->compressionVbrLevelOggEnc() : m_settings->compressionBitrateOggEnc());
-			if(m_settings->bitrateManagementEnabled())
-			{
-				vorbisEncoder->setBitrateLimits(m_settings->bitrateManagementMinRate(), m_settings->bitrateManagementMaxRate());
-			}
-			if(m_settings->samplingRate() > 0)
-			{
-				vorbisEncoder->setSamplingRate(SettingsModel::samplingRates[m_settings->samplingRate()]);
-				*nativeResampling = true;
-			}
-			vorbisEncoder->setCustomParams(m_settings->customParametersOggEnc());
-			encoder = vorbisEncoder;
-		}
-		break;
-	/*-------- AACEncoder /*--------*/
-	case SettingsModel::AACEncoder:
-		{
-			switch(m_aacEncoder)
-			{
-			case SettingsModel::AAC_ENCODER_QAAC:
-				{
-					QAACEncoder *aacEncoder = new QAACEncoder();
-					aacEncoder->setRCMode(rcMode = m_settings->compressionRCModeAacEnc());
-					aacEncoder->setBitrate(IS_VBR(rcMode) ? m_settings->compressionVbrLevelAacEnc() : m_settings->compressionBitrateAacEnc());
-					aacEncoder->setProfile(m_settings->aacEncProfile());
-					aacEncoder->setCustomParams(m_settings->customParametersAacEnc());
-					encoder = aacEncoder;
-				}
-				break;
-			case SettingsModel::AAC_ENCODER_FHG:
-				{
-					FHGAACEncoder *aacEncoder = new FHGAACEncoder();
-					aacEncoder->setRCMode(rcMode = m_settings->compressionRCModeAacEnc());
-					aacEncoder->setBitrate(IS_VBR(rcMode) ? m_settings->compressionVbrLevelAacEnc() : m_settings->compressionBitrateAacEnc());
-					aacEncoder->setProfile(m_settings->aacEncProfile());
-					aacEncoder->setCustomParams(m_settings->customParametersAacEnc());
-					encoder = aacEncoder;
-				}
-				break;
-			case SettingsModel::AAC_ENCODER_NERO:
-				{
-					AACEncoder *aacEncoder = new AACEncoder();
-					aacEncoder->setRCMode(rcMode = m_settings->compressionRCModeAacEnc());
-					aacEncoder->setBitrate(IS_VBR(rcMode) ? m_settings->compressionVbrLevelAacEnc() : m_settings->compressionBitrateAacEnc());
-					aacEncoder->setEnable2Pass(m_settings->neroAACEnable2Pass());
-					aacEncoder->setProfile(m_settings->aacEncProfile());
-					aacEncoder->setCustomParams(m_settings->customParametersAacEnc());
-					encoder = aacEncoder;
-				}
-				break;
-			default:
-				throw "makeEncoder(): Unknown AAC encoder specified!";
-				break;
-			}
-		}
-		break;
-	/*-------- AC3Encoder /*--------*/
-	case SettingsModel::AC3Encoder:
-		{
-			AC3Encoder *ac3Encoder = new AC3Encoder();
-			ac3Encoder->setRCMode(rcMode = m_settings->compressionRCModeAften());
-			ac3Encoder->setBitrate(IS_VBR(rcMode) ? m_settings->compressionVbrLevelAften() : m_settings->compressionBitrateAften());
-			ac3Encoder->setCustomParams(m_settings->customParametersAften());
-			ac3Encoder->setAudioCodingMode(m_settings->aftenAudioCodingMode());
-			ac3Encoder->setDynamicRangeCompression(m_settings->aftenDynamicRangeCompression());
-			ac3Encoder->setExponentSearchSize(m_settings->aftenExponentSearchSize());
-			ac3Encoder->setFastBitAllocation(m_settings->aftenFastBitAllocation());
-			encoder = ac3Encoder;
-		}
-		break;
-	/*-------- FLACEncoder /*--------*/
-	case SettingsModel::FLACEncoder:
-		{
-			FLACEncoder *flacEncoder = new FLACEncoder();
-			flacEncoder->setBitrate(m_settings->compressionVbrLevelFLAC());
-			flacEncoder->setRCMode(SettingsModel::VBRMode);
-			flacEncoder->setCustomParams(m_settings->customParametersFLAC());
-			encoder = flacEncoder;
-		}
-		break;
-	/*-------- OpusEncoder --------*/
-	case SettingsModel::OpusEncoder:
-		{
-			OpusEncoder *opusEncoder = new OpusEncoder();
-			opusEncoder->setRCMode(rcMode = m_settings->compressionRCModeOpusEnc());
-			opusEncoder->setBitrate(m_settings->compressionBitrateOpusEnc()); /*Opus always uses bitrate*/
-			opusEncoder->setOptimizeFor(m_settings->opusOptimizeFor());
-			opusEncoder->setEncodeComplexity(m_settings->opusComplexity());
-			opusEncoder->setFrameSize(m_settings->opusFramesize());
-			opusEncoder->setCustomParams(m_settings->customParametersOpus());
-			encoder = opusEncoder;
-		}
-		break;
-	/*-------- DCAEncoder --------*/
-	case SettingsModel::DCAEncoder:
-		{
-			DCAEncoder *dcaEncoder = new DCAEncoder();
-			dcaEncoder->setRCMode(SettingsModel::CBRMode);
-			dcaEncoder->setBitrate(IS_VBR(rcMode) ? 0 : m_settings->compressionBitrateDcaEnc());
-			encoder = dcaEncoder;
-		}
-		break;
-	/*-------- PCMEncoder --------*/
-	case SettingsModel::PCMEncoder:
-		{
-			WaveEncoder *waveEncoder = new WaveEncoder();
-			waveEncoder->setBitrate(0); /*does NOT apply to PCM output*/
-			waveEncoder->setRCMode(0); /*does NOT apply to PCM output*/
-			encoder = waveEncoder;
-		}
-		break;
-	/*-------- default --------*/
-	default:
-		throw "Unsupported encoder!";
-	}
-
-	//Sanity checking
-	if(!encoder)
-	{
-		throw "No encoder instance has been assigend!";
-	}
-
-	return encoder;
-}
-
 void ProcessingDialog::writePlayList(void)
 {
 	if(m_succeededJobs.count() <= 0 || m_allJobs.count() <= 0)
@@ -1123,10 +964,10 @@ void ProcessingDialog::writePlayList(void)
 	int counter = 1;
 
 	//Generate playlist name
-	QString playListName = (m_metaInfo->fileAlbum().isEmpty() ? "Playlist" : m_metaInfo->fileAlbum());
-	if(!m_metaInfo->fileArtist().isEmpty())
+	QString playListName = (m_metaInfo->album().isEmpty() ? "Playlist" : m_metaInfo->album());
+	if(!m_metaInfo->artist().isEmpty())
 	{
-		playListName = QString("%1 - %2").arg(m_metaInfo->fileArtist(), playListName);
+		playListName = QString("%1 - %2").arg(m_metaInfo->artist(), playListName);
 	}
 
 	//Clean playlist name
@@ -1190,35 +1031,29 @@ void ProcessingDialog::writePlayList(void)
 	}
 }
 
-AudioFileModel ProcessingDialog::updateMetaInfo(const AudioFileModel &audioFile)
+AudioFileModel ProcessingDialog::updateMetaInfo(AudioFileModel &audioFile)
 {
 	if(!m_settings->writeMetaTags())
 	{
-		return AudioFileModel(audioFile, false);
+		audioFile.metaInfo().reset();
+		return audioFile;
 	}
 	
-	AudioFileModel result = audioFile;
-	result.updateMetaInfo(*m_metaInfo);
+	audioFile.metaInfo().update(*m_metaInfo, true);
 	
-	if(m_metaInfo->filePosition() == UINT_MAX)
+	if(audioFile.metaInfo().position() == UINT_MAX)
 	{
-		result.setFilePosition(m_currentFile);
+		audioFile.metaInfo().setPosition(m_currentFile);
 	}
 
-	return result;
-}
-
-void ProcessingDialog::setCloseButtonEnabled(bool enabled)
-{
-	HMENU hMenu = GetSystemMenu((HWND) winId(), FALSE);
-	EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | (enabled ? MF_ENABLED : MF_GRAYED));
+	return audioFile;
 }
 
 void ProcessingDialog::systemTrayActivated(QSystemTrayIcon::ActivationReason reason)
 {
 	if(reason == QSystemTrayIcon::DoubleClick)
 	{
-		SetForegroundWindow(reinterpret_cast<HWND>(this->winId()));
+		lamexp_bring_to_front(this);
 	}
 }
 
@@ -1270,12 +1105,12 @@ bool ProcessingDialog::shutdownComputer(void)
 	progressDialog.setCancelButton(cancelButton);
 	progressDialog.show();
 	
-	QApplication::processEvents();
+	qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
 
 	if(m_settings->soundsEnabled())
 	{
 		QApplication::setOverrideCursor(Qt::WaitCursor);
-		PlaySound(MAKEINTRESOURCE(IDR_WAVE_SHUTDOWN), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
+		lamexp_play_sound(IDR_WAVE_SHUTDOWN, false);
 		QApplication::restoreOverrideCursor();
 	}
 
@@ -1298,8 +1133,8 @@ bool ProcessingDialog::shutdownComputer(void)
 		progressDialog.setValue(i+1);
 		progressDialog.setLabelText(text.arg(iTimeout-i));
 		if(iTimeout-i == 3) progressDialog.setCancelButton(NULL);
-		QApplication::processEvents();
-		PlaySound(MAKEINTRESOURCE((i < iTimeout) ? IDR_WAVE_BEEP : IDR_WAVE_BEEP_LONG), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
+		qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+		lamexp_play_sound(((i < iTimeout) ? IDR_WAVE_BEEP : IDR_WAVE_BEEP_LONG), false);
 	}
 	
 	progressDialog.close();

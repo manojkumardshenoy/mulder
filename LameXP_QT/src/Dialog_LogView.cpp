@@ -86,7 +86,7 @@ void LogViewDialog::copyButtonClicked(void)
 	ui->buttonCopy->setIcon(*m_acceptIcon);
 	ui->buttonCopy->blockSignals(true);
 	QTimer::singleShot(1250, this, SLOT(restoreIcon()));
-	MessageBeep(MB_ICONINFORMATION);
+	lamexp_beep(lamexp_beep_info);
 }
 
 void LogViewDialog::saveButtonClicked(void)
