@@ -44,10 +44,6 @@
 #include <QMovie>
 #include <QtConcurrentRun>
 
-//Win32 includes
-#include <MMSystem.h>
-#include <WinInet.h>
-
 ///////////////////////////////////////////////////////////////////////////////
 
 static const char *header_id = "!Update";
@@ -62,7 +58,7 @@ static const char *mirror_url_postfix[] =
 
 static const char *update_mirrors_prim[] =
 {
-	"http://muldersoft.com/",					//	"http://mulder.brhack.net/",
+	"http://muldersoft.com/",
 	"http://mulder.bplaced.net/",
 	"http://mulder.cwsurf.de/",
 	"http://mulder.6te.net/",
@@ -71,6 +67,7 @@ static const char *update_mirrors_prim[] =
 	"http://muldersoft.kilu.de/",
 	"http://muldersoft.zxq.net/",
 	"http://lamexp.sourceforge.net/",
+	"http://lamexp.berlios.de/",
 	"http://lordmulder.github.com/LameXP/",
 	"http://lord_mulder.bitbucket.org/",
 	"http://www.tricksoft.de/",
@@ -166,28 +163,6 @@ static const int MIN_CONNSCORE = 8;
 static const int VERSION_INFO_EXPIRES_MONTHS = 6;
 static char *USER_AGENT_STR = "Mozilla/5.0 (X11; Linux i686; rv:7.0.1) Gecko/20111106 IceCat/7.0.1";
 
-static BOOL getInternetConnectedState(void)
-{
-	DWORD lpdwFlags = NULL;
-	BOOL result = InternetGetConnectedState(&lpdwFlags, NULL);
-	return result;
-}
-
-static BOOL CALLBACK focusUpdaterWindow(HWND hwnd, LPARAM lParam)
-{
-	DWORD processId = *reinterpret_cast<WORD*>(lParam);
-	DWORD windowProcessId = NULL;
-	GetWindowThreadProcessId(hwnd, &windowProcessId);
-	if(windowProcessId == processId)
-	{
-		SwitchToThisWindow(hwnd, TRUE);
-		SetForegroundWindow(hwnd);
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 class UpdateInfo
@@ -242,8 +217,7 @@ UpdateDialog::UpdateDialog(SettingsModel *settings, QWidget *parent)
 	setWindowFlags(windowFlags() ^ Qt::WindowContextHelpButtonHint);
 
 	//Disable "X" button
-	HMENU hMenu = GetSystemMenu((HWND) winId(), FALSE);
-	EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
+	lamexp_enable_close_button(this, false);
 
 	//Init animation
 	m_animator = new QMovie(":/images/Loading3.gif");
@@ -351,7 +325,7 @@ bool UpdateDialog::event(QEvent *e)
 {
 	if((e->type() == QEvent::ActivationChange) && (m_updaterProcess != NULL))
 	{
-		EnumWindows(focusUpdaterWindow, reinterpret_cast<LPARAM>(&m_updaterProcess));
+		lamexp_bring_process_to_front(m_updaterProcess);
 	}
 	return QDialog::event(e);
 }
@@ -400,7 +374,7 @@ void UpdateDialog::checkForUpdates(void)
 	m_logFile->clear();
 	m_logFile->append("Checking internet connection...");
 	
-	QFuture<BOOL> connectedState = QtConcurrent::run(getInternetConnectedState);
+	QFuture<bool> connectedState = QtConcurrent::run(lamexp_get_connection_state);
 	while(!connectedState.isFinished())
 	{
 		QApplication::processEvents(QEventLoop::WaitForMoreEvents);
@@ -422,7 +396,7 @@ void UpdateDialog::checkForUpdates(void)
 		ui->hintIcon->show();
 		ui->hintLabel->show();
 		LAMEXP_DELETE(m_updateInfo);
-		if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_ERROR), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+		if(m_settings->soundsEnabled()) lamexp_play_sound(IDR_WAVE_ERROR, true);
 		QApplication::restoreOverrideCursor();
 		ui->progressBar->setValue(ui->progressBar->maximum());
 		WinSevenTaskbar::setTaskbarState(this->parentWidget(), WinSevenTaskbar::WinSevenTaskbarErrorState);
@@ -455,14 +429,14 @@ void UpdateDialog::checkForUpdates(void)
 				connectionScore++;
 				ui->progressBar->setValue(qBound(1, connectionScore + 1, MIN_CONNSCORE + 1));
 				QApplication::processEvents();
-				Sleep(64);
+				lamexp_sleep(64);
 			}
 			if(httpOk)
 			{
 				connectionScore++;
 				ui->progressBar->setValue(qBound(1, connectionScore + 1, MIN_CONNSCORE + 1));
 				QApplication::processEvents();
-				Sleep(64);
+				lamexp_sleep(64);
 			}
 			QFile::remove(outFile);
 		}
@@ -483,7 +457,7 @@ void UpdateDialog::checkForUpdates(void)
 		ui->hintIcon->show();
 		ui->hintLabel->show();
 		LAMEXP_DELETE(m_updateInfo);
-		if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_ERROR), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+		if(m_settings->soundsEnabled()) lamexp_play_sound(IDR_WAVE_ERROR, true);
 		QApplication::restoreOverrideCursor();
 		ui->progressBar->setValue(ui->progressBar->maximum());
 		WinSevenTaskbar::setTaskbarState(this->parentWidget(), WinSevenTaskbar::WinSevenTaskbarErrorState);
@@ -533,7 +507,7 @@ void UpdateDialog::checkForUpdates(void)
 		else
 		{
 			QApplication::processEvents();
-			Sleep(64);
+			lamexp_sleep(64);
 		}
 	}
 	
@@ -557,7 +531,7 @@ void UpdateDialog::checkForUpdates(void)
 		ui->hintIcon->show();
 		ui->hintLabel->show();
 		LAMEXP_DELETE(m_updateInfo);
-		if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_ERROR), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+		if(m_settings->soundsEnabled()) lamexp_play_sound(IDR_WAVE_ERROR, true);
 		return;
 	}
 
@@ -578,7 +552,7 @@ void UpdateDialog::checkForUpdates(void)
 		ui->hintIcon->show();
 		ui->hintLabel->show();
 		WinSevenTaskbar::setOverlayIcon(this->parentWidget(), &QIcon(":/icons/shield_exclamation.png"));
-		MessageBeep(MB_ICONINFORMATION);
+		lamexp_beep(lamexp_beep_info);
 	}
 	else if(m_updateInfo->m_buildNo == lamexp_version_build())
 	{
@@ -589,7 +563,7 @@ void UpdateDialog::checkForUpdates(void)
 		ui->hintIcon->show();
 		ui->hintLabel->show();
 		WinSevenTaskbar::setOverlayIcon(this->parentWidget(), &QIcon(":/icons/shield_green.png"));
-		MessageBeep(MB_ICONINFORMATION);
+		lamexp_beep(lamexp_beep_info);
 	}
 	else
 	{
@@ -600,7 +574,7 @@ void UpdateDialog::checkForUpdates(void)
 		ui->hintIcon->show();
 		ui->hintLabel->show();
 		WinSevenTaskbar::setOverlayIcon(this->parentWidget(), &QIcon(":/icons/shield_error.png"));
-		MessageBeep(MB_ICONEXCLAMATION);
+		lamexp_beep(lamexp_beep_warning);
 	}
 
 	ui->closeButton->setEnabled(true);
@@ -919,7 +893,7 @@ void UpdateDialog::applyUpdate(void)
 		bool updateStarted = process.waitForStarted();
 		if(updateStarted)
 		{
-			m_updaterProcess = process.pid()->dwProcessId;
+			m_updaterProcess = lamexp_process_id(&process);
 			loop.exec();
 		}
 		m_updaterProcess = NULL;
@@ -992,7 +966,7 @@ void UpdateDialog::testKnownWebSites(void)
 	m_logFile->clear();
 	m_logFile->append("Checking internet connection...");
 	
-	QFuture<BOOL> connectedState = QtConcurrent::run(getInternetConnectedState);
+	QFuture<bool> connectedState = QtConcurrent::run(lamexp_get_connection_state);
 	while(!connectedState.isFinished())
 	{
 		QApplication::processEvents(QEventLoop::WaitForMoreEvents);
@@ -1014,7 +988,7 @@ void UpdateDialog::testKnownWebSites(void)
 		ui->hintIcon->show();
 		ui->hintLabel->show();
 		LAMEXP_DELETE(m_updateInfo);
-		if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_ERROR), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+		if(m_settings->soundsEnabled()) lamexp_play_sound(IDR_WAVE_ERROR, true);
 		QApplication::restoreOverrideCursor();
 		ui->progressBar->setValue(ui->progressBar->maximum());
 		WinSevenTaskbar::setTaskbarState(this->parentWidget(), WinSevenTaskbar::WinSevenTaskbarErrorState);
@@ -1075,7 +1049,7 @@ void UpdateDialog::testKnownWebSites(void)
 		ui->hintIcon->show();
 		ui->hintLabel->show();
 		LAMEXP_DELETE(m_updateInfo);
-		if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_ERROR), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+		if(m_settings->soundsEnabled()) lamexp_play_sound(IDR_WAVE_ERROR, true);
 		QApplication::restoreOverrideCursor();
 		ui->progressBar->setValue(ui->progressBar->maximum());
 		WinSevenTaskbar::setTaskbarState(this->parentWidget(), WinSevenTaskbar::WinSevenTaskbarErrorState);
@@ -1095,7 +1069,7 @@ void UpdateDialog::testKnownWebSites(void)
 	ui->hintIcon->show();
 	ui->hintLabel->show();
 	WinSevenTaskbar::setOverlayIcon(this->parentWidget(), &QIcon(":/icons/shield_green.png"));
-	MessageBeep(MB_ICONINFORMATION);
+	lamexp_beep(lamexp_beep_info);
 
 	ui->closeButton->setEnabled(true);
 	if(ui->retryButton->isVisible()) ui->retryButton->hide();

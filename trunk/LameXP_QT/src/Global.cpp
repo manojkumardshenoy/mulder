@@ -21,6 +21,14 @@
 
 #include "Global.h"
 
+//Windows includes
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <MMSystem.h>
+#include <ShellAPI.h>
+#include <WinInet.h>
+
 //Qt includes
 #include <QApplication>
 #include <QMessageBox>
@@ -48,6 +56,7 @@
 #include <QReadWriteLock>
 #include <QReadLocker>
 #include <QWriteLocker>
+#include <QProcess>
 
 //LameXP includes
 #define LAMEXP_INC_CONFIG
@@ -146,76 +155,6 @@ static const char *g_lamexp_version_raw_time = __TIME__;
 
 //Console attached flag
 static bool g_lamexp_console_attached = false;
-
-//Compiler detection
-//The following code was borrowed from MPC-HC project: http://mpc-hc.sf.net/
-#if defined(__INTEL_COMPILER)
-	#if (__INTEL_COMPILER >= 1300)
-		static const char *g_lamexp_version_compiler = "ICL 13." LAMEXP_MAKE_STR(__INTEL_COMPILER_BUILD_DATE);
-	#elif (__INTEL_COMPILER >= 1200)
-		static const char *g_lamexp_version_compiler = "ICL 12." LAMEXP_MAKE_STR(__INTEL_COMPILER_BUILD_DATE);
-	#elif (__INTEL_COMPILER >= 1100)
-		static const char *g_lamexp_version_compiler = "ICL 11.x";
-	#elif (__INTEL_COMPILER >= 1000)
-		static const char *g_lamexp_version_compiler = "ICL 10.x";
-	#else
-		#error Compiler is not supported!
-	#endif
-#elif defined(_MSC_VER)
-	#if (_MSC_VER == 1700)
-		#if (_MSC_FULL_VER < 170050727)
-			static const char *g_lamexp_version_compiler = "MSVC 2012-Beta";
-		#elif (_MSC_FULL_VER < 170051020)
-			static const char *g_lamexp_version_compiler = "MSVC 2012-RTM";
-		#elif (_MSC_FULL_VER < 170051106)
-			static const char *g_lamexp_version_compiler = "MSVC 2012-U1 CTP";
-		#elif (_MSC_FULL_VER < 170060315)
-			static const char *g_lamexp_version_compiler = "MSVC 2012-U1";
-		#elif (_MSC_FULL_VER < 170060610)
-			static const char *g_lamexp_version_compiler = "MSVC 2012-U2";
-		#elif (_MSC_FULL_VER == 170060610)
-			static const char *g_lamexp_version_compiler = "MSVC 2012-U3";
-		#else
-			#error Compiler version is not supported yet!
-		#endif
-	#elif (_MSC_VER == 1600)
-		#if (_MSC_FULL_VER < 160040219)
-			static const char *g_lamexp_version_compiler = "MSVC 2010-RTM";
-		#elif (_MSC_FULL_VER == 160040219)
-			static const char *g_lamexp_version_compiler = "MSVC 2010-SP1";
-		#else
-			#error Compiler version is not supported yet!
-		#endif
-	#elif (_MSC_VER == 1500)
-		#if (_MSC_FULL_VER >= 150030729)
-			static const char *g_lamexp_version_compiler = "MSVC 2008-SP1";
-		#else
-			static const char *g_lamexp_version_compiler = "MSVC 2008";
-		#endif
-	#else
-		#error Compiler is not supported!
-	#endif
-
-	// Note: /arch:SSE and /arch:SSE2 are only available for the x86 platform
-	#if !defined(_M_X64) && defined(_M_IX86_FP)
-		#if (_M_IX86_FP == 1)
-			LAMEXP_COMPILER_WARNING("SSE instruction set is enabled!")
-		#elif (_M_IX86_FP == 2)
-			LAMEXP_COMPILER_WARNING("SSE2 instruction set is enabled!")
-		#endif
-	#endif
-#else
-	#error Compiler is not supported!
-#endif
-
-//Architecture detection
-#if defined(_M_X64)
-	static const char *g_lamexp_version_arch = "x64";
-#elif defined(_M_IX86)
-	static const char *g_lamexp_version_arch = "x86";
-#else
-	#error Architecture is not supported!
-#endif
 
 //Official web-site URL
 static const char *g_lamexp_website_url = "http://lamexp.sourceforge.net/";
@@ -353,6 +292,83 @@ const char* LAMEXP_DEFAULT_LANGID = "en";
 const char* LAMEXP_DEFAULT_TRANSLATION = "LameXP_EN.qm";
 
 ///////////////////////////////////////////////////////////////////////////////
+// COMPILER INFO
+///////////////////////////////////////////////////////////////////////////////
+
+/*
+ * Disclaimer: Parts of the following code were borrowed from MPC-HC project: http://mpc-hc.sf.net/
+ */
+
+//Compiler detection
+#if defined(__INTEL_COMPILER)
+	#if (__INTEL_COMPILER >= 1300)
+		static const char *g_lamexp_version_compiler = "ICL 13." LAMEXP_MAKE_STR(__INTEL_COMPILER_BUILD_DATE);
+	#elif (__INTEL_COMPILER >= 1200)
+		static const char *g_lamexp_version_compiler = "ICL 12." LAMEXP_MAKE_STR(__INTEL_COMPILER_BUILD_DATE);
+	#elif (__INTEL_COMPILER >= 1100)
+		static const char *g_lamexp_version_compiler = "ICL 11.x";
+	#elif (__INTEL_COMPILER >= 1000)
+		static const char *g_lamexp_version_compiler = "ICL 10.x";
+	#else
+		#error Compiler is not supported!
+	#endif
+#elif defined(_MSC_VER)
+	#if (_MSC_VER == 1700)
+		#if (_MSC_FULL_VER < 170050727)
+			static const char *g_lamexp_version_compiler = "MSVC 2012-Beta";
+		#elif (_MSC_FULL_VER < 170051020)
+			static const char *g_lamexp_version_compiler = "MSVC 2012";
+		#elif (_MSC_FULL_VER < 170051106)
+			static const char *g_lamexp_version_compiler = "MSVC 2012.1-CTP";
+		#elif (_MSC_FULL_VER < 170060315)
+			static const char *g_lamexp_version_compiler = "MSVC 2012.1";
+		#elif (_MSC_FULL_VER < 170060610)
+			static const char *g_lamexp_version_compiler = "MSVC 2012.2";
+		#elif (_MSC_FULL_VER == 170060610)
+			static const char *g_lamexp_version_compiler = "MSVC 2012.3";
+		#else
+			#error Compiler version is not supported yet!
+		#endif
+	#elif (_MSC_VER == 1600)
+		#if (_MSC_FULL_VER < 160040219)
+			static const char *g_lamexp_version_compiler = "MSVC 2010";
+		#elif (_MSC_FULL_VER == 160040219)
+			static const char *g_lamexp_version_compiler = "MSVC 2010-SP1";
+		#else
+			#error Compiler version is not supported yet!
+		#endif
+	#elif (_MSC_VER == 1500)
+		#if (_MSC_FULL_VER >= 150030729)
+			static const char *g_lamexp_version_compiler = "MSVC 2008-SP1";
+		#else
+			static const char *g_lamexp_version_compiler = "MSVC 2008";
+		#endif
+	#else
+		#error Compiler is not supported!
+	#endif
+
+	// Note: /arch:SSE and /arch:SSE2 are only available for the x86 platform
+	#if !defined(_M_X64) && defined(_M_IX86_FP)
+		#if (_M_IX86_FP == 1)
+			LAMEXP_COMPILER_WARNING("SSE instruction set is enabled!")
+		#elif (_M_IX86_FP == 2)
+			LAMEXP_COMPILER_WARNING("SSE2 (or higher) instruction set is enabled!")
+		#endif
+	#endif
+#else
+	#error Compiler is not supported!
+#endif
+
+//Architecture detection
+#if defined(_M_X64)
+	static const char *g_lamexp_version_arch = "x64";
+#elif defined(_M_IX86)
+	static const char *g_lamexp_version_arch = "x86";
+#else
+	#error Architecture is not supported!
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
 // GLOBAL FUNCTIONS
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -406,36 +422,62 @@ QDate lamexp_version_expires(void)
 }
 
 /*
+ * Convert month string to integer value
+ */
+static int lamexp_month2int(const char *str)
+{
+	int ret = 0;
+
+	for(int j = 0; j < 12; j++)
+	{
+		if(!_strcmpi(str, g_lamexp_months[j]))
+		{
+			ret = j+1;
+			break;
+		}
+	}
+
+	return ret;
+}
+
+/*
  * Get build date date
  */
 const QDate &lamexp_version_date(void)
 {
+	//Format of __DATE__ is defined as: "MMM DD YYYY"
 	if(!g_lamexp_version_date.isValid())
 	{
-		int date[3] = {0, 0, 0}; char temp[12] = {'\0'};
-		strncpy_s(temp, 12, g_lamexp_version_raw_date, _TRUNCATE);
+		int date[3] = {0, 0, 0};
+		char temp_m[4], temp_d[3], temp_y[5];
 
-		if(strlen(temp) == 11)
+		temp_m[0] = g_lamexp_version_raw_date[0x0];
+		temp_m[1] = g_lamexp_version_raw_date[0x1];
+		temp_m[2] = g_lamexp_version_raw_date[0x2];
+		temp_m[3] = 0x00;
+
+		temp_d[0] = g_lamexp_version_raw_date[0x4];
+		temp_d[1] = g_lamexp_version_raw_date[0x5];
+		temp_d[2] = 0x00;
+
+		temp_y[0] = g_lamexp_version_raw_date[0x7];
+		temp_y[1] = g_lamexp_version_raw_date[0x8];
+		temp_y[2] = g_lamexp_version_raw_date[0x9];
+		temp_y[3] = g_lamexp_version_raw_date[0xA];
+		temp_y[4] = 0x00;
+		
+		date[0] = atoi(temp_y);
+		date[1] = lamexp_month2int(temp_m);
+		date[2] = atoi(temp_d);
+
+		if((date[0] > 0) && (date[1] > 0) && (date[2] > 0))
 		{
-			temp[3] = temp[6] = '\0';
-			date[2] = atoi(&temp[4]);
-			date[0] = atoi(&temp[7]);
-			
-			for(int j = 0; j < 12; j++)
-			{
-				if(!_strcmpi(&temp[0], g_lamexp_months[j]))
-				{
-					date[1] = j+1;
-					break;
-				}
-			}
 
 			g_lamexp_version_date = QDate(date[0], date[1], date[2]);
 		}
-
-		if(!g_lamexp_version_date.isValid())
+		else
 		{
-			qFatal("Internal error: Date format could not be recognized!");
+			throw "Internal error: Date format could not be recognized!";
 		}
 	}
 
@@ -1484,17 +1526,16 @@ bool lamexp_portable_mode(void)
 /*
  * Get a random string
  */
-QString lamexp_rand_str(void)
+QString lamexp_rand_str(const bool bLong)
 {
-	QRegExp regExp("\\{(\\w+)-(\\w+)-(\\w+)-(\\w+)-(\\w+)\\}");
-	QString uuid = QUuid::createUuid().toString();
+	const QUuid uuid = QUuid::createUuid().toString();
 
-	if(regExp.indexIn(uuid) >= 0)
-	{
-		return QString().append(regExp.cap(1)).append(regExp.cap(2)).append(regExp.cap(3)).append(regExp.cap(4)).append(regExp.cap(5));
-	}
+	const unsigned int u1 = uuid.data1;
+	const unsigned int u2 = (((unsigned int)(uuid.data2)) << 16) | ((unsigned int)(uuid.data3));
+	const unsigned int u3 = (((unsigned int)(uuid.data4[0])) << 24) | (((unsigned int)(uuid.data4[1])) << 16) | (((unsigned int)(uuid.data4[2])) << 8) | ((unsigned int)(uuid.data4[3]));
+	const unsigned int u4 = (((unsigned int)(uuid.data4[4])) << 24) | (((unsigned int)(uuid.data4[5])) << 16) | (((unsigned int)(uuid.data4[6])) << 8) | ((unsigned int)(uuid.data4[7]));
 
-	throw "The RegExp didn't match on the UUID string. This shouldn't happen ;-)";
+	return bLong ? QString().sprintf("%08x%08x%08x%08x", u1, u2, u3, u4) : QString().sprintf("%08x%08x", (u1 ^ u2), (u3 ^ u4));
 }
 
 
@@ -1611,28 +1652,30 @@ const QString &lamexp_temp_folder2(void)
 bool lamexp_clean_folder(const QString &folderPath)
 {
 	QDir tempFolder(folderPath);
-	QFileInfoList entryList = tempFolder.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
-
-	for(int i = 0; i < entryList.count(); i++)
+	if(tempFolder.exists())
 	{
-		if(entryList.at(i).isDir())
+		QFileInfoList entryList = tempFolder.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
+
+		for(int i = 0; i < entryList.count(); i++)
 		{
-			lamexp_clean_folder(entryList.at(i).canonicalFilePath());
-		}
-		else
-		{
-			for(int j = 0; j < 3; j++)
+			if(entryList.at(i).isDir())
 			{
-				if(lamexp_remove_file(entryList.at(i).canonicalFilePath()))
+				lamexp_clean_folder(entryList.at(i).canonicalFilePath());
+			}
+			else
+			{
+				for(int j = 0; j < 3; j++)
 				{
-					break;
+					if(lamexp_remove_file(entryList.at(i).canonicalFilePath()))
+					{
+						break;
+					}
 				}
 			}
 		}
+		return tempFolder.rmdir(".");
 	}
-	
-	tempFolder.rmdir(".");
-	return !tempFolder.exists();
+	return true;
 }
 
 /*
@@ -2346,21 +2389,18 @@ void lamexp_seed_rand(void)
  */
 unsigned int lamexp_rand(void)
 {
-	unsigned int rnd = 0;
-	if(const lamexp_os_version_t* osVer = lamexp_get_os_version())
+	quint32 rnd = 0;
+
+	if(rand_s(&rnd) == 0)
 	{
-		if(LAMEXP_MIN_OS_VER(osVer, 5, 1))
-		{
-			if(rand_s(&rnd) == 0)
-			{
-				return rnd;
-			}
-		}
+		return rnd;
 	}
+
 	for(size_t i = 0; i < sizeof(unsigned int); i++)
 	{
 		rnd = (rnd << 8) ^ qrand();
 	}
+
 	return rnd;
 }
 
@@ -2450,6 +2490,382 @@ static bool lamexp_natural_string_sort_helper_fold_case(const QString &str1, con
 void lamexp_natural_string_sort(QStringList &list, const bool bIgnoreCase)
 {
 	qSort(list.begin(), list.end(), bIgnoreCase ? lamexp_natural_string_sort_helper_fold_case : lamexp_natural_string_sort_helper);
+}
+
+/*
+ * Suspend calling thread for N milliseconds
+ */
+void lamexp_sleep(const unsigned int delay)
+{
+	Sleep(delay);
+}
+
+bool lamexp_beep(int beepType)
+{
+	switch(beepType)
+	{
+		case lamexp_beep_info:    return MessageBeep(MB_ICONASTERISK) == TRUE;    break;
+		case lamexp_beep_warning: return MessageBeep(MB_ICONEXCLAMATION) == TRUE; break;
+		case lamexp_beep_error:   return MessageBeep(MB_ICONHAND) == TRUE;        break;
+		default: return false;
+	}
+}
+
+/*
+ * Play a sound (from resources)
+ */
+bool lamexp_play_sound(const unsigned short uiSoundIdx, const bool bAsync, const wchar_t *alias)
+{
+	if(alias)
+	{
+		return PlaySound(alias, GetModuleHandle(NULL), (SND_ALIAS | (bAsync ? SND_ASYNC : SND_SYNC))) == TRUE;
+	}
+	else
+	{
+		return PlaySound(MAKEINTRESOURCE(uiSoundIdx), GetModuleHandle(NULL), (SND_RESOURCE | (bAsync ? SND_ASYNC : SND_SYNC))) == TRUE;
+	}
+}
+
+/*
+ * Play a sound (from resources)
+ */
+bool lamexp_play_sound_file(const QString &library, const unsigned short uiSoundIdx, const bool bAsync)
+{
+	bool result = false;
+	HMODULE module = NULL;
+
+	QFileInfo libraryFile(library);
+	if(!libraryFile.isAbsolute())
+	{
+		unsigned int buffSize = GetSystemDirectoryW(NULL, NULL) + 1;
+		wchar_t *buffer = (wchar_t*) _malloca(buffSize * sizeof(wchar_t));
+		unsigned int result = GetSystemDirectory(buffer, buffSize);
+		if(result > 0 && result < buffSize)
+		{
+			libraryFile.setFile(QString("%1/%2").arg(QDir::fromNativeSeparators(QString::fromUtf16(reinterpret_cast<const unsigned short*>(buffer))), library));
+		}
+		_freea(buffer);
+	}
+
+	module = LoadLibraryW(QWCHAR(QDir::toNativeSeparators(libraryFile.absoluteFilePath())));
+	if(module)
+	{
+		result = (PlaySound(MAKEINTRESOURCE(uiSoundIdx), module, (SND_RESOURCE | (bAsync ? SND_ASYNC : SND_SYNC))) == TRUE);
+		FreeLibrary(module);
+	}
+
+	return result;
+}
+
+/*
+ * Open file using the shell
+ */
+bool lamexp_exec_shell(const QWidget *win, const QString &url, const bool explore)
+{
+	return lamexp_exec_shell(win, url, QString(), QString(), explore);
+}
+
+/*
+ * Open file using the shell (with parameters)
+ */
+bool lamexp_exec_shell(const QWidget *win, const QString &url, const QString &parameters, const QString &directory, const bool explore)
+{
+	return ((int) ShellExecuteW(((win) ? win->winId() : NULL), (explore ? L"explore" : L"open"), QWCHAR(url), ((!parameters.isEmpty()) ? QWCHAR(parameters) : NULL), ((!directory.isEmpty()) ? QWCHAR(directory) : NULL), SW_SHOW)) > 32;
+}
+
+	/*
+ * Query value of the performance counter
+ */
+__int64 lamexp_perfcounter_value(void)
+{
+	LARGE_INTEGER counter;
+	if(QueryPerformanceCounter(&counter) == TRUE)
+	{
+		return counter.QuadPart;
+	}
+	return -1;
+}
+
+/*
+ * Query frequency of the performance counter
+ */
+__int64 lamexp_perfcounter_frequ(void)
+{
+	LARGE_INTEGER frequency;
+	if(QueryPerformanceFrequency(&frequency) == TRUE)
+	{
+		return frequency.QuadPart;
+	}
+	return -1;
+}
+
+/*
+ * Insert entry to the window's system menu
+ */
+bool lamexp_append_sysmenu(const QWidget *win, const unsigned int identifier, const QString &text)
+{
+	bool ok = false;
+	
+	if(HMENU hMenu = GetSystemMenu(win->winId(), FALSE))
+	{
+		ok = (AppendMenuW(hMenu, MF_SEPARATOR, 0, 0) == TRUE);
+		ok = (AppendMenuW(hMenu, MF_STRING, identifier, QWCHAR(text)) == TRUE);
+	}
+
+	return ok;
+}
+
+/*
+ * Insert entry to the window's system menu
+ */
+bool lamexp_check_sysmenu_msg(void *message, const unsigned int identifier)
+{
+	return (((MSG*)message)->message == WM_SYSCOMMAND) && ((((MSG*)message)->wParam & 0xFFF0) == identifier);
+}
+
+/*
+ * Update system menu entry
+ */
+bool lamexp_update_sysmenu(const QWidget *win, const unsigned int identifier, const QString &text)
+{
+	bool ok = false;
+	
+	if(HMENU hMenu = ::GetSystemMenu(win->winId(), FALSE))
+	{
+		ok = (ModifyMenu(hMenu, identifier, MF_STRING | MF_BYCOMMAND, identifier, QWCHAR(text)) == TRUE);
+	}
+	return ok;
+}
+
+/*
+ * Display the window's close button
+ */
+bool lamexp_enable_close_button(const QWidget *win, const bool bEnable)
+{
+	bool ok = false;
+
+	if(HMENU hMenu = GetSystemMenu(win->winId(), FALSE))
+	{
+		ok = (EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | (bEnable ? MF_ENABLED : MF_GRAYED)) == TRUE);
+	}
+
+	return ok;
+}
+
+/*
+ * Check whether ESC key has been pressed since the previous call to this function
+ */
+bool lamexp_check_escape_state(void)
+{
+	return (GetAsyncKeyState(VK_ESCAPE) & 0x0001) != 0;
+}
+
+/*
+ * Set the process priority class for current process
+ */
+bool lamexp_change_process_priority(const int priority)
+{
+	return lamexp_change_process_priority(GetCurrentProcess(), priority);
+}
+
+/*
+ * Set the process priority class for specified process
+ */
+bool lamexp_change_process_priority(const QProcess *proc, const int priority)
+{
+	return lamexp_change_process_priority(proc->pid()->hProcess, priority);
+}
+
+/*
+ * Set the process priority class for specified process
+ */
+bool lamexp_change_process_priority(void *hProcess, const int priority)
+{
+	bool ok = false;
+
+	switch(qBound(-2, priority, 2))
+	{
+	case 2:
+		ok = (SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS) == TRUE);
+		break;
+	case 1:
+		if(!(ok = (SetPriorityClass(hProcess, ABOVE_NORMAL_PRIORITY_CLASS) == TRUE)))
+		{
+			ok = (SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS) == TRUE);
+		}
+		break;
+	case 0:
+		ok = (SetPriorityClass(hProcess, NORMAL_PRIORITY_CLASS) == TRUE);
+		break;
+	case -1:
+		if(!(ok = (SetPriorityClass(hProcess, BELOW_NORMAL_PRIORITY_CLASS) == TRUE)))
+		{
+			ok = (SetPriorityClass(hProcess, IDLE_PRIORITY_CLASS) == TRUE);
+		}
+		break;
+	case -2:
+		ok = (SetPriorityClass(hProcess, IDLE_PRIORITY_CLASS) == TRUE);
+		break;
+	}
+
+	return ok;
+}
+
+/*
+ * Returns the current file time
+ */
+unsigned __int64 lamexp_current_file_time(void)
+{
+	FILETIME fileTime;
+	GetSystemTimeAsFileTime(&fileTime);
+
+	ULARGE_INTEGER temp;
+	temp.HighPart = fileTime.dwHighDateTime;
+	temp.LowPart = fileTime.dwLowDateTime;
+
+	return temp.QuadPart;
+}
+
+/*
+ * Bring the specifed window to the front
+ */
+bool lamexp_bring_to_front(const QWidget *win)
+{
+	const bool ret = (SetForegroundWindow(win->winId()) == TRUE);
+	SwitchToThisWindow(win->winId(), TRUE);
+	return ret;
+}
+
+/*
+ * Bring window of the specifed process to the front (callback)
+ */
+static BOOL CALLBACK lamexp_bring_process_to_front_helper(HWND hwnd, LPARAM lParam)
+{
+	DWORD processId = *reinterpret_cast<WORD*>(lParam);
+	DWORD windowProcessId = NULL;
+	GetWindowThreadProcessId(hwnd, &windowProcessId);
+	if(windowProcessId == processId)
+	{
+		SwitchToThisWindow(hwnd, TRUE);
+		SetForegroundWindow(hwnd);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/*
+ * Bring window of the specifed process to the front
+ */
+bool lamexp_bring_process_to_front(const unsigned long pid)
+{
+	return EnumWindows(lamexp_bring_process_to_front_helper, reinterpret_cast<LPARAM>(&pid)) == TRUE;
+}
+
+/*
+ * Check the Internet connection status
+ */
+bool lamexp_get_connection_state(void)
+{
+	DWORD lpdwFlags = NULL;
+	BOOL result = InternetGetConnectedState(&lpdwFlags, NULL);
+	return result == TRUE;
+}
+
+/*
+ * Retrun the process ID of the given QProcess
+ */
+unsigned long lamexp_process_id(const QProcess *proc)
+{
+	PROCESS_INFORMATION *procInf = proc->pid();
+	return (procInf) ? procInf->dwProcessId : NULL;
+}
+
+/*
+ * Convert long path to short path
+ */
+QString lamexp_path_to_short(const QString &longPath)
+{
+	QString shortPath;
+	DWORD buffSize = GetShortPathNameW(reinterpret_cast<const wchar_t*>(longPath.utf16()), NULL, NULL);
+	
+	if(buffSize > 0)
+	{
+		wchar_t *buffer = new wchar_t[buffSize];
+		DWORD result = GetShortPathNameW(reinterpret_cast<const wchar_t*>(longPath.utf16()), buffer, buffSize);
+
+		if(result > 0 && result < buffSize)
+		{
+			shortPath = QString::fromUtf16(reinterpret_cast<const unsigned short*>(buffer));
+		}
+
+		delete[] buffer;
+	}
+
+	return (shortPath.isEmpty() ? longPath : shortPath);
+}
+
+/*
+ * Open media file in external player
+ */
+bool lamexp_open_media_file(const QString &mediaFilePath)
+{
+	const static wchar_t *registryPrefix[2] = { L"SOFTWARE\\", L"SOFTWARE\\Wow6432Node\\" };
+	const static wchar_t *registryKeys[3] = 
+	{
+		L"Microsoft\\Windows\\CurrentVersion\\Uninstall\\{97D341C8-B0D1-4E4A-A49A-C30B52F168E9}",
+		L"Microsoft\\Windows\\CurrentVersion\\Uninstall\\{DB9E4EAB-2717-499F-8D56-4CC8A644AB60}",
+		L"foobar2000"
+	};
+	const static wchar_t *appNames[4] = { L"smplayer_portable.exe", L"smplayer.exe", L"MPUI.exe", L"foobar2000.exe" };
+	const static wchar_t *valueNames[2] = { L"InstallLocation", L"InstallDir" };
+
+	for(size_t i = 0; i < 3; i++)
+	{
+		for(size_t j = 0; j < 2; j++)
+		{
+			QString mplayerPath;
+			HKEY registryKeyHandle = NULL;
+
+			const QString currentKey = WCHAR2QSTR(registryPrefix[j]).append(WCHAR2QSTR(registryKeys[i]));
+			if(RegOpenKeyExW(HKEY_LOCAL_MACHINE, QWCHAR(currentKey), 0, KEY_READ, &registryKeyHandle) == ERROR_SUCCESS)
+			{
+				for(size_t k = 0; k < 2; k++)
+				{
+					wchar_t Buffer[4096];
+					DWORD BuffSize = sizeof(wchar_t*) * 4096;
+					DWORD DataType = REG_NONE;
+					if(RegQueryValueExW(registryKeyHandle, valueNames[k], 0, &DataType, reinterpret_cast<BYTE*>(Buffer), &BuffSize) == ERROR_SUCCESS)
+					{
+						if((DataType == REG_SZ) || (DataType == REG_EXPAND_SZ) || (DataType == REG_LINK))
+						{
+							mplayerPath = WCHAR2QSTR(Buffer);
+							break;
+						}
+					}
+				}
+				RegCloseKey(registryKeyHandle);
+			}
+
+			if(!mplayerPath.isEmpty())
+			{
+				QDir mplayerDir(mplayerPath);
+				if(mplayerDir.exists())
+				{
+					for(size_t k = 0; k < 4; k++)
+					{
+						if(mplayerDir.exists(WCHAR2QSTR(appNames[k])))
+						{
+							qDebug("Player found at:\n%s\n", mplayerDir.absoluteFilePath(WCHAR2QSTR(appNames[k])).toUtf8().constData());
+							QProcess::startDetached(mplayerDir.absoluteFilePath(WCHAR2QSTR(appNames[k])), QStringList() << QDir::toNativeSeparators(mediaFilePath));
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+	return false;
 }
 
 /*
@@ -2563,13 +2979,20 @@ void lamexp_finalization(void)
 	{
 		if(!g_lamexp_temp_folder.path->isEmpty())
 		{
+			bool success = false;
 			for(int i = 0; i < 100; i++)
 			{
 				if(lamexp_clean_folder(*g_lamexp_temp_folder.path))
 				{
+					success = true;
 					break;
 				}
-				Sleep(125);
+				lamexp_sleep(100);
+			}
+			if(!success)
+			{
+				MessageBoxW(NULL, L"Sorry, LameXP was unable to clean up all temporary files. Some residual files in your TEMP directory may require manual deletion!", L"LameXP", MB_ICONEXCLAMATION|MB_TOPMOST);
+				lamexp_exec_shell(NULL, *g_lamexp_temp_folder.path, QString(), QString(), true);
 			}
 		}
 		LAMEXP_DELETE(g_lamexp_temp_folder.path);
@@ -2635,7 +3058,7 @@ static const HANDLE g_debug_thread = LAMEXP_DEBUG ? NULL : lamexp_debug_thread_i
 /*
  * Get number private bytes [debug only]
  */
-SIZE_T lamexp_dbg_private_bytes(void)
+unsigned long lamexp_dbg_private_bytes(void)
 {
 #if LAMEXP_DEBUG
 	for(int i = 0; i < 8; i++) _heapmin();

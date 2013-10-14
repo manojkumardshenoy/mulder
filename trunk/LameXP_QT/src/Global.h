@@ -29,11 +29,6 @@
 #include <stdio.h>
 #include <tchar.h>
 
-//Windows includes
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-
 //Visual Leaks Detector
 #include <vld.h>
 
@@ -44,6 +39,7 @@ class QDate;
 class QTime;
 class QIcon;
 class QWidget;
+class QProcess;
 class LockedFile;
 enum QtMsgType;
 
@@ -92,6 +88,15 @@ typedef struct
 }
 lamexp_os_version_t;
 
+//Beep types
+typedef enum
+{
+	lamexp_beep_info = 0,
+	lamexp_beep_warning = 1,
+	lamexp_beep_error = 2
+}
+lamexp_beep_t;
+
 //LameXP version info
 unsigned int lamexp_version_major(void);
 unsigned int lamexp_version_minor(void);
@@ -118,7 +123,6 @@ bool lamexp_detect_wine(void);
 void lamexp_init_console(const QStringList &argv);
 bool lamexp_init_qt(int argc, char* argv[]);
 int lamexp_init_ipc(void);
-LONG WINAPI lamexp_exception_handler(__in struct _EXCEPTION_POINTERS *ExceptionInfo);
 void lamexp_invalid_param_handler(const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t);
 void lamexp_message_handler(QtMsgType type, const char *msg);
 void lamexp_register_tool(const QString &toolName, LockedFile *file, unsigned int version = 0, const QString *tag = NULL);
@@ -126,7 +130,7 @@ bool lamexp_check_tool(const QString &toolName);
 const QString lamexp_lookup_tool(const QString &toolName);
 unsigned int lamexp_tool_version(const QString &toolName, QString *tag = NULL);
 void lamexp_finalization(void);
-QString lamexp_rand_str(void);
+QString lamexp_rand_str(const bool bLong = false);
 const QString &lamexp_temp_folder2(void);
 void lamexp_ipc_read(unsigned int *command, char* message, size_t buffSize);
 void lamexp_ipc_send(unsigned int command, const char* message);
@@ -162,11 +166,34 @@ const QString lamexp_clean_filepath(const QString &str);
 void lamexp_seed_rand(void);
 unsigned int lamexp_rand(void);
 QDate lamexp_current_date_safe(void);
+void lamexp_sleep(const unsigned int delay);
+bool lamexp_beep(int beepType);
+bool lamexp_play_sound(const unsigned short uiSoundIdx, const bool bAsync, const wchar_t *alias = NULL);
+bool lamexp_play_sound_file(const QString &library, const unsigned short uiSoundIdx, const bool bAsync);
+bool lamexp_exec_shell(const QWidget *win, const QString &url, const bool explore = false);
+bool lamexp_exec_shell(const QWidget *win, const QString &url, const QString &parameters, const QString &directory, const bool explore = false);
+__int64 lamexp_perfcounter_frequ(void);
+__int64 lamexp_perfcounter_value(void);
+bool lamexp_append_sysmenu(const QWidget *win, const unsigned int identifier, const QString &text);
+bool lamexp_update_sysmenu(const QWidget *win, const unsigned int identifier, const QString &text);
+bool lamexp_check_sysmenu_msg(void *message, const unsigned int identifier);
+bool lamexp_enable_close_button(const QWidget *win, const bool bEnable = true);
+bool lamexp_check_escape_state(void);
+bool lamexp_change_process_priority(const int priority);
+bool lamexp_change_process_priority(const QProcess *proc, const int priority);
+bool lamexp_change_process_priority(void *hProcess, const int priority);
+bool lamexp_bring_to_front(const QWidget *win);
+bool lamexp_bring_process_to_front(const unsigned long pid);
+bool lamexp_get_connection_state(void);
+unsigned long lamexp_process_id(const QProcess *proc);
+unsigned __int64 lamexp_current_file_time(void);
 void lamexp_natural_string_sort(QStringList &list, const bool bIgnoreCase);
+bool lamexp_open_media_file(const QString &mediaFilePath);
+QString lamexp_path_to_short(const QString &longPath);
 void lamexp_fatal_exit(const wchar_t* exitMessage, const wchar_t* errorBoxMessage = NULL);
 
 //Debug-only functions
-SIZE_T lamexp_dbg_private_bytes(void);
+unsigned long lamexp_dbg_private_bytes(void);
 
 //Helper macros
 #define LAMEXP_DELETE(PTR) do { if(PTR) { delete PTR; PTR = NULL; } } while(0)
@@ -183,13 +210,6 @@ SIZE_T lamexp_dbg_private_bytes(void);
 #define LAMEXP_MAKE_STRING(X) LAMEXP_MAKE_STRING_EX(X)
 #define LAMEXP_COMPILER_WARNING(TXT) __pragma(message(__FILE__ "(" LAMEXP_MAKE_STRING(__LINE__) ") : warning: " TXT))
 #define NOBR(STR) (QString("<nobr>%1</nobr>").arg((STR)).replace("-", "&minus;"))
-
-//Output Qt debug message (Unicode-safe versions)
-/*
-#define qDebug64(FORMAT, ...) qDebug("@BASE64@%s", QString(FORMAT).arg(__VA_ARGS__).toUtf8().toBase64().constData());
-#define qWarning64(FORMAT, ...) qWarning("@BASE64@%s", QString(FORMAT).arg(__VA_ARGS__).toUtf8().toBase64().constData());
-#define qFatal64(FORMAT, ...) qFatal("@BASE64@%s", QString(FORMAT).arg(__VA_ARGS__).toUtf8().toBase64().constData());
-*/
 
 //Check for debug build
 #if defined(_DEBUG) && defined(QT_DEBUG) && !defined(NDEBUG) && !defined(QT_NO_DEBUG)

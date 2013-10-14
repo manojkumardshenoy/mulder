@@ -69,7 +69,7 @@ void MessageHandlerThread::run()
 		case 666:
 			if(!_stricmp(m_parameter, "Force!"))
 			{
-				ExitProcess(-2);
+				_exit(-2);
 			}
 			else
 			{

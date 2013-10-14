@@ -27,6 +27,8 @@
 #include "Resource.h"
 #include "Model_Settings.h"
 
+#include <math.h>
+
 #include <QDate>
 #include <QApplication>
 #include <QIcon>
@@ -44,10 +46,6 @@
 #include <QCloseEvent>
 #include <QWindowsVistaStyle>
 #include <QWindowsXPStyle>
-
-#include <ShellAPI.h>
-#include <MMSystem.h>
-#include <math.h>
 
 //Helper macros
 #define LINK(URL) QString("<a href=\"%1\">%2</a>").arg(URL).arg(QString(URL).replace("-", "&minus;"))
@@ -82,6 +80,7 @@ g_lamexp_translators[] =
 	{"tw", L"繁体中文",       L"456Vv",               "123@456vv.com"         },
 	{"uk", L"Українська", L"Arestarh",            "Arestarh@ukr.net"      },
 	{"zh", L"简体中文",       L"456Vv",               "123@456vv.com"         },
+	{"",   L"",           L"庄泓川",                 "kidneybean@sohu.com"   },
 	{NULL, NULL, NULL, NULL}
 };
 
@@ -109,10 +108,7 @@ AboutDialog::AboutDialog(SettingsModel *settings, QWidget *parent, bool firstSta
 	//Disable "X" button
 	if(firstStart)
 	{
-		if(HMENU hMenu = GetSystemMenu((HWND) winId(), FALSE))
-		{
-			EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
-		}
+		lamexp_enable_close_button(this, false);
 	}
 
 	//Init images
@@ -215,14 +211,14 @@ int AboutDialog::exec()
 	{
 		if(m_firstShow)
 		{
-			if(!playResoureSound("imageres.dll", 5080, true))
+			if(!lamexp_play_sound_file("imageres.dll", 5080, true))
 			{
-				PlaySound(TEXT("SystemStart"), NULL, SND_ALIAS | SND_ASYNC);
+				lamexp_play_sound(0, true, L"SystemStart");
 			}
 		}
 		else
 		{
-			PlaySound(MAKEINTRESOURCE(IDR_WAVE_ABOUT), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+			lamexp_play_sound(IDR_WAVE_ABOUT, true);
 		}
 	}
 	
@@ -316,7 +312,7 @@ void AboutDialog::openURL(const QString &url)
 {
 	if(!QDesktopServices::openUrl(QUrl(url)))
 	{
-		ShellExecuteW(this->winId(), L"open", QWCHAR(url), NULL, NULL, SW_SHOW);
+		lamexp_exec_shell(this, url);
 	}
 }
 
@@ -336,16 +332,17 @@ void AboutDialog::gotoLicenseTab(void)
 void AboutDialog::moveDisque(void)
 {
 	int delta = 2;
-	LARGE_INTEGER perfCount, perfFrequ;
+	const __int64 perfFrequ = lamexp_perfcounter_frequ();
+	const __int64 perfCount = lamexp_perfcounter_value();
 
-	if(QueryPerformanceFrequency(&perfFrequ) &&	QueryPerformanceCounter(&perfCount))
+	if((perfFrequ >= 0) && (perfCount >= 0))
 	{
 		if(m_disqueDelay != _I64_MAX)
 		{
-			const double delay = static_cast<double>(perfCount.QuadPart) - static_cast<double>(m_disqueDelay);
-			delta = qMax(1, qMin(128, static_cast<int>(ceil(delay / static_cast<double>(perfFrequ.QuadPart) / 0.00512))));
+			const double delay = static_cast<double>(perfCount) - static_cast<double>(m_disqueDelay);
+			delta = qMax(1, qMin(128, static_cast<int>(ceil(delay / static_cast<double>(perfFrequ) / 0.00512))));
 		}
-		m_disqueDelay = perfCount.QuadPart;
+		m_disqueDelay = perfCount;
 	}
 
 	if(m_disque)
@@ -870,44 +867,4 @@ QString AboutDialog::makeToolText(const QString &toolName, const QString &toolBi
 	toolText += QString("<font style=\"font-size:9px\"><br>&nbsp;</font>");
 
 	return toolText;
-}
-
-
-bool AboutDialog::playResoureSound(const QString &library, const unsigned long soundId, const bool async)
-{
-	HMODULE module = 0;
-	DWORD flags = SND_RESOURCE;
-	bool result = false;
-
-	QFileInfo libraryFile(library);
-	if(!libraryFile.isAbsolute())
-	{
-		unsigned int buffSize = GetSystemDirectoryW(NULL, NULL) + 1;
-		wchar_t *buffer = (wchar_t*) _malloca(buffSize * sizeof(wchar_t));
-		unsigned int result = GetSystemDirectory(buffer, buffSize);
-		if(result > 0 && result < buffSize)
-		{
-			libraryFile.setFile(QString("%1/%2").arg(QDir::fromNativeSeparators(QString::fromUtf16(reinterpret_cast<const unsigned short*>(buffer))), library));
-		}
-		_freea(buffer);
-	}
-
-	if(async)
-	{
-		flags |= SND_ASYNC;
-	}
-	else
-	{
-		flags |= SND_SYNC;
-	}
-
-	module = LoadLibraryW(reinterpret_cast<const wchar_t*>(QDir::toNativeSeparators(libraryFile.absoluteFilePath()).utf16()));
-
-	if(module)
-	{
-		result = PlaySound((LPCTSTR) soundId, module, flags);
-		FreeLibrary(module);
-	}
-
-	return result;
 }

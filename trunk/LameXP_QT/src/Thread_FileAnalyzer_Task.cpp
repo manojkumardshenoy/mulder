@@ -24,7 +24,6 @@
 #include "Global.h"
 #include "LockedFile.h"
 #include "Model_AudioFile.h"
-#include "PlaylistImporter.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -45,35 +44,13 @@
 #define IS_SEC(SEC) (key.startsWith((SEC "_"), Qt::CaseInsensitive))
 #define FIRST_TOK(STR) (STR.split(" ", QString::SkipEmptyParts).first())
 
-/* static vars */
-QMutex AnalyzeTask::s_waitMutex;
-QWaitCondition AnalyzeTask::s_waitCond;
-QSet<unsigned int> AnalyzeTask::s_threadIdx_running;
-unsigned int AnalyzeTask::s_threadIdx_next = 0;
-QSemaphore AnalyzeTask::s_semaphore(0);
-
-/* more static vars */
-QReadWriteLock AnalyzeTask::s_lock;
-unsigned int AnalyzeTask::s_filesAccepted = 0;
-unsigned int AnalyzeTask::s_filesRejected = 0;
-unsigned int AnalyzeTask::s_filesDenied = 0;
-unsigned int AnalyzeTask::s_filesDummyCDDA = 0;
-unsigned int AnalyzeTask::s_filesCueSheet = 0;
-QStringList AnalyzeTask::s_additionalFiles;
-QSet<QString> AnalyzeTask::s_recentlyAdded;
-
-/*constants*/
-const int WAITCOND_TIMEOUT = 2500;
-const int MAX_RETRIES = 60000 / WAITCOND_TIMEOUT;
-const int MAX_QUEUE_SLOTS = 32;
-
 ////////////////////////////////////////////////////////////
 // Constructor
 ////////////////////////////////////////////////////////////
 
-AnalyzeTask::AnalyzeTask(const QString &inputFile, const QString &templateFile, volatile bool *abortFlag)
+AnalyzeTask::AnalyzeTask(const int taskId, const QString &inputFile, const QString &templateFile, volatile bool *abortFlag)
 :
-	m_threadIdx(makeThreadIdx()),
+	m_taskId(taskId),
 	m_inputFile(inputFile),
 	m_templateFile(templateFile),
 	m_mediaInfoBin(lamexp_lookup_tool("mediainfo.exe")),
@@ -88,13 +65,7 @@ AnalyzeTask::AnalyzeTask(const QString &inputFile, const QString &templateFile, 
 
 AnalyzeTask::~AnalyzeTask(void)
 {
-	s_semaphore.release();
-	
-	s_waitMutex.lock();
-	s_threadIdx_running.remove(m_threadIdx);
-	s_waitMutex.unlock();
-
-	s_waitCond.wakeAll();
+	emit taskCompleted(m_taskId);
 }
 
 ////////////////////////////////////////////////////////////
@@ -111,12 +82,6 @@ void AnalyzeTask::run()
 	{
 		qWarning("WARNING: Caught an in exception AnalyzeTask thread!");
 	}
-
-	s_waitMutex.lock();
-	s_threadIdx_running.remove(m_threadIdx);
-	s_waitMutex.unlock();
-
-	s_waitCond.wakeAll();
 }
 
 void AnalyzeTask::run_ex(void)
@@ -125,9 +90,6 @@ void AnalyzeTask::run_ex(void)
 	QString currentFile = QDir::fromNativeSeparators(m_inputFile);
 	qDebug("Analyzing: %s", currentFile.toUtf8().constData());
 	
-	emit fileSelected(QFileInfo(currentFile).fileName());
-	emit progressValChanged(m_threadIdx + 1);
-	
 	AudioFileModel file = analyzeFile(currentFile, &fileType);
 
 	if(*m_abortFlag)
@@ -135,79 +97,46 @@ void AnalyzeTask::run_ex(void)
 		qWarning("Operation cancelled by user!");
 		return;
 	}
-	if(fileType == fileTypeSkip)
-	{
-		qWarning("File was recently added, skipping!");
-		return;
-	}
-	if(fileType == fileTypeDenied)
-	{
-		QWriteLocker lock(&s_lock);
-		s_filesDenied++;
-		lock.unlock();
-		qWarning("Cannot access file for reading, skipping!");
-		return;
-	}
-	if(fileType == fileTypeCDDA)
-	{
-		QWriteLocker lock(&s_lock);
-		s_filesDummyCDDA++;
-		lock.unlock();
-		qWarning("Dummy CDDA file detected, skipping!");
-		return;
-	}
 
-	//Handle files with *incomplete* meida info
-	if(file.fileName().isEmpty() || file.formatContainerType().isEmpty() || file.formatAudioType().isEmpty())
+	switch(fileType)
 	{
-		QStringList fileList;
-		if(PlaylistImporter::importPlaylist(fileList, currentFile))
+	case fileTypeDenied:
+		qWarning("Cannot access file for reading, skipping!");
+		break;
+	case fileTypeCDDA:
+		qWarning("Dummy CDDA file detected, skipping!");
+		break;
+	default:
+		if(file.metaInfo().title().isEmpty() || file.techInfo().containerType().isEmpty() || file.techInfo().audioType().isEmpty())
 		{
-			qDebug("Imported playlist file.");
-			QWriteLocker lock(&s_lock);
-			s_additionalFiles << fileList;
-		}
-		else if(!QFileInfo(currentFile).suffix().compare("cue", Qt::CaseInsensitive))
-		{
-			QWriteLocker lock(&s_lock);
-			qWarning("Cue Sheet file detected, skipping!");
-			s_filesCueSheet++;
-		}
-		else if(!QFileInfo(currentFile).suffix().compare("avs", Qt::CaseInsensitive))
-		{
-			qDebug("Found a potential Avisynth script, investigating...");
-			if(analyzeAvisynthFile(currentFile, file))
+			fileType = fileTypeUnknown;
+			if(!QFileInfo(currentFile).suffix().compare("cue", Qt::CaseInsensitive))
 			{
-				QWriteLocker lock(&s_lock);
-				s_filesAccepted++;
-				s_recentlyAdded.insert(file.filePath().toLower());
-				lock.unlock();
-				waitForPreviousThreads();
-				emit fileAnalyzed(file);
+				qWarning("Cue Sheet file detected, skipping!");
+				fileType = fileTypeCueSheet;
+			}
+			else if(!QFileInfo(currentFile).suffix().compare("avs", Qt::CaseInsensitive))
+			{
+				qDebug("Found a potential Avisynth script, investigating...");
+				if(analyzeAvisynthFile(currentFile, file))
+				{
+					fileType = fileTypeNormal;
+				}
+				else
+				{
+					qDebug("Rejected Avisynth file: %s", file.filePath().toUtf8().constData());
+				}
 			}
 			else
 			{
-				QWriteLocker lock(&s_lock);
-				qDebug("Rejected Avisynth file: %s", file.filePath().toUtf8().constData());
-				s_filesRejected++;
+				qDebug("Rejected file of unknown type: %s", file.filePath().toUtf8().constData());
 			}
 		}
-		else
-		{
-			QWriteLocker lock(&s_lock);
-			qDebug("Rejected file of unknown type: %s", file.filePath().toUtf8().constData());
-			s_filesRejected++;
-		}
-		return;
+		break;
 	}
 
 	//Emit the file now!
-	QWriteLocker lock(&s_lock);
-	s_filesAccepted++;
-	s_recentlyAdded.insert(file.filePath().toLower());
-	lock.unlock();
-	waitForPreviousThreads();
-	emit fileAnalyzed(file);
+	emit fileAnalyzed(m_taskId, fileType, file);
 }
 
 ////////////////////////////////////////////////////////////
@@ -218,14 +147,6 @@ const AudioFileModel AnalyzeTask::analyzeFile(const QString &filePath, int *type
 {
 	*type = fileTypeNormal;
 	AudioFileModel audioFile(filePath);
-
-	QReadLocker readLock(&s_lock);
-	if(s_recentlyAdded.contains(filePath.toLower()))
-	{
-		*type = fileTypeSkip;
-		return audioFile;
-	}
-	readLock.unlock();
 
 	QFile readTest(filePath);
 	if(!readTest.open(QIODevice::ReadOnly))
@@ -306,7 +227,7 @@ const AudioFileModel AnalyzeTask::analyzeFile(const QString &filePath, int *type
 		}
 	}
 
-	if(audioFile.fileName().isEmpty())
+	if(audioFile.metaInfo().title().isEmpty())
 	{
 		QString baseName = QFileInfo(filePath).fileName();
 		int index = baseName.lastIndexOf(".");
@@ -324,7 +245,7 @@ const AudioFileModel AnalyzeTask::analyzeFile(const QString &filePath, int *type
 			baseName = baseName.mid(index + 3).trimmed();
 		}
 
-		audioFile.setFileName(baseName);
+		audioFile.metaInfo().setTitle(baseName);
 	}
 	
 	process.waitForFinished();
@@ -339,9 +260,9 @@ const AudioFileModel AnalyzeTask::analyzeFile(const QString &filePath, int *type
 		retrieveCover(audioFile, coverType, coverData);
 	}
 
-	if((audioFile.formatAudioType().compare("PCM", Qt::CaseInsensitive) == 0) && (audioFile.formatAudioProfile().compare("Float", Qt::CaseInsensitive) == 0))
+	if((audioFile.techInfo().audioType().compare("PCM", Qt::CaseInsensitive) == 0) && (audioFile.techInfo().audioProfile().compare("Float", Qt::CaseInsensitive) == 0))
 	{
-		if(audioFile.formatAudioBitdepth() == 32) audioFile.setFormatAudioBitdepth(AudioFileModel::BITDEPTH_IEEE_FLOAT32);
+		if(audioFile.techInfo().audioBitdepth() == 32) audioFile.techInfo().setAudioBitdepth(AudioFileModel::BITDEPTH_IEEE_FLOAT32);
 	}
 
 	return audioFile;
@@ -390,8 +311,8 @@ void AnalyzeTask::updateInfo(AudioFileModel &audioFile, bool *skipNext, unsigned
 	if(IS_KEY("Aud_Source"))
 	{
 		*skipNext = true;
-		audioFile.setFormatContainerType(QString());
-		audioFile.setFormatAudioType(QString());
+		audioFile.techInfo().setContainerType(QString());
+		audioFile.techInfo().setAudioType(QString());
 		qWarning("Skipping info for playlist file!");
 		return;
 	}
@@ -401,47 +322,47 @@ void AnalyzeTask::updateInfo(AudioFileModel &audioFile, bool *skipNext, unsigned
 	{
 		if(IS_KEY("Gen_Format"))
 		{
-			audioFile.setFormatContainerType(value);
+			audioFile.techInfo().setContainerType(value);
 		}
 		else if(IS_KEY("Gen_Format_Profile"))
 		{
-			audioFile.setFormatContainerProfile(value);
+			audioFile.techInfo().setContainerProfile(value);
 		}
 		else if(IS_KEY("Gen_Title") || IS_KEY("Gen_Track"))
 		{
-			audioFile.setFileName(value);
+			audioFile.metaInfo().setTitle(value);
 		}
 		else if(IS_KEY("Gen_Duration"))
 		{
 			unsigned int tmp = parseDuration(value);
-			if(tmp > 0) audioFile.setFileDuration(tmp);
+			if(tmp > 0) audioFile.techInfo().setDuration(tmp);
 		}
 		else if(IS_KEY("Gen_Artist") || IS_KEY("Gen_Performer"))
 		{
-			audioFile.setFileArtist(value);
+			audioFile.metaInfo().setArtist(value);
 		}
 		else if(IS_KEY("Gen_Album"))
 		{
-			audioFile.setFileAlbum(value);
+			audioFile.metaInfo().setAlbum(value);
 		}
 		else if(IS_KEY("Gen_Genre"))
 		{
-			audioFile.setFileGenre(value);
+			audioFile.metaInfo().setGenre(value);
 		}
 		else if(IS_KEY("Gen_Released_Date") || IS_KEY("Gen_Recorded_Date"))
 		{
 			unsigned int tmp = parseYear(value);
-			if(tmp > 0) audioFile.setFileYear(tmp);
+			if(tmp > 0) audioFile.metaInfo().setYear(tmp);
 		}
 		else if(IS_KEY("Gen_Comment"))
 		{
-			audioFile.setFileComment(value);
+			audioFile.metaInfo().setComment(value);
 		}
 		else if(IS_KEY("Gen_Track/Position"))
 		{
 			bool ok = false;
 			unsigned int tmp = value.toUInt(&ok);
-			if(ok) audioFile.setFilePosition(tmp);
+			if(ok) audioFile.metaInfo().setPosition(tmp);
 		}
 		else if(IS_KEY("Gen_Cover") || IS_KEY("Gen_Cover_Type"))
 		{
@@ -475,53 +396,53 @@ void AnalyzeTask::updateInfo(AudioFileModel &audioFile, bool *skipNext, unsigned
 
 		if(IS_KEY("Aud_Format"))
 		{
-			audioFile.setFormatAudioType(value);
+			audioFile.techInfo().setAudioType(value);
 		}
 		else if(IS_KEY("Aud_Format_Profile"))
 		{
-			audioFile.setFormatAudioProfile(value);
+			audioFile.techInfo().setAudioProfile(value);
 		}
 		else if(IS_KEY("Aud_Format_Version"))
 		{
-			audioFile.setFormatAudioVersion(value);
+			audioFile.techInfo().setAudioVersion(value);
 		}
 		else if(IS_KEY("Aud_Channel(s)"))
 		{
 			bool ok = false;
 			unsigned int tmp = value.toUInt(&ok);
-			if(ok) audioFile.setFormatAudioChannels(tmp);
+			if(ok) audioFile.techInfo().setAudioChannels(tmp);
 		}
 		else if(IS_KEY("Aud_SamplingRate"))
 		{
 			bool ok = false;
 			unsigned int tmp = value.toUInt(&ok);
-			if(ok) audioFile.setFormatAudioSamplerate(tmp);
+			if(ok) audioFile.techInfo().setAudioSamplerate(tmp);
 		}
 		else if(IS_KEY("Aud_BitDepth"))
 		{
 			bool ok = false;
 			unsigned int tmp = value.toUInt(&ok);
-			if(ok) audioFile.setFormatAudioBitdepth(tmp);
+			if(ok) audioFile.techInfo().setAudioBitdepth(tmp);
 		}
 		else if(IS_KEY("Aud_Duration"))
 		{
 			unsigned int tmp = parseDuration(value);
-			if(tmp > 0) audioFile.setFileDuration(tmp);
+			if(tmp > 0) audioFile.techInfo().setDuration(tmp);
 		}
 		else if(IS_KEY("Aud_BitRate"))
 		{
 			bool ok = false;
 			unsigned int tmp = value.toUInt(&ok);
-			if(ok) audioFile.setFormatAudioBitrate(tmp/1000);
+			if(ok) audioFile.techInfo().setAudioBitrate(tmp/1000);
 		}
 		else if(IS_KEY("Aud_BitRate_Mode"))
 		{
-			if(!value.compare("CBR", Qt::CaseInsensitive)) audioFile.setFormatAudioBitrateMode(AudioFileModel::BitrateModeConstant);
-			if(!value.compare("VBR", Qt::CaseInsensitive)) audioFile.setFormatAudioBitrateMode(AudioFileModel::BitrateModeVariable);
+			if(!value.compare("CBR", Qt::CaseInsensitive)) audioFile.techInfo().setAudioBitrateMode(AudioFileModel::BitrateModeConstant);
+			if(!value.compare("VBR", Qt::CaseInsensitive)) audioFile.techInfo().setAudioBitrateMode(AudioFileModel::BitrateModeVariable);
 		}
 		else if(IS_KEY("Aud_Encoded_Library"))
 		{
-			audioFile.setFormatAudioEncodeLib(value);
+			audioFile.techInfo().setAudioEncodeLib(value);
 		}
 		else
 		{
@@ -571,7 +492,7 @@ void AnalyzeTask::retrieveCover(AudioFileModel &audioFile, cover_t coverType, co
 		{
 			coverFile.write(coverData);
 			coverFile.close();
-			audioFile.setFileCover(coverFile.fileName(), true);
+			audioFile.metaInfo().setCover(coverFile.fileName(), true);
 		}
 	}
 	else
@@ -637,34 +558,34 @@ bool AnalyzeTask::analyzeAvisynthFile(const QString &filePath, AudioFileModel &i
 						{
 							bool ok = false;
 							unsigned int duration = val.toUInt(&ok);
-							if(ok) info.setFileDuration(duration);
+							if(ok) info.techInfo().setDuration(duration);
 						}
 						if(key.compare("SamplesPerSec", Qt::CaseInsensitive) == 0)
 						{
 							bool ok = false;
 							unsigned int samplerate = val.toUInt(&ok);
-							if(ok) info.setFormatAudioSamplerate (samplerate);
+							if(ok) info.techInfo().setAudioSamplerate (samplerate);
 						}
 						if(key.compare("Channels", Qt::CaseInsensitive) == 0)
 						{
 							bool ok = false;
 							unsigned int channels = val.toUInt(&ok);
-							if(ok) info.setFormatAudioChannels(channels);
+							if(ok) info.techInfo().setAudioChannels(channels);
 						}
 						if(key.compare("BitsPerSample", Qt::CaseInsensitive) == 0)
 						{
 							bool ok = false;
 							unsigned int bitdepth = val.toUInt(&ok);
-							if(ok) info.setFormatAudioBitdepth(bitdepth);
-						}					
+							if(ok) info.techInfo().setAudioBitdepth(bitdepth);
+						}
 					}
 				}
 				else
 				{
 					if(line.contains("[Audio Info]", Qt::CaseInsensitive))
 					{
-						info.setFormatAudioType("Avisynth");
-						info.setFormatContainerType("Avisynth");
+						info.techInfo().setAudioType("Avisynth");
+						info.techInfo().setContainerType("Avisynth");
 						bInfoHeaderFound = true;
 					}
 				}
@@ -733,139 +654,12 @@ unsigned int AnalyzeTask::parseDuration(const QString &str)
 	return ok ? (value/1000) : 0;
 }
 
-unsigned __int64 AnalyzeTask::makeThreadIdx(void)
-{
-	s_waitMutex.lock();
-	unsigned int idx = s_threadIdx_next++;
-	s_threadIdx_running.insert(idx);
-	s_waitMutex.unlock();
-
-	return idx;
-}
-
-void AnalyzeTask::waitForPreviousThreads(void)
-{
-	//This function will block until all threads with a *lower* index have terminated.
-	//Required to make sure that the files will be added in the "correct" order!
-
-	s_waitMutex.lock();
-	int retryCount = 0;
-	
-	forever
-	{
-		bool bWaitFlag = false;
-		QSet<unsigned int>::const_iterator i;
-
-		for(i = s_threadIdx_running.begin(); i != s_threadIdx_running.end(); ++i)
-		{
-			if(*i < m_threadIdx) { bWaitFlag = true; break; }
-		}
-
-		if((!bWaitFlag) || *m_abortFlag)
-		{
-			s_waitMutex.unlock();
-			return;
-		}
-
-		if(!s_waitCond.wait(&s_waitMutex, WAITCOND_TIMEOUT))
-		{
-			if(++retryCount > MAX_RETRIES)
-			{
-				qWarning("AnalyzeTask::waitForPreviousThreads encountered timeout !!!");
-				s_threadIdx_running.clear();
-			}
-		}
-	}
-}
 
 ////////////////////////////////////////////////////////////
 // Public Functions
 ////////////////////////////////////////////////////////////
 
-unsigned int AnalyzeTask::filesAccepted(void)
-{
-	QReadLocker lock(&s_lock);
-	return s_filesAccepted;
-}
-
-unsigned int AnalyzeTask::filesRejected(void)
-{
-	QReadLocker lock(&s_lock);
-	return s_filesRejected;
-}
-
-unsigned int AnalyzeTask::filesDenied(void)
-{
-	QReadLocker lock(&s_lock);
-	return s_filesDenied;
-}
-
-unsigned int AnalyzeTask::filesDummyCDDA(void)
-{
-	QReadLocker lock(&s_lock);
-	return s_filesDummyCDDA;
-}
-
-unsigned int AnalyzeTask::filesCueSheet(void)
-{
-	QReadLocker lock(&s_lock);
-	return s_filesCueSheet;
-}
-
-int AnalyzeTask::getAdditionalFiles(QStringList &fileList)
-{
-	QReadLocker readLock(&s_lock);
-	int count = s_additionalFiles.count();
-	readLock.unlock();
-
-	if(count > 0)
-	{
-		QWriteLocker lock(&s_lock);
-		count = s_additionalFiles.count();
-		fileList << s_additionalFiles;
-		s_additionalFiles.clear();
-		return count;
-	}
-
-	return 0;
-}
-
-bool AnalyzeTask::waitForFreeSlot(volatile bool *abortFlag)
-{
-	bool ret = false;
-
-	for(int i = 0; i < MAX_RETRIES; i++)
-	{
-		ret = s_semaphore.tryAcquire(1, WAITCOND_TIMEOUT);
-		if(ret || (*abortFlag)) break;
-	}
-
-	return ret;
-}
-
-void AnalyzeTask::reset(void)
-{
-	QWriteLocker lock(&s_lock);
-	s_filesAccepted = 0;
-	s_filesRejected = 0;
-	s_filesDenied = 0;
-	s_filesDummyCDDA = 0;
-	s_filesCueSheet = 0;
-	s_additionalFiles.clear();
-	s_recentlyAdded.clear();
-	lock.unlock();
-
-	s_waitMutex.lock();
-	s_threadIdx_next = 0;
-	s_threadIdx_running.clear();
-	s_waitMutex.unlock();
-
-	int freeSlots = s_semaphore.available();
-	if(freeSlots < MAX_QUEUE_SLOTS)
-	{
-		s_semaphore.release(MAX_QUEUE_SLOTS - freeSlots);
-	}
-}
+/*NONE*/
 
 ////////////////////////////////////////////////////////////
 // EVENTS

@@ -25,6 +25,7 @@
 
 class QMutex;
 class QProcess;
+class JobObject;
 
 class AbstractTool : public QObject
 {
@@ -36,8 +37,6 @@ public:
 	
 	bool startProcess(QProcess &process, const QString &program, const QStringList &args);
 	static QString commandline2string(const QString &program, const QStringList &arguments);
-	static QString AbstractTool::pathToShort(const QString &longPath);
-	static inline const quint64 currentTime(void);
 
 signals:
 	void statusUpdated(int progress);
@@ -50,7 +49,7 @@ private:
 	static quint64 s_lastLaunchTime;
 	static QMutex s_mutex_startProcess;
 	static unsigned int s_jobObjRefCount;
-	static void *s_handle_jobObject;
+	static JobObject *s_jobObject;
 
 	bool m_firstLaunch;
 };

@@ -28,7 +28,91 @@
 #include <QDir>
 #include <limits.h>
 
-static const int g_lameAgorithmQualityLUT[] = {9, 7, 3, 0, INT_MAX};
+static const int g_lameAgorithmQualityLUT[5] = {9, 7, 3, 0, INT_MAX};
+static const int g_mp3BitrateLUT[15] = {32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, -1};
+static const int g_lameVBRQualityLUT[11] = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0, INT_MAX};
+
+///////////////////////////////////////////////////////////////////////////////
+// Encoder Info
+///////////////////////////////////////////////////////////////////////////////
+
+class MP3EncoderInfo : public AbstractEncoderInfo
+{
+	virtual bool isModeSupported(int mode) const
+	{
+		switch(mode)
+		{
+		case SettingsModel::VBRMode:
+		case SettingsModel::ABRMode:
+		case SettingsModel::CBRMode:
+			return true;
+			break;
+		default:
+			throw "Bad RC mode specified!";
+		}
+	}
+
+	virtual int valueCount(int mode) const
+	{
+		switch(mode)
+		{
+		case SettingsModel::VBRMode:
+			return 10;
+			break;
+		case SettingsModel::ABRMode:
+		case SettingsModel::CBRMode:
+			return 14;
+			break;
+		default:
+			throw "Bad RC mode specified!";
+		}
+	}
+
+	virtual int valueAt(int mode, int index) const
+	{
+		switch(mode)
+		{
+		case SettingsModel::VBRMode:
+			return g_lameVBRQualityLUT[qBound(0, index, 9)];
+			break;
+		case SettingsModel::ABRMode:
+		case SettingsModel::CBRMode:
+			return g_mp3BitrateLUT[qBound(0, index, 13)];
+			break;
+		default:
+			throw "Bad RC mode specified!";
+		}
+	}
+
+	virtual int valueType(int mode) const
+	{
+		switch(mode)
+		{
+		case SettingsModel::VBRMode:
+			return TYPE_QUALITY_LEVEL_INT;
+			break;
+		case SettingsModel::ABRMode:
+			return TYPE_APPROX_BITRATE;
+			break;
+		case SettingsModel::CBRMode:
+			return TYPE_BITRATE;
+			break;
+		default:
+			throw "Bad RC mode specified!";
+		}
+	}
+
+	virtual const char *description(void) const
+	{
+		static const char* s_description = "LAME MP3 Encoder";
+		return s_description;
+	}
+}
+static const g_mp3EncoderInfo;
+
+///////////////////////////////////////////////////////////////////////////////
+// Encoder implementation
+///////////////////////////////////////////////////////////////////////////////
 
 MP3Encoder::MP3Encoder(void)
 :
@@ -50,7 +134,7 @@ MP3Encoder::~MP3Encoder(void)
 {
 }
 
-bool MP3Encoder::encode(const QString &sourceFile, const AudioFileModel &metaInfo, const QString &outputFile, volatile bool *abortFlag)
+bool MP3Encoder::encode(const QString &sourceFile, const AudioFileModel_MetaInfo &metaInfo, const unsigned int duration, const QString &outputFile, volatile bool *abortFlag)
 {
 	QProcess process;
 	QStringList args;
@@ -61,14 +145,14 @@ bool MP3Encoder::encode(const QString &sourceFile, const AudioFileModel &metaInf
 	switch(m_configRCMode)
 	{
 	case SettingsModel::VBRMode:
-		args << "-V" << QString::number(9 - qBound(0, m_configBitrate, 9));
+		args << "-V" << QString::number(g_lameVBRQualityLUT[qBound(0, m_configBitrate, 9)]);
 		break;
 	case SettingsModel::ABRMode:
-		args << "--abr" << QString::number(SettingsModel::mp3Bitrates[qBound(0, m_configBitrate, 13)]);
+		args << "--abr" << QString::number(g_mp3BitrateLUT[qBound(0, m_configBitrate, 13)]);
 		break;
 	case SettingsModel::CBRMode:
 		args << "--cbr";
-		args << "-b" << QString::number(SettingsModel::mp3Bitrates[qBound(0, m_configBitrate, 13)]);
+		args << "-b" << QString::number(g_mp3BitrateLUT[qBound(0, m_configBitrate, 13)]);
 		break;
 	default:
 		throw "Bad rate-control mode!";
@@ -110,22 +194,22 @@ bool MP3Encoder::encode(const QString &sourceFile, const AudioFileModel &metaInf
 
 	bool bUseUCS2 = false;
 
-	if(!metaInfo.fileName().isEmpty() && isUnicode(metaInfo.fileName())) bUseUCS2 = true;
-	if(!metaInfo.fileArtist().isEmpty() && isUnicode(metaInfo.fileArtist())) bUseUCS2 = true;
-	if(!metaInfo.fileAlbum().isEmpty() && isUnicode(metaInfo.fileAlbum())) bUseUCS2 = true;
-	if(!metaInfo.fileGenre().isEmpty() && isUnicode(metaInfo.fileGenre())) bUseUCS2 = true;
-	if(!metaInfo.fileComment().isEmpty() && isUnicode(metaInfo.fileComment())) bUseUCS2 = true;
+	if(!metaInfo.title().isEmpty() && isUnicode(metaInfo.title())) bUseUCS2 = true;
+	if(!metaInfo.artist().isEmpty() && isUnicode(metaInfo.artist())) bUseUCS2 = true;
+	if(!metaInfo.album().isEmpty() && isUnicode(metaInfo.album())) bUseUCS2 = true;
+	if(!metaInfo.genre().isEmpty() && isUnicode(metaInfo.genre())) bUseUCS2 = true;
+	if(!metaInfo.comment().isEmpty() && isUnicode(metaInfo.comment())) bUseUCS2 = true;
 
 	if(bUseUCS2) args << "--id3v2-ucs2"; //Must specify this BEFORE "--tt" and friends!
 
-	if(!metaInfo.fileName().isEmpty()) args << "--tt" << cleanTag(metaInfo.fileName());
-	if(!metaInfo.fileArtist().isEmpty()) args << "--ta" << cleanTag(metaInfo.fileArtist());
-	if(!metaInfo.fileAlbum().isEmpty()) args << "--tl" <<cleanTag( metaInfo.fileAlbum());
-	if(!metaInfo.fileGenre().isEmpty()) args << "--tg" << cleanTag(metaInfo.fileGenre());
-	if(!metaInfo.fileComment().isEmpty()) args << "--tc" << cleanTag(metaInfo.fileComment());
-	if(metaInfo.fileYear()) args << "--ty" << QString::number(metaInfo.fileYear());
-	if(metaInfo.filePosition()) args << "--tn" << QString::number(metaInfo.filePosition());
-	if(!metaInfo.fileCover().isEmpty()) args << "--ti" << QDir::toNativeSeparators(metaInfo.fileCover());
+	if(!metaInfo.title().isEmpty()) args << "--tt" << cleanTag(metaInfo.title());
+	if(!metaInfo.artist().isEmpty()) args << "--ta" << cleanTag(metaInfo.artist());
+	if(!metaInfo.album().isEmpty()) args << "--tl" <<cleanTag( metaInfo.album());
+	if(!metaInfo.genre().isEmpty()) args << "--tg" << cleanTag(metaInfo.genre());
+	if(!metaInfo.comment().isEmpty()) args << "--tc" << cleanTag(metaInfo.comment());
+	if(metaInfo.year()) args << "--ty" << QString::number(metaInfo.year());
+	if(metaInfo.position()) args << "--tn" << QString::number(metaInfo.position());
+	if(!metaInfo.cover().isEmpty()) args << "--ti" << QDir::toNativeSeparators(metaInfo.cover());
 
 	if(!m_configCustomParams.isEmpty()) args << m_configCustomParams.split(" ", QString::SkipEmptyParts);
 
@@ -265,9 +349,9 @@ int MP3Encoder::clipBitrate(int bitrate)
 	int minDiff = INT_MAX;
 	int minIndx = -1;
 
-	for(int i = 0; SettingsModel::mp3Bitrates[i] > 0; i++)
+	for(int i = 0; g_mp3BitrateLUT[i] > 0; i++)
 	{
-		int currentDiff = abs(targetBitrate - SettingsModel::mp3Bitrates[i]);
+		int currentDiff = abs(targetBitrate - g_mp3BitrateLUT[i]);
 		if(currentDiff < minDiff)
 		{
 			minDiff = currentDiff;
@@ -277,8 +361,13 @@ int MP3Encoder::clipBitrate(int bitrate)
 
 	if(minIndx >= 0)
 	{
-		return SettingsModel::mp3Bitrates[minIndx];
+		return g_mp3BitrateLUT[minIndx];
 	}
 
 	return targetBitrate;
+}
+
+const AbstractEncoderInfo *MP3Encoder::getEncoderInfo(void)
+{
+	return &g_mp3EncoderInfo;
 }

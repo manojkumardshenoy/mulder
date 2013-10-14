@@ -42,7 +42,9 @@
 #include "Model_FileList.h"
 #include "Model_FileSystem.h"
 #include "WinSevenTaskbar.h"
+#include "Registry_Encoder.h"
 #include "Registry_Decoder.h"
+#include "Encoder_Abstract.h"
 #include "ShellIntegration.h"
 #include "CustomEventFilter.h"
 
@@ -71,10 +73,6 @@
 #include <QResource>
 #include <QScrollBar>
 
-//System includes
-#include <MMSystem.h>
-#include <ShellAPI.h>
-
 ////////////////////////////////////////////////////////////
 // Helper macros
 ////////////////////////////////////////////////////////////
@@ -83,7 +81,7 @@
 { \
 	if(m_banner->isVisible() || m_delayedFileTimer->isActive()) \
 	{ \
-		MessageBeep(MB_ICONEXCLAMATION); \
+		lamexp_beep(lamexp_beep_warning); \
 		return; \
 	} \
 } \
@@ -162,15 +160,14 @@ while(0)
 #define FSLINK(PATH) QString("<a href=\"file:///%1\">%2</a>").arg(PATH).arg(QString(PATH).replace("-", "&minus;"))
 //#define USE_NATIVE_FILE_DIALOG (lamexp_themes_enabled() || ((QSysInfo::windowsVersion() & QSysInfo::WV_NT_based) < QSysInfo::WV_XP))
 #define CENTER_CURRENT_OUTPUT_FOLDER_DELAYED QTimer::singleShot(125, this, SLOT(centerOutputFolderModel()))
-#define RESET_SETTING(OBJ,NAME) (OBJ)->NAME((OBJ)->NAME##Default())
 
-static const DWORD IDM_ABOUTBOX = 0xEFF0;
+static const unsigned int IDM_ABOUTBOX = 0xEFF0;
 
 ////////////////////////////////////////////////////////////
 // Constructor
 ////////////////////////////////////////////////////////////
 
-MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, SettingsModel *settingsModel, QWidget *parent)
+MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel_MetaInfo *metaInfo, SettingsModel *settingsModel, QWidget *parent)
 :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow),
@@ -178,7 +175,6 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	m_metaData(metaInfo),
 	m_settings(settingsModel),
 	m_fileSystemModel(NULL),
-	m_aacEncoder(SettingsModel::getAacEncoder()),
 	m_accepted(false),
 	m_firstTimeShown(true),
 	m_outputFolderViewCentering(false),
@@ -201,11 +197,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabPageChanged(int)));
 
 	//Add system menu
-	if(HMENU hMenu = ::GetSystemMenu(winId(), FALSE))
-	{
-		AppendMenuW(hMenu, MF_SEPARATOR, 0, 0);
-		AppendMenuW(hMenu, MF_STRING, IDM_ABOUTBOX, L"About...");
-	}
+	lamexp_append_sysmenu(this, IDM_ABOUTBOX, "About...");
 
 	//--------------------------------
 	// Setup "Source" tab
@@ -321,7 +313,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	// Setup "Meta Data" tab
 	//--------------------------------
 
-	m_metaInfoModel = new MetaInfoModel(m_metaData, 6);
+	m_metaInfoModel = new MetaInfoModel(m_metaData);
 	m_metaInfoModel->clearData();
 	m_metaInfoModel->setData(m_metaInfoModel->index(4, 1), m_settings->metaInfoPosition());
 	ui->metaDataView->setModel(m_metaInfoModel);
@@ -349,21 +341,24 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	m_encoderButtonGroup->addButton(ui->radioButtonEncoderDCA, SettingsModel::DCAEncoder);
 	m_encoderButtonGroup->addButton(ui->radioButtonEncoderPCM, SettingsModel::PCMEncoder);
 
+	const int aacEncoder = EncoderRegistry::getAacEncoder();
+	ui->radioButtonEncoderAAC->setEnabled(aacEncoder > SettingsModel::AAC_ENCODER_NONE);
+
 	m_modeButtonGroup = new QButtonGroup(this);
 	m_modeButtonGroup->addButton(ui->radioButtonModeQuality, SettingsModel::VBRMode);
 	m_modeButtonGroup->addButton(ui->radioButtonModeAverageBitrate, SettingsModel::ABRMode);
 	m_modeButtonGroup->addButton(ui->radioButtonConstBitrate, SettingsModel::CBRMode);
 
-	ui->radioButtonEncoderAAC->setEnabled(m_aacEncoder > SettingsModel::AAC_ENCODER_NONE);
-	ui->radioButtonEncoderMP3->setChecked(m_settings->compressionEncoder() == SettingsModel::MP3Encoder);
-	ui->radioButtonEncoderVorbis->setChecked(m_settings->compressionEncoder() == SettingsModel::VorbisEncoder);
-	ui->radioButtonEncoderAAC->setChecked((m_settings->compressionEncoder() == SettingsModel::AACEncoder) && (m_aacEncoder > SettingsModel::AAC_ENCODER_NONE));
-	ui->radioButtonEncoderAC3->setChecked(m_settings->compressionEncoder() == SettingsModel::AC3Encoder);
-	ui->radioButtonEncoderFLAC->setChecked(m_settings->compressionEncoder() == SettingsModel::FLACEncoder);
-	ui->radioButtonEncoderOpus->setChecked(m_settings->compressionEncoder() == SettingsModel::OpusEncoder);
-	ui->radioButtonEncoderDCA->setChecked(m_settings->compressionEncoder() == SettingsModel::DCAEncoder);
-	ui->radioButtonEncoderPCM->setChecked(m_settings->compressionEncoder() == SettingsModel::PCMEncoder);
-	
+	ui->radioButtonEncoderMP3->setChecked(true);
+	foreach(QAbstractButton *currentButton, m_encoderButtonGroup->buttons())
+	{
+		if(currentButton->isEnabled() && (m_encoderButtonGroup->id(currentButton) == m_settings->compressionEncoder()))
+		{
+			currentButton->setChecked(true);
+			break;
+		}
+	}
+
 	m_evenFilterCompressionTab = new CustomEventFilter();
 	ui->labelCompressionHelp->installEventFilter(m_evenFilterCompressionTab);
 	ui->labelResetEncoders ->installEventFilter(m_evenFilterCompressionTab);
@@ -395,7 +390,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	ui->comboBoxAACProfile->setCurrentIndex(m_settings->aacEncProfile());
 	ui->comboBoxAftenCodingMode->setCurrentIndex(m_settings->aftenAudioCodingMode());
 	ui->comboBoxAftenDRCMode->setCurrentIndex(m_settings->aftenDynamicRangeCompression());
-	ui->comboBoxNormalizationMode->setCurrentIndex(m_settings->normalizationFilterEqualizationMode());
+	ui->comboBoxNormalizationMode->setCurrentIndex(m_settings->normalizationFilterEQMode());
 	//comboBoxOpusOptimize->setCurrentIndex(m_settings->opusOptimizeFor());
 	ui->comboBoxOpusFramesize->setCurrentIndex(m_settings->opusFramesize());
 	
@@ -408,16 +403,16 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, S
 	SET_CHECKBOX_STATE(ui->checkBoxRenameOutput, m_settings->renameOutputFilesEnabled());
 	SET_CHECKBOX_STATE(ui->checkBoxForceStereoDownmix, m_settings->forceStereoDownmix());
 	SET_CHECKBOX_STATE(ui->checkBoxOpusDisableResample, m_settings->opusDisableResample());
-	ui->checkBoxNeroAAC2PassMode->setEnabled(m_aacEncoder == SettingsModel::AAC_ENCODER_NERO);
+	ui->checkBoxNeroAAC2PassMode->setEnabled(aacEncoder == SettingsModel::AAC_ENCODER_NERO);
 	
-	ui->lineEditCustomParamLAME->setText(m_settings->customParametersLAME());
-	ui->lineEditCustomParamOggEnc->setText(m_settings->customParametersOggEnc());
-	ui->lineEditCustomParamNeroAAC->setText(m_settings->customParametersAacEnc());
-	ui->lineEditCustomParamFLAC->setText(m_settings->customParametersFLAC());
-	ui->lineEditCustomParamAften->setText(m_settings->customParametersAften());
-	ui->lineEditCustomParamOpus->setText(m_settings->customParametersOpus());
-	ui->lineEditCustomTempFolder->setText(QDir::toNativeSeparators(m_settings->customTempPath()));
-	ui->lineEditRenamePattern->setText(m_settings->renameOutputFilesPattern());
+	ui->lineEditCustomParamLAME   ->setText(EncoderRegistry::loadEncoderCustomParams(m_settings, SettingsModel::MP3Encoder));
+	ui->lineEditCustomParamOggEnc ->setText(EncoderRegistry::loadEncoderCustomParams(m_settings, SettingsModel::VorbisEncoder));
+	ui->lineEditCustomParamNeroAAC->setText(EncoderRegistry::loadEncoderCustomParams(m_settings, SettingsModel::AACEncoder));
+	ui->lineEditCustomParamFLAC   ->setText(EncoderRegistry::loadEncoderCustomParams(m_settings, SettingsModel::FLACEncoder));
+	ui->lineEditCustomParamAften  ->setText(EncoderRegistry::loadEncoderCustomParams(m_settings, SettingsModel::AC3Encoder));
+	ui->lineEditCustomParamOpus   ->setText(EncoderRegistry::loadEncoderCustomParams(m_settings, SettingsModel::OpusEncoder));
+	ui->lineEditCustomTempFolder  ->setText(QDir::toNativeSeparators(m_settings->customTempPath()));
+	ui->lineEditRenamePattern     ->setText(m_settings->renameOutputFilesPattern());
 	
 	m_evenFilterCustumParamsHelp = new CustomEventFilter();
 	ui->helpCustomParamLAME->installEventFilter(m_evenFilterCustumParamsHelp);
@@ -752,13 +747,13 @@ void MainWindow::addFolder(const QString &path, bool recursive, bool delayed)
 	m_banner->show(tr("Scanning folder(s) for files, please wait..."));
 	
 	QApplication::processEvents();
-	GetAsyncKeyState(VK_ESCAPE);
+	lamexp_check_escape_state();
 
 	while(!folderInfoList.isEmpty())
 	{
-		if(GetAsyncKeyState(VK_ESCAPE) & 0x0001)
+		if(lamexp_check_escape_state())
 		{
-			MessageBeep(MB_ICONERROR);
+			lamexp_beep(lamexp_beep_error);
 			qWarning("Operation cancelled by user!");
 			fileList.clear();
 			break;
@@ -912,129 +907,6 @@ void MainWindow::initializeTranslation(void)
 	}
 }
 
-/*
- * Get the current RC-Mode (for selected encoder)
- */
-int MainWindow::getCurrentRCMode(int encoder)
-{
-	int mode = -1;
-	
-	switch(encoder)
-	{
-	case SettingsModel::MP3Encoder:
-		mode = m_settings->compressionRCModeLAME();
-		break;
-	case SettingsModel::VorbisEncoder:
-		mode = m_settings->compressionRCModeOggEnc();
-		break;
-	case SettingsModel::AACEncoder:
-		mode = m_settings->compressionRCModeAacEnc();
-		break;
-	case SettingsModel::AC3Encoder:
-		mode = m_settings->compressionRCModeAften();
-		break;
-	case SettingsModel::FLACEncoder:
-		mode = SettingsModel::VBRMode; /*FLAC has no RC modes*/
-		break;
-	case SettingsModel::OpusEncoder:
-		mode = m_settings->compressionRCModeOpusEnc();
-		break;
-	case SettingsModel::DCAEncoder:
-		mode = SettingsModel::CBRMode; /*DcaEnc has no RC modes*/
-		break;
-	case SettingsModel::PCMEncoder:
-		mode = SettingsModel::CBRMode; /*PCM has no RC modes*/
-		break;
-	default:
-		throw "getCurrentRCMode(): Unknown encoder specified!";
-		break;
-	}
-
-	return mode;
-}
-
-/*
- * Get the current VBR-Level (for selected encoder)
- */
-int MainWindow::getCurrentQuality(int encoder)
-{
-	int quality = -1;
-	
-	switch(encoder)
-	{
-	case SettingsModel::MP3Encoder:
-		quality = m_settings->compressionVbrLevelLAME();
-		break;
-	case SettingsModel::VorbisEncoder:
-		quality = m_settings->compressionVbrLevelOggEnc();
-		break;
-	case SettingsModel::AACEncoder:
-		quality = m_settings->compressionVbrLevelAacEnc();
-		break;
-	case SettingsModel::AC3Encoder:
-		quality = m_settings->compressionVbrLevelAften();
-		break;
-	case SettingsModel::FLACEncoder:
-		quality = m_settings->compressionVbrLevelFLAC();
-		break;
-	case SettingsModel::OpusEncoder:
-		quality = m_settings->compressionBitrateOpusEnc();
-		break;
-	case SettingsModel::DCAEncoder:
-		quality = 0; /*DcaEnc has no quality level*/
-		break;
-	case SettingsModel::PCMEncoder:
-		quality = 1; /*PCM has no quality level*/
-		break;
-	default:
-		throw "getCurrentVbrLevel(): Unknown encoder specified!";
-		break;
-	}
-
-	return quality;
-}
-
-/*
- * Get the current Bitrate (for selected encoder)
- */
-int MainWindow::getCurrentBitrate(int encoder)
-{
-	int bitrate = -1;
-	
-	switch(encoder)
-	{
-	case SettingsModel::MP3Encoder:
-		bitrate = m_settings->compressionBitrateLAME();
-		break;
-	case SettingsModel::VorbisEncoder:
-		bitrate = m_settings->compressionBitrateOggEnc();
-		break;
-	case SettingsModel::AACEncoder:
-		bitrate = m_settings->compressionBitrateAacEnc();
-		break;
-	case SettingsModel::AC3Encoder:
-		bitrate = m_settings->compressionBitrateAften();
-		break;
-	case SettingsModel::FLACEncoder:
-		bitrate = 0; /*FLAC has no bitrate*/
-		break;
-	case SettingsModel::OpusEncoder:
-		bitrate = m_settings->compressionBitrateOpusEnc();
-		break;
-	case SettingsModel::DCAEncoder:
-		bitrate = m_settings->compressionBitrateDcaEnc();
-		break;
-	case SettingsModel::PCMEncoder:
-		bitrate = 1; /*PCM has no bitrate*/
-		break;
-	default:
-		throw "getCurrentBitrate(): Unknown encoder specified!";
-		break;
-	}
-
-	return bitrate;
-}
-
 ////////////////////////////////////////////////////////////
 // EVENTS
 ////////////////////////////////////////////////////////////
@@ -1074,6 +946,8 @@ void MainWindow::changeEvent(QEvent *e)
 {
 	if(e->type() == QEvent::LanguageChange)
 	{
+		/*qWarning("\nMainWindow::changeEvent()\n");*/
+
 		int comboBoxIndex[8];
 		
 		//Backup combobox indices, as retranslateUi() resets
@@ -1137,10 +1011,7 @@ void MainWindow::changeEvent(QEvent *e)
 		}
 
 		//Translate system menu
-		if(HMENU hMenu = ::GetSystemMenu(winId(), FALSE))
-		{
-			ModifyMenu(hMenu, IDM_ABOUTBOX, MF_STRING | MF_BYCOMMAND, IDM_ABOUTBOX, QWCHAR(ui->buttonAbout->text()));
-		}
+		lamexp_update_sysmenu(this, IDM_ABOUTBOX, ui->buttonAbout->text());
 			
 		//Force resize, if needed
 		tabPageChanged(ui->tabWidget->currentIndex());
@@ -1220,7 +1091,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
 	if(m_banner->isVisible() || m_delayedFileTimer->isActive())
 	{
-		MessageBeep(MB_ICONEXCLAMATION);
+		lamexp_beep(lamexp_beep_warning);
 		event->ignore();
 	}
 	
@@ -1265,7 +1136,7 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 	if(e->modifiers().testFlag(Qt::ControlModifier) && (e->key() == Qt::Key_F5))
 	{
 		initializeTranslation();
-		MessageBeep(MB_ICONINFORMATION);
+		lamexp_beep(lamexp_beep_info);
 		return;
 	}
 
@@ -1330,7 +1201,7 @@ bool MainWindow::event(QEvent *e)
 
 bool MainWindow::winEvent(MSG *message, long *result)
 {
-	if((message->message == WM_SYSCOMMAND) && ((message->wParam & 0xFFF0) == IDM_ABOUTBOX))
+	if(lamexp_check_sysmenu_msg(message, IDM_ABOUTBOX))
 	{
 		QTimer::singleShot(0, ui->buttonAbout, SLOT(click()));
 		*result = 0;
@@ -1383,7 +1254,7 @@ void MainWindow::windowShown(void)
 			m_settings->licenseAccepted(++iAccepted);
 			m_settings->syncNow();
 			QApplication::processEvents();
-			PlaySound(MAKEINTRESOURCE(IDR_WAVE_WHAMMY), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
+			lamexp_play_sound(IDR_WAVE_WHAMMY, false);
 			QMessageBox::critical(this, tr("License Declined"), tr("You have declined the license. Consequently the application will exit now!"), tr("Goodbye!"));
 			QFileInfo uninstallerInfo = QFileInfo(QString("%1/Uninstall.exe").arg(QApplication::applicationDirPath()));
 			if(uninstallerInfo.exists())
@@ -1392,15 +1263,14 @@ void MainWindow::windowShown(void)
 				QString uninstallerPath = uninstallerInfo.canonicalFilePath();
 				for(int i = 0; i < 3; i++)
 				{
-					HINSTANCE res = ShellExecuteW(reinterpret_cast<HWND>(this->winId()), L"open", QWCHAR(QDir::toNativeSeparators(uninstallerPath)), L"/Force", QWCHAR(QDir::toNativeSeparators(uninstallerDir)), SW_SHOWNORMAL);
-					if(reinterpret_cast<int>(res) > 32) break;
+					if(lamexp_exec_shell(this, QDir::toNativeSeparators(uninstallerPath), "/Force", QDir::toNativeSeparators(uninstallerDir))) break;
 				}
 			}
 			QApplication::quit();
 			return;
 		}
 		
-		PlaySound(MAKEINTRESOURCE(IDR_WAVE_WOOHOO), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
+		lamexp_play_sound(IDR_WAVE_WOOHOO, false);
 		m_settings->licenseAccepted(1);
 		m_settings->syncNow();
 		if(lamexp_version_demo()) showAnnounceBox();
@@ -1412,7 +1282,7 @@ void MainWindow::windowShown(void)
 		if(lamexp_current_date_safe() >= lamexp_version_expires())
 		{
 			qWarning("Binary has expired !!!");
-			PlaySound(MAKEINTRESOURCE(IDR_WAVE_WHAMMY), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
+			lamexp_play_sound(IDR_WAVE_WHAMMY, false);
 			if(QMessageBox::warning(this, tr("LameXP - Expired"), QString("%1<br>%2").arg(NOBR(tr("This demo (pre-release) version of LameXP has expired at %1.").arg(lamexp_version_expires().toString(Qt::ISODate))), NOBR(tr("LameXP is free software and release versions won't expire."))), tr("Check for Updates"), tr("Exit Program")) == 0)
 			{
 				checkForUpdates();
@@ -1454,7 +1324,7 @@ void MainWindow::windowShown(void)
 			return;
 		default:
 			QEventLoop loop; QTimer::singleShot(7000, &loop, SLOT(quit()));
-			PlaySound(MAKEINTRESOURCE(IDR_WAVE_WAITING), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+			lamexp_play_sound(IDR_WAVE_WAITING, true);
 			m_banner->show(tr("Skipping update check this time, please be patient..."), &loop);
 			break;
 		}
@@ -1476,7 +1346,8 @@ void MainWindow::windowShown(void)
 	}
 
 	//Check for AAC support
-	if(m_aacEncoder == SettingsModel::AAC_ENCODER_NERO)
+	const int aacEncoder = EncoderRegistry::getAacEncoder();
+	if(aacEncoder == SettingsModel::AAC_ENCODER_NERO)
 	{
 		if(m_settings->neroAacNotificationsEnabled())
 		{
@@ -1494,7 +1365,7 @@ void MainWindow::windowShown(void)
 	}
 	else
 	{
-		if(m_settings->neroAacNotificationsEnabled() && (m_aacEncoder <= SettingsModel::AAC_ENCODER_NONE))
+		if(m_settings->neroAacNotificationsEnabled() && (aacEncoder <= SettingsModel::AAC_ENCODER_NONE))
 		{
 			QString appPath = QDir(QCoreApplication::applicationDirPath()).canonicalPath();
 			if(appPath.isEmpty()) appPath = QCoreApplication::applicationDirPath();
@@ -1656,7 +1527,7 @@ void MainWindow::encodeButtonClicked(void)
 	{
 		QStringList tempFolderParts = tempFolder.split("/", QString::SkipEmptyParts, Qt::CaseInsensitive);
 		tempFolderParts.takeLast();
-		if(m_settings->soundsEnabled()) PlaySound(MAKEINTRESOURCE(IDR_WAVE_WHAMMY), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
+		if(m_settings->soundsEnabled()) lamexp_play_sound(IDR_WAVE_WHAMMY, false);
 		QString lowDiskspaceMsg = QString("%1<br>%2<br><br>%3<br>%4<br>").arg
 		(
 			NOBR(tr("There are less than %1 GB of free diskspace available on your system's TEMP folder.").arg(QString::number(minimumFreeDiskspaceMultiplier))),
@@ -2479,70 +2350,17 @@ void MainWindow::sourceFilesScrollbarMoved(int)
  */
 void MainWindow::previewContextActionTriggered(void)
 {
-	const static wchar_t *registryPrefix[2] = { L"SOFTWARE\\", L"SOFTWARE\\Wow6432Node\\" };
-	const static wchar_t *registryKeys[3] = 
-	{
-		L"Microsoft\\Windows\\CurrentVersion\\Uninstall\\{97D341C8-B0D1-4E4A-A49A-C30B52F168E9}",
-		L"Microsoft\\Windows\\CurrentVersion\\Uninstall\\{DB9E4EAB-2717-499F-8D56-4CC8A644AB60}",
-		L"foobar2000"
-	};
-	const static wchar_t *appNames[4] = { L"smplayer_portable.exe", L"smplayer.exe", L"MPUI.exe", L"foobar2000.exe" };
-	const static wchar_t *valueNames[2] = { L"InstallLocation", L"InstallDir" };
-
 	QModelIndex index = ui->sourceFileView->currentIndex();
 	if(!index.isValid())
 	{
 		return;
 	}
 
-	for(size_t i = 0; i < 3; i++)
+	if(!lamexp_open_media_file(m_fileListModel->getFile(index).filePath()))
 	{
-		for(size_t j = 0; j < 2; j++)
-		{
-			QString mplayerPath;
-			HKEY registryKeyHandle = NULL;
-
-			const QString currentKey = WCHAR2QSTR(registryPrefix[j]).append(WCHAR2QSTR(registryKeys[i]));
-			if(RegOpenKeyExW(HKEY_LOCAL_MACHINE, QWCHAR(currentKey), 0, KEY_READ, &registryKeyHandle) == ERROR_SUCCESS)
-			{
-				for(size_t k = 0; k < 2; k++)
-				{
-					wchar_t Buffer[4096];
-					DWORD BuffSize = sizeof(wchar_t*) * 4096;
-					DWORD DataType = REG_NONE;
-					if(RegQueryValueExW(registryKeyHandle, valueNames[k], 0, &DataType, reinterpret_cast<BYTE*>(Buffer), &BuffSize) == ERROR_SUCCESS)
-					{
-						if((DataType == REG_SZ) || (DataType == REG_EXPAND_SZ) || (DataType == REG_LINK))
-						{
-							mplayerPath = WCHAR2QSTR(Buffer);
-							break;
-						}
-					}
-				}
-				RegCloseKey(registryKeyHandle);
-			}
-
-			if(!mplayerPath.isEmpty())
-			{
-				QDir mplayerDir(mplayerPath);
-				if(mplayerDir.exists())
-				{
-					for(size_t k = 0; k < 4; k++)
-					{
-						if(mplayerDir.exists(WCHAR2QSTR(appNames[k])))
-						{
-							qDebug("Player found at:\n%s\n", mplayerDir.absoluteFilePath(WCHAR2QSTR(appNames[k])).toUtf8().constData());
-							QProcess::startDetached(mplayerDir.absoluteFilePath(WCHAR2QSTR(appNames[k])), QStringList() << QDir::toNativeSeparators(m_fileListModel->getFile(index).filePath()));
-							return;
-						}
-					}
-				}
-			}
-		}
+		qDebug("Player not found, falling back to default application...");
+		QDesktopServices::openUrl(QString("file:///").append(m_fileListModel->getFile(index).filePath()));
 	}
-	
-	qDebug("Player not found, falling back to default application...");
-	QDesktopServices::openUrl(QString("file:///").append(m_fileListModel->getFile(index).filePath()));
 }
 
 /*
@@ -2864,7 +2682,7 @@ void MainWindow::gotoFavoriteFolder(void)
 		}
 		else
 		{
-			MessageBeep(MB_ICONERROR);
+			lamexp_beep(lamexp_beep_error);
 			m_outputFolderFavoritesMenu->removeAction(item);
 			item->deleteLater();
 		}
@@ -2887,36 +2705,38 @@ void MainWindow::makeFolderButtonClicked(void)
 	QDir basePath(m_fileSystemModel->fileInfo(ui->outputFolderView->currentIndex()).absoluteFilePath());
 	QString suggestedName = tr("New Folder");
 
-	if(!m_metaData->fileArtist().isEmpty() && !m_metaData->fileAlbum().isEmpty())
+	if(!m_metaData->artist().isEmpty() && !m_metaData->album().isEmpty())
 	{
-		suggestedName = QString("%1 - %2").arg(m_metaData->fileArtist(), m_metaData->fileAlbum());
+		suggestedName = QString("%1 - %2").arg(m_metaData->artist(),m_metaData->album());
 	}
-	else if(!m_metaData->fileArtist().isEmpty())
+	else if(!m_metaData->artist().isEmpty())
 	{
-		suggestedName = m_metaData->fileArtist();
+		suggestedName = m_metaData->artist();
 	}
-	else if(!m_metaData->fileAlbum().isEmpty())
+	else if(!m_metaData->album().isEmpty())
 	{
-		suggestedName = m_metaData->fileAlbum();
+		suggestedName =m_metaData->album();
 	}
 	else
 	{
 		for(int i = 0; i < m_fileListModel->rowCount(); i++)
 		{
-			AudioFileModel audioFile = m_fileListModel->getFile(m_fileListModel->index(i, 0));
-			if(!audioFile.fileAlbum().isEmpty() || !audioFile.fileArtist().isEmpty())
+			const AudioFileModel &audioFile = m_fileListModel->getFile(m_fileListModel->index(i, 0));
+			const AudioFileModel_MetaInfo &fileMetaInfo = audioFile.metaInfo();
+
+			if(!fileMetaInfo.album().isEmpty() || !fileMetaInfo.artist().isEmpty())
 			{
-				if(!audioFile.fileArtist().isEmpty() && !audioFile.fileAlbum().isEmpty())
+				if(!fileMetaInfo.artist().isEmpty() && !fileMetaInfo.album().isEmpty())
 				{
-					suggestedName = QString("%1 - %2").arg(audioFile.fileArtist(), audioFile.fileAlbum());
+					suggestedName = QString("%1 - %2").arg(fileMetaInfo.artist(), fileMetaInfo.album());
 				}
-				else if(!audioFile.fileArtist().isEmpty())
+				else if(!fileMetaInfo.artist().isEmpty())
 				{
-					suggestedName = audioFile.fileArtist();
+					suggestedName = fileMetaInfo.artist();
 				}
-				else if(!audioFile.fileAlbum().isEmpty())
+				else if(!fileMetaInfo.album().isEmpty())
 				{
-					suggestedName = audioFile.fileAlbum();
+					suggestedName = fileMetaInfo.album();
 				}
 				break;
 			}
@@ -2936,7 +2756,7 @@ void MainWindow::makeFolderButtonClicked(void)
 
 			if(folderName.isEmpty())
 			{
-				MessageBeep(MB_ICONERROR);
+				lamexp_beep(lamexp_beep_error);
 				continue;
 			}
 
@@ -3011,7 +2831,7 @@ void MainWindow::showFolderContextActionTriggered(void)
 
 	QString path = QDir::toNativeSeparators(m_fileSystemModel->filePath(ui->outputFolderView->currentIndex()));
 	if(!path.endsWith(QDir::separator())) path.append(QDir::separator());
-	ShellExecuteW(reinterpret_cast<HWND>(this->winId()), L"explore", QWCHAR(path), NULL, NULL, SW_SHOW);
+	lamexp_exec_shell(this, path, true);
 }
 
 /*
@@ -3040,7 +2860,7 @@ void MainWindow::goUpFolderContextActionTriggered(void)
 		}
 		else
 		{
-			MessageBeep(MB_ICONWARNING);
+			lamexp_beep(lamexp_beep_warning);
 		}
 		CENTER_CURRENT_OUTPUT_FOLDER_DELAYED;
 	}
@@ -3061,7 +2881,7 @@ void MainWindow::addFavoriteFolderActionTriggered(void)
 	}
 	else
 	{
-		MessageBeep(MB_ICONWARNING);
+		lamexp_beep(lamexp_beep_warning);
 	}
 
 	m_settings->favoriteOutputFolders(favorites.join("|"));
@@ -3127,7 +2947,7 @@ void MainWindow::outputFolderEditFinished(void)
 	ui->outputFolderLabel->setVisible(true);
 	ui->outputFolderView->setEnabled(true);
 
-	if(!ok) MessageBeep(MB_ICONERROR);
+	if(!ok) lamexp_beep(lamexp_beep_error);
 	CENTER_CURRENT_OUTPUT_FOLDER_DELAYED;
 }
 
@@ -3282,7 +3102,7 @@ void MainWindow::outputFolderMouseEventOccurred(QWidget *sender, QEvent *event)
 			{
 				QString path = ui->outputFolderLabel->text();
 				if(!path.endsWith(QDir::separator())) path.append(QDir::separator());
-				ShellExecuteW(reinterpret_cast<HWND>(this->winId()), L"explore", QWCHAR(path), NULL, NULL, SW_SHOW);
+				lamexp_exec_shell(this, path, true);
 			}
 			break;
 		case QEvent::Enter:
@@ -3369,7 +3189,7 @@ void MainWindow::editMetaButtonClicked(void)
 	
 		if(index.row() == 4)
 		{
-			m_settings->metaInfoPosition(m_metaData->filePosition());
+			m_settings->metaInfoPosition(m_metaData->position());
 		}
 	}
 }
@@ -3408,84 +3228,45 @@ void MainWindow::playlistEnabledChanged(void)
  */
 void MainWindow::updateEncoder(int id)
 {
+	/*qWarning("\nupdateEncoder(%d)", id);*/
+
 	m_settings->compressionEncoder(id);
-
-	bool bSupportsVBR = false;
-	bool bSupportsABR = false;;
-	bool bSupportsCBR = false;
-	bool bSliderEnabled = false;
-
-	//Set encoder-specific features
-	switch(m_settings->compressionEncoder())
-	{
-	case SettingsModel::MP3Encoder:
-	case SettingsModel::AACEncoder:
-	case SettingsModel::OpusEncoder:
-		bSupportsVBR = bSupportsABR = bSupportsCBR = bSliderEnabled = true;
-		break;
-	case SettingsModel::VorbisEncoder:
-		bSupportsVBR = bSupportsABR = bSliderEnabled = true;
-		break;
-	case SettingsModel::AC3Encoder:
-		bSupportsVBR = bSupportsCBR = bSliderEnabled = true;
-		break;
-	case SettingsModel::FLACEncoder:
-		bSupportsVBR = bSliderEnabled = true;
-		break;
-	case SettingsModel::DCAEncoder:
-		bSupportsCBR = bSliderEnabled = true;
-		break;
-	case SettingsModel::PCMEncoder:
-		bSupportsCBR = true;
-		break;
-	default:
-		throw "updateEncoder(): Unknown encoder encountered!";
-		break;
-	}
+	const AbstractEncoderInfo *info = EncoderRegistry::getEncoderInfo(id);
 
 	//Update UI controls
-	ui->radioButtonModeQuality->setEnabled(bSupportsVBR);
-	ui->radioButtonModeAverageBitrate->setEnabled(bSupportsABR);
-	ui->radioButtonConstBitrate->setEnabled(bSupportsCBR);
-	ui->sliderBitrate->setEnabled(bSliderEnabled);
+	ui->radioButtonModeQuality       ->setEnabled(info->isModeSupported(SettingsModel::VBRMode));
+	ui->radioButtonModeAverageBitrate->setEnabled(info->isModeSupported(SettingsModel::ABRMode));
+	ui->radioButtonConstBitrate      ->setEnabled(info->isModeSupported(SettingsModel::CBRMode));
+	
+	//Initialize checkbox state
+	if(ui->radioButtonModeQuality->isEnabled())             ui->radioButtonModeQuality->setChecked(true);
+	else if(ui->radioButtonModeAverageBitrate->isEnabled()) ui->radioButtonModeAverageBitrate->setChecked(true);
+	else if(ui->radioButtonConstBitrate->isEnabled())       ui->radioButtonConstBitrate->setChecked(true);
+	else throw "It appears that the encoder does not support *any* RC mode!";
 
-	//Add AAC info
-	if(m_settings->compressionEncoder() == SettingsModel::AACEncoder)
+	//Apply current RC mode
+	const int currentRCMode = EncoderRegistry::loadEncoderMode(m_settings, id);
+	switch(currentRCMode)
 	{
-		QString encoderName = tr("Not available!");
-		switch(m_aacEncoder)
-		{
-			case SettingsModel::AAC_ENCODER_NERO: encoderName = tr("Nero AAC"); break;
-			case SettingsModel::AAC_ENCODER_FHG : encoderName = tr("FHG AAC (Winamp)"); break;
-			case SettingsModel::AAC_ENCODER_QAAC: encoderName = tr("QAAC (Apple)"); break;
-		}
+		case SettingsModel::VBRMode: if(ui->radioButtonModeQuality->isEnabled())        ui->radioButtonModeQuality->setChecked(true);        break;
+		case SettingsModel::ABRMode: if(ui->radioButtonModeAverageBitrate->isEnabled()) ui->radioButtonModeAverageBitrate->setChecked(true); break;
+		case SettingsModel::CBRMode: if(ui->radioButtonConstBitrate->isEnabled())       ui->radioButtonConstBitrate->setChecked(true);       break;
+		default: throw "updateEncoder(): Unknown rc-mode encountered!";
+	}
+
+	//Display encoder description
+	if(const char* description = info->description())
+	{
 		ui->labelEncoderInfo->setVisible(true);
-		ui->labelEncoderInfo->setText(tr("Current AAC Encoder: %1").arg(encoderName));
+		ui->labelEncoderInfo->setText(tr("Current Encoder: %1").arg(QString::fromUtf8(description)));
 	}
 	else
 	{
 		ui->labelEncoderInfo->setVisible(false);
 	}
 
-	//Set current RC mode
-	const int currentRCMode = getCurrentRCMode(id);
-	switch(currentRCMode)
-	{
-	case SettingsModel::VBRMode:
-		ui->radioButtonModeQuality->setChecked(true);
-		break;
-	case SettingsModel::ABRMode:
-		ui->radioButtonModeAverageBitrate->setChecked(true);
-		break;
-	case SettingsModel::CBRMode:
-		ui->radioButtonConstBitrate->setChecked(true);
-		break;
-	default:
-		throw "updateEncoder(): Unknown rc-mode encountered!";
-	}
-
 	//Update RC mode!
-	updateRCMode(currentRCMode);
+	updateRCMode(m_modeButtonGroup->checkedId());
 }
 
 /*
@@ -3493,195 +3274,50 @@ void MainWindow::updateEncoder(int id)
  */
 void MainWindow::updateRCMode(int id)
 {
-	int sliderMin = INT_MIN;
-	int sliderMax = INT_MAX;
+	/*qWarning("updateRCMode(%d)", id);*/
 
-	//Update encoder-specific settings
-	const int currentEncoder = m_settings->compressionEncoder();
-	switch(currentEncoder)
+	//Store new RC mode
+	const int currentEncoder = m_encoderButtonGroup->checkedId();
+	EncoderRegistry::saveEncoderMode(m_settings, currentEncoder, id);
+
+	//Fetch encoder info
+	const AbstractEncoderInfo *info = EncoderRegistry::getEncoderInfo(currentEncoder);
+	const int valueCount = info->valueCount(id);
+
+	//Sanity check
+	if(!info->isModeSupported(id))
 	{
-	/* -------- MP3Encoder -------- */
-	case SettingsModel::MP3Encoder:
-		switch(id)
-		{
-		case SettingsModel::VBRMode:
-			sliderMin = 0;
-			sliderMax = 9;
-			break;
-		case SettingsModel::ABRMode:
-		case SettingsModel::CBRMode:
-			sliderMin = 0;
-			sliderMax = 13;
-			break;
-		default:
-			throw "updateRCMode(): Unknown rc-mode specified!";
-			break;
-		}
-		m_settings->compressionRCModeLAME(id);
-		break;
-	/* -------- VorbisEncoder -------- */
-	case SettingsModel::VorbisEncoder:
-		switch(id)
-		{
-		case SettingsModel::VBRMode:
-			sliderMin = -2;
-			sliderMax = 10;
-			break;
-		case SettingsModel::ABRMode:
-		case SettingsModel::CBRMode:
-			sliderMin = 4;
-			sliderMax = 63;
-			break;
-		default:
-			throw "updateRCMode(): Unknown rc-mode specified!";
-			break;
-		}
-		m_settings->compressionRCModeOggEnc(id);
-		break;
-	/* -------- AACEncoder -------- */
-	case SettingsModel::AACEncoder:
-		switch(id)
-		{
-		case SettingsModel::VBRMode:
-			switch(m_aacEncoder)
-			{
-			case SettingsModel::AAC_ENCODER_QAAC:
-				sliderMin = 0;
-				sliderMax = 32;
-				break;
-			case SettingsModel::AAC_ENCODER_FHG:
-				sliderMin = 1;
-				sliderMax = 6;
-				break;
-			case SettingsModel::AAC_ENCODER_NERO:
-				sliderMin = 0;
-				sliderMax = 20;
-				break;
-			default:
-				throw "updateRCMode(): Unknown AAC encoder specified!";
-				break;
-			}
-			break;
-		case SettingsModel::ABRMode:
-		case SettingsModel::CBRMode:
-			sliderMin = 4;
-			sliderMax = 63;
-			break;
-		default:
-			throw "updateRCMode(): Unknown rc-mode specified!";
-			break;
-		}
-		m_settings->compressionRCModeAacEnc(id);
-		break;
-	/* -------- AC3Encoder -------- */
-	case SettingsModel::AC3Encoder:
-		switch(id)
-		{
-		case SettingsModel::VBRMode:
-			sliderMin = 0;
-			sliderMax = 16;
-			break;
-		case SettingsModel::ABRMode:
-		case SettingsModel::CBRMode:
-			sliderMin = 0;
-			sliderMax = 18;
-			break;
-		default:
-			throw "updateRCMode(): Unknown rc-mode specified!";
-			break;
-		}
-		m_settings->compressionRCModeAften(id);
-		break;
-	/* -------- FLACEncoder -------- */
-	case SettingsModel::FLACEncoder:
-		switch(id)
-		{
-		case SettingsModel::VBRMode:
-		case SettingsModel::ABRMode:
-		case SettingsModel::CBRMode:
-			sliderMin = 0;
-			sliderMax = 8;
-			break;
-		default:
-			throw "updateRCMode(): Unknown rc-mode specified!";
-			break;
-		}
-		break;
-	/* -------- OpusEncoder -------- */
-	case SettingsModel::OpusEncoder:
-		switch(id)
-		{
-		case SettingsModel::VBRMode:
-		case SettingsModel::ABRMode:
-		case SettingsModel::CBRMode:
-			sliderMin = 1;
-			sliderMax = 32;
-			break;
-		default:
-			throw "updateRCMode(): Unknown rc-mode specified!";
-			break;
-		}
-		m_settings->compressionRCModeOpusEnc(id);
-		break;
-	/* -------- DCAEncoder -------- */
-	case SettingsModel::DCAEncoder:
-		switch(id)
-		{
-		case SettingsModel::VBRMode:
-		case SettingsModel::ABRMode:
-		case SettingsModel::CBRMode:
-			sliderMin = 1;
-			sliderMax = 128;
-			break;
-		default:
-			throw "updateRCMode(): Unknown rc-mode specified!";
-			break;
-		}
-		break;
-	/* -------- PCMEncoder -------- */
-	case SettingsModel::PCMEncoder:
-		switch(id)
-		{
-		case SettingsModel::VBRMode:
-		case SettingsModel::ABRMode:
-		case SettingsModel::CBRMode:
-			sliderMin = 0;
-			sliderMax = 2;
-			break;
-		default:
-			throw "updateRCMode(): Unknown rc-mode specified!";
-			break;
-		}
-		break;
-	/* -------- default -------- */
-	default:
-		throw "updateRCMode(): Unknown encoder specified!";
-		break;
+		qWarning("Attempting to use an unsupported RC mode (%d) with current encoder (%d)!", id, currentEncoder);
+		ui->labelBitrate->setText("(ERROR)");
+		return;
 	}
 
 	//Update slider min/max values
-	WITH_BLOCKED_SIGNALS(ui->sliderBitrate, setMinimum, sliderMin);
-	WITH_BLOCKED_SIGNALS(ui->sliderBitrate, setMaximum, sliderMax);
-	
-	//Update slider position
-	int currentPosition = INT_MAX;
-	switch(id)
+	if(valueCount > 0)
 	{
-	case SettingsModel::VBRMode:
-		currentPosition = getCurrentQuality(currentEncoder);
-		break;
-	case SettingsModel::ABRMode:
-	case SettingsModel::CBRMode:
-		currentPosition = getCurrentBitrate(currentEncoder);
-		break;
-	default:
-		throw "updateRCMode(): Unknown rc-mode specified!";
-		break;
+		WITH_BLOCKED_SIGNALS(ui->sliderBitrate, setEnabled, true);
+		WITH_BLOCKED_SIGNALS(ui->sliderBitrate, setMinimum, 0);
+		WITH_BLOCKED_SIGNALS(ui->sliderBitrate, setMaximum, valueCount-1);
 	}
-	
-	//Update bitrate/quality value!
-	ui->sliderBitrate->setValue(currentPosition);
-	updateBitrate(currentPosition);
+	else
+	{
+		WITH_BLOCKED_SIGNALS(ui->sliderBitrate, setEnabled, false);
+		WITH_BLOCKED_SIGNALS(ui->sliderBitrate, setMinimum, 0);
+		WITH_BLOCKED_SIGNALS(ui->sliderBitrate, setMaximum, 2);
+	}
+
+	//Now update bitrate/quality value!
+	if(valueCount > 0)
+	{
+		const int currentValue = EncoderRegistry::loadEncoderValue(m_settings, currentEncoder, id);
+		ui->sliderBitrate->setValue(qBound(0, currentValue, valueCount-1));
+		updateBitrate(qBound(0, currentValue, valueCount-1));
+	}
+	else
+	{
+		ui->sliderBitrate->setValue(1);
+		updateBitrate(0);
+	}
 }
 
 /*
@@ -3689,189 +3325,56 @@ void MainWindow::updateRCMode(int id)
  */
 void MainWindow::updateBitrate(int value)
 {
-	//Update encoder-specific settings
-	const int currentEncoder = m_settings->compressionEncoder();
-	const int currentRCMode = getCurrentRCMode(currentEncoder);
+	/*qWarning("updateBitrate(%d)", value);*/
 
-	QString sliderText;
+	//Load current encoder and RC mode
+	const int currentEncoder = m_encoderButtonGroup->checkedId();
+	const int currentRCMode = m_modeButtonGroup->checkedId();
 
-	switch(currentEncoder)
+	//Fetch encoder info
+	const AbstractEncoderInfo *info = EncoderRegistry::getEncoderInfo(currentEncoder);
+	const int valueCount = info->valueCount(currentRCMode);
+
+	//Sanity check
+	if(!info->isModeSupported(currentRCMode))
 	{
-	/* -------- MP3Encoder -------- */
-	case SettingsModel::MP3Encoder:
-		switch(currentRCMode)
-		{
-		case SettingsModel::VBRMode:
-			sliderText = tr("Quality Level %1").arg(9 - value);
-			m_settings->compressionVbrLevelLAME(value);
-			break;
-		case SettingsModel::ABRMode:
-			sliderText = QString("&asymp; %1 kbps").arg(SettingsModel::mp3Bitrates[value]);
-			m_settings->compressionBitrateLAME(value);
-			break;
-		case SettingsModel::CBRMode:
-			sliderText = QString("%1 kbps").arg(SettingsModel::mp3Bitrates[value]);
-			m_settings->compressionBitrateLAME(value);
-			break;
-		default:
-			throw "updateBitrate(): Unknown rc-mode specified!";
-			break;
-		}
-		break;
-	/* -------- VorbisEncoder -------- */
-	case SettingsModel::VorbisEncoder:
-		switch(currentRCMode)
-		{
-		case SettingsModel::VBRMode:
-			sliderText = tr("Quality Level %1").arg(value);
-			m_settings->compressionVbrLevelOggEnc(value);
-			break;
-		case SettingsModel::ABRMode:
-			sliderText = QString("&asymp; %1 kbps").arg(qMin(500, value * 8));
-			m_settings->compressionBitrateOggEnc(value);
-			break;
-		case SettingsModel::CBRMode:
-			sliderText = QString("%1 kbps").arg(qMin(500, value * 8));
-			m_settings->compressionBitrateOggEnc(value);
-			break;
-		default:
-			throw "updateBitrate(): Unknown rc-mode specified!";
-			break;
-		}
-		break;
-	/* -------- AACEncoder -------- */
-	case SettingsModel::AACEncoder:
-		switch(currentRCMode)
-		{
-		case SettingsModel::VBRMode:
-			switch(m_aacEncoder)
-			{
-			case SettingsModel::AAC_ENCODER_QAAC:
-				sliderText = tr("Quality Level %1").arg(QString::number(qBound(0, value * 4 , 127)));
-				break;
-			case SettingsModel::AAC_ENCODER_FHG:
-				sliderText = tr("Quality Level %1").arg(QString::number(value));
-				break;
-			case SettingsModel::AAC_ENCODER_NERO:
-				sliderText = tr("Quality Level %1").arg(QString().sprintf("%.2f", static_cast<double>(value) / 20.0));
-				break;
-			default:
-				throw "updateBitrate(): Unknown AAC encoder specified!";
-				break;
-			}
-			m_settings->compressionVbrLevelAacEnc(value);
-			break;
-		case SettingsModel::ABRMode:
-			sliderText = QString("&asymp; %1 kbps").arg(qMin(500, value * 8));
-			m_settings->compressionBitrateAacEnc(value);
-			break;
-		case SettingsModel::CBRMode:
-			sliderText = QString("%1 kbps").arg(qMin(500, value * 8));
-			m_settings->compressionBitrateAacEnc(value);
-			break;
-		default:
-			throw "updateBitrate(): Unknown rc-mode specified!";
-			break;
-		}
-		break;
-	/* -------- AC3Encoder -------- */
-	case SettingsModel::AC3Encoder:
-		switch(currentRCMode)
-		{
-		case SettingsModel::VBRMode:
-			sliderText = tr("Quality Level %1").arg(qMin(1024, qMax(0, value * 64)));
-			m_settings->compressionVbrLevelAften(value);
-			break;
-		case SettingsModel::ABRMode:
-			sliderText = QString("&asymp; %1 kbps").arg(SettingsModel::ac3Bitrates[value]);
-			m_settings->compressionBitrateAften(value);
-			break;
-		case SettingsModel::CBRMode:
-			sliderText = QString("%1 kbps").arg(SettingsModel::ac3Bitrates[value]);
-			m_settings->compressionBitrateAften(value);
-			break;
-		default:
-			throw "updateBitrate(): Unknown rc-mode specified!";
-			break;
-		}
-		break;
-	/* -------- FLACEncoder -------- */
-	case SettingsModel::FLACEncoder:
-		switch(currentRCMode)
-		{
-		case SettingsModel::VBRMode:
-			sliderText = tr("Compression %1").arg(value);
-			m_settings->compressionVbrLevelFLAC(value);
-			break;
-		case SettingsModel::ABRMode:
-		case SettingsModel::CBRMode:
-			qWarning("FLAC does *not* support ABR or CBR mode!");
-			break;
-		default:
-			throw "updateBitrate(): Unknown rc-mode specified!";
-			break;
-		}
-		break;
-	/* -------- OpusEncoder -------- */
-	case SettingsModel::OpusEncoder:
-		switch(currentRCMode)
-		{
-		case SettingsModel::VBRMode:
-			sliderText = QString("&asymp; %1 kbps").arg(qMin(500, value * 8));
-			m_settings->compressionBitrateOpusEnc(value);
-			break;
-		case SettingsModel::ABRMode:
-			sliderText = QString("&asymp; %1 kbps").arg(qMin(500, value * 8));
-			m_settings->compressionBitrateOpusEnc(value);
-			break;
-		case SettingsModel::CBRMode:
-			sliderText = QString("%1 kbps").arg(qMin(500, value * 8));
-			m_settings->compressionBitrateOpusEnc(value);
-			break;
-		default:
-			throw "updateBitrate(): Unknown rc-mode specified!";
-			break;
-		}
-		break;
-	/* -------- DCAEncoder -------- */
-	case SettingsModel::DCAEncoder:
-		switch(currentRCMode)
-		{
-		case SettingsModel::VBRMode:
-		case SettingsModel::ABRMode:
-			qWarning("DcaEnc does *not* support VBR or ABR mode!");
-			break;
-		case SettingsModel::CBRMode:
-			sliderText = QString("%1 kbps").arg(value * 32);
-			m_settings->compressionBitrateDcaEnc(value);
-			break;
-		default:
-			throw "updateBitrate(): Unknown rc-mode specified!";
-			break;
-		}
-		break;
-	/* -------- PCMEncoder -------- */
-	case SettingsModel::PCMEncoder:
-		switch(currentRCMode)
-		{
-		case SettingsModel::VBRMode:
-		case SettingsModel::ABRMode:
-		case SettingsModel::CBRMode:
-			sliderText = tr("Uncompressed");
-			break;
-		default:
-			throw "updateBitrate(): Unknown rc-mode specified!";
-			break;
-		}
-		break;
-	/* -------- default -------- */
-	default:
-		throw "updateBitrate(): Unknown encoder specified!";
-		break;
+		qWarning("Attempting to use an unsupported RC mode (%d) with current encoder (%d)!", currentRCMode, currentEncoder);
+		ui->labelBitrate->setText("(ERROR)");
+		return;
 	}
 
-	//Update slider text
-	ui->labelBitrate->setText(sliderText);
+	//Store new bitrate value
+	if(valueCount > 0)
+	{
+		EncoderRegistry::saveEncoderValue(m_settings, currentEncoder, currentRCMode, qBound(0, value, valueCount-1));
+	}
+
+	//Update bitrate value
+	const int displayValue = (valueCount > 0) ? info->valueAt(currentRCMode, qBound(0, value, valueCount-1)) : INT_MAX;
+	switch(info->valueType(currentRCMode))
+	{
+	case AbstractEncoderInfo::TYPE_BITRATE:
+		ui->labelBitrate->setText(QString("%1 kbps").arg(QString::number(displayValue)));
+		break;
+	case AbstractEncoderInfo::TYPE_APPROX_BITRATE:
+		ui->labelBitrate->setText(QString("&asymp; %1 kbps").arg(QString::number(displayValue)));
+		break;
+	case AbstractEncoderInfo::TYPE_QUALITY_LEVEL_INT:
+		ui->labelBitrate->setText(tr("Quality Level %1").arg(QString::number(displayValue)));
+		break;
+	case AbstractEncoderInfo::TYPE_QUALITY_LEVEL_FLT:
+		ui->labelBitrate->setText(tr("Quality Level %1").arg(QString().sprintf("%.2f", double(displayValue)/100.0)));
+		break;
+	case AbstractEncoderInfo::TYPE_COMPRESSION_LEVEL:
+		ui->labelBitrate->setText(tr("Compression %1").arg(QString::number(displayValue)));
+		break;
+	case AbstractEncoderInfo::TYPE_UNCOMPRESSED:
+		ui->labelBitrate->setText(tr("Uncompressed"));
+		break;
+	default:
+		throw "Unknown display value type encountered!";
+		break;
+	}
 }
 
 /*
@@ -3889,28 +3392,10 @@ void MainWindow::compressionTabEventOccurred(QWidget *sender, QEvent *event)
 	{
 		if(m_settings->soundsEnabled())
 		{
-			PlaySound(MAKEINTRESOURCE(IDR_WAVE_BLAST), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+			lamexp_play_sound(IDR_WAVE_BLAST, true);
 		}
 
-		RESET_SETTING(m_settings, compressionBitrateAacEnc);
-		RESET_SETTING(m_settings, compressionBitrateAften);
-		RESET_SETTING(m_settings, compressionBitrateDcaEnc);
-		RESET_SETTING(m_settings, compressionBitrateLAME);
-		RESET_SETTING(m_settings, compressionBitrateOggEnc);
-		RESET_SETTING(m_settings, compressionBitrateOpusEnc);
-
-		RESET_SETTING(m_settings, compressionRCModeAacEnc);
-		RESET_SETTING(m_settings, compressionRCModeAften);
-		RESET_SETTING(m_settings, compressionRCModeLAME);
-		RESET_SETTING(m_settings, compressionRCModeOggEnc);
-		RESET_SETTING(m_settings, compressionRCModeOpusEnc);
-
-		RESET_SETTING(m_settings, compressionVbrLevelAacEnc);
-		RESET_SETTING(m_settings, compressionVbrLevelAften);
-		RESET_SETTING(m_settings, compressionVbrLevelFLAC);
-		RESET_SETTING(m_settings, compressionVbrLevelLAME);
-		RESET_SETTING(m_settings, compressionVbrLevelOggEnc);
-
+		EncoderRegistry::resetAllEncoders(m_settings);
 		m_settings->compressionEncoder(SettingsModel::MP3Encoder);
 		ui->radioButtonEncoderMP3->setChecked(true);
 		QTimer::singleShot(0, this, SLOT(updateEncoder()));
@@ -4094,7 +3579,7 @@ void MainWindow::normalizationMaxVolumeChanged(double value)
  */
 void MainWindow::normalizationModeChanged(int mode)
 {
-	m_settings->normalizationFilterEqualizationMode(mode);
+	m_settings->normalizationFilterEQMode(mode);
 }
 
 /*
@@ -4150,12 +3635,12 @@ void MainWindow::customParamsChanged(void)
 	ui->labelCustomParamsText->setVisible(customParamsUsed);
 	ui->labelCustomParamsSpacer->setVisible(customParamsUsed);
 
-	m_settings->customParametersLAME(ui->lineEditCustomParamLAME->text());
-	m_settings->customParametersOggEnc(ui->lineEditCustomParamOggEnc->text());
-	m_settings->customParametersAacEnc(ui->lineEditCustomParamNeroAAC->text());
-	m_settings->customParametersFLAC(ui->lineEditCustomParamFLAC->text());
-	m_settings->customParametersAften(ui->lineEditCustomParamAften->text());
-	m_settings->customParametersOpus(ui->lineEditCustomParamOpus->text());
+	EncoderRegistry::saveEncoderCustomParams(m_settings, SettingsModel::MP3Encoder,    ui->lineEditCustomParamLAME->text());
+	EncoderRegistry::saveEncoderCustomParams(m_settings, SettingsModel::VorbisEncoder, ui->lineEditCustomParamOggEnc->text());
+	EncoderRegistry::saveEncoderCustomParams(m_settings, SettingsModel::AACEncoder,    ui->lineEditCustomParamNeroAAC->text());
+	EncoderRegistry::saveEncoderCustomParams(m_settings, SettingsModel::FLACEncoder,   ui->lineEditCustomParamFLAC->text());
+	EncoderRegistry::saveEncoderCustomParams(m_settings, SettingsModel::AC3Encoder,    ui->lineEditCustomParamAften->text());
+	EncoderRegistry::saveEncoderCustomParams(m_settings, SettingsModel::OpusEncoder,   ui->lineEditCustomParamOpus->text());
 }
 
 /*
@@ -4197,7 +3682,7 @@ void MainWindow::renameOutputPatternChanged(const QString &text, bool silent)
 	{
 		if(ui->lineEditRenamePattern->palette().color(QPalette::Text) != Qt::red)
 		{
-			if(!silent) MessageBeep(MB_ICONERROR);
+			if(!silent) lamexp_beep(lamexp_beep_error);
 			SET_TEXT_COLOR(ui->lineEditRenamePattern, Qt::red);
 		}
 	}
@@ -4205,7 +3690,7 @@ void MainWindow::renameOutputPatternChanged(const QString &text, bool silent)
 	{
 		if(ui->lineEditRenamePattern->palette() != QPalette())
 		{
-			if(!silent) MessageBeep(MB_ICONINFORMATION);
+			if(!silent) lamexp_beep(lamexp_beep_info);
 			ui->lineEditRenamePattern->setPalette(QPalette());
 		}
 	}
@@ -4339,18 +3824,18 @@ void MainWindow::customParamsHelpRequested(QWidget *obj, QEvent *event)
 	else if(obj == ui->helpCustomParamOggEnc)  showCustomParamsHelpScreen("oggenc2.exe", "--help");
 	else if(obj == ui->helpCustomParamNeroAAC)
 	{
-		switch(m_aacEncoder)
+		switch(EncoderRegistry::getAacEncoder())
 		{
 			case SettingsModel::AAC_ENCODER_QAAC: showCustomParamsHelpScreen("qaac.exe", "--help"); break;
 			case SettingsModel::AAC_ENCODER_FHG : showCustomParamsHelpScreen("fhgaacenc.exe", ""); break;
 			case SettingsModel::AAC_ENCODER_NERO: showCustomParamsHelpScreen("neroAacEnc.exe", "-help"); break;
-			default: MessageBeep(MB_ICONERROR); break;
+			default: lamexp_beep(lamexp_beep_error); break;
 		}
 	}
 	else if(obj == ui->helpCustomParamFLAC)    showCustomParamsHelpScreen("flac.exe", "--help");
 	else if(obj == ui->helpCustomParamAften)   showCustomParamsHelpScreen("aften.exe", "-h");
 	else if(obj == ui->helpCustomParamOpus)    showCustomParamsHelpScreen("opusenc.exe", "--help");
-	else MessageBeep(MB_ICONERROR);
+	else lamexp_beep(lamexp_beep_error);
 }
 
 /*
@@ -4361,7 +3846,7 @@ void MainWindow::showCustomParamsHelpScreen(const QString &toolName, const QStri
 	const QString binary = lamexp_lookup_tool(toolName);
 	if(binary.isEmpty())
 	{
-		MessageBeep(MB_ICONERROR);
+		lamexp_beep(lamexp_beep_error);
 		qWarning("customParamsHelpRequested: Binary could not be found!");
 		return;
 	}
@@ -4406,7 +3891,7 @@ void MainWindow::showCustomParamsHelpScreen(const QString &toolName, const QStri
 	if(output.count() < 1)
 	{
 		qWarning("Empty output, cannot show help screen!");
-		MessageBeep(MB_ICONERROR);
+		lamexp_beep(lamexp_beep_error);
 	}
 
 	LogViewDialog *dialog = new LogViewDialog(this);
@@ -4436,7 +3921,7 @@ void MainWindow::resetAdvancedOptionsButtonClicked(void)
 {
 	if(m_settings->soundsEnabled())
 	{
-		PlaySound(MAKEINTRESOURCE(IDR_WAVE_BLAST), GetModuleHandle(NULL), SND_RESOURCE | SND_ASYNC);
+		lamexp_play_sound(IDR_WAVE_BLAST, true);
 	}
 
 	ui->sliderLameAlgoQuality->setValue(m_settings->lameAlgoQualityDefault());
@@ -4452,7 +3937,7 @@ void MainWindow::resetAdvancedOptionsButtonClicked(void)
 	ui->comboBoxAACProfile->setCurrentIndex(m_settings->aacEncProfileDefault());
 	ui->comboBoxAftenCodingMode->setCurrentIndex(m_settings->aftenAudioCodingModeDefault());
 	ui->comboBoxAftenDRCMode->setCurrentIndex(m_settings->aftenDynamicRangeCompressionDefault());
-	ui->comboBoxNormalizationMode->setCurrentIndex(m_settings->normalizationFilterEqualizationModeDefault());
+	ui->comboBoxNormalizationMode->setCurrentIndex(m_settings->normalizationFilterEQModeDefault());
 	ui->comboBoxOpusFramesize->setCurrentIndex(m_settings->opusFramesizeDefault());
 
 	SET_CHECKBOX_STATE(ui->checkBoxBitrateManagement, m_settings->bitrateManagementEnabledDefault());
@@ -4464,14 +3949,14 @@ void MainWindow::resetAdvancedOptionsButtonClicked(void)
 	SET_CHECKBOX_STATE(ui->checkBoxRenameOutput, m_settings->renameOutputFilesEnabledDefault());
 	SET_CHECKBOX_STATE(ui->checkBoxForceStereoDownmix, m_settings->forceStereoDownmixDefault());
 	SET_CHECKBOX_STATE(ui->checkBoxOpusDisableResample, m_settings->opusDisableResampleDefault());
-
-	ui->lineEditCustomParamLAME->setText(m_settings->customParametersLAMEDefault());
-	ui->lineEditCustomParamOggEnc->setText(m_settings->customParametersOggEncDefault());
+	
+	ui->lineEditCustomParamLAME   ->setText(m_settings->customParametersLAMEDefault());
+	ui->lineEditCustomParamOggEnc ->setText(m_settings->customParametersOggEncDefault());
 	ui->lineEditCustomParamNeroAAC->setText(m_settings->customParametersAacEncDefault());
-	ui->lineEditCustomParamFLAC->setText(m_settings->customParametersFLACDefault());
-	ui->lineEditCustomParamOpus->setText(m_settings->customParametersFLACDefault());
-	ui->lineEditCustomTempFolder->setText(QDir::toNativeSeparators(m_settings->customTempPathDefault()));
-	ui->lineEditRenamePattern->setText(m_settings->renameOutputFilesPatternDefault());
+	ui->lineEditCustomParamFLAC   ->setText(m_settings->customParametersFLACDefault());
+	ui->lineEditCustomParamOpus   ->setText(m_settings->customParametersOpusEncDefault());
+	ui->lineEditCustomTempFolder  ->setText(QDir::toNativeSeparators(m_settings->customTempPathDefault()));
+	ui->lineEditRenamePattern     ->setText(m_settings->renameOutputFilesPatternDefault());
 
 	if(m_settings->overwriteModeDefault() == SettingsModel::Overwrite_KeepBoth) ui->radioButtonOverwriteModeKeepBoth->click();
 	if(m_settings->overwriteModeDefault() == SettingsModel::Overwrite_SkipFile) ui->radioButtonOverwriteModeSkipFile->click();

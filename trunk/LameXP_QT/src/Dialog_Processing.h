@@ -28,6 +28,7 @@
 
 class AbstractEncoder;
 class AudioFileModel;
+class AudioFileModel_MetaInfo;
 class CPUObserverThread;
 class DiskObserverThread;
 class FileListModel;
@@ -40,6 +41,7 @@ class QModelIndex;
 class QMovie;
 class RAMObserverThread;
 class SettingsModel;
+class QThreadPool;
 
 enum shutdownFlag_t
 {
@@ -59,13 +61,14 @@ class ProcessingDialog : public QDialog
 	Q_OBJECT
 
 public:
-	ProcessingDialog(FileListModel *fileListModel, AudioFileModel *metaInfo, SettingsModel *settings, QWidget *parent = 0);
+	ProcessingDialog(FileListModel *fileListModel, const AudioFileModel_MetaInfo *metaInfo, SettingsModel *settings, QWidget *parent = 0);
 	~ProcessingDialog(void);
 	
 	int getShutdownFlag(void) { return m_shutdownFlag; }
 
 private slots:
 	void initEncoding(void);
+	void startNextJob(void);
 	void doneEncoding(void);
 	void abortEncoding(bool force = false);
 	void processFinished(const QUuid &jobId, const QString &outFileName, int success);
@@ -82,6 +85,9 @@ private slots:
 	void diskUsageHasChanged(const quint64 val);
 	void progressViewFilterChanged(void);
 
+signals:
+	void abortRunningTasks(void);
+
 protected:
 	void showEvent(QShowEvent *event);
 	void closeEvent(QCloseEvent *event);
@@ -93,18 +99,15 @@ protected:
 private:
 	Ui::ProcessingDialog *ui; //for Qt UIC
 
-	void setCloseButtonEnabled(bool enabled);
-	void startNextJob(void);
-	AbstractEncoder *makeEncoder(bool *nativeResampling);
-	AudioFileModel updateMetaInfo(const AudioFileModel &audioFile);
+	AudioFileModel updateMetaInfo(AudioFileModel &audioFile);
 	void writePlayList(void);
 	bool shutdownComputer(void);
 	QString time2text(const double timeVal) const;
 	
+	QThreadPool *m_threadPool;
 	QList<AudioFileModel> m_pendingJobs;
 	SettingsModel *m_settings;
-	AudioFileModel *m_metaInfo;
-	QList<ProcessThread*> m_threadList;
+	const AudioFileModel_MetaInfo *const m_metaInfo;
 	QMovie *m_progressIndicator;
 	ProgressModel *m_progressModel;
 	QMap<QUuid,QString> m_playList;
@@ -128,6 +131,4 @@ private:
 	DiskObserverThread *m_diskObserver;
 	qint64 m_timerStart;
 	int m_progressViewFilter;
-
-	const int m_aacEncoder;
 };

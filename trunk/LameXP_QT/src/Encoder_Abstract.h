@@ -28,6 +28,27 @@ class QProcess;
 class QStringList;
 class QMutex;
 
+class AbstractEncoderInfo
+{
+public:
+	typedef enum
+	{
+		TYPE_BITRATE = 0,
+		TYPE_APPROX_BITRATE = 1,
+		TYPE_QUALITY_LEVEL_INT = 2,
+		TYPE_QUALITY_LEVEL_FLT = 3,
+		TYPE_COMPRESSION_LEVEL = 4,
+		TYPE_UNCOMPRESSED = 5
+	}
+	value_type_t;
+
+	virtual bool isModeSupported(int mode) const = 0;	//Returns whether the encoder does support the current RC mode
+	virtual int valueCount(int mode) const = 0;			//The number of bitrate/quality values for current RC mode
+	virtual int valueAt(int mode, int index) const = 0;	//The bitrate/quality value at 'index' for the current RC mode
+	virtual int valueType(int mode) const = 0;			//The display type of the values for the current RC mode
+	virtual const char* description(void) const = 0;	//Description of the encoder that can be displayed to the user
+};
+
 class AbstractEncoder : public AbstractTool
 {
 	Q_OBJECT
@@ -37,7 +58,7 @@ public:
 	virtual ~AbstractEncoder(void);
 
 	//Internal encoder API
-	virtual bool encode(const QString &sourceFile, const AudioFileModel &metaInfo, const QString &outputFile, volatile bool *abortFlag) = 0;
+	virtual bool encode(const QString &sourceFile, const AudioFileModel_MetaInfo &metaInfo, const unsigned int duration, const QString &outputFile, volatile bool *abortFlag) = 0;
 	virtual bool isFormatSupported(const QString &containerType, const QString &containerProfile, const QString &formatType, const QString &formatProfile, const QString &formatVersion) = 0;
 	virtual QString extension(void) = 0;
 	virtual const unsigned int *supportedSamplerates(void);
@@ -49,6 +70,13 @@ public:
 	virtual void setBitrate(int bitrate);
 	virtual void setRCMode(int mode);
 	virtual void setCustomParams(const QString &customParams);
+
+	//Encoder info
+	static const AbstractEncoderInfo *getEncoderInfo(void)
+	{
+		throw "This method shall be re-implemented in derived classes!";
+		return NULL;
+	}
 
 protected:
 	int m_configBitrate;			//Bitrate *or* VBR-quality-level

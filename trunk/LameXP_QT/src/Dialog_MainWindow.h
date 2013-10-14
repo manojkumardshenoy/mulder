@@ -26,6 +26,7 @@
 //Class declarations
 class AbstractEncoder;
 class AudioFileModel;
+class AudioFileModel_MetaInfo;
 class CustomEventFilter;
 class DropBox;
 class FileListModel;
@@ -51,7 +52,7 @@ class MainWindow: public QMainWindow
 	Q_OBJECT
 
 public:
-	MainWindow(FileListModel *fileListModel, AudioFileModel *metaInfo, SettingsModel *settingsModel, QWidget *parent = 0);
+	MainWindow(FileListModel *fileListModel, AudioFileModel_MetaInfo *metaInfo, SettingsModel *settingsModel, QWidget *parent = 0);
 	~MainWindow(void);
 
 	bool isAccepted() { return m_accepted; }
@@ -186,9 +187,6 @@ private:
 	bool checkForUpdates(void);
 	void initializeTranslation(void);
 	void refreshFavorites(void);
-	int getCurrentRCMode(int encoder);
-	int getCurrentQuality(int encoder);
-	int getCurrentBitrate(int encoder);
 	
 	bool m_accepted;
 	bool m_firstTimeShown;
@@ -203,7 +201,7 @@ private:
 	FileListModel *m_fileListModel;
 	QFileSystemModelEx *m_fileSystemModel;
 	MessageHandlerThread *m_messageHandler;
-	AudioFileModel *m_metaData;
+	AudioFileModel_MetaInfo *const m_metaData;
 	MetaInfoModel *m_metaInfoModel;
 	QMenu *m_outputFolderContextMenu;
 	SettingsModel *m_settings;
@@ -231,6 +229,4 @@ private:
 	CustomEventFilter *m_evenFilterOutputFolderMouse;
 	CustomEventFilter *m_evenFilterOutputFolderView;
 	CustomEventFilter *m_evenFilterCompressionTab;
-
-	const int m_aacEncoder;
 };

@@ -39,6 +39,14 @@
 #include <QMutex>
 #include <QDir>
 
+//Windows includes
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
+//Forward declaration
+LONG WINAPI lamexp_exception_handler(__in struct _EXCEPTION_POINTERS *ExceptionInfo);
+
 ///////////////////////////////////////////////////////////////////////////////
 // Main function
 ///////////////////////////////////////////////////////////////////////////////
@@ -151,7 +159,7 @@ static int lamexp_main(int argc, char* argv[])
 
 	//Create models
 	FileListModel *fileListModel = new FileListModel();
-	AudioFileModel *metaInfo = new AudioFileModel();
+	AudioFileModel_MetaInfo *metaInfo = new AudioFileModel_MetaInfo();
 	SettingsModel *settingsModel = new SettingsModel();
 
 	//Show splash screen

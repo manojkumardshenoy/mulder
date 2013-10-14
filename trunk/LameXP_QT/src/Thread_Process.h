@@ -21,18 +21,19 @@
 
 #pragma once
 
-#include <QThread>
+#include <QRunnable>
 #include <QUuid>
 #include <QStringList>
 
 #include "Model_AudioFile.h"
 #include "Encoder_Abstract.h"
 
-class QMutex;
 class AbstractFilter;
 class WaveProperties;
+class QThreadPool;
+class QCoreApplication;
 
-class ProcessThread: public QThread
+class ProcessThread: public QObject, public QRunnable
 {
 	Q_OBJECT
 
@@ -40,13 +41,16 @@ public:
 	ProcessThread(const AudioFileModel &audioFile, const QString &outputDirectory, const QString &tempDirectory, AbstractEncoder *encoder, const bool prependRelativeSourcePath);
 	~ProcessThread(void);
 	
-	void run();
+	bool init(void);
+	bool start(QThreadPool *pool);
 	
-	void abort() { m_aborted = true; }
-	QUuid getId() { return m_jobId; }
+	QUuid getId(void) { return m_jobId; }
 	void setRenamePattern(const QString &pattern);
 	void setOverwriteMode(const bool bSkipExistingFile, const bool ReplacesExisting = false);
 	void addFilter(AbstractFilter *filter);
+
+public slots:
+	void abort(void) { m_aborted = true; }
 
 private slots:
 	void handleUpdate(int progress);
@@ -57,6 +61,10 @@ signals:
 	void processStateChanged(const QUuid &jobId, const QString &newStatus, int newState);
 	void processStateFinished(const QUuid &jobId, const QString &outFileName, int success);
 	void processMessageLogged(const QUuid &jobId, const QString &line);
+	void processFinished(void);
+
+protected:
+	virtual void run(void);
 
 private:
 	enum ProcessStep
@@ -70,16 +78,19 @@ private:
 	
 	void processFile();
 	int generateOutFileName(QString &outFileName);
+	QString applyRenamePattern(const QString &baseName, const AudioFileModel_MetaInfo &metaInfo);
 	QString generateTempFileName(void);
-	void insertDownsampleFilter(void);
 	void insertDownmixFilter(void);
-	
+	void insertDownsampleFilter(void);
+
+	volatile bool m_aborted;
+	volatile int m_initialized;
+
 	const QUuid m_jobId;
 	AudioFileModel m_audioFile;
 	AbstractEncoder *m_encoder;
 	const QString m_outputDirectory;
 	const QString m_tempDirectory;
-	volatile bool m_aborted;
 	ProcessStep m_currentStep;
 	QStringList m_tempFiles;
 	const bool m_prependRelativeSourcePath;
@@ -88,6 +99,5 @@ private:
 	bool m_overwriteSkipExistingFile;
 	bool m_overwriteReplacesExisting;
 	WaveProperties *m_propDetect;
-	
-	static QMutex *m_mutex_genFileName;
+	QString m_outFileName;
 };
