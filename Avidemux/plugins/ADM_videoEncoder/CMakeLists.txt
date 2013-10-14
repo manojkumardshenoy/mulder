@@ -1,5 +1,0 @@
-add_subdirectory(common)
-ADD_SUBDIRECTORY(ADM_vidEnc_avcodec)
-ADD_SUBDIRECTORY(ADM_vidEnc_x264)
-ADD_SUBDIRECTORY(ADM_vidEnc_xvid)
-add_subdirectory(ADM_vidEnc_mpeg2enc)
