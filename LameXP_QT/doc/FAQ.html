@@ -111,11 +111,9 @@ The following platforms should work too, but aren't tested extensively:<br><ul>
 The following "legacy" platforms are NOT supported any longer:<br><ul>
 <li>Microsoft Windows 2000
 <li>Microsoft Windows NT 4.0
-<li>Microsoft Windows Millennium Edition (*)
-<li>Microsoft Windows 98 (*)
+<li>Microsoft Windows Millennium Edition
+<li>Microsoft Windows 98
 <li>Microsoft Windows 95</ul>
-<br>
-(*) Some people claim that LameXP can run on Windows 98 SE or Millennium Edition with the help of <a href="http://sourceforge.net/projects/kernelex/" target="_blank">KernelEx</a>.<br><br>
 
 <br><br>
 
@@ -386,8 +384,8 @@ LameXP uses the Nero AAC Encoder for creating AAC/MP4/M4A files. The Nero AAC En
 download. However the license doesn't allow redistribution! Therefore we can NOT ship the Nero encoder along<br>
 with LameXP. Instead you will have to obtain the Nero encoder as a separate download from the official "Nero<br>
 Digital" web-site. Currently you'll find the latest Nero AAC Encoder version at this location:<br><ul>
-<li><a href="http://www.nero.com/deu/downloads-nerodigital-nero-aac-codec.php" target="_blank">http://www.nero.com/deu/downloads-nerodigital-nero-aac-codec.php</a>
-<li><a href="http://ftp6.nero.com/tools/" target="_blank">http://ftp6.nero.com/tools/</a></ul>
+<li><a href="http://www.nero.com/eng/company/about-nero/nero-aac-codec.php" target="_blank">http://www.nero.com/eng/company/about-nero/nero-aac-codec.php</a>
+<li><a href="http://ftp6.nero.com/tools/NeroAACCodec-1.5.1.zip" target="_blank">http://ftp6.nero.com/tools/NeroAACCodec-1.5.1.zip</a></ul>
 <br>
 After you have downloaded the Nero AAC Encoder as a ZIP file, you must "install" the encoder binaries, so<br>
 LameXP can use them. Simply unzip the files 'neroAacEnc.exe', 'neroAacDec.exe' as well as 'neroAacTag.exe' to<br>
@@ -503,17 +501,23 @@ If, for example, you want to replace 'lame.exe' in Build #666 of LameXP, you wou
 
 <a name="df406578"></a><b>The LameXP startup (splash screen) takes very long on my system. What can I do?</b><br>
 <br>
-Starting up LameXP shouldn't take longer than approximately 10 seconds. However it was brought to our<br>
-attention that badly optimized anti-virus software can slow down the startup procedure a lot! On our test<br>
-system (Windows 7 running on an Intel Core2 Q6600 with 4 GB of RAM) starting up LameXP takes about 3 seconds<br>
-without an anti-virus software and about 6 seconds with the "real-time protection" of Microsoft Security<br>
-Essentials enabled. With other anti-virus software the startup was delayed up to 20 seconds and more!<br>
+During the startup procedure, LameXP has to extract some "helper" files to the TEMP directory. This can take<br>
+a few moments. However, this extraction process shouldn't take longer than approximately 10 seconds. On our<br>
+test system (Windows 7 running on an old Core2 Q6600 with 4 GB of RAM) starting up LameXP takes ~1.7 seconds.<br>
+<br>
+Unfortunately, it was brought to our attention that poorly optimized anti-virus software might slow down the<br>
+startup procedure a lot! As mentioned above, on our test system, the startup procedure takes 1.7 seconds. And<br>
+that is with the "real-time protection" of Microsoft Security Essentials (MSE) enabled! Without the real-time<br>
+scanner, the startup time reduces even further, to less than 0.2 seconds. At the same time, as users have<br>
+reported to us, some other anti-virus software can increase the startup delay by as much as 20.0 seconds !!!<br>
 <br>
 So if you think that LameXP is starting up too slow on your system, you should temporarily(!) disable or<br>
-uninstall your current anti-virus program and try again. Usually it should be sufficient to disable only the<br>
-"real-time protection", "file system protection" or "guard" feature of your anti-virus software. If it turns<br>
-out that the startup is significantly(!) faster WITHOUT the anti-virus software, please report the problem to<br>
-the developer of the anti-virus software. And, if they don't fix the problem, switch to a better product!<br><br>
+uninstall the "real-time scanner" or "guard" (or whatever it is called) of your current "anti-virus" software<br>
+and then try again. If it turns out that the startup of LameXP becomes significantly(!) faster as soon as the<br>
+anti-virus software does *not* interfere with the extraction process, then please report the problem to the<br>
+developer of the anti-virus software. And, if they don't fix the problem, switch to a better product ;-)<br>
+<br>
+In short: If LameXP takes very long for starting up, then most likely poor "anti-virus" software is to balme.<br><br>
 
 <br><br>
 
@@ -863,13 +867,13 @@ switching to the 'Compatibility' tab and un-checking the 'Run this program in co
 
 <br><br>
 
-<a name="328b0a18"></a><b>Why do I get the error 'Executable requires Windows 2000 or later' on startup?</b><br>
+<a name="328b0a18"></a><b>Why do I get the error 'Executable requires Windows XP or later' on startup?</b><br>
 <a name="3ffe490e"></a><b>Why do I get the error 'The procedure entry point &lt;Something&gt; could not be located' on startup?</b><br>
 <a name="01922741"></a><b>Why do I get the error 'LameXP.exe is not a valid Win32 application' on startup?</b><br>
 <br>
 You are trying to run LameXP on a platform that is NOT supported, such as Windows 95, Windows 98, Windows<br>
-Millennium Edition, Windows NT 4.0. There is nothing you can do about that, except for updating to a less<br>
-antiquated OS. Running an outdated and unsupported OS is a severe security risk anyway!<br>
+Millennium Edition, Windows NT 4.0 or Windows 2000. There is nothing you can do about that, except for
+updating to a less antiquated OS. Running an outdated and unsupported OS is a severe security risk anyway!<br>
 <br>
 Note: This error can also occur, if your system has been configured to run LameXP in <a href="#e7c9ae2b">compatibility mode</a>.<br><br>
 
@@ -913,6 +917,7 @@ Please see the guide for translators at:<br><ul>
 The latest "official" release of LameXP can be found on the following mirrors:<br><ul>
 <li><a href="http://sourceforge.net/projects/lamexp/files/" target="_blank">http://sourceforge.net/projects/lamexp/files/</a>
 <li><a href="http://developer.berlios.de/project/showfiles.php?group_id=13288" target="_blank">http://developer.berlios.de/project/showfiles.php?group_id=13288</a>
+<li><a href="https://lamexp.codeplex.com/releases/view/113532" target="_blank">https://lamexp.codeplex.com/releases/view/113532</a>
 <li><a href="https://code.google.com/p/mulder/downloads/list" target="_blank">http://code.google.com/p/mulder/downloads/list</a>
 <li><a href="https://bitbucket.org/lord_mulder/lamexp/downloads" target="_blank">https://bitbucket.org/lord_mulder/lamexp/downloads</a>
 <li><a href="http://www.free-codecs.com/lamexp_download.htm" target="_blank">http://www.free-codecs.com/lamexp_download.htm</a></ul>
@@ -941,6 +946,7 @@ application framework and offers full Unicode support. For the time being LameXP
 LameXP is developed using the <a href="http://en.wikipedia.org/wiki/Git_(software)" target="_blank">Git</a> revision control system. You can access one of the public mirrors:<br><ul>
 <li><font class="code">git clone git://git.code.sf.net/p/lamexp/code lamexp-src</font> (<a href="http://sourceforge.net/p/lamexp/code/" target="_blank">Browse</a>)
 <li><font class="code">git clone git://git.berlios.de/lamexp lamexp-src</font> (<a href="http://git.berlios.de/cgi-bin/gitweb.cgi?p=lamexp" target="_blank">Browse</a>)
+<li><font class="code">git clone https://git01.codeplex.com/lamexp lamexp-src</font> (<a href="https://lamexp.codeplex.com/SourceControl/latest" target="_blank">Browse</a>)
 <li><font class="code">git clone https://github.com/lordmulder/LameXP.git lamexp-src</font> (<a href="https://github.com/lordmulder/LameXP" target="_blank">Browse</a>)
 <li><font class="code">git clone https://bitbucket.org/lord_mulder/lamexp.git lamexp-src</font> (<a href="https://bitbucket.org/lord_mulder/lamexp/src" target="_blank">Browse</a>)
 <li><font class="code">git clone git://gitorious.org/lamexp/lamexp.git lamexp-src</font> (<a href="http://gitorious.org/lamexp/lamexp/trees/master" target="_blank">Browse</a>)</ul>
@@ -953,9 +959,9 @@ For Windows users, we highly recommend using <a href="http://msysgit.github.com/
 <a name="a0c1e92b"></a><b>What are the prerequisites to build LameXP from the sources?</b><br>
 <br>
 LameXP is currently being developed using the following build environment:<br><ul>
-<li><a href="http://www.microsoft.com/visualstudio/eng/downloads#d-2012-express" target="_blank">Visual Studio 2012</a> with <a href="http://www.microsoft.com/en-us/download/details.aspx?id=34818" target="_blank">Update-3</a>, running on Windows 7 with Service Pack 1
+<li><a href="http://www.microsoft.com/visualstudio/eng/downloads#d-2013-express" target="_blank">Visual Studio 2013</a>, running on Windows 7 with Service Pack 1
 <li><a href="http://qt-project.org/downloads#qt-lib" target="_blank">Qt libraries 4.8.5</a> for Windows
-<li>Windows Platform SDK v7.1A, included with the Update-1 of Visual Studio 2012
+<li>Windows Platform SDK v7.1A, included with Visual Studio 2013 or Visual Studio 2012 (Update-3)
 <li>The minimum supported *build* platform is Windows 7 (x86 and x64)</ul>
 <br>
 Also note the following hints:<br><ul>
@@ -965,7 +971,7 @@ Also note the following hints:<br><ul>
 <li>Support for the GNU Toolchain (GCC/MinGW + MSYS/Make) is planned for a future version of LameXP</ul>
 <br>
 In order to use the LameXP deployment scripts you need the following tools:<br><ul>
-<li>Visual Studio 2012 (Express for Windows Desktop) with Update-1 <b>+</b> Desktop Qt v4.8.x (MSVC 2010)
+<li>Visual Studio (Express) 2013 for Windows Desktop <b>+</b> Desktop Qt v4.8.x (VS 2010)
 <li><a href="http://www.7-zip.org/" target="_blank">7-Zip</a> - file archiver with a high compression ratio
 <li><a href="http://nsis.sourceforge.net/" target="_blank">NSIS</a> - Nullsoft Scriptable Install System (<a href="http://www.scratchpaper.com/" target="_blank">Unicode version</a> recommended!)<ul>
 <li><a href="http://nsis.sourceforge.net/StdUtils_plug-in" target="_blank">StdUtils plug-in</a>
@@ -973,7 +979,6 @@ In order to use the LameXP deployment scripts you need the following tools:<br><
 <li><a href="http://nsis.sourceforge.net/Inetc_plug-in" target="_blank">Inetc plug-in</a>
 <li><a href="http://forums.winamp.com/showthread.php?t=329990" target="_blank">Aero plug-in</a></ul>
 <li><a href="http://upx.sourceforge.net/" target="_blank">UPX</a> - the Ultimate Packer for eXecutables
-<li><a href="http://www.matcode.com/mpress.htm" target="_blank">MPRESS</a> - high-performance executable packer for PE32/PE32+
 <li style="margin-bottom:0.48em"><a href="ftp://ftp.gnupg.org/gcrypt/binary/" target="_blank">GnuPG</a> - the GNU Privacy Guard v1.4.x
 <li>NOTE: Copy <font class="code">buildenv.template.txt</font> to <font class="code">buildenv.txt</font> and edit the paths as needed!</ul>
 
@@ -984,7 +989,7 @@ In order to use the LameXP deployment scripts you need the following tools:<br><
 In order to make "fully static" builds of LameXP, i.e. builds that don't depend pn any DLL's except for the<br>
 obligatory operating system DLL's, you'll need to compile Qt as 'static' libraries. The following simple<br>
 instructions should make it easy to build Qt from the sources and as "static" libraries:<br><ul>
-<li>Make sure Visual Studio 2010 with Service Pack 1 or Visual Studio 2012 with Update 1 are installed
+<li>Make sure Visual Studio 2013 or Visual Studio 2012 with Update-3 (or later) is installed
 <li>Make sure <a href="http://strawberryperl.com/" target="_blank">Strawberry</a> Perl for Windows and <a href="http://www.activestate.com/activepython/downloads" target="_blank">Python</a> 2.7 are installed
 <li><a href="http://qt-project.org/downloads" target="_blank">Download</a> and <a href="http://www.rarlabs.com/" target="_blank">extract</a> the Qt 4.8.x source code package (e.g. to <font class="code">C:\QtSources\4.8.x</font>)
 <li>Edit the file <font class="code">mkspecs\win32-msvc2010\qmake.conf</font> from your Qt Sources directory as follows:<ul>
@@ -996,7 +1001,7 @@ instructions should make it easy to build Qt from the sources and as "static" li
 <li>Run <font class="code">vcvarsall.bat x86</font> form your Visual C++ install directory - within the same console!
 <li>Change the current directory to the Qt Sources path (e.g. <font class="code">C:\QtSources\4.8.x</font>)
 <li>Run <font class="code">configure.exe -release -static -ltcg -qt-zlib -qt-libpng -qt-libjpeg -qt-libtiff -qt-libmng</font><ul>
-<li>Hint: For Visual Studio 2012 you currently need to add <font class="code">-platform win32-msvc2010</font> too</ul>
+<li>Hint: For Visual Studio 2013 you currently need to add <font class="code">-platform win32-msvc2012</font> too</ul>
 <li>Now the makefiles should have been generated, so simply enter <font class="code">nmake /B</font> and be patient - voilà!
 <li>The build process is going to take good amount of time. Once done, make sure you got all needed libs
 <li>Libraries you'll need to build LameXP as a "static" binary include the following:<ul>

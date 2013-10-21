@@ -58,7 +58,7 @@ static int lamexp_main(int argc, char* argv[])
 	bool bAccepted = true;
 
 	//Increase "main" thread priority
-	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
+	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 
 	//Get CLI arguments
 	const QStringList &arguments = lamexp_arguments();
@@ -88,7 +88,7 @@ static int lamexp_main(int argc, char* argv[])
 	qDebug("Command-Line Arguments:");
 	for(int i = 0; i < arguments.count(); i++)
 	{
-		qDebug("argv[%d]=%s", i, arguments.at(i).toUtf8().constData());
+		qDebug("argv[%d]=%s", i, QUTF8(arguments.at(i)));
 	}
 	qDebug("");
 
@@ -243,25 +243,16 @@ static int _main(int argc, char* argv[])
 			iResult = lamexp_main(argc, argv);
 			lamexp_finalization();
 		}
-		catch(char *error)
+		catch(const std::exception &error)
 		{
-			fflush(stdout);
-			fflush(stderr);
-			fprintf(stderr, "\nGURU MEDITATION !!!\n\nException error message: %s\n", error);
-			lamexp_fatal_exit(L"Unhandeled C++ exception error, application will exit!");
-		}
-		catch(int error)
-		{
-			fflush(stdout);
-			fflush(stderr);
-			fprintf(stderr, "\nGURU MEDITATION !!!\n\nException error code: 0x%X\n", error);
+			fflush(stdout); fflush(stderr);
+			fprintf(stderr, "\nGURU MEDITATION !!!\n\nException error:\n%s\n", error.what());
 			lamexp_fatal_exit(L"Unhandeled C++ exception error, application will exit!");
 		}
 		catch(...)
 		{
-			fflush(stdout);
-			fflush(stderr);
-			fprintf(stderr, "\nGURU MEDITATION !!!\n");
+			fflush(stdout); fflush(stderr);
+			fprintf(stderr, "\nGURU MEDITATION !!!\n\nUnknown exception error!\n");
 			lamexp_fatal_exit(L"Unhandeled C++ exception error, application will exit!");
 		}
 		return iResult;
@@ -280,6 +271,7 @@ int main(int argc, char* argv[])
 	{
 		__try
 		{
+			SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 			SetUnhandledExceptionFilter(lamexp_exception_handler);
 			_set_invalid_parameter_handler(lamexp_invalid_param_handler);
 			return _main(argc, argv);

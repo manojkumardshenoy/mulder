@@ -81,12 +81,30 @@ typedef enum
 lamexp_event_t;
 
 //OS version number
-typedef struct
+typedef struct _lamexp_os_version_t
 {
 	unsigned int versionMajor;
 	unsigned int versionMinor;
+	bool overrideFlag;
+
+	//comparision operators
+	inline bool operator== (const _lamexp_os_version_t &rhs) const { return (versionMajor == rhs.versionMajor) && (versionMinor == rhs.versionMinor); }
+	inline bool operator!= (const _lamexp_os_version_t &rhs) const { return (versionMajor != rhs.versionMajor) || (versionMinor != rhs.versionMinor); }
+	inline bool operator>  (const _lamexp_os_version_t &rhs) const { return (versionMajor > rhs.versionMajor) || ((versionMajor == rhs.versionMajor) && (versionMinor >  rhs.versionMinor)); }
+	inline bool operator>= (const _lamexp_os_version_t &rhs) const { return (versionMajor > rhs.versionMajor) || ((versionMajor == rhs.versionMajor) && (versionMinor >= rhs.versionMinor)); }
+	inline bool operator<  (const _lamexp_os_version_t &rhs) const { return (versionMajor < rhs.versionMajor) || ((versionMajor == rhs.versionMajor) && (versionMinor <  rhs.versionMinor)); }
+	inline bool operator<= (const _lamexp_os_version_t &rhs) const { return (versionMajor < rhs.versionMajor) || ((versionMajor == rhs.versionMajor) && (versionMinor <= rhs.versionMinor)); }
 }
 lamexp_os_version_t;
+
+//Known Windows versions
+extern const lamexp_os_version_t lamexp_winver_win2k;
+extern const lamexp_os_version_t lamexp_winver_winxp;
+extern const lamexp_os_version_t lamexp_winver_xpx64;
+extern const lamexp_os_version_t lamexp_winver_vista;
+extern const lamexp_os_version_t lamexp_winver_win70;
+extern const lamexp_os_version_t lamexp_winver_win80;
+extern const lamexp_os_version_t lamexp_winver_win81;
 
 //Beep types
 typedef enum
@@ -96,6 +114,15 @@ typedef enum
 	lamexp_beep_error = 2
 }
 lamexp_beep_t;
+
+//Network connection types
+typedef enum
+{
+	lamexp_network_err = 0,	/*unknown*/
+	lamexp_network_non = 1,	/*not connected*/
+	lamexp_network_yes = 2	/*connected*/
+}
+lamexp_network_t;
 
 //LameXP version info
 unsigned int lamexp_version_major(void);
@@ -116,7 +143,7 @@ unsigned int lamexp_toolver_coreaudio(void);
 const char *lamexp_website_url(void);
 const char *lamexp_mulders_url(void);
 const char *lamexp_support_url(void);
-const lamexp_os_version_t *lamexp_get_os_version(void);
+const lamexp_os_version_t &lamexp_get_os_version(void);
 bool lamexp_detect_wine(void);
 
 //Public functions
@@ -184,7 +211,7 @@ bool lamexp_change_process_priority(const QProcess *proc, const int priority);
 bool lamexp_change_process_priority(void *hProcess, const int priority);
 bool lamexp_bring_to_front(const QWidget *win);
 bool lamexp_bring_process_to_front(const unsigned long pid);
-bool lamexp_get_connection_state(void);
+int lamexp_network_status(void);
 unsigned long lamexp_process_id(const QProcess *proc);
 unsigned __int64 lamexp_current_file_time(void);
 void lamexp_natural_string_sort(QStringList &list, const bool bIgnoreCase);
@@ -200,12 +227,10 @@ unsigned long lamexp_dbg_private_bytes(void);
 #define LAMEXP_DELETE_ARRAY(PTR) do { if(PTR) { delete [] PTR; PTR = NULL; } } while(0)
 #define LAMEXP_SAFE_FREE(PTR) do { if(PTR) { free((void*) PTR); PTR = NULL; } } while(0)
 #define LAMEXP_CLOSE(HANDLE) do { if(HANDLE != NULL && HANDLE != INVALID_HANDLE_VALUE) { CloseHandle(HANDLE); HANDLE = NULL; } } while(0)
-#define LAMEXP_MIN_OS_VER(VER_INFO, VER_MAJ, VER_MIN) (((VER_INFO)->versionMajor > (VER_MAJ)) || (((VER_INFO)->versionMajor == (VER_MAJ)) && ((VER_INFO)->versionMinor >= (VER_MIN))))
-#define LAMEXP_MAX_OS_VER(VER_INFO, VER_MAJ, VER_MIN) (((VER_INFO)->versionMajor < (VER_MAJ)) || (((VER_INFO)->versionMajor == (VER_MAJ)) && ((VER_INFO)->versionMinor <= (VER_MIN))))
-#define LAMEXP_EQL_OS_VER(VER_INFO, VER_MAJ, VER_MIN) (((VER_INFO)->versionMajor == (VER_MAJ)) && ((VER_INFO)->versionMinor == (VER_MIN)))
-#define QWCHAR(STR) reinterpret_cast<const wchar_t*>((STR).utf16())
-#define WCHAR2QSTR(STR) QString::fromUtf16(reinterpret_cast<const unsigned short*>(STR))
-#define LAMEXP_BOOL2STR(X) (X ? "1" : "0")
+#define QWCHAR(STR) (reinterpret_cast<const wchar_t*>((STR).utf16()))
+#define WCHAR2QSTR(STR) (QString::fromUtf16(reinterpret_cast<const unsigned short*>((STR))))
+#define QUTF8(STR) ((STR).toUtf8().constData())
+#define LAMEXP_BOOL2STR(X) ((X) ? "1" : "0")
 #define LAMEXP_MAKE_STRING_EX(X) #X
 #define LAMEXP_MAKE_STRING(X) LAMEXP_MAKE_STRING_EX(X)
 #define LAMEXP_COMPILER_WARNING(TXT) __pragma(message(__FILE__ "(" LAMEXP_MAKE_STRING(__LINE__) ") : warning: " TXT))
@@ -222,26 +247,26 @@ unsigned long lamexp_dbg_private_bytes(void);
 
 //Memory check
 #if LAMEXP_DEBUG
-#define LAMEXP_MEMORY_CHECK(FUNC, RETV,  ...) do \
-{ \
-	SIZE_T _privateBytesBefore = lamexp_dbg_private_bytes(); \
-	RETV = FUNC(__VA_ARGS__); \
-	SIZE_T _privateBytesLeak = (lamexp_dbg_private_bytes() - _privateBytesBefore) / 1024; \
-	if(_privateBytesLeak > 0) { \
-		char _buffer[128]; \
-		_snprintf_s(_buffer, 128, _TRUNCATE, "Memory leak: Lost %u KiloBytes of PrivateUsage memory.\n", _privateBytesLeak); \
-		OutputDebugStringA("----------\n"); \
-		OutputDebugStringA(_buffer); \
-		OutputDebugStringA("----------\n"); \
+	#define LAMEXP_MEMORY_CHECK(FUNC, RETV,  ...) do \
+	{ \
+		SIZE_T _privateBytesBefore = lamexp_dbg_private_bytes(); \
+		RETV = FUNC(__VA_ARGS__); \
+		SIZE_T _privateBytesLeak = (lamexp_dbg_private_bytes() - _privateBytesBefore) / 1024; \
+		if(_privateBytesLeak > 0) { \
+			char _buffer[128]; \
+			_snprintf_s(_buffer, 128, _TRUNCATE, "Memory leak: Lost %u KiloBytes of PrivateUsage memory.\n", _privateBytesLeak); \
+			OutputDebugStringA("----------\n"); \
+			OutputDebugStringA(_buffer); \
+			OutputDebugStringA("----------\n"); \
+		} \
 	} \
-} \
-while(0)
+	while(0)
 #else
-#define LAMEXP_MEMORY_CHECK(FUNC, RETV,  ...) do \
-{ \
-	RETV = __noop(__VA_ARGS__); \
-} \
-while(0)
+	#define LAMEXP_MEMORY_CHECK(FUNC, RETV,  ...) do \
+	{ \
+		RETV = __noop(__VA_ARGS__); \
+	} \
+	while(0)
 #endif
 
 //Check for CPU-compatibility options
@@ -250,3 +275,17 @@ while(0)
 		#error We should not enabled SSE or SSE2 in release builds!
 	#endif
 #endif
+
+//Helper macro for throwing exceptions
+#define THROW(MESSAGE) do \
+{ \
+	throw std::runtime_error((MESSAGE)); \
+} \
+while(0)
+#define THROW_FMT(FORMAT, ...) do \
+{ \
+	char _error_msg[512]; \
+	_snprintf_s(_error_msg, 512, _TRUNCATE, (FORMAT), __VA_ARGS__); \
+	throw std::runtime_error(_error_msg); \
+} \
+while(0)

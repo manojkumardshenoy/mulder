@@ -54,12 +54,17 @@ void DiskObserverThread::run(void)
 	{
 		observe();
 	}
+	catch(const std::exception &error)
+	{
+		fflush(stdout); fflush(stderr);
+		fprintf(stderr, "\nGURU MEDITATION !!!\n\nException error:\n%s\n", error.what());
+		lamexp_fatal_exit(L"Unhandeled C++ exception error, application will exit!");
+	}
 	catch(...)
 	{
-		fflush(stdout);
-		fflush(stderr);
-		fprintf(stderr, "\nGURU MEDITATION !!!\n");
-		lamexp_fatal_exit(L"Unhandeled exception error, application will exit!");
+		fflush(stdout); fflush(stderr);
+		fprintf(stderr, "\nGURU MEDITATION !!!\n\nUnknown exception error!\n");
+		lamexp_fatal_exit(L"Unhandeled C++ exception error, application will exit!");
 	}
 
 	while(m_semaphore.available()) m_semaphore.tryAcquire();
@@ -78,7 +83,7 @@ void DiskObserverThread::observe(void)
 		{
 			if(freeSpace < minimumSpace)
 			{
-				qWarning("Free diskspace on '%s' dropped below %s MB, only %s MB free!", m_path.toUtf8().constData(), QString::number(minimumSpace / 1048576ui64).toUtf8().constData(), QString::number(freeSpace / 1048576ui64).toUtf8().constData());
+				qWarning("Free diskspace on '%s' dropped below %s MB, only %s MB free!", QUTF8(m_path), QUTF8(QString::number(minimumSpace / 1048576ui64)), QUTF8(QString::number(freeSpace / 1048576ui64)));
 				emit messageLogged(tr("Low diskspace on drive '%1' detected (only %2 MB are free), problems can occur!").arg(QDir::toNativeSeparators(m_path), QString::number(freeSpace / 1048576ui64)), ProgressModel::SysMsg_Warning);
 				minimumSpace = qMin(freeSpace, (minimumSpace >> 1));
 			}

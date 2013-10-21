@@ -78,9 +78,17 @@ void AnalyzeTask::run()
 	{
 		run_ex();
 	}
+	catch(const std::exception &error)
+	{
+		fflush(stdout); fflush(stderr);
+		fprintf(stderr, "\nGURU MEDITATION !!!\n\nException error:\n%s\n", error.what());
+		lamexp_fatal_exit(L"Unhandeled C++ exception error, application will exit!");
+	}
 	catch(...)
 	{
-		qWarning("WARNING: Caught an in exception AnalyzeTask thread!");
+		fflush(stdout); fflush(stderr);
+		fprintf(stderr, "\nGURU MEDITATION !!!\n\nUnknown exception error!\n");
+		lamexp_fatal_exit(L"Unhandeled C++ exception error, application will exit!");
 	}
 }
 
@@ -88,7 +96,7 @@ void AnalyzeTask::run_ex(void)
 {
 	int fileType = fileTypeNormal;
 	QString currentFile = QDir::fromNativeSeparators(m_inputFile);
-	qDebug("Analyzing: %s", currentFile.toUtf8().constData());
+	qDebug("Analyzing: %s", QUTF8(currentFile));
 	
 	AudioFileModel file = analyzeFile(currentFile, &fileType);
 
@@ -124,12 +132,12 @@ void AnalyzeTask::run_ex(void)
 				}
 				else
 				{
-					qDebug("Rejected Avisynth file: %s", file.filePath().toUtf8().constData());
+					qDebug("Rejected Avisynth file: %s", QUTF8(file.filePath()));
 				}
 			}
 			else
 			{
-				qDebug("Rejected file of unknown type: %s", file.filePath().toUtf8().constData());
+				qDebug("Rejected file of unknown type: %s", QUTF8(file.filePath()));
 			}
 		}
 		break;
@@ -211,7 +219,7 @@ const AudioFileModel AnalyzeTask::analyzeFile(const QString &filePath, int *type
 			QString line = QString::fromUtf8(process.readLine().constData()).simplified();
 			if(!line.isEmpty())
 			{
-				//qDebug("Line:%s", line.toUtf8().constData());
+				//qDebug("Line:%s", QUTF8(line));
 				
 				int index = line.indexOf('=');
 				if(index > 0)
@@ -270,7 +278,7 @@ const AudioFileModel AnalyzeTask::analyzeFile(const QString &filePath, int *type
 
 void AnalyzeTask::updateInfo(AudioFileModel &audioFile, bool *skipNext, unsigned int *id_val, cover_t *coverType, QByteArray *coverData, const QString &key, const QString &value)
 {
-	//qWarning("'%s' -> '%s'", key.toUtf8().constData(), value.toUtf8().constData());
+	//qWarning("'%s' -> '%s'", QUTF8(key), QUTF8(value));
 	
 	/*New Stream*/
 	if(IS_KEY("Gen_ID") || IS_KEY("Aud_ID"))
@@ -385,7 +393,7 @@ void AnalyzeTask::updateInfo(AudioFileModel &audioFile, bool *skipNext, unsigned
 		}
 		else
 		{
-			qWarning("Unknown key '%s' with value '%s' found!", key.toUtf8().constData(), value.toUtf8().constData());
+			qWarning("Unknown key '%s' with value '%s' found!", QUTF8(key), QUTF8(value));
 		}
 		return;
 	}
@@ -446,13 +454,13 @@ void AnalyzeTask::updateInfo(AudioFileModel &audioFile, bool *skipNext, unsigned
 		}
 		else
 		{
-			qWarning("Unknown key '%s' with value '%s' found!", key.toUtf8().constData(), value.toUtf8().constData());
+			qWarning("Unknown key '%s' with value '%s' found!", QUTF8(key), QUTF8(value));
 		}
 		return;
 	}
 
 	/*Section not recognized*/
-	qWarning("Unknown section: %s", key.toUtf8().constData());
+	qWarning("Unknown section: %s", QUTF8(key));
 }
 
 bool AnalyzeTask::checkFile_CDDA(QFile &file)

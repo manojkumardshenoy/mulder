@@ -23,16 +23,20 @@
 
 #include <QString>
 
+class QResource;
+class QFile;
+
 class LockedFile
 {
 public:
-	LockedFile(const QString &resourcePath, const QString &outPath, const QByteArray &expectedHash = QByteArray());
+	LockedFile(QResource *const resource, const QString &outPath, const QByteArray &expectedHash = QByteArray());
 	LockedFile(const QString &filePath);
 	~LockedFile(void);
 
 	const QString &filePath();
 
 	static void selfTest();
+	static QByteArray fileHash(QFile &file);
 
 private:
 	QString m_filePath;
