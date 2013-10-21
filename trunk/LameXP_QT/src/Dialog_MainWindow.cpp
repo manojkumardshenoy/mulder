@@ -35,7 +35,6 @@
 #include "Dialog_CueImport.h"
 #include "Dialog_LogView.h"
 #include "Thread_FileAnalyzer.h"
-#include "Thread_FileAnalyzer_ST.h"
 #include "Thread_MessageHandler.h"
 #include "Model_MetaInfo.h"
 #include "Model_Settings.h"
@@ -1051,13 +1050,13 @@ void MainWindow::dropEvent(QDropEvent *event)
 		}
 		if(file.isFile())
 		{
-			qDebug("Dropped File: %s", file.canonicalFilePath().toUtf8().constData());
+			qDebug("Dropped File: %s", QUTF8(file.canonicalFilePath()));
 			droppedFiles << file.canonicalFilePath();
 			continue;
 		}
 		if(file.isDir())
 		{
-			qDebug("Dropped Folder: %s", file.canonicalFilePath().toUtf8().constData());
+			qDebug("Dropped Folder: %s", QUTF8(file.canonicalFilePath()));
 			QList<QFileInfo> list = QDir(file.canonicalFilePath()).entryInfoList(QDir::Files | QDir::NoSymLinks);
 			if(list.count() > 0)
 			{
@@ -1071,7 +1070,7 @@ void MainWindow::dropEvent(QDropEvent *event)
 				list = QDir(file.canonicalFilePath()).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
 				for(int j = 0; j < list.count(); j++)
 				{
-					qDebug("Descending to Folder: %s", list.at(j).canonicalFilePath().toUtf8().constData());
+					qDebug("Descending to Folder: %s", QUTF8(list.at(j).canonicalFilePath()));
 					urls.prepend(QUrl::fromLocalFile(list.at(j).canonicalFilePath()));
 				}
 			}
@@ -1391,7 +1390,7 @@ void MainWindow::windowShown(void)
 		if(!arguments[i].compare("--add", Qt::CaseInsensitive))
 		{
 			QFileInfo currentFile(arguments[++i].trimmed());
-			qDebug("Adding file from CLI: %s", currentFile.absoluteFilePath().toUtf8().constData());
+			qDebug("Adding file from CLI: %s", QUTF8(currentFile.absoluteFilePath()));
 			addedFiles.append(currentFile.absoluteFilePath());
 		}
 		if(!addedFiles.isEmpty())
@@ -1406,13 +1405,13 @@ void MainWindow::windowShown(void)
 		if(!arguments[i].compare("--add-folder", Qt::CaseInsensitive))
 		{
 			QFileInfo currentFile(arguments[++i].trimmed());
-			qDebug("Adding folder from CLI: %s", currentFile.absoluteFilePath().toUtf8().constData());
+			qDebug("Adding folder from CLI: %s", QUTF8(currentFile.absoluteFilePath()));
 			addFolder(currentFile.absoluteFilePath(), false, true);
 		}
 		if(!arguments[i].compare("--add-recursive", Qt::CaseInsensitive))
 		{
 			QFileInfo currentFile(arguments[++i].trimmed());
-			qDebug("Adding folder recursively from CLI: %s", currentFile.absoluteFilePath().toUtf8().constData());
+			qDebug("Adding folder recursively from CLI: %s", QUTF8(currentFile.absoluteFilePath()));
 			addFolder(currentFile.absoluteFilePath(), true, true);
 		}
 	}
@@ -3163,7 +3162,7 @@ void MainWindow::outputFolderMouseEventOccurred(QWidget *sender, QEvent *event)
 				}
 				else
 				{
-					throw "Oups, this is not supposed to happen!";
+					THROW("Oups, this is not supposed to happen!");
 				}
 			}
 		}
@@ -3242,7 +3241,7 @@ void MainWindow::updateEncoder(int id)
 	if(ui->radioButtonModeQuality->isEnabled())             ui->radioButtonModeQuality->setChecked(true);
 	else if(ui->radioButtonModeAverageBitrate->isEnabled()) ui->radioButtonModeAverageBitrate->setChecked(true);
 	else if(ui->radioButtonConstBitrate->isEnabled())       ui->radioButtonConstBitrate->setChecked(true);
-	else throw "It appears that the encoder does not support *any* RC mode!";
+	else THROW("It appears that the encoder does not support *any* RC mode!");
 
 	//Apply current RC mode
 	const int currentRCMode = EncoderRegistry::loadEncoderMode(m_settings, id);
@@ -3251,7 +3250,7 @@ void MainWindow::updateEncoder(int id)
 		case SettingsModel::VBRMode: if(ui->radioButtonModeQuality->isEnabled())        ui->radioButtonModeQuality->setChecked(true);        break;
 		case SettingsModel::ABRMode: if(ui->radioButtonModeAverageBitrate->isEnabled()) ui->radioButtonModeAverageBitrate->setChecked(true); break;
 		case SettingsModel::CBRMode: if(ui->radioButtonConstBitrate->isEnabled())       ui->radioButtonConstBitrate->setChecked(true);       break;
-		default: throw "updateEncoder(): Unknown rc-mode encountered!";
+		default: THROW("updateEncoder(): Unknown rc-mode encountered!");
 	}
 
 	//Display encoder description
@@ -3372,7 +3371,7 @@ void MainWindow::updateBitrate(int value)
 		ui->labelBitrate->setText(tr("Uncompressed"));
 		break;
 	default:
-		throw "Unknown display value type encountered!";
+		THROW("Unknown display value type encountered!");
 		break;
 	}
 }
@@ -3989,13 +3988,13 @@ void MainWindow::addFileDelayed(const QString &filePath, bool tryASAP)
 {
 	if(tryASAP && !m_delayedFileTimer->isActive())
 	{
-		qDebug("Received file: %s", filePath.toUtf8().constData());
+		qDebug("Received file: %s", QUTF8(filePath));
 		m_delayedFileList->append(filePath);
 		QTimer::singleShot(0, this, SLOT(handleDelayedFiles()));
 	}
 	
 	m_delayedFileTimer->stop();
-	qDebug("Received file: %s", filePath.toUtf8().constData());
+	qDebug("Received file: %s", QUTF8(filePath));
 	m_delayedFileList->append(filePath);
 	m_delayedFileTimer->start(5000);
 }

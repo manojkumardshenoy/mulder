@@ -316,12 +316,6 @@
     <ClCompile Include="tmp\QRC_Tools_Decd.cpp">
       <Filter>Generated Files\QRC</Filter>
     </ClCompile>
-    <ClCompile Include="tmp\QRC_Tools_Encd.cpp">
-      <Filter>Generated Files\QRC</Filter>
-    </ClCompile>
-    <ClCompile Include="tmp\QRC_Tools_Misc.cpp">
-      <Filter>Generated Files\QRC</Filter>
-    </ClCompile>
     <ClCompile Include="src\Thread_CPUObserver.cpp">
       <Filter>Source Files\Threads</Filter>
     </ClCompile>
@@ -384,6 +378,27 @@
     </ClCompile>
     <ClCompile Include="src\JobObject.cpp">
       <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="tmp\QRC_Tools_Encd_A.cpp">
+      <Filter>Generated Files\QRC</Filter>
+    </ClCompile>
+    <ClCompile Include="tmp\QRC_Tools_Encd_B.cpp">
+      <Filter>Generated Files\QRC</Filter>
+    </ClCompile>
+    <ClCompile Include="tmp\QRC_Tools_Misc_A.cpp">
+      <Filter>Generated Files\QRC</Filter>
+    </ClCompile>
+    <ClCompile Include="tmp\QRC_Tools_Misc_B.cpp">
+      <Filter>Generated Files\QRC</Filter>
+    </ClCompile>
+    <ClCompile Include="tmp\QRC_Tools_Encd_C.cpp">
+      <Filter>Generated Files\QRC</Filter>
+    </ClCompile>
+    <ClCompile Include="tmp\QRC_Tools_Encd_D.cpp">
+      <Filter>Generated Files\QRC</Filter>
+    </ClCompile>
+    <ClCompile Include="tmp\QRC_Tools_Misc_C.cpp">
+      <Filter>Generated Files\QRC</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -519,9 +534,6 @@
     <ClInclude Include="etc\Prerequisites\strnatcmp\include\strnatcmp.h">
       <Filter>Header Files\Misc\3rd Party</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="LameXP.rc" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="gui\DropBox.ui">
@@ -671,12 +683,6 @@
     <CustomBuild Include="src\Encoder_AAC_FHG.h">
       <Filter>Header Files\Encoders</Filter>
     </CustomBuild>
-    <CustomBuild Include="res\Tools_Encd.qrc">
-      <Filter>Resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="res\Tools_Misc.qrc">
-      <Filter>Resources</Filter>
-    </CustomBuild>
     <CustomBuild Include="res\Tools_Decd.qrc">
       <Filter>Resources</Filter>
     </CustomBuild>
@@ -710,10 +716,33 @@
     <CustomBuild Include="src\Registry_Encoder.h">
       <Filter>Header Files\Misc</Filter>
     </CustomBuild>
+    <CustomBuild Include="res\Tools_Encd_A.qrc">
+      <Filter>Resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="res\Tools_Encd_B.qrc">
+      <Filter>Resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="res\Tools_Misc_A.qrc">
+      <Filter>Resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="res\Tools_Misc_B.qrc">
+      <Filter>Resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="res\Tools_Encd_C.qrc">
+      <Filter>Resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="res\Tools_Encd_D.qrc">
+      <Filter>Resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="res\Tools_Misc_C.qrc">
+      <Filter>Resources</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\MainIcon.ico" />
     <None Include="ReadMe.txt" />
+    <None Include="res\MainIcon.ico">
+      <Filter>Miscellaneous</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
@@ -788,5 +817,18 @@
     <Filter Include="Header Files\Misc\3rd Party">
       <UniqueIdentifier>{574b856b-cea0-4c37-ba58-17f15f7911da}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Miscellaneous">
+      <UniqueIdentifier>{7d1872fe-5359-46b0-9576-3943ec84c875}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="LameXP.rc">
+      <Filter>Miscellaneous</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="etc\Manifest\Compatibility.manifest">
+      <Filter>Miscellaneous</Filter>
+    </Manifest>
   </ItemGroup>
 </Project>

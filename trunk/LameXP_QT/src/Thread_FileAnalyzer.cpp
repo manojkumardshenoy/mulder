@@ -172,7 +172,11 @@ void FileAnalyzer::run()
 
 	//Create thread pool
 	if(!m_pool) m_pool = new QThreadPool();
-	m_pool->setMaxThreadCount(qBound(2, ((QThread::idealThreadCount() * 3) / 2), 12));
+	const int idealThreadCount = QThread::idealThreadCount();
+	if(idealThreadCount > 0)
+	{
+		m_pool->setMaxThreadCount(qBound(2, ((idealThreadCount * 3) / 2), 12));
+	}
 
 	//Start first N threads
 	QTimer::singleShot(0, this, SLOT(initializeTasks()));
@@ -303,6 +307,11 @@ bool FileAnalyzer::createTemplate(void)
 	{
 		m_templateFile = new LockedFile(templatePath);
 	}
+	catch(const std::exception &error)
+	{
+		qWarning("Failed to lock template file:\n%s\n", error.what());
+		return false;
+	}
 	catch(...)
 	{
 		qWarning("Failed to lock template file!");
@@ -355,7 +364,7 @@ void FileAnalyzer::taskFileAnalyzed(const unsigned int taskId, const int fileTyp
 		m_filesRejected++;
 		break;
 	default:
-		throw "Unknown file type identifier!";
+		THROW("Unknown file type identifier!");
 	}
 
 	//Emit all pending files
