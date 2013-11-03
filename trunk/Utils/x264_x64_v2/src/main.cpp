@@ -28,6 +28,11 @@
 #include <QDate>
 #include <QPlastiqueStyle>
 
+//Windows includes
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
 ///////////////////////////////////////////////////////////////////////////////
 // Main function
 ///////////////////////////////////////////////////////////////////////////////
@@ -55,8 +60,11 @@ static int x264_main(int argc, char* argv[])
 		qWarning("---------------------------------------------------------\n"); 
 	}
 
+	//Get CLI arguments
+	const QStringList &arguments = x264_arguments();
+
 	//Detect CPU capabilities
-	const x264_cpu_t cpuFeatures = x264_detect_cpu_features(argc, argv);
+	const x264_cpu_t cpuFeatures = x264_detect_cpu_features(arguments);
 	qDebug("   CPU vendor id  :  %s (Intel: %s)", cpuFeatures.vendor, X264_BOOL(cpuFeatures.intel));
 	qDebug("CPU brand string  :  %s", cpuFeatures.brand);
 	qDebug("   CPU signature  :  Family: %d, Model: %d, Stepping: %d", cpuFeatures.family, cpuFeatures.model, cpuFeatures.stepping);
@@ -101,6 +109,9 @@ static int x264_main(int argc, char* argv[])
 ///////////////////////////////////////////////////////////////////////////////
 // Applicaton entry point
 ///////////////////////////////////////////////////////////////////////////////
+
+LONG WINAPI x264_exception_handler(__in struct _EXCEPTION_POINTERS *ExceptionInfo);
+void x264_invalid_param_handler(const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t);
 
 static int _main(int argc, char* argv[])
 {

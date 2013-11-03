@@ -21,20 +21,7 @@
 
 #pragma once
 
-#include "targetver.h"
-
-//C++ includes
-#include <stdio.h>
-#include <string.h>
-#include <iostream>
-#include <time.h>
-
-//Win32 includes
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-
-//VLD
-#include <vld.h>
+#include <cstdlib>
 
 //Debug build
 #if defined(_DEBUG) && defined(QT_DEBUG) && !defined(NDEBUG) && !defined(QT_NO_DEBUG)
@@ -67,6 +54,8 @@
 
 //Helper macros
 #define QWCHAR(STR) reinterpret_cast<const wchar_t*>(STR.utf16())
+#define QUTF8(STR) ((STR).toUtf8().constData())
+#define WCHAR2QSTR(STR) (QString::fromUtf16(reinterpret_cast<const unsigned short*>((STR))))
 #define X264_BOOL(X) ((X) ? "1" : "0")
 #define X264_DELETE(PTR) if(PTR) { delete PTR; PTR = NULL; }
 #define X264_DELETE_ARRAY(PTR) if(PTR) { delete [] PTR; PTR = NULL; }
@@ -82,6 +71,7 @@ class QTime;
 class QIcon;
 class QWidget;
 class LockedFile;
+class QProcess;
 enum QtMsgType;
 
 //Types definitions
@@ -104,9 +94,42 @@ typedef struct
 }
 x264_cpu_t;
 
+//OS version number
+typedef struct _x264_os_version_t
+{
+	unsigned int versionMajor;
+	unsigned int versionMinor;
+	bool overrideFlag;
+
+	//comparision operators
+	inline bool operator== (const _x264_os_version_t &rhs) const { return (versionMajor == rhs.versionMajor) && (versionMinor == rhs.versionMinor); }
+	inline bool operator!= (const _x264_os_version_t &rhs) const { return (versionMajor != rhs.versionMajor) || (versionMinor != rhs.versionMinor); }
+	inline bool operator>  (const _x264_os_version_t &rhs) const { return (versionMajor > rhs.versionMajor) || ((versionMajor == rhs.versionMajor) && (versionMinor >  rhs.versionMinor)); }
+	inline bool operator>= (const _x264_os_version_t &rhs) const { return (versionMajor > rhs.versionMajor) || ((versionMajor == rhs.versionMajor) && (versionMinor >= rhs.versionMinor)); }
+	inline bool operator<  (const _x264_os_version_t &rhs) const { return (versionMajor < rhs.versionMajor) || ((versionMajor == rhs.versionMajor) && (versionMinor <  rhs.versionMinor)); }
+	inline bool operator<= (const _x264_os_version_t &rhs) const { return (versionMajor < rhs.versionMajor) || ((versionMajor == rhs.versionMajor) && (versionMinor <= rhs.versionMinor)); }
+}
+x264_os_version_t;
+
+//Beep types
+typedef enum
+{
+	x264_beep_info = 0,
+	x264_beep_warning = 1,
+	x264_beep_error = 2
+}
+x264_beep_t;
+
+//Known Windows versions
+extern const x264_os_version_t x264_winver_win2k;
+extern const x264_os_version_t x264_winver_winxp;
+extern const x264_os_version_t x264_winver_xpx64;
+extern const x264_os_version_t x264_winver_vista;
+extern const x264_os_version_t x264_winver_win70;
+extern const x264_os_version_t x264_winver_win80;
+extern const x264_os_version_t x264_winver_win81;
+
 //Functions
-LONG WINAPI x264_exception_handler(__in struct _EXCEPTION_POINTERS *ExceptionInfo);
-void x264_invalid_param_handler(const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t);
 void x264_message_handler(QtMsgType type, const char *msg);
 unsigned int x264_version_major(void);
 unsigned int x264_version_minor(void);
@@ -120,8 +143,23 @@ const char *x264_version_compiler(void);
 const char *x264_version_arch(void);
 void x264_init_console(int argc, char* argv[]);
 bool x264_init_qt(int argc, char* argv[]);
-const x264_cpu_t x264_detect_cpu_features(int argc, char **argv);
+x264_cpu_t x264_detect_cpu_features(const QStringList &argv);
 bool x264_shutdown_computer(const QString &message, const unsigned long timeout, const bool forceShutdown);
 void x264_fatal_exit(const wchar_t* exitMessage, const wchar_t* errorBoxMessage = NULL);
-SIZE_T x264_dbg_private_bytes(void);
+void x264_sleep(const unsigned int delay);
+const QStringList &x264_arguments(void);
+bool x264_suspendProcess(const QProcess *proc, const bool suspend);
+size_t x264_dbg_private_bytes(void);
 void x264_finalization(void);
+QString x264_path2ansi(const QString &longPath);
+bool x264_change_process_priority(const int priority);
+bool x264_change_process_priority(const QProcess *proc, const int priority);
+bool x264_change_process_priority(void *hProcess, const int priority);
+bool x264_play_sound(const unsigned short uiSoundIdx, const bool bAsync, const wchar_t *alias = NULL);
+unsigned int x264_process_id(void);
+bool x264_enable_close_button(const QWidget *win, const bool bEnable);
+void x264_blink_window(QWidget *poWindow, unsigned int count, unsigned int delay);
+bool x264_bring_to_front(const QWidget *win);
+bool x264_is_executable(const QString &path);
+QString x264_query_reg_string(const bool bUser, const QString &path, const QString &name);
+bool x264_beep(int beepType);
