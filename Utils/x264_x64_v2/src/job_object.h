@@ -1,11 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Simple x264 Launcher
+// LameXP - Audio Encoder Front-End
 // Copyright (C) 2004-2013 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,15 +20,19 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-#define VER_X264_MAJOR 2
-#define VER_X264_MINOR 2
-#define VER_X264_PATCH 4
-#define VER_X264_BUILD 608
+#pragma once
 
-#define VER_X264_MINIMUM_REV 2363
-#define VER_X264_CURRENT_API 140
-#define VER_X264_AVS2YUV_VER 242
+class QProcess;
 
-#define VER_X264_PORTABLE_EDITION (0)
+class JobObject
+{
+public:
+	JobObject(void);
+	~JobObject(void);
 
-#define VER_X264_PRE_RELEASE (0)
+	bool addProcessToJob(const QProcess *proc);
+	bool terminateJob(unsigned int exitCode = -1);
+
+private:
+	void *m_hJobObject;
+};

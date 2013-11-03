@@ -49,7 +49,7 @@
 #include <QSettings>
 #include <QFileDialog>
 
-#include <Mmsystem.h>
+#include <ctime>
 
 const char *home_url = "http://muldersoft.com/";
 const char *update_url = "http://code.google.com/p/mulder/downloads/list";
@@ -59,7 +59,7 @@ const char *tpl_last = "<LAST_USED>";
 #define SET_TEXT_COLOR(WIDGET,COLOR) { QPalette _palette = WIDGET->palette(); _palette.setColor(QPalette::WindowText, (COLOR)); _palette.setColor(QPalette::Text, (COLOR)); WIDGET->setPalette(_palette); }
 #define LINK(URL) "<a href=\"" URL "\">" URL "</a>"
 
-static int exceptionFilter(_EXCEPTION_RECORD *dst, _EXCEPTION_POINTERS *src) { memcpy(dst, src->ExceptionRecord, sizeof(_EXCEPTION_RECORD)); return EXCEPTION_EXECUTE_HANDLER; }
+//static int exceptionFilter(_EXCEPTION_RECORD *dst, _EXCEPTION_POINTERS *src) { memcpy(dst, src->ExceptionRecord, sizeof(_EXCEPTION_RECORD)); return EXCEPTION_EXECUTE_HANDLER; }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor & Destructor
@@ -104,7 +104,7 @@ MainWindow::MainWindow(const x264_cpu_t *const cpuFeatures)
 
 	//Create IPC thread object
 	m_ipcThread = new IPCThread();
-	connect(m_ipcThread, SIGNAL(instanceCreated(DWORD)), this, SLOT(instanceCreated(DWORD)), Qt::QueuedConnection);
+	connect(m_ipcThread, SIGNAL(instanceCreated(unsigned int)), this, SLOT(instanceCreated(unsigned int)), Qt::QueuedConnection);
 
 	//Freeze minimum size
 	setMinimumSize(size());
@@ -334,7 +334,7 @@ void MainWindow::restartButtonPressed(void)
 
 	if((options) && (!sourceFileName.isEmpty()) && (!outputFileName.isEmpty()))
 	{
-		bool runImmediately = true;
+		bool runImmediately = (countRunningJobs() < (m_preferences->autoRunNextJob() ? m_preferences->maxRunningJobCount() : 1)); //bool runImmediately = true;
 		OptionsModel *tempOptions = new OptionsModel(*options);
 		if(createJob(sourceFileName, outputFileName, tempOptions, runImmediately, true))
 		{
@@ -467,7 +467,7 @@ void MainWindow::showAbout(void)
 		
 	forever
 	{
-		MessageBeep(MB_ICONINFORMATION);
+		x264_beep(x264_beep_info);
 		switch(aboutBox.exec())
 		{
 		case 0:
@@ -484,7 +484,7 @@ void MainWindow::showAbout(void)
 				x264Box.setWindowTitle(tr("About x264"));
 				x264Box.setText(text2.replace("-", "&minus;"));
 				x264Box.setEscapeButton(x264Box.addButton(tr("Close"), QMessageBox::NoRole));
-				MessageBeep(MB_ICONINFORMATION);
+				x264_beep(x264_beep_info);
 				x264Box.exec();
 			}
 			break;
@@ -502,7 +502,7 @@ void MainWindow::showAbout(void)
 				x264Box.setWindowTitle(tr("About Avisynth"));
 				x264Box.setText(text2.replace("-", "&minus;"));
 				x264Box.setEscapeButton(x264Box.addButton(tr("Close"), QMessageBox::NoRole));
-				MessageBeep(MB_ICONINFORMATION);
+				x264_beep(x264_beep_info);
 				x264Box.exec();
 			}
 			break;
@@ -520,7 +520,7 @@ void MainWindow::showAbout(void)
 				x264Box.setWindowTitle(tr("About VapourSynth"));
 				x264Box.setText(text2.replace("-", "&minus;"));
 				x264Box.setEscapeButton(x264Box.addButton(tr("Close"), QMessageBox::NoRole));
-				MessageBeep(MB_ICONINFORMATION);
+				x264_beep(x264_beep_info);
 				x264Box.exec();
 			}
 			break;
@@ -663,7 +663,7 @@ void MainWindow::shutdownComputer(void)
 	
 	QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 	QApplication::setOverrideCursor(Qt::WaitCursor);
-	PlaySound(MAKEINTRESOURCE(IDR_WAVE1), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
+	x264_play_sound(IDR_WAVE1, false);
 	QApplication::restoreOverrideCursor();
 	
 	QTimer timer;
@@ -686,7 +686,7 @@ void MainWindow::shutdownComputer(void)
 		progressDialog.setLabelText(text.arg(iTimeout-i));
 		if(iTimeout-i == 3) progressDialog.setCancelButton(NULL);
 		QApplication::processEvents();
-		PlaySound(MAKEINTRESOURCE((i < iTimeout) ? IDR_WAVE2 : IDR_WAVE3), GetModuleHandle(NULL), SND_RESOURCE | SND_SYNC);
+		x264_play_sound(((i < iTimeout) ? IDR_WAVE2 : IDR_WAVE3), false);
 	}
 	
 	qWarning("Shutting down !!!");
@@ -732,13 +732,7 @@ void MainWindow::init(void)
 		QFile *file = new QFile(QString("%1/toolset/%2").arg(m_appDir, current));
 		if(file->open(QIODevice::ReadOnly))
 		{
-			bool binaryTypeOkay = false;
-			DWORD binaryType;
-			if(GetBinaryType(QWCHAR(QDir::toNativeSeparators(file->fileName())), &binaryType))
-			{
-				binaryTypeOkay = (binaryType == SCS_32BIT_BINARY || binaryType == SCS_64BIT_BINARY);
-			}
-			if(!binaryTypeOkay)
+			if(!x264_is_executable(file->fileName()))
 			{
 				QMessageBox::critical(this, tr("Invalid File!"), tr("<nobr>At least on required tool is not a valid Win32 or Win64 binary:<br><tt style=\"whitespace:nowrap\">%1</tt><br><br>Please re-install the program in order to fix the problem!</nobr>").arg(QDir::toNativeSeparators(QString("%1/toolset/%2").arg(m_appDir, current))).replace("-", "&minus;"));
 				qFatal(QString("Binary is invalid: %1/toolset/%2").arg(m_appDir, current).toLatin1().constData());
@@ -836,27 +830,28 @@ void MainWindow::init(void)
 		qDebug("");
 	}
 
-	//Check for Vapoursynth support
+	//Check for VapourSynth support
 	if(!qApp->arguments().contains("--skip-vapoursynth-check", Qt::CaseInsensitive))
 	{
-		qDebug("[Check for Vapoursynth support]");
+		qDebug("[Check for VapourSynth support]");
 		volatile double avisynthVersion = 0.0;
 		const int result = VapourSynthCheckThread::detect(m_vapoursynthPath);
 		if(result < 0)
 		{
-			QString text = tr("A critical error was encountered while checking your Vapoursynth installation.").append("<br>");
-			text += tr("This is most likely caused by an erroneous Vapoursynth Plugin, please try to clean your Filters folder!").append("<br>");
-			text += tr("We suggest to move all .dll files out of your Vapoursynth Filters folder and try again.");
-			int val = QMessageBox::critical(this, tr("Vapoursynth Error"), QString("<nobr>%1</nobr>").arg(text).replace("-", "&minus;"), tr("Quit"), tr("Ignore"));
+			QString text = tr("A critical error was encountered while checking your VapourSynth installation.").append("<br>");
+			text += tr("This is most likely caused by an erroneous VapourSynth Plugin, please try to clean your Filters folder!").append("<br>");
+			text += tr("We suggest to move all .dll files out of your VapourSynth Filters folder and try again.");
+			int val = QMessageBox::critical(this, tr("VapourSynth Error"), QString("<nobr>%1</nobr>").arg(text).replace("-", "&minus;"), tr("Quit"), tr("Ignore"));
 			if(val != 1) { close(); qApp->exit(-1); return; }
 		}
 		if((!result) || (m_vapoursynthPath.isEmpty()))
 		{
 			if(!m_preferences->disableWarnings())
 			{
-				QString text = tr("It appears that Vapoursynth is <b>not</b> currently installed on your computer.<br>Therefore Vapoursynth (.vpy) input will <b>not</b> be working at all!").append("<br><br>");
-				text += tr("Please download and install Vapoursynth for Windows (R19 or later):").append("<br>").append(LINK("http://www.vapoursynth.com/"));
-				int val = QMessageBox::warning(this, tr("Vapoursynth Missing"), QString("<nobr>%1</nobr>").arg(text).replace("-", "&minus;"), tr("Quit"), tr("Ignore"));
+				QString text = tr("It appears that VapourSynth is <b>not</b> currently installed on your computer.<br>Therefore VapourSynth (.vpy) input will <b>not</b> be working at all!").append("<br><br>");
+				text += tr("Please download and install VapourSynth for Windows (R19 or later):").append("<br>").append(LINK("http://www.vapoursynth.com/")).append("<br><br>");
+				text += tr("Note that Python 3.3 (x86) is a prerequisite for installing VapourSynth:").append("<br>").append(LINK("http://www.python.org/getit/")).append("<br>");
+				int val = QMessageBox::warning(this, tr("VapourSynth Missing"), QString("<nobr>%1</nobr>").arg(text).replace("-", "&minus;"), tr("Quit"), tr("Ignore"));
 				if(val != 1) { close(); qApp->exit(-1); return; }
 			}
 		}
@@ -924,7 +919,7 @@ void MainWindow::copyLogToClipboard(bool checked)
 	if(LogFileModel *log = dynamic_cast<LogFileModel*>(logView->model()))
 	{
 		log->copyToClipboard();
-		MessageBeep(MB_ICONINFORMATION);
+		x264_beep(x264_beep_info);
 	}
 }
 
@@ -943,22 +938,14 @@ void MainWindow::handleDroppedFiles(void)
 	qDebug("Leave from MainWindow::handleDroppedFiles!");
 }
 
-void MainWindow::instanceCreated(DWORD pid)
+void MainWindow::instanceCreated(unsigned int pid)
 {
 	qDebug("Notification from other instance (PID=0x%X) received!", pid);
 	
-	FLASHWINFO flashWinInfo;
-	memset(&flashWinInfo, 0, sizeof(FLASHWINFO));
-	flashWinInfo.cbSize = sizeof(FLASHWINFO);
-	flashWinInfo.hwnd = this->winId();
-	flashWinInfo.dwFlags = FLASHW_ALL;
-	flashWinInfo.dwTimeout = 125;
-	flashWinInfo.uCount = 5;
-
-	SwitchToThisWindow(this->winId(), TRUE);
-	SetForegroundWindow(this->winId());
-	qApp->processEvents();
-	FlashWindowEx(&flashWinInfo);
+	x264_blink_window(this, 5, 125);
+	x264_bring_to_front(this);
+	qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+	x264_blink_window(this, 5, 125);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
