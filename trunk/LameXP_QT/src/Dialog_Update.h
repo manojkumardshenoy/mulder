@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -26,6 +27,7 @@
 class UpdateInfo;
 class SettingsModel;
 class QMovie;
+class UpdateCheckThread;
 
 //UIC forward declartion
 namespace Ui {
@@ -52,6 +54,11 @@ private slots:
 	void logButtonClicked(void);
 	void progressBarValueChanged(int value);
 
+	void threadStatusChanged(const int status);
+	void threadProgressChanged(const int progress);
+	void threadMessageLogged(const QString &message);
+	void threadFinished(void);
+
 protected:
 	virtual void showEvent(QShowEvent *event);
 	virtual void closeEvent(QCloseEvent *event);
@@ -64,24 +71,22 @@ protected:
 private:
 	Ui::UpdateDialog *ui; //for Qt UIC
 
-	bool tryUpdateMirror(UpdateInfo *updateInfo, const QString &url);
-	bool getFile(const QString &url, const QString &outFile, unsigned int maxRedir = 5, bool *httpOk = NULL);
-	bool checkSignature(const QString &file, const QString &signature);
-	bool parseVersionInfo(const QString &file, UpdateInfo *updateInfo);
-	void testKnownWebSites(void);
+	const QString m_binaryWGet;
+	const QString m_binaryGnuPG;
+	const QString m_binaryKeys;
+	const QString m_binaryUpdater;
 
-	UpdateInfo *m_updateInfo;
+	UpdateCheckThread *m_thread;
 	QStringList *m_logFile;
 	SettingsModel *m_settings;
 	QMovie *m_animator;
-	
-	const QString m_binaryWGet;
-	const QString m_binaryGnuPG;
-	const QString m_binaryUpdater;
-	const QString m_binaryKeys;
+
 	unsigned long m_updaterProcess;
 
 	bool m_success;
 	bool m_updateReadyToInstall;
 	bool m_firstShow;
+	
+	void testKnownHosts(void);
+
 };

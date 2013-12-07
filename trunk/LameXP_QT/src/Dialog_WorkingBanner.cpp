@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "Dialog_WorkingBanner.h"
+#include "../tmp/UIC_WorkingBanner.h"
 
 #include "Global.h"
 #include "WinSevenTaskbar.h"
@@ -28,13 +30,46 @@
 #include <QMovie>
 #include <QKeyEvent>
 #include <QFontMetrics>
+#include <QPainter>
+#include <QWindowsVistaStyle>
+#include <QTimer>
 
 #define EPS (1.0E-5)
 
 /* It can happen that the QThread has just terminated and already emitted the 'terminated' signal, but did NOT change the 'isRunning' flag to FALSE yet. */
 /* For this reason the macro will first check the 'isRunning' flag. If (and only if) the flag still returns TRUE, then we will wait() for at most 50 ms. */
 /* If, after 50 ms, the wait() function returns with FALSE, then the thread probably is still running and we return TRUE. Otherwise we can return FALSE. */
-#define THREAD_RUNNING(THRD) (((THRD)->isRunning()) ? (!((THRD)->wait(50))) : false)
+#define THREAD_RUNNING(THRD) (((THRD)->isRunning()) ? (!((THRD)->wait(1))) : false)
+
+/*Update text color*/
+static inline void SET_TEXT_COLOR(QWidget *control, const QColor &color)
+{
+	QPalette pal = control->palette();
+	pal.setColor(QPalette::WindowText, color);
+	pal.setColor(QPalette::Text, color);
+	control->setPalette(pal);
+}
+
+/*Make widget translucent*/
+static inline void MAKE_TRANSLUCENT(QWidget *control)
+{
+	control->setAttribute(Qt::WA_TranslucentBackground);
+	control->setAttribute(Qt::WA_NoSystemBackground);
+}
+
+/*Update widget margins*/
+static inline void UPDATE_MARGINS(QWidget *control, int l = 0, int r = 0, int t = 0, int b = 0)
+{
+	if(QLayout *layout = control->layout())
+	{
+		QMargins margins = layout->contentsMargins();
+		margins.setLeft(margins.left() + l);
+		margins.setRight(margins.right() + r);
+		margins.setTop(margins.top() + t);
+		margins.setBottom(margins.bottom() + b);
+		layout->setContentsMargins(margins);
+	}
+}
 
 ////////////////////////////////////////////////////////////
 // Constructor
@@ -43,37 +78,37 @@
 WorkingBanner::WorkingBanner(QWidget *parent)
 :
 	QDialog(parent, Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint),
-	m_progressMax(0), m_progressVal(0), m_progressInt(0), m_metrics(NULL)
+	ui(new Ui::WorkingBanner()), m_metrics(NULL), m_working(NULL), m_style(NULL)
 {
 	//Init the dialog, from the .ui file
-	setupUi(this);
+	ui->setupUi(this);
 	setModal(true);
 
-	//Start animation
-	m_working = new QMovie(":/images/Busy.gif");
-	m_working->setSpeed(50);
-	labelWorking->setMovie(m_working);
-	m_working->start();
-
-	//Create progress indicator
-	m_progress = new QLabel(labelWorking);
-	m_progress->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-	m_progress->move(0, 0);
-	m_progress->resize(labelWorking->size());
-
-	//Set font size
-	QFont font = m_progress->font();
-	font.setPointSize(6);
-	m_progress->setFont(font);
-
-	//Set font color
-	QPalette color = m_progress->palette();
-	color.setColor(QPalette::Text, QColor::fromRgb(0x33, 0x33, 0x33));
-	color.setColor(QPalette::WindowText, QColor::fromRgb(0x33, 0x33, 0x33));
-	m_progress->setPalette(color);
+	//Enable the "sheet of glass" effect
+	if(lamexp_sheet_of_glass(this))
+	{
+		m_style = new QWindowsVistaStyle();
+		this->setStyle(m_style);
+		ui->progressBar->setStyle(m_style);
+		ui->labelStatus->setStyle(m_style);
+		ui->labelStatus->setStyleSheet("background-color: #FFFFFF;");
+	}
+	else
+	{
+		UPDATE_MARGINS(this, 5);
+		m_working = new QMovie(":/images/Busy.gif");
+		m_working->setCacheMode(QMovie::CacheAll);
+		ui->labelWorking->setMovie(m_working);
+	}
+	
+	//Set Opacity
+	this->setWindowOpacity(0.9);
 
 	//Set wait cursor
 	setCursor(Qt::WaitCursor);
+
+	//Clear label
+	ui->labelStatus->clear();
 }
 
 ////////////////////////////////////////////////////////////
@@ -85,12 +120,12 @@ WorkingBanner::~WorkingBanner(void)
 	if(m_working)
 	{
 		m_working->stop();
-		delete m_working;
-		m_working = NULL;
+		LAMEXP_DELETE(m_working);
 	}
 
-	LAMEXP_DELETE(m_progress);
+	LAMEXP_DELETE(m_style);
 	LAMEXP_DELETE(m_metrics);
+	delete ui;
 }
 
 ////////////////////////////////////////////////////////////
@@ -100,22 +135,15 @@ WorkingBanner::~WorkingBanner(void)
 void WorkingBanner::show(const QString &text)
 {
 	m_canClose = false;
-	m_progressInt = -1;
 
 	QDialog::show();
 	setFixedSize(size());
 	setText(text);
 
-	m_progress->setText(QString());
-
-	QApplication::processEvents();
-}
-
-bool WorkingBanner::close(void)
-{
-	m_canClose = true;
-	emit userAbort();
-	return QDialog::close();
+	//Reset progress
+	ui->progressBar->setMinimum(0);
+	ui->progressBar->setMaximum(0);
+	ui->progressBar->setValue(-1);
 }
 
 void WorkingBanner::show(const QString &text, QThread *thread)
@@ -135,11 +163,17 @@ void WorkingBanner::show(const QString &text, QThread *thread)
 	//Start the thread
 	thread->start();
 
+	//Update cursor
+	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+
 	//Loop while thread is still running
 	while(THREAD_RUNNING(thread))
 	{
 		loop->exec();
 	}
+
+	//Restore cursor
+	QApplication::restoreOverrideCursor();
 
 	//Set taskbar state
 	WinSevenTaskbar::setTaskbarState(dynamic_cast<QWidget*>(this->parent()), WinSevenTaskbar::WinSevenTaskbarNoState);
@@ -161,8 +195,14 @@ void WorkingBanner::show(const QString &text, QEventLoop *loop)
 	WinSevenTaskbar::setOverlayIcon(dynamic_cast<QWidget*>(this->parent()), &QIcon(":/icons/hourglass.png"));
 	WinSevenTaskbar::setTaskbarState(dynamic_cast<QWidget*>(this->parent()), WinSevenTaskbar::WinSevenTaskbarIndeterminateState);
 
+	//Update cursor
+	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+
 	//Loop while thread is running
 	loop->exec(QEventLoop::ExcludeUserInputEvents);
+
+	//Restore cursor
+	QApplication::restoreOverrideCursor();
 
 	//Set taskbar state
 	WinSevenTaskbar::setTaskbarState(dynamic_cast<QWidget*>(this->parent()), WinSevenTaskbar::WinSevenTaskbarNoState);
@@ -170,6 +210,13 @@ void WorkingBanner::show(const QString &text, QEventLoop *loop)
 
 	//Hide splash
 	this->close();
+}
+
+bool WorkingBanner::close(void)
+{
+	m_canClose = true;
+	emit userAbort();
+	return QDialog::close();
 }
 
 ////////////////////////////////////////////////////////////
@@ -183,13 +230,17 @@ void WorkingBanner::keyPressEvent(QKeyEvent *event)
 		qDebug("QT::KEY_ESCAPE pressed!");
 		emit userAbort();
 	}
+	else if(event->key() == Qt::Key_M)
+	{
+		QTimer::singleShot(0, parent(), SLOT(showMinimized()));
+	}
 	
-	event->ignore();
+	QDialog::keyPressEvent(event);
 }
 
 void WorkingBanner::keyReleaseEvent(QKeyEvent *event)
 {
-	event->ignore();
+	QDialog::keyReleaseEvent(event);
 }
 
 void WorkingBanner::closeEvent(QCloseEvent *event)
@@ -202,54 +253,92 @@ bool WorkingBanner::winEvent(MSG *message, long *result)
 	return WinSevenTaskbar::handleWinEvent(message, result);
 }
 
+void WorkingBanner::showEvent(QShowEvent *event)
+{
+	QDialog::showEvent(event);
+	if(!event->spontaneous())
+	{
+		if(m_working)
+		{
+			m_working->start();
+		}
+	}
+	QTimer::singleShot(25, this, SLOT(windowShown()));
+}
+
+void WorkingBanner::hideEvent(QHideEvent *event)
+{
+	QDialog::hideEvent(event);
+	if(!event->spontaneous())
+	{
+		if(m_working)
+		{
+			m_working->stop();
+		}
+	}
+}
+
 ////////////////////////////////////////////////////////////
 // SLOTS
 ////////////////////////////////////////////////////////////
+
+void WorkingBanner::windowShown(void)
+{
+	lamexp_bring_to_front(this);
+}
 
 void WorkingBanner::setText(const QString &text)
 {
 	if(!m_metrics)
 	{
-		 m_metrics = new QFontMetrics(labelStatus->font());
+		 m_metrics = new QFontMetrics(ui->labelStatus->font());
 	}
 
-	if(m_metrics->width(text) <= labelStatus->width())
+	if(m_metrics->width(text) <= ui->labelStatus->width() - 16)
 	{
-		labelStatus->setText(text);
+		ui->labelStatus->setText(text);
 	}
 	else
 	{
 		QString choppedText = text.simplified().append("...");
-		while((m_metrics->width(choppedText) > labelStatus->width()) && (choppedText.length() > 8))
+		while((m_metrics->width(choppedText) > ui->labelStatus->width() - 16) && (choppedText.length() > 8))
 		{
 			choppedText.chop(4);
 			choppedText = choppedText.trimmed();
 			choppedText.append("...");
 		}
-		labelStatus->setText(choppedText);
-	}
-	if(this->isVisible())
-	{
-		labelStatus->repaint();
+		ui->labelStatus->setText(choppedText);
 	}
 }
 
 void WorkingBanner::setProgressMax(unsigned int max)
 {
-	m_progressMax = max;
-	updateProgress();
+	ui->progressBar->setMaximum(max);
+	if(ui->progressBar->maximum() > ui->progressBar->minimum())
+	{
+		WinSevenTaskbar::setTaskbarState(dynamic_cast<QWidget*>(this->parent()), WinSevenTaskbar::WinSevenTaskbarNoState);
+		WinSevenTaskbar::setTaskbarProgress(dynamic_cast<QWidget*>(this->parent()), ui->progressBar->value(), ui->progressBar->maximum());
+	}
+	else
+	{
+		WinSevenTaskbar::setTaskbarState(dynamic_cast<QWidget*>(this->parent()), WinSevenTaskbar::WinSevenTaskbarIndeterminateState);
+	}
 }
 
 void WorkingBanner::setProgressVal(unsigned int val)
 {
-	m_progressVal = val;
-	updateProgress();
+	ui->progressBar->setValue(val);
+	if(ui->progressBar->maximum() > ui->progressBar->minimum())
+	{
+		WinSevenTaskbar::setTaskbarProgress(dynamic_cast<QWidget*>(this->parent()), ui->progressBar->value(), ui->progressBar->maximum());
+	}
 }
 
 ////////////////////////////////////////////////////////////
 // Private
 ////////////////////////////////////////////////////////////
 
+/*
 void WorkingBanner::updateProgress(void)
 {
 	if(m_progressMax > 0)
@@ -266,3 +355,4 @@ void WorkingBanner::updateProgress(void)
 		}
 	}
 }
+*/

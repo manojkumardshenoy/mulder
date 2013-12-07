@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,18 +22,25 @@
 
 #pragma once
 
-#include "../tmp/UIC_WorkingBanner.h"
+#include <QDialog>
+
+namespace Ui
+{
+	class WorkingBanner;
+}
+
+class QEventLoop;
 
 ////////////////////////////////////////////////////////////
 // Splash Frame
 ////////////////////////////////////////////////////////////
 
-class WorkingBanner: public QDialog, private Ui::WorkingBanner
+class WorkingBanner: public QDialog
 {
 	Q_OBJECT
 
 public:
-	WorkingBanner(QWidget *parent = 0);
+	WorkingBanner(QWidget *parent);
 	~WorkingBanner(void);
 	
 	void show(const QString &text);
@@ -40,11 +48,13 @@ public:
 	void show(const QString &text, QEventLoop *loop);
 
 private:
+	Ui::WorkingBanner *const ui;
+
 	QMovie *m_working;
 	bool m_canClose;
-	void updateProgress(void);
 
 public slots:
+	void windowShown(void);
 	void setText(const QString &text);
 	void setProgressMax(unsigned int max);
 	void setProgressVal(unsigned int val);
@@ -54,14 +64,13 @@ signals:
 	void userAbort(void);
 
 protected:
-	void keyPressEvent(QKeyEvent *event);
-	void keyReleaseEvent(QKeyEvent *event);
-	void closeEvent(QCloseEvent *event);
-	bool winEvent(MSG *message, long *result);
+	virtual void keyPressEvent(QKeyEvent *event);
+	virtual void keyReleaseEvent(QKeyEvent *event);
+	virtual void closeEvent(QCloseEvent *event);
+	virtual bool winEvent(MSG *message, long *result);
+	virtual void showEvent(QShowEvent *event);
+	virtual void hideEvent(QHideEvent *event);
 
-	QLabel *m_progress;
 	QFontMetrics *m_metrics;
-	unsigned int m_progressMax;
-	unsigned int m_progressVal;
-	unsigned int m_progressInt;
+	QStyle *m_style;
 };

@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -37,9 +38,11 @@ class QButtonGroup;
 class QFileSystemModelEx;
 class QLabel;
 class QMenu;
+class QUrl;
 class QModelIndex;
 class SettingsModel;
 class WorkingBanner;
+class lamexp_icon_t;
 
 //UIC forward declartion
 namespace Ui {
@@ -104,6 +107,7 @@ private slots:
 	void gotoMusicFolderButtonClicked(void);
 	void goUpFolderContextActionTriggered(void);
 	void handleDelayedFiles(void);
+	void handleDroppedFiles(void);
 	void hibernateComputerActionTriggered(bool checked);
 	void importCueSheetActionTriggered(bool checked);
 	void importCsvContextActionTriggered(void);
@@ -154,7 +158,7 @@ private slots:
 	void sourceModelChanged(void);
 	void styleActionActivated(QAction *action);
 	void tabActionActivated(QAction *action);
-	void tabPageChanged(int idx);
+	void tabPageChanged(int idx, const bool silent = false);
 	void toneAdjustBassChanged(double value);
 	void toneAdjustTrebleChanged(double value);
 	void toneAdjustTrebleReset(void);
@@ -192,8 +196,10 @@ private:
 	bool m_firstTimeShown;
 	uint m_outputFolderViewInitCounter;
 	bool m_outputFolderViewCentering;
+	lamexp_icon_t *m_windowIcon;
 
 	WorkingBanner *m_banner;
+	QList<QUrl> *m_droppedFileList;
 	QStringList *m_delayedFileList;
 	QTimer *m_delayedFileTimer;
 	DropBox *m_dropBox;

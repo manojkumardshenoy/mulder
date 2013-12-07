@@ -291,6 +291,14 @@
         <source>Codecs.com</source>
         <translation>Codecs.com</translation>
     </message>
+    <message>
+        <source>BerliOS Developer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CodePlex</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AudioFileModel</name>
@@ -2009,6 +2017,14 @@
         <source>Current Encoder: %1</source>
         <translation>Codificador actual: %1</translation>
     </message>
+    <message>
+        <source>Loading dropped files or folders, please wait...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>APE</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -2663,10 +2679,6 @@
         <translation>¡La prueba de conexión a internet ha fallado!</translation>
     </message>
     <message>
-        <source>Please make sure your internet connection is working properly and try again.</source>
-        <translation>Por favor, asegúrese de que su conexión a internet funciona correctamente y vuelva a intentarlo.</translation>
-    </message>
-    <message>
         <source>Checking for new updates online, please wait...</source>
         <translation>Comprobando en busca de nuevas actualizaciones, espere por favor...</translation>
     </message>
@@ -2725,6 +2737,10 @@
     <message>
         <source>Please make sure your computer is connected to the internet and try again.</source>
         <translation>Por favor, asegurese de que tiene conexión a internet y vuelva a intentarlo.</translation>
+    </message>
+    <message>
+        <source>Initializing, please wait...</source>
+        <translation type="unfinished">Iniciando, espere por favor...</translation>
     </message>
 </context>
 </TS>

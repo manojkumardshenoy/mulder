@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,17 +25,6 @@
  */
 #define IDI_ICON1                       106
 #define IDI_ICON2                       107
-#define IDR_WAVE_ABOUT                  666
-#define IDR_WAVE_SUCCESS                667
-#define IDR_WAVE_ERROR                  668
-#define IDR_WAVE_ABORTED                669
-#define IDR_WAVE_WHAMMY                 670
-#define IDR_WAVE_WOOHOO                 671
-#define IDR_WAVE_SHUTDOWN               672
-#define IDR_WAVE_BEEP                   673
-#define IDR_WAVE_BEEP_LONG              674
-#define IDR_WAVE_WAITING                675
-#define IDR_WAVE_BLAST                  676
 
 /*
  * Next default values for new objects

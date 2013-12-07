@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -50,9 +51,12 @@ protected:
 			if(file->open(QIODevice::ReadOnly))
 			{
 				m_fileHandle = file;
-				return;
 			}
-			LAMEXP_DELETE(file);
+			else
+			{
+				qWarning("[ArtworkModel] Failed to open artwork file!");
+				LAMEXP_DELETE(file);
+			}
 		}
 	}
 
@@ -85,10 +89,17 @@ protected:
 		if(*ptr)
 		{
 			QMutexLocker lock(&s_mutex);
-			(*ptr)->m_referenceCounter = (*ptr)->m_referenceCounter - 1;
-			if((*ptr)->m_referenceCounter < 1)
+			if((*ptr)->m_referenceCounter > 0)
 			{
-				delete (*ptr);
+				(*ptr)->m_referenceCounter = (*ptr)->m_referenceCounter - 1;
+				if((*ptr)->m_referenceCounter < 1)
+				{
+					delete (*ptr);
+				}
+			}
+			else
+			{
+				qWarning("[ArtworkModel::detach] Ref counter already zero!");
 			}
 			*ptr = NULL;
 		}
@@ -168,7 +179,10 @@ void ArtworkModel::setFilePath(const QString &newPath, bool isOwner)
 {
 	QMutexLocker lock(m_mutex);
 	ArtworkModel_SharedData::detach(&m_data);
-	m_data = new ArtworkModel_SharedData(newPath, isOwner);
+	if(!newPath.isEmpty())
+	{
+		m_data = new ArtworkModel_SharedData(newPath, isOwner);
+	}
 }
 
 void ArtworkModel::clear(void)

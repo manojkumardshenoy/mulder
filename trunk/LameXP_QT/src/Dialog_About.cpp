@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,7 +25,6 @@
 #include "../tmp/UIC_AboutDialog.h"
 
 #include "Global.h"
-#include "Resource.h"
 #include "Model_Settings.h"
 
 #include <math.h>
@@ -213,12 +213,12 @@ int AboutDialog::exec()
 		{
 			if(!lamexp_play_sound_file("imageres.dll", 5080, true))
 			{
-				lamexp_play_sound(0, true, L"SystemStart");
+				lamexp_play_sound_alias("SystemStart", true);
 			}
 		}
 		else
 		{
-			lamexp_play_sound(IDR_WAVE_ABOUT, true);
+			lamexp_play_sound("uuaarrgh", true);
 		}
 	}
 	
@@ -254,7 +254,7 @@ int AboutDialog::exec()
 } \
 while(0)
 
-void AboutDialog::tabChanged(int index)
+void AboutDialog::tabChanged(int index, const bool silent)
 {
 	bool bInitialized = m_initFlags->value(ui->tabWidget->widget(index), false);
 
@@ -285,6 +285,12 @@ void AboutDialog::tabChanged(int index)
 		ui->tabWidget->widget(index)->update();
 		qApp->processEvents();
 		qApp->restoreOverrideCursor();
+	}
+
+	//Play tick sound
+	if(m_settings->soundsEnabled() && (!silent))
+	{
+		lamexp_play_sound("tick", true);
 	}
 
 	//Scroll to the top
@@ -407,14 +413,24 @@ void AboutDialog::geometryUpdated(void)
 
 void AboutDialog::adjustSize(void)
 {
-	int maximumHeight = QApplication::desktop()->availableGeometry().height();
+	const int maxH = QApplication::desktop()->availableGeometry().height();
+	const int maxW = QApplication::desktop()->availableGeometry().width();
 
-	int delta = ui->infoScrollArea->widget()->height() - ui->infoScrollArea->viewport()->height();
-	if(delta > 0)
+	const int deltaH = ui->infoScrollArea->widget()->height() - ui->infoScrollArea->viewport()->height();
+	const int deltaW = ui->infoScrollArea->widget()->width()  - ui->infoScrollArea->viewport()->width();
+
+	if(deltaH > 0)
 	{
-		this->resize(this->width(), qMin(this->height() + delta, maximumHeight));
-		this->move(this->x(), this->y() - (delta/2));
+		this->resize(this->width(), qMin(this->height() + deltaH, maxH));
+		this->move(this->x(), this->y() - (deltaH / 2));
 		this->setMinimumHeight(qMax(this->minimumHeight(), this->height()));
+	}
+
+	if(deltaW > 0)
+	{
+		this->resize(qMin(this->width() + deltaW, maxW), this->height());
+		this->move(this->x() - (deltaW / 2), this->y());
+		this->setMinimumWidth(qMax(this->minimumWidth(), this->width()));
 	}
 }
 
@@ -427,7 +443,7 @@ void AboutDialog::showEvent(QShowEvent *e)
 	QDialog::showEvent(e);
 	
 	ui->tabWidget->setCurrentIndex(ui->tabWidget->indexOf(ui->infoTab));
-	tabChanged(m_lastTab = ui->tabWidget->currentIndex());
+	tabChanged(m_lastTab = ui->tabWidget->currentIndex(), true);
 	
 	if(m_firstShow)
 	{
@@ -523,10 +539,12 @@ void AboutDialog::initInformationTab(void)
 #endif
 
 	aboutText += "<hr><br>";
-	aboutText += "<nobr><tt>This program is free software; you can redistribute it and/or<br>";
-	aboutText += "modify it under the terms of the GNU General Public License<br>";
-	aboutText += "as published by the Free Software Foundation; either version 2<br>";
-	aboutText += "of the License, or (at your option) any later version.<br><br>";
+	
+	aboutText += "<nobr><tt>This program is free software; you can redistribute it and/or modify<br>";
+	aboutText += "it under the terms of the GNU General Public License as published by<br>";
+	aboutText += "the Free Software Foundation; either version 2 of the License, or<br>";
+	aboutText += "(at your option) any later version, but always including the *additional*<br>";
+	aboutText += "restrictions defined in the \"License.txt\" file (see \"License\" tab).<br><br>";
 	aboutText += "This program is distributed in the hope that it will be useful,<br>";
 	aboutText += "but WITHOUT ANY WARRANTY; without even the implied warranty of<br>";
 	aboutText += "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the<br>";
@@ -538,7 +556,6 @@ void AboutDialog::initInformationTab(void)
 	aboutText += "<td valign=\"middle\"><img src=\":/icons/error_big.png\"</td><td>&nbsp;</td>";
 	aboutText += QString("<td><font color=\"darkred\">%1</font></td>").arg(tr("Note: LameXP is free software. Do <b>not</b> pay money to obtain or use LameXP! If some third-party website tries to make you pay for downloading LameXP, you should <b>not</b> respond to the offer !!!"));
 	aboutText += "</tr></table>";
-	//aboutText += QString("%1<br>").arg(NOBR(tr("Special thanks go out to \"John33\" from %1 for his continuous support.")).arg(LINK("http://www.rarewares.org/")));
 
 	ui->infoLabel->setText(aboutText);
 	ui->infoIcon->setPixmap(lamexp_app_icon().pixmap(QSize(72,72)));
@@ -588,6 +605,10 @@ void AboutDialog::initContributorsTab(void)
 	contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>%2</td><td valign=\"middle\" colspan=\"3\"><a href=\"%3\">%3</td></tr>").arg(tr("SourceForge"), spaces, "http://sourceforge.net/");
 	contributorsAboutText += QString("<tr><td valign=\"middle\">%1</td><td>%2</td>").arg(webIcon, spaces);
 	contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>%2</td><td valign=\"middle\" colspan=\"3\"><a href=\"%3\">%3</td></tr>").arg(tr("Qt Developer Network"), spaces, "http://qt-project.org/");
+	contributorsAboutText += QString("<tr><td valign=\"middle\">%1</td><td>%2</td>").arg(webIcon, spaces);
+	contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>%2</td><td valign=\"middle\" colspan=\"3\"><a href=\"%3\">%3</td></tr>").arg(tr("BerliOS Developer"), spaces, "http://developer.berlios.de/");
+	contributorsAboutText += QString("<tr><td valign=\"middle\">%1</td><td>%2</td>").arg(webIcon, spaces);
+	contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>%2</td><td valign=\"middle\" colspan=\"3\"><a href=\"%3\">%3</td></tr>").arg(tr("CodePlex"), spaces, "http://www.codeplex.com/");
 	contributorsAboutText += QString("<tr><td valign=\"middle\">%1</td><td>%2</td>").arg(webIcon, spaces);
 	contributorsAboutText += QString("<td valign=\"middle\">%1</td><td>%2</td><td valign=\"middle\" colspan=\"3\"><a href=\"%3\">%3</td></tr>").arg(tr("Marius Hudea"), spaces, "http://savedonthe.net/");
 	contributorsAboutText += QString("<tr><td valign=\"middle\">%1</td><td>%2</td>").arg(webIcon, spaces);
@@ -803,6 +824,9 @@ void AboutDialog::initSoftwareTab(void)
 
 void AboutDialog::initLicenseTab(void)
 {
+	bool bFoundHeader = false;
+	QRegExp header("^(\\s*)(GNU GENERAL PUBLIC LICENSE)(\\s*)$");
+
 	QString licenseText;
 	licenseText += ("<tt>");
 
@@ -810,28 +834,17 @@ void AboutDialog::initLicenseTab(void)
 	if(file.open(QIODevice::ReadOnly))
 	{
 		QTextStream stream(&file);
-		unsigned int counter = 0;
 		while((!stream.atEnd()) && (stream.status() == QTextStream::Ok))
 		{
 			QString line = stream.readLine();
-			const bool bIsBlank = line.trimmed().isEmpty();
 			line.replace('<', "&lt;").replace('>', "&gt;");
-
-			switch(counter)
+			if((!bFoundHeader) && (header.indexIn(line) >= 0))
 			{
-			case 0:
-				if(!bIsBlank) licenseText += QString("<font size=\"+2\">%1</font><br>").arg(line.simplified());
-				break;
-			case 1:
-				if(!bIsBlank) licenseText += QString("<font size=\"+1\">%1 &minus; %2</font><br>").arg(line.simplified(), LINK("http://www.gnu.org/licenses/gpl-2.0.html"));
-				break;
-			default:
-				TRIM_RIGHT(line);
-				licenseText += QString("<nobr>%1</nobr><br>").arg(line.replace(' ', "&nbsp;"));
-				break;
+				line.replace(header, "\\1<b>\\2</b>\\3");
+				bFoundHeader = true;
 			}
-
-			if(!bIsBlank) counter++;
+			TRIM_RIGHT(line);
+			licenseText += QString("<nobr>%1</nobr><br>").arg(line.replace(' ', "&nbsp;"));
 		}
 		licenseText += QString("<br>");
 		stream.device()->close();

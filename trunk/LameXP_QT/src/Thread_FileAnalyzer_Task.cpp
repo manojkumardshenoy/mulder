@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -179,8 +180,8 @@ const AudioFileModel AnalyzeTask::analyzeFile(const QString &filePath, int *type
 	params << QDir::toNativeSeparators(filePath);
 	
 	QProcess process;
-	process.setProcessChannelMode(QProcess::MergedChannels);
-	process.setReadChannel(QProcess::StandardOutput);
+	lamexp_init_process(process, QFileInfo(m_mediaInfoBin).absolutePath());
+
 	process.start(m_mediaInfoBin, params);
 		
 	if(!process.waitForStarted())
@@ -512,8 +513,8 @@ void AnalyzeTask::retrieveCover(AudioFileModel &audioFile, cover_t coverType, co
 bool AnalyzeTask::analyzeAvisynthFile(const QString &filePath, AudioFileModel &info)
 {
 	QProcess process;
-	process.setProcessChannelMode(QProcess::MergedChannels);
-	process.setReadChannel(QProcess::StandardOutput);
+	lamexp_init_process(process, QFileInfo(m_avs2wavBin).absolutePath());
+
 	process.start(m_avs2wavBin, QStringList() << QDir::toNativeSeparators(filePath) << "?");
 
 	if(!process.waitForStarted())

@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -29,8 +30,8 @@ class QFile;
 class LockedFile
 {
 public:
-	LockedFile(QResource *const resource, const QString &outPath, const QByteArray &expectedHash = QByteArray());
-	LockedFile(const QString &filePath);
+	LockedFile(QResource *const resource, const QString &outPath, const QByteArray &expectedHash = QByteArray(), const bool bOwnsFile = true);
+	LockedFile(const QString &filePath, const bool bOwnsFile = false);
 	~LockedFile(void);
 
 	const QString &filePath();
@@ -39,6 +40,7 @@ public:
 	static QByteArray fileHash(QFile &file);
 
 private:
-	QString m_filePath;
-	void *m_fileHandle;
+	const bool m_bOwnsFile;
+	const QString m_filePath;
+	int m_fileDescriptor;
 };

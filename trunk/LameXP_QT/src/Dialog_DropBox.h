@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -52,10 +53,13 @@ private:
 	QPoint *m_mouseReferencePoint;
 	QPoint *m_windowReferencePoint;
 	QLabel *m_counterLabel;
-	QAbstractItemModel *m_model;
-	SettingsModel *m_settings;
+	QAbstractItemModel *const m_model;
+	SettingsModel *const m_settings;
 	bool m_moving;
 	bool m_firstShow;
+	QRect m_screenGeometry;
+
+	static void boundWidget(QWidget *widget);
 
 protected:
 	void keyPressEvent(QKeyEvent *event);

@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -71,15 +72,53 @@ JobObject::~JobObject(void)
 
 bool JobObject::addProcessToJob(const QProcess *proc)
 {
+	if(!m_hJobObject)
+	{
+		qWarning("Cannot assign process to job: No job bject available!");
+		return false;
+	}
+
+	if(Q_PID pid = proc->pid())
+	{
+		DWORD exitCode;
+		if(!GetExitCodeProcess(pid->hProcess, &exitCode))
+		{
+			qWarning("Cannot assign process to job: Failed to query process status!");
+			return false;
+		}
+
+		if(exitCode != STILL_ACTIVE)
+		{
+			qWarning("Cannot assign process to job: Process is not running anymore!");
+			return false;
+		}
+
+		if(!AssignProcessToJobObject(m_hJobObject, pid->hProcess))
+		{
+			qWarning("Failed to assign process to job object!");
+			return false;
+		}
+
+		return true;
+	}
+	else
+	{
+		qWarning("Cannot assign process to job: Process handle not available!");
+		return false;
+	}
+}
+
+bool JobObject::terminateJob(unsigned int exitCode)
+{
 	if(m_hJobObject)
 	{
-		if(AssignProcessToJobObject(m_hJobObject, proc->pid()->hProcess))
+		if(TerminateJobObject(m_hJobObject, exitCode))
 		{
 			return true;
 		}
 		else
 		{
-			qWarning("Failed to assign process to job object!");
+			qWarning("Failed to terminate job object!");
 			return false;
 		}
 	}

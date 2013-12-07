@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -26,7 +27,6 @@
 
 //LameXP includes
 #include "Global.h"
-#include "Resource.h"
 #include "Dialog_WorkingBanner.h"
 #include "Dialog_MetaInfo.h"
 #include "Dialog_About.h"
@@ -76,9 +76,46 @@
 // Helper macros
 ////////////////////////////////////////////////////////////
 
+#define BANNER_VISIBLE ((m_banner != NULL) && m_banner->isVisible())
+
+#define INIT_BANNER() do \
+{ \
+	if(m_banner == NULL) \
+	{ \
+		m_banner = new WorkingBanner(this); \
+	} \
+} \
+while(0)
+
+#define SHOW_BANNER(TXT) do \
+{ \
+	INIT_BANNER(); \
+	m_banner->show((TXT)); \
+} \
+while(0)
+
+#define SHOW_BANNER_ARG(TXT, ARG) do \
+{ \
+	INIT_BANNER(); \
+	m_banner->show((TXT), (ARG)); \
+} \
+while(0)
+
+
+#define SHOW_BANNER_CONDITIONALLY(FLAG, TEST, TXT) do \
+{ \
+	if((!(FLAG)) && ((TEST))) \
+	{ \
+		INIT_BANNER(); \
+		m_banner->show((TXT)); \
+		FLAG = true; \
+	} \
+} \
+while(0)
+
 #define ABORT_IF_BUSY do \
 { \
-	if(m_banner->isVisible() || m_delayedFileTimer->isActive()) \
+	if(BANNER_VISIBLE || m_delayedFileTimer->isActive()) \
 	{ \
 		lamexp_beep(lamexp_beep_warning); \
 		return; \
@@ -155,10 +192,17 @@ while(0)
 } \
 while(0)
 
+#define PLAY_SOUND_OPTIONAL(NAME, ASYNC) do \
+{ \
+	if(m_settings->soundsEnabled()) lamexp_play_sound((NAME), (ASYNC)); \
+} \
+while(0)
+
 #define LINK(URL) QString("<a href=\"%1\">%2</a>").arg(URL).arg(QString(URL).replace("-", "&minus;"))
 #define FSLINK(PATH) QString("<a href=\"file:///%1\">%2</a>").arg(PATH).arg(QString(PATH).replace("-", "&minus;"))
-//#define USE_NATIVE_FILE_DIALOG (lamexp_themes_enabled() || ((QSysInfo::windowsVersion() & QSysInfo::WV_NT_based) < QSysInfo::WV_XP))
 #define CENTER_CURRENT_OUTPUT_FOLDER_DELAYED QTimer::singleShot(125, this, SLOT(centerOutputFolderModel()))
+
+//#define USE_NATIVE_FILE_DIALOG (lamexp_themes_enabled() || ((QSysInfo::windowsVersion() & QSysInfo::WV_NT_based) < QSysInfo::WV_XP))
 
 static const unsigned int IDM_ABOUTBOX = 0xEFF0;
 
@@ -173,7 +217,9 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel_MetaInfo *me
 	m_fileListModel(fileListModel),
 	m_metaData(metaInfo),
 	m_settings(settingsModel),
+	m_windowIcon(NULL),
 	m_fileSystemModel(NULL),
+	m_banner(NULL),
 	m_accepted(false),
 	m_firstTimeShown(true),
 	m_outputFolderViewCentering(false),
@@ -182,7 +228,10 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel_MetaInfo *me
 	//Init the dialog, from the .ui file
 	ui->setupUi(this);
 	setWindowFlags(windowFlags() ^ Qt::WindowMaximizeButtonHint);
-	
+
+	//Create window icon
+	m_windowIcon = lamexp_set_window_icon(this, lamexp_app_icon(), true);
+
 	//Register meta types
 	qRegisterMetaType<AudioFileModel>("AudioFileModel");
 
@@ -336,6 +385,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel_MetaInfo *me
 	m_encoderButtonGroup->addButton(ui->radioButtonEncoderAAC, SettingsModel::AACEncoder);
 	m_encoderButtonGroup->addButton(ui->radioButtonEncoderAC3, SettingsModel::AC3Encoder);
 	m_encoderButtonGroup->addButton(ui->radioButtonEncoderFLAC, SettingsModel::FLACEncoder);
+	m_encoderButtonGroup->addButton(ui->radioButtonEncoderAPE, SettingsModel::MACEncoder);
 	m_encoderButtonGroup->addButton(ui->radioButtonEncoderOpus, SettingsModel::OpusEncoder);
 	m_encoderButtonGroup->addButton(ui->radioButtonEncoderDCA, SettingsModel::DCAEncoder);
 	m_encoderButtonGroup->addButton(ui->radioButtonEncoderPCM, SettingsModel::PCMEncoder);
@@ -590,9 +640,6 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel_MetaInfo *me
 	move((desktopRect.width() - thisRect.width()) / 2, (desktopRect.height() - thisRect.height()) / 2);
 	setMinimumSize(thisRect.width(), thisRect.height());
 
-	//Create banner
-	m_banner = new WorkingBanner(this);
-
 	//Create DropBox widget
 	m_dropBox = new DropBox(this, m_fileListModel, m_settings);
 	connect(m_fileListModel, SIGNAL(modelReset()), m_dropBox, SLOT(modelChanged()));
@@ -602,16 +649,18 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel_MetaInfo *me
 
 	//Create message handler thread
 	m_messageHandler = new MessageHandlerThread();
-	m_delayedFileList = new QStringList();
-	m_delayedFileTimer = new QTimer();
-	m_delayedFileTimer->setSingleShot(true);
-	m_delayedFileTimer->setInterval(5000);
 	connect(m_messageHandler, SIGNAL(otherInstanceDetected()), this, SLOT(notifyOtherInstance()), Qt::QueuedConnection);
 	connect(m_messageHandler, SIGNAL(fileReceived(QString)), this, SLOT(addFileDelayed(QString)), Qt::QueuedConnection);
 	connect(m_messageHandler, SIGNAL(folderReceived(QString, bool)), this, SLOT(addFolderDelayed(QString, bool)), Qt::QueuedConnection);
 	connect(m_messageHandler, SIGNAL(killSignalReceived()), this, SLOT(close()), Qt::QueuedConnection);
-	connect(m_delayedFileTimer, SIGNAL(timeout()), this, SLOT(handleDelayedFiles()));
 	m_messageHandler->start();
+
+	//Init delayed file handling
+	m_delayedFileList = new QStringList();
+	m_delayedFileTimer = new QTimer();
+	m_delayedFileTimer->setSingleShot(true);
+	m_delayedFileTimer->setInterval(5000);
+	connect(m_delayedFileTimer, SIGNAL(timeout()), this, SLOT(handleDelayedFiles()));
 
 	//Load translation
 	initializeTranslation();
@@ -621,6 +670,7 @@ MainWindow::MainWindow(FileListModel *fileListModel, AudioFileModel_MetaInfo *me
 	changeEvent(&languageChangeEvent);
 
 	//Enable Drag & Drop
+	m_droppedFileList = new QList<QUrl>();
 	this->setAcceptDrops(true);
 }
 
@@ -653,6 +703,7 @@ MainWindow::~MainWindow(void)
 	LAMEXP_DELETE(m_banner);
 	LAMEXP_DELETE(m_fileSystemModel);
 	LAMEXP_DELETE(m_messageHandler);
+	LAMEXP_DELETE(m_droppedFileList);
 	LAMEXP_DELETE(m_delayedFileList);
 	LAMEXP_DELETE(m_delayedFileTimer);
 	LAMEXP_DELETE(m_metaInfoModel);
@@ -668,6 +719,13 @@ MainWindow::~MainWindow(void)
 	LAMEXP_DELETE(m_evenFilterOutputFolderView);
 	LAMEXP_DELETE(m_evenFilterCompressionTab);
 	
+	//Free window icon
+	if(m_windowIcon)
+	{
+		lamexp_free_window_icon(m_windowIcon);
+		m_windowIcon = NULL;
+	}
+
 	//Un-initialize the dialog
 	LAMEXP_DELETE(ui);
 }
@@ -686,9 +744,12 @@ void MainWindow::addFiles(const QStringList &files)
 		return;
 	}
 
-	ui->tabWidget->setCurrentIndex(0);
+	WITH_BLOCKED_SIGNALS(ui->tabWidget, setCurrentIndex, 0);
+	tabPageChanged(ui->tabWidget->currentIndex(), true);
 
+	INIT_BANNER();
 	FileAnalyzer *analyzer = new FileAnalyzer(files);
+
 	connect(analyzer, SIGNAL(fileSelected(QString)), m_banner, SLOT(setText(QString)), Qt::QueuedConnection);
 	connect(analyzer, SIGNAL(progressValChanged(unsigned int)), m_banner, SLOT(setProgressVal(unsigned int)), Qt::QueuedConnection);
 	connect(analyzer, SIGNAL(progressMaxChanged(unsigned int)), m_banner, SLOT(setProgressMax(unsigned int)), Qt::QueuedConnection);
@@ -743,7 +804,7 @@ void MainWindow::addFolder(const QString &path, bool recursive, bool delayed)
 	folderInfoList << QFileInfo(path);
 	QStringList fileList;
 	
-	m_banner->show(tr("Scanning folder(s) for files, please wait..."));
+	SHOW_BANNER(tr("Scanning folder(s) for files, please wait..."));
 	
 	QApplication::processEvents();
 	lamexp_check_escape_state();
@@ -766,7 +827,7 @@ void MainWindow::addFolder(const QString &path, bool recursive, bool delayed)
 			fileList << fileInfoList.takeFirst().canonicalFilePath();
 		}
 
-		QApplication::processEvents();
+		QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
 		if(recursive)
 		{
@@ -918,10 +979,11 @@ void MainWindow::showEvent(QShowEvent *event)
 	m_accepted = false;
 	resizeEvent(NULL);
 	sourceModelChanged();
-	
+
 	if(!event->spontaneous())
 	{
-		ui->tabWidget->setCurrentIndex(0);
+		WITH_BLOCKED_SIGNALS(ui->tabWidget, setCurrentIndex, 0);
+		tabPageChanged(ui->tabWidget->currentIndex(), true);
 	}
 
 	if(m_firstTimeShown)
@@ -984,7 +1046,7 @@ void MainWindow::changeEvent(QEvent *e)
 
 		//Manually re-translate widgets that UIC doesn't handle
 		m_outputFolderNoteBox->setText(tr("Initializing directory outline, please be patient..."));
-		m_dropNoteLabel->setText(QString("<br><br>» %1 «<br><br><br><img src=\":/images/Sound.png\">").arg(tr("You can drop in audio files here!")));
+		m_dropNoteLabel->setText(QString("<br><img src=\":/images/DropZone.png\"><br><br>%1").arg(tr("You can drop in audio files here!")));
 		m_showDetailsContextAction->setText(tr("Show Details"));
 		m_previewContextAction->setText(tr("Open File in External Application"));
 		m_findFileContextAction->setText(tr("Browse File Location"));
@@ -1013,7 +1075,7 @@ void MainWindow::changeEvent(QEvent *e)
 		lamexp_update_sysmenu(this, IDM_ABOUTBOX, ui->buttonAbout->text());
 			
 		//Force resize, if needed
-		tabPageChanged(ui->tabWidget->currentIndex());
+		tabPageChanged(ui->tabWidget->currentIndex(), true);
 	}
 }
 
@@ -1035,51 +1097,12 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event)
  */
 void MainWindow::dropEvent(QDropEvent *event)
 {
-	ABORT_IF_BUSY;
-
-	QStringList droppedFiles;
-	QList<QUrl> urls = event->mimeData()->urls();
-
-	while(!urls.isEmpty())
+	m_droppedFileList->clear();
+	(*m_droppedFileList) << event->mimeData()->urls();
+	if(!m_droppedFileList->isEmpty())
 	{
-		QUrl currentUrl = urls.takeFirst();
-		QFileInfo file(currentUrl.toLocalFile());
-		if(!file.exists())
-		{
-			continue;
-		}
-		if(file.isFile())
-		{
-			qDebug("Dropped File: %s", QUTF8(file.canonicalFilePath()));
-			droppedFiles << file.canonicalFilePath();
-			continue;
-		}
-		if(file.isDir())
-		{
-			qDebug("Dropped Folder: %s", QUTF8(file.canonicalFilePath()));
-			QList<QFileInfo> list = QDir(file.canonicalFilePath()).entryInfoList(QDir::Files | QDir::NoSymLinks);
-			if(list.count() > 0)
-			{
-				for(int j = 0; j < list.count(); j++)
-				{
-					droppedFiles << list.at(j).canonicalFilePath();
-				}
-			}
-			else
-			{
-				list = QDir(file.canonicalFilePath()).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
-				for(int j = 0; j < list.count(); j++)
-				{
-					qDebug("Descending to Folder: %s", QUTF8(list.at(j).canonicalFilePath()));
-					urls.prepend(QUrl::fromLocalFile(list.at(j).canonicalFilePath()));
-				}
-			}
-		}
-	}
-	
-	if(!droppedFiles.isEmpty())
-	{
-		addFilesDelayed(droppedFiles, true);
+		PLAY_SOUND_OPTIONAL("drop", true);
+		QTimer::singleShot(0, this, SLOT(handleDroppedFiles()));
 	}
 }
 
@@ -1088,7 +1111,7 @@ void MainWindow::dropEvent(QDropEvent *event)
  */
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-	if(m_banner->isVisible() || m_delayedFileTimer->isActive())
+	if(BANNER_VISIBLE || m_delayedFileTimer->isActive())
 	{
 		lamexp_beep(lamexp_beep_warning);
 		event->ignore();
@@ -1112,9 +1135,9 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 		m_dropNoteLabel->setGeometry(port->geometry());
 	}
 
-	if(QWidget *port = ui->outputFolderView->viewport())
+	if (QWidget *port = ui->outputFolderView->viewport())
 	{
-		m_outputFolderNoteBox->setGeometry(16, (port->height() - 64) / 2, port->width() - 32,  64);
+		m_outputFolderNoteBox->setGeometry(16, (port->height() - 64) / 2, port->width() - 32, 64);
 	}
 }
 
@@ -1174,7 +1197,7 @@ bool MainWindow::event(QEvent *e)
 	{
 	case lamexp_event_queryendsession:
 		qWarning("System is shutting down, main window prepares to close...");
-		if(m_banner->isVisible()) m_banner->close();
+		if(BANNER_VISIBLE) m_banner->close();
 		if(m_delayedFileTimer->isActive()) m_delayedFileTimer->stop();
 		return true;
 	case lamexp_event_endsession:
@@ -1253,7 +1276,7 @@ void MainWindow::windowShown(void)
 			m_settings->licenseAccepted(++iAccepted);
 			m_settings->syncNow();
 			QApplication::processEvents();
-			lamexp_play_sound(IDR_WAVE_WHAMMY, false);
+			lamexp_play_sound("whammy", false);
 			QMessageBox::critical(this, tr("License Declined"), tr("You have declined the license. Consequently the application will exit now!"), tr("Goodbye!"));
 			QFileInfo uninstallerInfo = QFileInfo(QString("%1/Uninstall.exe").arg(QApplication::applicationDirPath()));
 			if(uninstallerInfo.exists())
@@ -1269,7 +1292,7 @@ void MainWindow::windowShown(void)
 			return;
 		}
 		
-		lamexp_play_sound(IDR_WAVE_WOOHOO, false);
+		lamexp_play_sound("woohoo", false);
 		m_settings->licenseAccepted(1);
 		m_settings->syncNow();
 		if(lamexp_version_demo()) showAnnounceBox();
@@ -1281,7 +1304,7 @@ void MainWindow::windowShown(void)
 		if(lamexp_current_date_safe() >= lamexp_version_expires())
 		{
 			qWarning("Binary has expired !!!");
-			lamexp_play_sound(IDR_WAVE_WHAMMY, false);
+			lamexp_play_sound("whammy", false);
 			if(QMessageBox::warning(this, tr("LameXP - Expired"), QString("%1<br>%2").arg(NOBR(tr("This demo (pre-release) version of LameXP has expired at %1.").arg(lamexp_version_expires().toString(Qt::ISODate))), NOBR(tr("LameXP is free software and release versions won't expire."))), tr("Check for Updates"), tr("Exit Program")) == 0)
 			{
 				checkForUpdates();
@@ -1323,8 +1346,8 @@ void MainWindow::windowShown(void)
 			return;
 		default:
 			QEventLoop loop; QTimer::singleShot(7000, &loop, SLOT(quit()));
-			lamexp_play_sound(IDR_WAVE_WAITING, true);
-			m_banner->show(tr("Skipping update check this time, please be patient..."), &loop);
+			lamexp_play_sound("waiting", true);
+			SHOW_BANNER_ARG(tr("Skipping update check this time, please be patient..."), &loop);
 			break;
 		}
 	}
@@ -1526,7 +1549,7 @@ void MainWindow::encodeButtonClicked(void)
 	{
 		QStringList tempFolderParts = tempFolder.split("/", QString::SkipEmptyParts, Qt::CaseInsensitive);
 		tempFolderParts.takeLast();
-		if(m_settings->soundsEnabled()) lamexp_play_sound(IDR_WAVE_WHAMMY, false);
+		PLAY_SOUND_OPTIONAL("whammy", false);
 		QString lowDiskspaceMsg = QString("%1<br>%2<br><br>%3<br>%4<br>").arg
 		(
 			NOBR(tr("There are less than %1 GB of free diskspace available on your system's TEMP folder.").arg(QString::number(minimumFreeDiskspaceMultiplier))),
@@ -1556,6 +1579,7 @@ void MainWindow::encodeButtonClicked(void)
 	case SettingsModel::FLACEncoder:
 	case SettingsModel::OpusEncoder:
 	case SettingsModel::DCAEncoder:
+	case SettingsModel::MACEncoder:
 	case SettingsModel::PCMEncoder:
 		break;
 	default:
@@ -1615,10 +1639,11 @@ void MainWindow::closeButtonClicked(void)
 /*
  * Tab page changed
  */
-void MainWindow::tabPageChanged(int idx)
+void MainWindow::tabPageChanged(int idx, const bool silent)
 {
 	resizeEvent(NULL);
 	
+	//Update "view" menu
 	QList<QAction*> actions = m_tabActionGroup->actions();
 	for(int i = 0; i < actions.count(); i++)
 	{
@@ -1628,6 +1653,12 @@ void MainWindow::tabPageChanged(int idx)
 		{
 			actions.at(i)->setChecked(true);
 		}
+	}
+
+	//Play tick sound
+	if(!silent)
+	{
+		PLAY_SOUND_OPTIONAL("tick", true);
 	}
 
 	int initialWidth = this->width();
@@ -1764,6 +1795,10 @@ void MainWindow::styleActionActivated(QAction *action)
 	const type_info &styleType = typeid(*qApp->style());
 	const bool bTransparent = ((typeid(QWindowsVistaStyle) == styleType) || (typeid(QWindowsXPStyle) == styleType));
 	MAKE_TRANSPARENT(ui->scrollArea, bTransparent);
+
+	//Also force a re-size event
+	QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+	resizeEvent(NULL);
 }
 
 /*
@@ -1961,6 +1996,15 @@ void MainWindow::importCueSheetActionTriggered(bool checked)
 				LAMEXP_DELETE(cueImporter);
 			}
 
+			if(result == QDialog::Accepted)
+			{
+				qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+				ui->sourceFileView->update();
+				qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+				ui->sourceFileView->scrollToBottom();
+				qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+			}
+
 			if(result != (-1)) break;
 		}
 	);
@@ -1976,6 +2020,7 @@ void MainWindow::showDropBoxWidgetActionTriggered(bool checked)
 	if(!m_dropBox->isVisible())
 	{
 		m_dropBox->show();
+		QTimer::singleShot(2500, m_dropBox, SLOT(showToolTip()));
 	}
 	
 	lamexp_blink_window(m_dropBox);
@@ -2304,6 +2349,7 @@ void MainWindow::showDetailsButtonClicked(void)
 			iResult = metaInfoDialog->exec(file, index.row() > 0, index.row() < m_fileListModel->rowCount() - 1);
 		);
 		
+		//Copy all info to Meta Info tab
 		if(iResult == INT_MAX)
 		{
 			m_metaInfoModel->assignInfoFrom(file);
@@ -2395,6 +2441,73 @@ void MainWindow::findFileContextActionTriggered(void)
 }
 
 /*
+ * Add all dropped files
+ */
+void MainWindow::handleDroppedFiles(void)
+{
+	ABORT_IF_BUSY;
+
+	static const int MIN_COUNT = 16;
+	const QString bannerText = tr("Loading dropped files or folders, please wait...");
+	bool bUseBanner = false;
+
+	SHOW_BANNER_CONDITIONALLY(bUseBanner, (m_droppedFileList->count() >= MIN_COUNT), bannerText);
+
+	QStringList droppedFiles;
+	while(!m_droppedFileList->isEmpty())
+	{
+		QFileInfo file(m_droppedFileList->takeFirst().toLocalFile());
+		QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+
+		if(!file.exists())
+		{
+			continue;
+		}
+
+		if(file.isFile())
+		{
+			qDebug("Dropped File: %s", QUTF8(file.canonicalFilePath()));
+			droppedFiles << file.canonicalFilePath();
+			continue;
+		}
+
+		if(file.isDir())
+		{
+			qDebug("Dropped Folder: %s", QUTF8(file.canonicalFilePath()));
+			QFileInfoList list = QDir(file.canonicalFilePath()).entryInfoList(QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+			if(list.count() > 0)
+			{
+				SHOW_BANNER_CONDITIONALLY(bUseBanner, (list.count() >= MIN_COUNT), bannerText);
+				for(QFileInfoList::ConstIterator iter = list.constBegin(); iter != list.constEnd(); iter++)
+				{
+					droppedFiles << (*iter).canonicalFilePath();
+				}
+			}
+			else
+			{
+				list = QDir(file.canonicalFilePath()).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+				SHOW_BANNER_CONDITIONALLY(bUseBanner, (list.count() >= MIN_COUNT), bannerText);
+				for(QFileInfoList::ConstIterator iter = list.constBegin(); iter != list.constEnd(); iter++)
+				{
+					qDebug("Descending to Folder: %s", QUTF8((*iter).canonicalFilePath()));
+					m_droppedFileList->prepend(QUrl::fromLocalFile((*iter).canonicalFilePath()));
+				}
+			}
+		}
+	}
+	
+	if(bUseBanner)
+	{
+		m_banner->close();
+	}
+
+	if(!droppedFiles.isEmpty())
+	{
+		addFiles(droppedFiles);
+	}
+}
+
+/*
  * Add all pending files
  */
 void MainWindow::handleDelayedFiles(void)
@@ -2406,15 +2519,16 @@ void MainWindow::handleDelayedFiles(void)
 		return;
 	}
 
-	if(m_banner->isVisible())
+	if(BANNER_VISIBLE)
 	{
 		m_delayedFileTimer->start(5000);
 		return;
 	}
-
+	
+	WITH_BLOCKED_SIGNALS(ui->tabWidget, setCurrentIndex, 0);
+	tabPageChanged(ui->tabWidget->currentIndex(), true);
+	
 	QStringList selectedFiles;
-	ui->tabWidget->setCurrentIndex(0);
-
 	while(!m_delayedFileList->isEmpty())
 	{
 		QFileInfo currentFile = QFileInfo(m_delayedFileList->takeFirst());
@@ -3389,11 +3503,7 @@ void MainWindow::compressionTabEventOccurred(QWidget *sender, QEvent *event)
 	}
 	else if((sender == ui->labelResetEncoders) && (event->type() == QEvent::MouseButtonPress))
 	{
-		if(m_settings->soundsEnabled())
-		{
-			lamexp_play_sound(IDR_WAVE_BLAST, true);
-		}
-
+		PLAY_SOUND_OPTIONAL("blast", true);
 		EncoderRegistry::resetAllEncoders(m_settings);
 		m_settings->compressionEncoder(SettingsModel::MP3Encoder);
 		ui->radioButtonEncoderMP3->setChecked(true);
@@ -3850,30 +3960,31 @@ void MainWindow::showCustomParamsHelpScreen(const QString &toolName, const QStri
 		return;
 	}
 
-	QProcess *process = new QProcess();
-	process->setProcessChannelMode(QProcess::MergedChannels);
-	process->setReadChannel(QProcess::StandardOutput);
-	process->start(binary, command.isEmpty() ? QStringList() : QStringList() << command);
+	QProcess process;
+	lamexp_init_process(process, QFileInfo(binary).absolutePath());
+
+	process.start(binary, command.isEmpty() ? QStringList() : QStringList() << command);
+
 	qApp->setOverrideCursor(QCursor(Qt::WaitCursor));
 
-	if(process->waitForStarted(15000))
+	if(process.waitForStarted(15000))
 	{
 		qApp->processEvents();
-		process->waitForFinished(15000);
+		process.waitForFinished(15000);
 	}
 	
-	if(process->state() != QProcess::NotRunning)
+	if(process.state() != QProcess::NotRunning)
 	{
-		process->kill();
-		process->waitForFinished(-1);
+		process.kill();
+		process.waitForFinished(-1);
 	}
 
 	qApp->restoreOverrideCursor();
 	QStringList output; bool spaceFlag = true;
 
-	while(process->canReadLine())
+	while(process.canReadLine())
 	{
-		QString temp = QString::fromUtf8(process->readLine());
+		QString temp = QString::fromUtf8(process.readLine());
 		TRIM_STRING_RIGHT(temp);
 		if(temp.isEmpty())
 		{
@@ -3884,8 +3995,6 @@ void MainWindow::showCustomParamsHelpScreen(const QString &toolName, const QStri
 			output << temp; spaceFlag = false;
 		}
 	}
-
-	LAMEXP_DELETE(process);
 
 	if(output.count() < 1)
 	{
@@ -3918,10 +4027,7 @@ void MainWindow::overwriteModeChanged(int id)
  */
 void MainWindow::resetAdvancedOptionsButtonClicked(void)
 {
-	if(m_settings->soundsEnabled())
-	{
-		lamexp_play_sound(IDR_WAVE_BLAST, true);
-	}
+	PLAY_SOUND_OPTIONAL("blast", true);
 
 	ui->sliderLameAlgoQuality->setValue(m_settings->lameAlgoQualityDefault());
 	ui->spinBoxBitrateManagementMin->setValue(m_settings->bitrateManagementMinRateDefault());
@@ -3974,7 +4080,7 @@ void MainWindow::resetAdvancedOptionsButtonClicked(void)
  */
 void MainWindow::notifyOtherInstance(void)
 {
-	if(!m_banner->isVisible())
+	if(!(BANNER_VISIBLE))
 	{
 		QMessageBox msgBox(QMessageBox::Warning, tr("Already Running"), tr("LameXP is already running, please use the running instance!"), QMessageBox::NoButton, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
 		msgBox.exec();
@@ -4004,7 +4110,7 @@ void MainWindow::addFileDelayed(const QString &filePath, bool tryASAP)
  */
 void MainWindow::addFilesDelayed(const QStringList &filePaths, bool tryASAP)
 {
-	if(tryASAP && !m_delayedFileTimer->isActive())
+	if(tryASAP && (!m_delayedFileTimer->isActive()))
 	{
 		qDebug("Received %d file(s).", filePaths.count());
 		m_delayedFileList->append(filePaths);
@@ -4024,7 +4130,7 @@ void MainWindow::addFilesDelayed(const QStringList &filePaths, bool tryASAP)
  */
 void MainWindow::addFolderDelayed(const QString &folderPath, bool recursive)
 {
-	if(!m_banner->isVisible())
+	if(!(BANNER_VISIBLE))
 	{
 		addFolder(folderPath, recursive, true);
 	}
