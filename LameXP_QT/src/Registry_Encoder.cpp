@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -32,6 +33,7 @@
 #include "Encoder_MP3.h"
 #include "Encoder_Vorbis.h"
 #include "Encoder_Opus.h"
+#include "Encoder_MAC.h"
 #include "Encoder_Wave.h"
 
 #define IS_VBR(RC_MODE) ((RC_MODE) == SettingsModel::VBRMode)
@@ -153,6 +155,13 @@ AbstractEncoder *EncoderRegistry::createInstance(const int encoderId, const Sett
 			encoder = dcaEncoder;
 		}
 		break;
+	/*-------- MACEncoder --------*/
+	case SettingsModel::MACEncoder:
+		{
+			MACEncoder *macEncoder = new MACEncoder();
+			encoder = macEncoder;
+		}
+		break;
 	/*-------- PCMEncoder --------*/
 	case SettingsModel::PCMEncoder:
 		{
@@ -195,6 +204,7 @@ const AbstractEncoderInfo *EncoderRegistry::getEncoderInfo(const int encoderId)
 		case SettingsModel::FLACEncoder:   info = FLACEncoder::getEncoderInfo();   break;
 		case SettingsModel::OpusEncoder:   info = OpusEncoder::getEncoderInfo();   break;
 		case SettingsModel::DCAEncoder:    info = DCAEncoder::getEncoderInfo();    break;
+		case SettingsModel::MACEncoder:    info = MACEncoder::getEncoderInfo();    break;
 		case SettingsModel::PCMEncoder:    info = WaveEncoder::getEncoderInfo();   break;
 		case SettingsModel::AACEncoder:
 			switch(getAacEncoder())
@@ -251,6 +261,7 @@ void EncoderRegistry::saveEncoderMode(SettingsModel *settings, const int encoder
 		case SettingsModel::FLACEncoder:   STORE_MODE(FLAC,    rcMode); break;
 		case SettingsModel::OpusEncoder:   STORE_MODE(OpusEnc, rcMode); break;
 		case SettingsModel::DCAEncoder:    STORE_MODE(DcaEnc,  rcMode); break;
+		case SettingsModel::MACEncoder:    STORE_MODE(MacEnc,  rcMode); break;
 		case SettingsModel::PCMEncoder:    STORE_MODE(Wave,    rcMode); break;
 		default: THROW("Unsupported encoder!");
 	}
@@ -270,6 +281,7 @@ int EncoderRegistry::loadEncoderMode(const SettingsModel *settings, const int en
 		case SettingsModel::FLACEncoder:   LOAD_MODE(rcMode, FLAC);    break;
 		case SettingsModel::OpusEncoder:   LOAD_MODE(rcMode, OpusEnc); break;
 		case SettingsModel::DCAEncoder:    LOAD_MODE(rcMode, DcaEnc);  break;
+		case SettingsModel::MACEncoder:    LOAD_MODE(rcMode, MacEnc);  break;
 		case SettingsModel::PCMEncoder:    LOAD_MODE(rcMode, Wave);    break;
 		default: THROW("Unsupported encoder!");
 	}
@@ -315,6 +327,7 @@ void EncoderRegistry::saveEncoderValue(SettingsModel *settings, const int encode
 		case SettingsModel::FLACEncoder:   STORE_VALUE(FLAC,    rcMode, value); break;
 		case SettingsModel::OpusEncoder:   STORE_VALUE(OpusEnc, rcMode, value); break;
 		case SettingsModel::DCAEncoder:    STORE_VALUE(DcaEnc,  rcMode, value); break;
+		case SettingsModel::MACEncoder:    STORE_VALUE(MacEnc,  rcMode, value); break;
 		case SettingsModel::PCMEncoder:    STORE_VALUE(Wave,    rcMode, value); break;
 		default: THROW("Unsupported encoder!");
 	}
@@ -340,6 +353,7 @@ int EncoderRegistry::loadEncoderValue(const SettingsModel *settings, const int e
 		case SettingsModel::FLACEncoder:   LOAD_VALUE(value, FLAC,    rcMode); break;
 		case SettingsModel::OpusEncoder:   LOAD_VALUE(value, OpusEnc, rcMode); break;
 		case SettingsModel::DCAEncoder:    LOAD_VALUE(value, DcaEnc,  rcMode); break;
+		case SettingsModel::MACEncoder:    LOAD_VALUE(value, MacEnc,  rcMode); break;
 		case SettingsModel::PCMEncoder:    LOAD_VALUE(value, Wave,    rcMode); break;
 		default: THROW("Unsupported encoder!");
 	}
@@ -375,6 +389,7 @@ void EncoderRegistry::saveEncoderCustomParams(SettingsModel *settings, const int
 		case SettingsModel::FLACEncoder:   STORE_PARAMS(FLAC,    params.trimmed()); break;
 		case SettingsModel::OpusEncoder:   STORE_PARAMS(OpusEnc, params.trimmed()); break;
 		case SettingsModel::DCAEncoder:    STORE_PARAMS(DcaEnc,  params.trimmed()); break;
+		case SettingsModel::MACEncoder:    STORE_PARAMS(MacEnc,  params.trimmed()); break;
 		case SettingsModel::PCMEncoder:    STORE_PARAMS(Wave,    params.trimmed()); break;
 		default: THROW("Unsupported encoder!");
 	}
@@ -394,6 +409,7 @@ QString EncoderRegistry::loadEncoderCustomParams(const SettingsModel *settings, 
 		case SettingsModel::FLACEncoder:   LOAD_PARAMS(params, FLAC);    break;
 		case SettingsModel::OpusEncoder:   LOAD_PARAMS(params, OpusEnc); break;
 		case SettingsModel::DCAEncoder:    LOAD_PARAMS(params, DcaEnc);  break;
+		case SettingsModel::MACEncoder:    LOAD_PARAMS(params, MacEnc);  break;
 		case SettingsModel::PCMEncoder:    LOAD_PARAMS(params, Wave);    break;
 		default: THROW("Unsupported encoder!");
 	}
@@ -418,6 +434,7 @@ void EncoderRegistry::resetAllEncoders(SettingsModel *settings)
 	RESET_SETTING(settings, compressionAbrBitrateDcaEnc);
 	RESET_SETTING(settings, compressionAbrBitrateFLAC);
 	RESET_SETTING(settings, compressionAbrBitrateLAME);
+	RESET_SETTING(settings, compressionAbrBitrateMacEnc);
 	RESET_SETTING(settings, compressionAbrBitrateOggEnc);
 	RESET_SETTING(settings, compressionAbrBitrateOpusEnc);
 	RESET_SETTING(settings, compressionAbrBitrateWave);
@@ -427,6 +444,7 @@ void EncoderRegistry::resetAllEncoders(SettingsModel *settings)
 	RESET_SETTING(settings, compressionCbrBitrateDcaEnc);
 	RESET_SETTING(settings, compressionCbrBitrateFLAC);
 	RESET_SETTING(settings, compressionCbrBitrateLAME);
+	RESET_SETTING(settings, compressionCbrBitrateMacEnc);
 	RESET_SETTING(settings, compressionCbrBitrateOggEnc);
 	RESET_SETTING(settings, compressionCbrBitrateOpusEnc);
 	RESET_SETTING(settings, compressionCbrBitrateWave);
@@ -436,6 +454,7 @@ void EncoderRegistry::resetAllEncoders(SettingsModel *settings)
 	RESET_SETTING(settings, compressionRCModeDcaEnc);
 	RESET_SETTING(settings, compressionRCModeFLAC);
 	RESET_SETTING(settings, compressionRCModeLAME);
+	RESET_SETTING(settings, compressionRCModeMacEnc);
 	RESET_SETTING(settings, compressionRCModeOggEnc);
 	RESET_SETTING(settings, compressionRCModeOpusEnc);
 	RESET_SETTING(settings, compressionRCModeWave);
@@ -445,6 +464,7 @@ void EncoderRegistry::resetAllEncoders(SettingsModel *settings)
 	RESET_SETTING(settings, compressionVbrQualityDcaEnc);
 	RESET_SETTING(settings, compressionVbrQualityFLAC);
 	RESET_SETTING(settings, compressionVbrQualityLAME);
+	RESET_SETTING(settings, compressionVbrQualityMacEnc);
 	RESET_SETTING(settings, compressionVbrQualityOggEnc);
 	RESET_SETTING(settings, compressionVbrQualityOpusEnc);
 	RESET_SETTING(settings, compressionVbrQualityWave);

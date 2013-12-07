@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -42,6 +43,7 @@ class QMovie;
 class RAMObserverThread;
 class SettingsModel;
 class QThreadPool;
+class lamexp_icon_t;
 
 enum shutdownFlag_t
 {
@@ -68,6 +70,7 @@ public:
 
 private slots:
 	void initEncoding(void);
+	void initNextJob(void);
 	void startNextJob(void);
 	void doneEncoding(void);
 	void abortEncoding(bool force = false);
@@ -104,6 +107,7 @@ private:
 	bool shutdownComputer(void);
 	QString time2text(const double timeVal) const;
 	
+	lamexp_icon_t *m_windowIcon;
 	QThreadPool *m_threadPool;
 	QList<AudioFileModel> m_pendingJobs;
 	SettingsModel *m_settings;
@@ -115,6 +119,7 @@ private:
 	QActionGroup *m_progressViewFilterGroup;
 	QLabel *m_filterInfoLabel;
 	QLabel *m_filterInfoLabelIcon;
+	unsigned int m_initThreads;
 	unsigned int m_runningThreads;
 	unsigned int m_currentFile;
 	QList<QUuid> m_allJobs;

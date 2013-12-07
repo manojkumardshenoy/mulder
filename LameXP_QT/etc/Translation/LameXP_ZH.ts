@@ -291,6 +291,14 @@
         <source>Codecs.com</source>
         <translation>Codecs.com</translation>
     </message>
+    <message>
+        <source>BerliOS Developer</source>
+        <translation>BerliOS开发者平台</translation>
+    </message>
+    <message>
+        <source>CodePlex</source>
+        <translation>CodePlex</translation>
+    </message>
 </context>
 <context>
     <name>AudioFileModel</name>
@@ -2001,6 +2009,14 @@
         <source>Current Encoder: %1</source>
         <translation>当前的编码器：%1</translation>
     </message>
+    <message>
+        <source>Loading dropped files or folders, please wait...</source>
+        <translation>载入收集的文件或文件夹中，请稍候……</translation>
+    </message>
+    <message>
+        <source>APE</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -2573,7 +2589,7 @@
     </message>
     <message>
         <source>Executable &apos;%1&apos; requires Windows XP or later.</source>
-        <translation type="unfinished"></translation>
+        <translation>可执行文件 &apos;%1&apos; 需要 Windows XP 或更高版本。</translation>
     </message>
 </context>
 <context>
@@ -2645,10 +2661,6 @@
         <translation>网络连接测试失败 !</translation>
     </message>
     <message>
-        <source>Please make sure your internet connection is working properly and try again.</source>
-        <translation>请确保您的网络连接正常工作,然后再试。</translation>
-    </message>
-    <message>
         <source>Checking for new updates online, please wait...</source>
         <translation>在线检查新的版本,请稍候...</translation>
     </message>
@@ -2707,6 +2719,10 @@
     <message>
         <source>Please make sure your computer is connected to the internet and try again.</source>
         <translation>请确保您的计算机连接到 Internet,然后重试。</translation>
+    </message>
+    <message>
+        <source>Initializing, please wait...</source>
+        <translation>正在初始化,请稍候...</translation>
     </message>
 </context>
 </TS>

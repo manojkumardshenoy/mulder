@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -23,6 +24,7 @@
 
 #include "LockedFile.h"
 #include "Tools.h"
+#include "Tool_Abstract.h"
 
 #include <QFileInfo>
 #include <QCoreApplication>
@@ -43,6 +45,37 @@
 /* constants */
 static const double g_allowedExtractDelay = 12.0;
 static const size_t BUFF_SIZE = 512;
+static const size_t EXPECTED_TOOL_COUNT = 27;
+
+/* benchmark */
+#undef ENABLE_BENCHMARK
+
+/* number of CPU cores -> number of threads */
+static unsigned int cores2threads(const unsigned int cores)
+{
+	static const size_t LUT_LEN = 4;
+	
+	static const struct
+	{
+		const unsigned int upperBound;
+		const double coeffs[4];
+	}
+	LUT[LUT_LEN] =
+	{
+		{  4, { -0.052695810565,  0.158087431694, 4.982841530055, -1.088233151184 } },
+		{  8, {  0.042431693989, -0.983442622951, 9.548961748634, -7.176393442623 } },
+		{ 12, { -0.006277322404,  0.185573770492, 0.196830601093, 17.762622950820 } },
+		{ 32, {  0.000673497268, -0.064655737705, 3.199584699454,  5.751606557377 } }
+	};
+
+	size_t index = 0;
+	while((cores > LUT[index].upperBound) && (index < (LUT_LEN-1))) index++;
+
+	const double x = qBound(1.0, double(cores), double(LUT[LUT_LEN-1].upperBound));
+	const double y = (LUT[index].coeffs[0] * pow(x, 3.0)) + (LUT[index].coeffs[1] * pow(x, 2.0)) + (LUT[index].coeffs[2] * x) + LUT[index].coeffs[3];
+
+	return qRound(abs(y));
+}
 
 ////////////////////////////////////////////////////////////
 // ExtractorTask class
@@ -186,7 +219,33 @@ InitializationThread::InitializationThread(const lamexp_cpu_t *cpuFeatures)
 // Thread Main
 ////////////////////////////////////////////////////////////
 
-void InitializationThread::run()
+#ifdef ENABLE_BENCHMARK
+#define DO_INIT_FUNCT runBenchmark
+#else //ENABLE_BENCHMARK
+#define DO_INIT_FUNCT doInit
+#endif //ENABLE_BENCHMARK
+
+void InitializationThread::run(void)
+{
+	try
+	{
+		DO_INIT_FUNCT();
+	}
+	catch(const std::exception &error)
+	{
+		fflush(stdout); fflush(stderr);
+		fprintf(stderr, "\nGURU MEDITATION !!!\n\nException error:\n%s\n", error.what());
+		lamexp_fatal_exit(L"Unhandeled C++ exception error, application will exit!");
+	}
+	catch(...)
+	{
+		fflush(stdout); fflush(stderr);
+		fprintf(stderr, "\nGURU MEDITATION !!!\n\nUnknown exception error!\n");
+		lamexp_fatal_exit(L"Unhandeled C++ exception error, application will exit!");
+	}
+}
+
+double InitializationThread::doInit(const size_t threadCount)
 {
 	m_bSuccess = false;
 	delay();
@@ -253,12 +312,9 @@ void InitializationThread::run()
 	QDir appDir = QDir(QCoreApplication::applicationDirPath()).canonicalPath();
 
 	QThreadPool *pool = new QThreadPool();
-	const int idealThreadCount = QThread::idealThreadCount();
-	if(idealThreadCount > 0)
-	{
-		pool->setMaxThreadCount(idealThreadCount * 2);
-	}
-	
+	pool->setMaxThreadCount((threadCount > 0) ? threadCount : qBound(2U, cores2threads(m_cpuFeatures.count), EXPECTED_TOOL_COUNT));
+	/* qWarning("Using %u threads for extraction.", pool->maxThreadCount()); */
+
 	LockedFile::selfTest();
 	ExtractorTask::clearFlags();
 
@@ -277,7 +333,7 @@ void InitializationThread::run()
 		if(toolHash.size() != 96)
 		{
 			qFatal("The checksum for \"%s\" has an invalid size!", QUTF8(toolName));
-			return;
+			return -1.0;
 		}
 			
 		QResource *resource = new QResource(QString(":/tools/%1").arg(toolName));
@@ -285,7 +341,7 @@ void InitializationThread::run()
 		{
 			LAMEXP_DELETE(resource);
 			qFatal("The resource for \"%s\" could not be found!", QUTF8(toolName));
-			return;
+			return -1.0;
 		}
 			
 		if(cpuType & cpuSupport)
@@ -316,10 +372,10 @@ void InitializationThread::run()
 		if(ExtractorTask::getErrMsg(errorMsg, BUFF_SIZE))
 		{
 			qFatal("At least one of the required tools could not be initialized:\n%s", errorMsg);
-			return;
+			return -1.0;
 		}
 		qFatal("At least one of the required tools could not be initialized!");
-		return;
+		return -1.0;
 	}
 
 	qDebug("All extracted.\n");
@@ -331,7 +387,7 @@ void InitializationThread::run()
 	}
 
 	//Check delay
-	double delayExtract = static_cast<double>(timeExtractEnd - timeExtractStart) / static_cast<double>(lamexp_perfcounter_frequ());
+	const double delayExtract = static_cast<double>(timeExtractEnd - timeExtractStart) / static_cast<double>(lamexp_perfcounter_frequ());
 	if(delayExtract > g_allowedExtractDelay)
 	{
 		m_slowIndicator = true;
@@ -351,8 +407,63 @@ void InitializationThread::run()
 	initFhgAac();
 	initQAac();
 
-	delay();
 	m_bSuccess = true;
+	delay();
+
+	return delayExtract;
+}
+
+void InitializationThread::runBenchmark(void)
+{
+#ifdef ENABLE_BENCHMARK
+	static const size_t nLoops = 5;
+	const size_t maxThreads = (5 * m_cpuFeatures.count);
+	QMap<size_t, double> results;
+
+	for(size_t c = 1; c <= maxThreads; c++)
+	{
+		QList<double> delayLst;
+		double delayAvg = 0.0;
+		for(size_t i = 0; i < nLoops; i++)
+		{
+			delayLst << doInit(c);
+			lamexp_clean_all_tools();
+		}
+		qSort(delayLst.begin(), delayLst.end());
+		delayLst.takeLast();
+		delayLst.takeFirst();
+		for(QList<double>::ConstIterator iter = delayLst.constBegin(); iter != delayLst.constEnd(); iter++)
+		{
+			delayAvg += (*iter);
+		}
+		results.insert(c, (delayAvg / double(delayLst.count())));
+	}
+
+	qWarning("\n----------------------------------------------");
+	qWarning("Benchmark Results:");
+	qWarning("----------------------------------------------");
+
+	double bestTime = DBL_MAX; size_t bestVal = 0;
+	QList<size_t> keys = results.keys();
+	for(QList<size_t>::ConstIterator iter = keys.begin(); iter != keys.end(); iter++)
+	{
+		const double time = results.value((*iter), DBL_MAX);
+		qWarning("%02u -> %7.4f", (*iter), time);
+		if(time < bestTime)
+		{
+			bestTime = time;
+			bestVal = (*iter);
+		}
+	}
+
+	qWarning("----------------------------------------------");
+	qWarning("BEST: %u of %u (factor: %7.4f)", bestVal, m_cpuFeatures.count, (double(bestVal) / double(m_cpuFeatures.count)));
+	qWarning("----------------------------------------------\n");
+	
+	qFatal("Benchmark complete. Thanks and bye bye!");
+#else //ENABLE_BENCHMARK
+	THROW("Sorry, the benchmark is *not* available in this build!");
+#endif //ENABLE_BENCHMARK
 }
 
 ////////////////////////////////////////////////////////////
@@ -361,15 +472,7 @@ void InitializationThread::run()
 
 void InitializationThread::delay(void)
 {
-	const char *temp = "|/-\\";
-	printf("Thread is doing something important... ?\b");
-
-	for(int i = 0; i < 20; i++)
-	{
-		printf("%c\b", temp[i%4]);
-	}
-
-	printf("Done\n\n");
+	lamexp_sleep(333);
 }
 
 void InitializationThread::initTranslations(void)
@@ -470,8 +573,8 @@ void InitializationThread::initNeroAac(void)
 	}
 
 	QProcess process;
-	process.setProcessChannelMode(QProcess::MergedChannels);
-	process.setReadChannel(QProcess::StandardOutput);
+	lamexp_init_process(process, neroFileInfo[0].absolutePath());
+
 	process.start(neroFileInfo[0].canonicalFilePath(), QStringList() << "-help");
 
 	if(!process.waitForStarted())
@@ -576,8 +679,8 @@ void InitializationThread::initFhgAac(void)
 	}
 
 	QProcess process;
-	process.setProcessChannelMode(QProcess::MergedChannels);
-	process.setReadChannel(QProcess::StandardOutput);
+	lamexp_init_process(process, fhgFileInfo[0].absolutePath());
+
 	process.start(fhgFileInfo[0].canonicalFilePath(), QStringList() << "--version");
 
 	if(!process.waitForStarted())
@@ -674,8 +777,8 @@ void InitializationThread::initQAac(void)
 	}
 
 	QProcess process;
-	process.setProcessChannelMode(QProcess::MergedChannels);
-	process.setReadChannel(QProcess::StandardOutput);
+	lamexp_init_process(process, qaacFileInfo[0].absolutePath());
+
 	process.start(qaacFileInfo[0].canonicalFilePath(), QStringList() << "--check");
 
 	if(!process.waitForStarted())
@@ -771,7 +874,6 @@ void InitializationThread::initQAac(void)
 
 void InitializationThread::selfTest(void)
 {
-	static const unsigned int expcetedCount = 27;
 	const unsigned int cpu[4] = {CPU_TYPE_X86_GEN, CPU_TYPE_X86_SSE, CPU_TYPE_X64_GEN, CPU_TYPE_X64_SSE};
 
 	LockedFile::selfTest();
@@ -821,7 +923,7 @@ void InitializationThread::selfTest(void)
 				qFatal("Inconsistent checksum data detected. Take care!");
 			}
 		}
-		if(n != expcetedCount)
+		if(n != EXPECTED_TOOL_COUNT)
 		{
 			qFatal("Tool count mismatch for CPU type %u !!!", cpu[4]);
 		}

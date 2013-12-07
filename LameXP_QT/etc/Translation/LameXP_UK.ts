@@ -292,6 +292,14 @@
         <source>Valdec from AC3Filter Tools - AC3/DTS Decoder</source>
         <translation>Valdec зі складу AC3Filter Tools - декодер AC3/DTS</translation>
     </message>
+    <message>
+        <source>BerliOS Developer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CodePlex</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AudioFileModel</name>
@@ -2016,6 +2024,14 @@
     </message>
     <message>
         <source>Current Encoder: %1</source>
+        <translation>Поточний кодер: %1</translation>
+    </message>
+    <message>
+        <source>Loading dropped files or folders, please wait...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>APE</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2610,7 +2626,7 @@
     </message>
     <message>
         <source>Executable &apos;%1&apos; requires Windows XP or later.</source>
-        <translation type="unfinished"></translation>
+        <translation>Додаток &apos;%1&apos; вимагає використання Windows XP або пізніших ОС.</translation>
     </message>
 </context>
 <context>
@@ -2682,10 +2698,6 @@
         <translation>Збій перевірки мережевого з&apos;єднання!</translation>
     </message>
     <message>
-        <source>Please make sure your internet connection is working properly and try again.</source>
-        <translation>Будь ласка, впевніться, що ваше інтернет-з&apos;єднання працює коректно і спробуйте знову.</translation>
-    </message>
-    <message>
         <source>Checking for new updates online, please wait...</source>
         <translation>Йде перевірка оновлень онлайн, будь ласка, зачекайте...</translation>
     </message>
@@ -2744,6 +2756,10 @@
     <message>
         <source>Update failed. Please try again or download manually!</source>
         <translation>Збій оновлення. Будь ласка, спробуйте ще раз або завантажте оновлення самостійно!</translation>
+    </message>
+    <message>
+        <source>Initializing, please wait...</source>
+        <translation type="unfinished">Ініціалізація, будь ласка, зачекайте...</translation>
     </message>
 </context>
 </TS>

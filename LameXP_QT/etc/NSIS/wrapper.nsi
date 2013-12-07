@@ -51,6 +51,8 @@
 ;Web-Site
 !define MyWebSite "http://mulder.at.gg/"
 
+;Installer file name
+!define InstallerFileName "$PLUGINSDIR\LameXP-SETUP-r${LAMEXP_BUILD}.exe"
 
 ;--------------------------------
 ;Includes
@@ -134,8 +136,10 @@ Section "-LaunchTheInstaller"
 	
 	InitPluginsDir
 	SetOutPath "$PLUGINSDIR"
-	File "/oname=$PLUGINSDIR\LameXP-SETUP-r${LAMEXP_BUILD}.exe" "${LAMEXP_SOURCE_FILE}"
 	
+	SetOverwrite on
+	File "/oname=${InstallerFileName}" "${LAMEXP_SOURCE_FILE}"
+
 	; --------
 	
 	${If} "$EXEFILE" == "LameXP.exe"
@@ -155,33 +159,42 @@ Section "-LaunchTheInstaller"
 
 	; --------
 
-	RunTryAgain:
+	${Do}
+		SetOverwrite ifdiff
+		File "/oname=${InstallerFileName}" "${LAMEXP_SOURCE_FILE}"
+		
+		DetailPrint "ExecShellWait: ${InstallerFileName}"
+		${StdUtils.ExecShellWaitEx} $R1 $R2 "${InstallerFileName}" "open" '$R9'
+		DetailPrint "Result: $R1 ($R2)"
+		
+		${IfThen} $R1 == "no_wait" ${|} Goto RunSuccess ${|}
+		
+		${If} $R1 == "ok"
+			Sleep 333
+			HideWindow
+			${StdUtils.WaitForProcEx} $R1 $R2
+			Goto RunSuccess
+		${EndIf}
+		
+		MessageBox MB_RETRYCANCEL|MB_ICONSTOP|MB_TOPMOST "Failed to launch the installer. Please try again!" IDCANCEL FallbackMode
+	${Loop}
 	
-	DetailPrint "ExecShellWait: $PLUGINSDIR\LameXP-SETUP-r${LAMEXP_BUILD}.exe"
-	${StdUtils.ExecShellWait} $R1 "$PLUGINSDIR\LameXP-SETUP-r${LAMEXP_BUILD}.exe" "open" '$R9'
-	DetailPrint "Result: $R1"
-	
-	StrCmp $R1 "error" RunFailed
-	StrCmp $R1 "no_wait" RunSuccess
-	Sleep 333
-	HideWindow
-	${StdUtils.WaitForProc} $R1
-	Goto RunSuccess
-	
-	; --------
 
-	RunFailed:
+	; -----------
 
-	MessageBox MB_RETRYCANCEL|MB_ICONSTOP|MB_TOPMOST "Failed to launch the installer. Please try again!" IDRETRY RunTryAgain
+	FallbackMode:
 
-	; --------
+	DetailPrint "Installer not launched yet, trying fallback mode!"
+
+	SetOverwrite ifdiff
+	File "/oname=${InstallerFileName}" "${LAMEXP_SOURCE_FILE}"
 
 	ClearErrors
-	ExecShell "open" "$PLUGINSDIR\LameXP-SETUP-r${LAMEXP_BUILD}.exe" '$R9' SW_SHOWNORMAL
+	ExecShell "open" "${InstallerFileName}" '$R9' SW_SHOWNORMAL
 	IfErrors 0 RunSuccess
 
 	ClearErrors
-	ExecShell "" "$PLUGINSDIR\LameXP-SETUP-r${LAMEXP_BUILD}.exe" '$R9' SW_SHOWNORMAL
+	ExecShell "" "${InstallerFileName}" '$R9' SW_SHOWNORMAL
 	IfErrors 0 RunSuccess
 
 	; --------
@@ -190,11 +203,13 @@ Section "-LaunchTheInstaller"
 	DetailPrint "Failed to launch installer :-("
 	SetDetailsPrint listonly
 
+	SetErrorLevel 1
 	Abort "Aborted."
 
 	; --------
 	
 	RunSuccess:
 
-	Delete /REBOOTOK "$PLUGINSDIR\LameXP-SETUP-r${LAMEXP_BUILD}.exe"
+	Delete /REBOOTOK "${InstallerFileName}"
+	SetErrorLevel 0
 SectionEnd

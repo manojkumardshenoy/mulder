@@ -295,6 +295,14 @@
         <source>Codecs.com</source>
         <translation>Codecs.com</translation>
     </message>
+    <message>
+        <source>BerliOS Developer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CodePlex</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AudioFileModel</name>
@@ -2018,6 +2026,14 @@ Ouvrir le dossier récursivement...</translation>
         <source>Current Encoder: %1</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Loading dropped files or folders, please wait...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>APE</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -2674,10 +2690,6 @@ Ouvrir le dossier récursivement...</translation>
         <translation>Le test de connectivité réseau a échoué!</translation>
     </message>
     <message>
-        <source>Please make sure your internet connection is working properly and try again.</source>
-        <translation>Assurez-vous que votre connexion internet fonctionne correctement et essayez à nouveau.</translation>
-    </message>
-    <message>
         <source>Checking for new updates online, please wait...</source>
         <translation>Vérification des nouvelles mises à jour en ligne, patientez...</translation>
     </message>
@@ -2736,6 +2748,10 @@ Ouvrir le dossier récursivement...</translation>
     <message>
         <source>Please make sure your computer is connected to the internet and try again.</source>
         <translation>Veuillez vous assurer que votre ordinateur est connecté à internet et essayez à nouveau.</translation>
+    </message>
+    <message>
+        <source>Initializing, please wait...</source>
+        <translation type="unfinished">Initialisation, patientez...</translation>
     </message>
 </context>
 </TS>

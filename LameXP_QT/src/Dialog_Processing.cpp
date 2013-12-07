@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -25,7 +26,6 @@
 #include "../tmp/UIC_ProcessingDialog.h"
 
 #include "Global.h"
-#include "Resource.h"
 #include "Model_FileList.h"
 #include "Model_Progress.h"
 #include "Model_Settings.h"
@@ -112,6 +112,12 @@ while(0)
 } \
 while(0)
 
+#define PLAY_SOUND_OPTIONAL(NAME, ASYNC) do \
+{ \
+	if(m_settings->soundsEnabled()) lamexp_play_sound((NAME), (ASYNC)); \
+} \
+while(0)
+
 #define IS_VBR(RC_MODE) ((RC_MODE) == SettingsModel::VBRMode)
 
 ////////////////////////////////////////////////////////////
@@ -135,6 +141,7 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, const AudioFile
 :
 	QDialog(parent),
 	ui(new Ui::ProcessingDialog),
+	m_windowIcon(NULL),
 	m_systemTray(new QSystemTrayIcon(QIcon(":/icons/cd_go.png"), this)),
 	m_settings(settings),
 	m_metaInfo(metaInfo),
@@ -144,12 +151,16 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, const AudioFile
 	m_cpuObserver(NULL),
 	m_ramObserver(NULL),
 	m_progressViewFilter(-1),
+	m_initThreads(0),
 	m_firstShow(true)
 {
 	//Init the dialog, from the .ui file
 	ui->setupUi(this);
 	setWindowFlags(windowFlags() ^ Qt::WindowContextHelpButtonHint);
 	
+	//Update the window icon
+	m_windowIcon = lamexp_set_window_icon(this, lamexp_app_icon(), true);
+
 	//Update header icon
 	ui->label_headerIcon->setPixmap(lamexp_app_icon().pixmap(ui->label_headerIcon->size()));
 	
@@ -172,7 +183,6 @@ ProcessingDialog::ProcessingDialog(FileListModel *fileListModel, const AudioFile
 	//Init progress indicator
 	m_progressIndicator = new QMovie(":/images/Working.gif");
 	m_progressIndicator->setCacheMode(QMovie::CacheAll);
-	m_progressIndicator->setSpeed(50);
 	ui->label_headerWorking->setMovie(m_progressIndicator);
 	ui->progressBar->setValue(0);
 
@@ -297,6 +307,7 @@ ProcessingDialog::~ProcessingDialog(void)
 			m_diskObserver->wait();
 		}
 	}
+
 	if(m_cpuObserver)
 	{
 		m_cpuObserver->stop();
@@ -306,6 +317,7 @@ ProcessingDialog::~ProcessingDialog(void)
 			m_cpuObserver->wait();
 		}
 	}
+
 	if(m_ramObserver)
 	{
 		m_ramObserver->stop();
@@ -340,6 +352,12 @@ ProcessingDialog::~ProcessingDialog(void)
 	WinSevenTaskbar::setOverlayIcon(this, NULL);
 	WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNoState);
 
+	if(m_windowIcon)
+	{
+		lamexp_free_window_icon(m_windowIcon);
+		m_windowIcon = NULL;
+	}
+	
 	LAMEXP_DELETE(ui);
 }
 
@@ -354,19 +372,20 @@ void ProcessingDialog::showEvent(QShowEvent *event)
 	if(m_firstShow)
 	{
 		static const char *NA = " N/A";
-	
+
 		lamexp_enable_close_button(this, false);
 		ui->button_closeDialog->setEnabled(false);
 		ui->button_AbortProcess->setEnabled(false);
+		m_progressIndicator->start();
 		m_systemTray->setVisible(true);
 		
 		lamexp_change_process_priority(1);
-
+		
 		ui->label_cpu->setText(NA);
 		ui->label_disk->setText(NA);
 		ui->label_ram->setText(NA);
 
-		QTimer::singleShot(1000, this, SLOT(initEncoding()));
+		QTimer::singleShot(500, this, SLOT(initEncoding()));
 		m_firstShow = false;
 	}
 
@@ -482,7 +501,6 @@ void ProcessingDialog::initEncoding(void)
 
 	CHANGE_BACKGROUND_COLOR(ui->frame_header, QColor(Qt::white));
 	SET_PROGRESS_TEXT(tr("Encoding files, please wait..."));
-	m_progressIndicator->start();
 	
 	ui->button_closeDialog->setEnabled(false);
 	ui->button_AbortProcess->setEnabled(true);
@@ -533,14 +551,28 @@ void ProcessingDialog::initEncoding(void)
 		m_threadPool->setMaxThreadCount(maximumInstances);
 	}
 
-	for(int i = 0; i < m_threadPool->maxThreadCount(); i++)
+	//for(int i = 0; i < m_threadPool->maxThreadCount(); i++)
+	//{
+	//	startNextJob();
+	//	qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+	//	QThread::yieldCurrentThread();
+	//}
+
+	m_initThreads = m_threadPool->maxThreadCount();
+	QTimer::singleShot(100, this, SLOT(initNextJob()));
+	m_timerStart = lamexp_perfcounter_value();
+}
+
+void ProcessingDialog::initNextJob(void)
+{
+	if((m_initThreads > 0) && (!m_userAborted))
 	{
 		startNextJob();
-		qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
-		QThread::yieldCurrentThread();
+		if(--m_initThreads > 0)
+		{
+			QTimer::singleShot(100, this, SLOT(initNextJob()));
+		}
 	}
-
-	m_timerStart = lamexp_perfcounter_value();
 }
 
 void ProcessingDialog::startNextJob(void)
@@ -615,9 +647,6 @@ void ProcessingDialog::startNextJob(void)
 		qFatal("Fatal Error: Thread initialization has failed!");
 	}
 
-	//Update GUI
-	qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
-
 	//Give it a go!
 	if(!thread->start(m_threadPool))
 	{
@@ -670,17 +699,14 @@ void ProcessingDialog::doneEncoding(void)
 	
 	if(m_userAborted)
 	{
-		CHANGE_BACKGROUND_COLOR(ui->frame_header, QColor("#FFF3BA"));
+		CHANGE_BACKGROUND_COLOR(ui->frame_header, QColor("#FFFFE0"));
 		WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarErrorState);
 		WinSevenTaskbar::setOverlayIcon(this, &QIcon(":/icons/error.png"));
 		SET_PROGRESS_TEXT((m_succeededJobs.count() > 0) ? tr("Process was aborted by the user after %n file(s)!", "", m_succeededJobs.count()) : tr("Process was aborted prematurely by the user!"));
 		m_systemTray->showMessage(tr("LameXP - Aborted"), tr("Process was aborted by the user."), QSystemTrayIcon::Warning);
 		m_systemTray->setIcon(QIcon(":/icons/cd_delete.png"));
 		qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
-		if(m_settings->soundsEnabled() && (!m_forcedAbort))
-		{
-			lamexp_play_sound(IDR_WAVE_ABORTED, false);
-		}
+		if(!m_forcedAbort) PLAY_SOUND_OPTIONAL("aborted", false);
 	}
 	else
 	{
@@ -697,7 +723,7 @@ void ProcessingDialog::doneEncoding(void)
 
 		if(m_failedJobs.count() > 0)
 		{
-			CHANGE_BACKGROUND_COLOR(ui->frame_header, QColor("#FFBABA"));
+			CHANGE_BACKGROUND_COLOR(ui->frame_header, QColor("#FFF0F0"));
 			WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarErrorState);
 			WinSevenTaskbar::setOverlayIcon(this, &QIcon(":/icons/exclamation.png"));
 			if(m_skippedJobs.count() > 0)
@@ -711,11 +737,11 @@ void ProcessingDialog::doneEncoding(void)
 			m_systemTray->showMessage(tr("LameXP - Error"), tr("At least one file has failed!"), QSystemTrayIcon::Critical);
 			m_systemTray->setIcon(QIcon(":/icons/cd_delete.png"));
 			qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
-			if(m_settings->soundsEnabled()) lamexp_play_sound(IDR_WAVE_ERROR, false);
+			PLAY_SOUND_OPTIONAL("error", false);
 		}
 		else
 		{
-			CHANGE_BACKGROUND_COLOR(ui->frame_header, QColor("#E0FFE2"));
+			CHANGE_BACKGROUND_COLOR(ui->frame_header, QColor("#F0FFF0"));
 			WinSevenTaskbar::setTaskbarState(this, WinSevenTaskbar::WinSevenTaskbarNormalState);
 			WinSevenTaskbar::setOverlayIcon(this, &QIcon(":/icons/accept.png"));
 			if(m_skippedJobs.count() > 0)
@@ -729,7 +755,7 @@ void ProcessingDialog::doneEncoding(void)
 			m_systemTray->showMessage(tr("LameXP - Done"), tr("All files completed successfully."), QSystemTrayIcon::Information);
 			m_systemTray->setIcon(QIcon(":/icons/cd_add.png"));
 			qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
-			if(m_settings->soundsEnabled()) lamexp_play_sound(IDR_WAVE_SUCCESS, false);
+			PLAY_SOUND_OPTIONAL("success", false);
 		}
 	}
 	
@@ -1099,12 +1125,9 @@ bool ProcessingDialog::shutdownComputer(void)
 	
 	qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
 
-	if(m_settings->soundsEnabled())
-	{
-		QApplication::setOverrideCursor(Qt::WaitCursor);
-		lamexp_play_sound(IDR_WAVE_SHUTDOWN, false);
-		QApplication::restoreOverrideCursor();
-	}
+	QApplication::setOverrideCursor(Qt::WaitCursor);
+	PLAY_SOUND_OPTIONAL("shutdown", false);
+	QApplication::restoreOverrideCursor();
 
 	QTimer timer;
 	timer.setInterval(1000);
@@ -1126,7 +1149,7 @@ bool ProcessingDialog::shutdownComputer(void)
 		progressDialog.setLabelText(text.arg(iTimeout-i));
 		if(iTimeout-i == 3) progressDialog.setCancelButton(NULL);
 		qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
-		lamexp_play_sound(((i < iTimeout) ? IDR_WAVE_BEEP : IDR_WAVE_BEEP_LONG), false);
+		PLAY_SOUND_OPTIONAL(((i < iTimeout) ? "beep" : "beep2"), false);
 	}
 	
 	progressDialog.close();

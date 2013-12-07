@@ -292,6 +292,14 @@
         <source>Codecs.com</source>
         <translation type="unfinished">Codecs.com</translation>
     </message>
+    <message>
+        <source>BerliOS Developer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CodePlex</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AudioFileModel</name>
@@ -2002,6 +2010,14 @@
         <source>Current Encoder: %1</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Loading dropped files or folders, please wait...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>APE</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MetaInfo</name>
@@ -2646,10 +2662,6 @@
         <translation type="unfinished">네트워크 연결 테스트가 실패되었습니다!</translation>
     </message>
     <message>
-        <source>Please make sure your internet connection is working properly and try again.</source>
-        <translation type="unfinished">인터넷에 연결되어 있는지 확인하고 다시 시도하시기 바랍니다.</translation>
-    </message>
-    <message>
         <source>Checking for new updates online, please wait...</source>
         <translation type="unfinished">새로운 업데이트 점검중, 잠시만 기다려 주십시오...</translation>
     </message>
@@ -2708,6 +2720,10 @@
     <message>
         <source>Please make sure your computer is connected to the internet and try again.</source>
         <translation type="unfinished">인터넷 연결을 확인하고 다시 시도하시기 바랍니다.</translation>
+    </message>
+    <message>
+        <source>Initializing, please wait...</source>
+        <translation type="unfinished">초기화중, 잠시만 기다려 주십시오...</translation>
     </message>
 </context>
 </TS>

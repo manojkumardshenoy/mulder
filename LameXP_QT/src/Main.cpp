@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -39,14 +40,6 @@
 #include <QMutex>
 #include <QDir>
 
-//Windows includes
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-
-//Forward declaration
-LONG WINAPI lamexp_exception_handler(__in struct _EXCEPTION_POINTERS *ExceptionInfo);
-
 ///////////////////////////////////////////////////////////////////////////////
 // Main function
 ///////////////////////////////////////////////////////////////////////////////
@@ -56,9 +49,6 @@ static int lamexp_main(int argc, char* argv[])
 	int iResult = -1;
 	int iShutdown = shutdownFlag_None;
 	bool bAccepted = true;
-
-	//Increase "main" thread priority
-	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 
 	//Get CLI arguments
 	const QStringList &arguments = lamexp_arguments();
@@ -271,16 +261,14 @@ int main(int argc, char* argv[])
 	{
 		__try
 		{
-			SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
-			SetUnhandledExceptionFilter(lamexp_exception_handler);
-			_set_invalid_parameter_handler(lamexp_invalid_param_handler);
+			lamexp_init_error_handlers();
 			return _main(argc, argv);
 		}
 		__except(1)
 		{
 			fflush(stdout);
 			fflush(stderr);
-			fprintf(stderr, "\nGURU MEDITATION !!!\n\nUnhandeled structured exception error! [code: 0x%X]\n", GetExceptionCode());
+			fprintf(stderr, "\nGURU MEDITATION !!!\n\nUnhandeled structured exception error!\n");
 			lamexp_fatal_exit(L"Unhandeled structured exception error, application will exit!");
 		}
 	}

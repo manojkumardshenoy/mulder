@@ -5,7 +5,8 @@
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// (at your option) any later version, but always including the *additional*
+// restrictions defined in the "License.txt" file.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -34,11 +35,16 @@ class InitializationThread: public QThread
 
 public:
 	InitializationThread(const lamexp_cpu_t *cpuFeatures);
-	void run();
+
 	bool getSuccess(void) { return !isRunning() && m_bSuccess; }
 	bool getSlowIndicator(void) { return m_slowIndicator; }
 
 	static void selfTest(void);
+
+protected:
+	void run(void);
+	double doInit(const size_t threadCount = 0);
+	void runBenchmark(void);
 
 private:
 	void delay(void);
