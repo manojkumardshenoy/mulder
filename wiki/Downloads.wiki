@@ -3,6 +3,9 @@
 *All downloads have been moved to our SourceForge.net mirror at:*<br>
 *[https://sourceforge.net/projects/muldersoft/files/]*
 
+*More information available from the official web-site at:*<br>
+*[http://muldersoft.com]*
+
 (Google Code will not support creating new downloads starting January 15th, 2014. That's why!)
 
 === Legacy Downloads ===
