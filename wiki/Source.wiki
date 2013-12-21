@@ -1,0 +1,14 @@
+= Source =
+
+*The SVN repository has been moved to our SourceForge.net project site:*<br>
+*[http://sourceforge.net/p/muldersoft/code/]*
+
+*Also the development of most projects is currently being moved to Git:*<br>
+*[https://github.com/lordmulder?tab=repositories]*
+
+(Google Code will not support creating new downloads starting January 15th, 2014. That's why!)
+
+<br><hr><br>
+
+The sources previously hosted on GoogleCode.com currently can still be found here:<br>
+[https://code.google.com/p/mulder/source/browse/]
