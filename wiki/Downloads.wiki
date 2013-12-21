@@ -1,6 +1,11 @@
-== Downloads ==
+= Downloads =
 
-All downloads have been moved to our SourceForge.net mirror at:<br>
-[https://sourceforge.net/projects/muldersoft/files/]
+*All downloads have been moved to our SourceForge.net mirror at:*<br>
+*[https://sourceforge.net/projects/muldersoft/files/]*
 
 (Google Code will not support creating new downloads starting January 15th, 2014. That's why!)
+
+=== Legacy Downloads ===
+
+The downloads previously hosted on GoogleCode.com currently can still be found here:<br>
+[http://code.google.com/p/mulder/downloads/list?can=1&q=&sort=-uploaded]
