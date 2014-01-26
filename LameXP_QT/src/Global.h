@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2013 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2014 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -186,6 +186,7 @@ bool lamexp_install_translator_from_file(const QString &qmFile);
 void lamexp_invalid_param_handler(const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t);
 void lamexp_ipc_read(unsigned int *command, char* message, size_t buffSize);
 void lamexp_ipc_send(unsigned int command, const char* message);
+bool lamexp_is_executable(const QString &path);
 bool lamexp_is_hibernation_supported(void);
 const QString &lamexp_known_folder(lamexp_known_folder_t folder_id);
 const QString lamexp_lookup_tool(const QString &toolName);
@@ -229,6 +230,7 @@ QString lamexp_translation_name(const QString &language);
 bool lamexp_translation_register(const QString &langId, const QString &qmFile, const QString &langName, unsigned int &systemId, unsigned int &country);
 unsigned int lamexp_translation_sysid(const QString &langId);
 bool lamexp_update_sysmenu(const QWidget *win, const unsigned int identifier, const QString &text);
+bool lamexp_user_is_admin(void);
 const QString lamexp_version2string(const QString &pattern, unsigned int version, const QString &defaultText, const QString *tag = NULL);
 const char *lamexp_version_arch(void);
 unsigned int lamexp_version_build(void);

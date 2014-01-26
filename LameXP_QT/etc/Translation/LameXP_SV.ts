@@ -137,12 +137,12 @@
     <message>
         <location filename="../../src/Dialog_About.cpp" line="609"/>
         <source>BerliOS Developer</source>
-        <translation type="unfinished"></translation>
+        <translation>BerliOS Utvecklare</translation>
     </message>
     <message>
         <location filename="../../src/Dialog_About.cpp" line="611"/>
         <source>CodePlex</source>
-        <translation type="unfinished"></translation>
+        <translation>CodePlex</translation>
     </message>
     <message>
         <location filename="../../src/Dialog_About.cpp" line="613"/>
@@ -177,11 +177,11 @@
         <location filename="../../src/Dialog_About.cpp" line="707"/>
         <location filename="../../src/Dialog_About.cpp" line="721"/>
         <location filename="../../src/Dialog_About.cpp" line="735"/>
+        <location filename="../../src/Dialog_About.cpp" line="770"/>
         <location filename="../../src/Dialog_About.cpp" line="777"/>
         <location filename="../../src/Dialog_About.cpp" line="784"/>
         <location filename="../../src/Dialog_About.cpp" line="791"/>
         <location filename="../../src/Dialog_About.cpp" line="798"/>
-        <location filename="../../src/Dialog_About.cpp" line="805"/>
         <source>Released under the terms of the GNU Lesser General Public License.</source>
         <translation>Släppt under Gnu Lesser General Public License.</translation>
     </message>
@@ -301,87 +301,87 @@
         <translation>The True Audio - Lossless Audio Codec</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_About.cpp" line="747"/>
+        <location filename="../../src/Dialog_About.cpp" line="740"/>
         <source>refalac - Win32 command line ALAC encoder/decoder</source>
         <translation>refalac - Win32 kommandorad ALAC-kodare/-avkodare</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_About.cpp" line="749"/>
+        <location filename="../../src/Dialog_About.cpp" line="742"/>
         <source>The ALAC reference implementation by Apple is available under the Apache license.</source>
         <translation>ALAC referensimplementation av Apple finns tillgänglig under Apache-licensen.</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_About.cpp" line="754"/>
+        <location filename="../../src/Dialog_About.cpp" line="747"/>
         <source>wma2wav - Dump WMA files to Wave Audio</source>
         <translation>wma2wav - Dump WMA files to Wave Audio</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_About.cpp" line="756"/>
+        <location filename="../../src/Dialog_About.cpp" line="749"/>
         <source>Copyright (c) 2011 LoRd_MuldeR &lt;mulder2@gmx.de&gt;. Some rights reserved.</source>
         <translation>Copyright (c) 2011 LoRd_MuldeR &lt;mulder2@gmx.de&gt;. Some rights reserved.</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_About.cpp" line="761"/>
+        <location filename="../../src/Dialog_About.cpp" line="754"/>
         <source>avs2wav - Avisynth to Wave Audio converter</source>
         <translation>avs2wav - Avisynth to Wave Audio converter</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_About.cpp" line="763"/>
+        <location filename="../../src/Dialog_About.cpp" line="756"/>
         <source>By Jory Stone &lt;jcsston@toughguy.net&gt; and LoRd_MuldeR &lt;mulder2@gmx.de&gt;.</source>
         <translation>By Jory Stone &lt;jcsston@toughguy.net&gt; and LoRd_MuldeR &lt;mulder2@gmx.de&gt;.</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_About.cpp" line="768"/>
+        <location filename="../../src/Dialog_About.cpp" line="761"/>
         <source>dcaenc</source>
         <translation>dcaenc</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_About.cpp" line="770"/>
+        <location filename="../../src/Dialog_About.cpp" line="763"/>
         <source>Copyright (c) 2008-2011 Alexander E. Patrakov. Distributed under the LGPL.</source>
         <translation>Copyright (c) 2008-2011 Alexander E. Patrakov. Distributed under the LGPL.</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_About.cpp" line="775"/>
+        <location filename="../../src/Dialog_About.cpp" line="768"/>
         <source>MediaInfo - Media File Analysis Tool</source>
         <translation>MediaInfo - Analysverktyg för mediafiler</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_About.cpp" line="782"/>
+        <location filename="../../src/Dialog_About.cpp" line="775"/>
         <source>SoX - Sound eXchange</source>
         <translation>SoX - Sound eXchange</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_About.cpp" line="789"/>
+        <location filename="../../src/Dialog_About.cpp" line="782"/>
         <source>GnuPG - The GNU Privacy Guard</source>
         <translation>GnuPG - The GNU Privacy Guard</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_About.cpp" line="796"/>
+        <location filename="../../src/Dialog_About.cpp" line="789"/>
         <source>GNU Wget - Software for retrieving files using HTTP</source>
         <translation>GNU Wget - Mjukvara för att ta emot filer via HTTP</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_About.cpp" line="803"/>
+        <location filename="../../src/Dialog_About.cpp" line="796"/>
         <source>UPX - The Ultimate Packer for eXecutables</source>
         <translation>UPX - Den ultimata paketeraren för exekverbara filer</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_About.cpp" line="810"/>
+        <location filename="../../src/Dialog_About.cpp" line="803"/>
         <source>Silk Icons - Over 700  icons in PNG format</source>
         <translation>Silk Icons - Över 700  iconer i PNG-format</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_About.cpp" line="812"/>
+        <location filename="../../src/Dialog_About.cpp" line="805"/>
         <source>By Mark James, released under the Creative Commons &apos;by&apos; License.</source>
         <translation>Av Mark James, publicerad under Creative Commons &apos;by&apos; Licens.</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_About.cpp" line="817"/>
+        <location filename="../../src/Dialog_About.cpp" line="810"/>
         <source>The copyright of LameXP as a whole belongs to LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</source>
         <translation>The copyright of LameXP as a whole belongs to LoRd_MuldeR. The copyright of third-party software used in LameXP belongs to the individual authors.</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_About.cpp" line="873"/>
+        <location filename="../../src/Dialog_About.cpp" line="866"/>
         <source>n/a</source>
         <translation>n/a</translation>
     </message>
@@ -1037,7 +1037,7 @@
     <message>
         <location filename="../../gui/MainWindow.ui" line="931"/>
         <source>APE</source>
-        <translation type="unfinished"></translation>
+        <translation>APE</translation>
     </message>
     <message>
         <location filename="../../gui/MainWindow.ui" line="1028"/>
@@ -2376,7 +2376,7 @@
     <message>
         <location filename="../../src/Dialog_MainWindow.cpp" line="2451"/>
         <source>Loading dropped files or folders, please wait...</source>
-        <translation type="unfinished"></translation>
+        <translation>Läser in släppta filer och mappar! Vänta...</translation>
     </message>
     <message>
         <location filename="../../src/Dialog_MainWindow.cpp" line="2556"/>
@@ -2520,7 +2520,7 @@
     <message>
         <location filename="../../src/Dialog_MainWindow.cpp" line="3374"/>
         <source>Current Encoder: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktuell kodare: %1</translation>
     </message>
     <message>
         <location filename="../../src/Dialog_MainWindow.cpp" line="3537"/>
@@ -3330,24 +3330,24 @@
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="../../src/Global_Win32.cpp" line="1057"/>
+        <location filename="../../src/Global_Win32.cpp" line="1064"/>
         <source>Executable &apos;%1&apos; doesn&apos;t support Windows compatibility mode.</source>
         <translation>EXE-filen &apos;%1&apos; stöder inte Windows kompatibilitetsläge.</translation>
     </message>
     <message>
-        <location filename="../../src/Global_Win32.cpp" line="999"/>
+        <location filename="../../src/Global_Win32.cpp" line="1006"/>
         <source>Executable &apos;%1&apos; requires Qt v%2, but found Qt v%3.</source>
         <translation>EXE-filen &apos;%1&apos; kräver Qt v%2, du har Qt v%3.</translation>
     </message>
     <message>
-        <location filename="../../src/Global_Win32.cpp" line="1004"/>
+        <location filename="../../src/Global_Win32.cpp" line="1011"/>
         <source>Executable &apos;%1&apos; was built for Qt &apos;%2&apos;, but found Qt &apos;%3&apos;.</source>
         <translation>EXE-filen &apos;%1&apos; är byggd för Qt &apos;%2&apos;, du har Qt &apos;%3&apos;.</translation>
     </message>
     <message>
-        <location filename="../../src/Global_Win32.cpp" line="1016"/>
+        <location filename="../../src/Global_Win32.cpp" line="1023"/>
         <source>Executable &apos;%1&apos; requires Windows XP or later.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 kräver Windows XP eller senare.</translation>
     </message>
 </context>
 <context>
@@ -3414,104 +3414,124 @@
         <translation>Stäng</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="170"/>
-        <location filename="../../src/Dialog_Update.cpp" line="351"/>
+        <location filename="../../src/Dialog_Update.cpp" line="171"/>
+        <location filename="../../src/Dialog_Update.cpp" line="364"/>
         <source>Build</source>
         <translation>Build</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="171"/>
+        <location filename="../../src/Dialog_Update.cpp" line="172"/>
         <source>Unknown</source>
         <translation>Okänd</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="280"/>
+        <location filename="../../src/Dialog_Update.cpp" line="256"/>
+        <source>Sorry, but only users in the &quot;Administrators&quot; group can install updates.</source>
+        <translation>Endast administratörer kan installera uppdayteringar.</translation>
+    </message>
+    <message>
+        <location filename="../../src/Dialog_Update.cpp" line="257"/>
+        <source>Please start application from an administrator account and try again!</source>
+        <translation>Starta programmet från ett administratörskonto och försök igen!</translation>
+    </message>
+    <message>
+        <location filename="../../src/Dialog_Update.cpp" line="293"/>
         <source>Testing your internet connection, please wait...</source>
         <translation>Kontrollerar iInternetanslutningen, vänta...</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="301"/>
+        <location filename="../../src/Dialog_Update.cpp" line="314"/>
         <source>It appears that the computer currently is offline!</source>
         <translation>Datorn verkar inte vara ansluten till Internet!</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="302"/>
-        <location filename="../../src/Dialog_Update.cpp" line="307"/>
+        <location filename="../../src/Dialog_Update.cpp" line="315"/>
+        <location filename="../../src/Dialog_Update.cpp" line="320"/>
         <source>Please make sure your computer is connected to the internet and try again.</source>
         <translation>Tillse att datorn är ansluten till Internet och försök igen.</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="306"/>
+        <location filename="../../src/Dialog_Update.cpp" line="319"/>
         <source>Network connectivity test has failed!</source>
         <translation>Anslutningskontrollen misslyckades!</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="283"/>
+        <location filename="../../src/Dialog_Update.cpp" line="296"/>
         <source>Checking for new updates online, please wait...</source>
         <translation>Söker nya uppdateringar, vänta...</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="311"/>
+        <location filename="../../src/Dialog_Update.cpp" line="324"/>
         <source>Failed to fetch update information from server!</source>
         <translation>Kunde inte hämta uppdateringsinformation från servern!</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="312"/>
+        <location filename="../../src/Dialog_Update.cpp" line="325"/>
         <source>Sorry, the update server might be busy at this time. Plase try again later.</source>
         <translation>Uppdateringsservern kan vara upptagen. Försök senare.</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="350"/>
+        <location filename="../../src/Dialog_Update.cpp" line="363"/>
         <source>More information available at:</source>
         <translation>Mer information hittas på:</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="286"/>
+        <location filename="../../src/Dialog_Update.cpp" line="299"/>
         <source>A new version of LameXP is available!</source>
         <translation>En ny version av LameXP finns tillgänglig!</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="277"/>
-        <source>Initializing, please wait...</source>
-        <translation type="unfinished">Initierar, vänta...</translation>
+        <location filename="../../src/Dialog_Update.cpp" line="258"/>
+        <source>Discard</source>
+        <translation>Stäng</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="287"/>
+        <location filename="../../src/Dialog_Update.cpp" line="258"/>
+        <source>Ignore</source>
+        <translation>Hoppa över</translation>
+    </message>
+    <message>
+        <location filename="../../src/Dialog_Update.cpp" line="290"/>
+        <source>Initializing, please wait...</source>
+        <translation>Startar! Vänta...</translation>
+    </message>
+    <message>
+        <location filename="../../src/Dialog_Update.cpp" line="300"/>
         <source>We highly recommend all users to install this update as soon as possible.</source>
         <translation>Vi rekommenderar alla användare att installera denna uppdatering så snart som möjligt.</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="291"/>
+        <location filename="../../src/Dialog_Update.cpp" line="304"/>
         <source>No new updates available at this time.</source>
         <translation>Det finns inga nya uppdateringar.</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="292"/>
+        <location filename="../../src/Dialog_Update.cpp" line="305"/>
         <source>Your version of LameXP is still up-to-date. Please check for updates regularly!</source>
         <translation>Din version av LameXP är uppdaterad. Kontrollera regelbundet!</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="296"/>
+        <location filename="../../src/Dialog_Update.cpp" line="309"/>
         <source>Your version appears to be newer than the latest release.</source>
         <translation>Din version verkar vara nyare än senaste &apos;Release&apos;.</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="297"/>
+        <location filename="../../src/Dialog_Update.cpp" line="310"/>
         <source>This usually indicates your are currently using a pre-release version of LameXP.</source>
         <translation>Det innebär normalt att du använder en beta-version av LameXP.</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="379"/>
+        <location filename="../../src/Dialog_Update.cpp" line="392"/>
         <source>Update is being downloaded, please be patient...</source>
         <translation>Uppdatering laddas ner, vänta...</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="426"/>
+        <location filename="../../src/Dialog_Update.cpp" line="439"/>
         <source>Update ready to install. Applicaion will quit...</source>
         <translation>Uppdatering klar att installeras. Programmet kommer att avslutas...</translation>
     </message>
     <message>
-        <location filename="../../src/Dialog_Update.cpp" line="434"/>
+        <location filename="../../src/Dialog_Update.cpp" line="447"/>
         <source>Update failed. Please try again or download manually!</source>
         <translation>Uppdateringen misslyckades. Försök igen, eller ladda ner manuellt!</translation>
     </message>

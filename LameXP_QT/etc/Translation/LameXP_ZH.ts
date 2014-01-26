@@ -2007,15 +2007,15 @@
     </message>
     <message>
         <source>Current Encoder: %1</source>
-        <translation>当前的编码器：%1</translation>
+        <translation>当前的编码：%1</translation>
     </message>
     <message>
         <source>Loading dropped files or folders, please wait...</source>
-        <translation>载入收集的文件或文件夹中，请稍候……</translation>
+        <translation>加载拖放文件或文件夹中，请稍候……</translation>
     </message>
     <message>
         <source>APE</source>
-        <translation type="unfinished"></translation>
+        <translation>APE</translation>
     </message>
 </context>
 <context>
@@ -2723,6 +2723,22 @@
     <message>
         <source>Initializing, please wait...</source>
         <translation>正在初始化,请稍候...</translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation>放弃</translation>
+    </message>
+    <message>
+        <source>Ignore</source>
+        <translation>忽略</translation>
+    </message>
+    <message>
+        <source>Sorry, but only users in the &quot;Administrators&quot; group can install updates.</source>
+        <translation>抱歉，只有管理员组的用户能够安装更新。</translation>
+    </message>
+    <message>
+        <source>Please start application from an administrator account and try again!</source>
+        <translation>请以管理员身份运行程序并重试！</translation>
     </message>
 </context>
 </TS>

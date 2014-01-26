@@ -1,6 +1,6 @@
 ; ///////////////////////////////////////////////////////////////////////////////
 ; // LameXP - Audio Encoder Front-End
-; // Copyright (C) 2004-2013 LoRd_MuldeR <MuldeR2@GMX.de>
+; // Copyright (C) 2004-2014 LoRd_MuldeR <MuldeR2@GMX.de>
 ; //
 ; // This program is free software; you can redistribute it and/or modify
 ; // it under the terms of the GNU General Public License as published by
@@ -143,7 +143,7 @@ VIAddVersionKey "Comments" "This program is free software; you can redistribute 
 VIAddVersionKey "CompanyName" "Free Software Foundation"
 VIAddVersionKey "FileDescription" "LameXP v${LAMEXP_VERSION} ${LAMEXP_INSTTYPE}-${LAMEXP_PATCH} [Build #${LAMEXP_BUILD}]"
 VIAddVersionKey "FileVersion" "${PRODUCT_VERSION_DATE}.${LAMEXP_BUILD} (${LAMEXP_VERSION})"
-VIAddVersionKey "LegalCopyright" "Copyright 2004-2013 LoRd_MuldeR"
+VIAddVersionKey "LegalCopyright" "Copyright 2004-2014 LoRd_MuldeR"
 VIAddVersionKey "LegalTrademarks" "GNU"
 VIAddVersionKey "OriginalFilename" "LameXP.${LAMEXP_DATE}.exe"
 VIAddVersionKey "ProductName" "LameXP - Audio Encoder Frontend"
@@ -511,7 +511,7 @@ Section "-Create Shortcuts"
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(LAMEXP_LANG_LINK_MANUAL).lnk" "$INSTDIR\Manual.html"
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(LAMEXP_LANG_LINK_UNINSTALL).lnk" "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
 		
-		!insertmacro CreateWebLink "$SMPROGRAMS\$StartMenuFolder\Official LameXP Homepage.url" "http://mulder.dummwiedeutsch.de/"
+		!insertmacro CreateWebLink "$SMPROGRAMS\$StartMenuFolder\Official LameXP Homepage.url" "${MyWebSite}"
 		!insertmacro CreateWebLink "$SMPROGRAMS\$StartMenuFolder\Doom9's Forum.url" "http://forum.doom9.org/"
 		!insertmacro CreateWebLink "$SMPROGRAMS\$StartMenuFolder\RareWares.org.url" "http://rarewares.org/"
 		!insertmacro CreateWebLink "$SMPROGRAMS\$StartMenuFolder\Hydrogenaudio Forums.url" "http://www.hydrogenaudio.org/"
