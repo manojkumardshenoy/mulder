@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2013 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2014 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -476,7 +476,7 @@ void EncoderRegistry::resetAllEncoders(SettingsModel *settings)
 
 int EncoderRegistry::getAacEncoder(void)
 {
-	if(lamexp_check_tool("qaac.exe") && lamexp_check_tool("libsoxrate.dll"))
+	if(lamexp_check_tool("qaac.exe") && lamexp_check_tool("libsoxr.dll") && lamexp_check_tool("libsoxconvolver.dll"))
 	{
 		return SettingsModel::AAC_ENCODER_QAAC;
 	}

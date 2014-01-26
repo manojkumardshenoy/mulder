@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2013 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2014 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -45,7 +45,8 @@ public:
 	static const AbstractEncoderInfo *getEncoderInfo(void);
 
 private:
-	const QString m_binary_enc;
-	const QString m_binary_dll;
+	const QString m_binary_qaac;
+	const QString m_binary_soxr;
+	const QString m_binary_soxc;
 	int m_configProfile;
 };

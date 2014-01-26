@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2013 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2014 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -33,10 +33,10 @@
 #define VER_LAMEXP_MAJOR					4
 #define VER_LAMEXP_MINOR_HI					0
 #define VER_LAMEXP_MINOR_LO					9
-#define VER_LAMEXP_TYPE						Alpha
-#define VER_LAMEXP_PATCH					10
-#define VER_LAMEXP_BUILD					1506
-#define VER_LAMEXP_CONFG					1348
+#define VER_LAMEXP_TYPE						Final
+#define VER_LAMEXP_PATCH					1
+#define VER_LAMEXP_BUILD					1524
+#define VER_LAMEXP_CONFG					1524
 
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP Build Options
@@ -51,8 +51,8 @@
 
 #define VER_LAMEXP_TOOL_NEROAAC				1540
 #define VER_LAMEXP_TOOL_FHGAACENC			20120806
-#define VER_LAMEXP_TOOL_QAAC				139
-#define VER_LAMEXP_TOOL_COREAUDIO			7710
+#define VER_LAMEXP_TOOL_QAAC				233
+#define VER_LAMEXP_TOOL_COREAUDIO			7900
 
 ///////////////////////////////////////////////////////////////////////////////
 // Helper macros (aka: having fun with the C pre-processor)

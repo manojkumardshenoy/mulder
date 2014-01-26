@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // LameXP - Audio Encoder Front-End
-// Copyright (C) 2004-2013 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2004-2014 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -892,35 +892,42 @@ static bool lamexp_event_filter(void *message, long *result)
 /*
  * Check for process elevation
  */
-static bool lamexp_check_elevation(void)
+static bool lamexp_process_is_elevated(bool *bIsUacEnabled = NULL)
 {
-	typedef enum { lamexp_token_elevationType_class = 18, lamexp_token_elevation_class = 20 } LAMEXP_TOKEN_INFORMATION_CLASS;
-	typedef enum { lamexp_elevationType_default = 1, lamexp_elevationType_full, lamexp_elevationType_limited } LAMEXP_TOKEN_ELEVATION_TYPE;
-
-	HANDLE hToken = NULL;
 	bool bIsProcessElevated = false;
+	if(bIsUacEnabled) *bIsUacEnabled = false;
+	HANDLE hToken = NULL;
 	
 	if(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
 	{
-		LAMEXP_TOKEN_ELEVATION_TYPE tokenElevationType;
+		TOKEN_ELEVATION_TYPE tokenElevationType;
 		DWORD returnLength;
-		if(GetTokenInformation(hToken, (TOKEN_INFORMATION_CLASS) lamexp_token_elevationType_class, &tokenElevationType, sizeof(LAMEXP_TOKEN_ELEVATION_TYPE), &returnLength))
+		if(GetTokenInformation(hToken, TokenElevationType, &tokenElevationType, sizeof(TOKEN_ELEVATION_TYPE), &returnLength))
 		{
-			if(returnLength == sizeof(LAMEXP_TOKEN_ELEVATION_TYPE))
+			if(returnLength == sizeof(TOKEN_ELEVATION_TYPE))
 			{
 				switch(tokenElevationType)
 				{
-				case lamexp_elevationType_default:
+				case TokenElevationTypeDefault:
 					qDebug("Process token elevation type: Default -> UAC is disabled.\n");
 					break;
-				case lamexp_elevationType_full:
+				case TokenElevationTypeFull:
 					qWarning("Process token elevation type: Full -> potential security risk!\n");
 					bIsProcessElevated = true;
+					if(bIsUacEnabled) *bIsUacEnabled = true;
 					break;
-				case lamexp_elevationType_limited:
+				case TokenElevationTypeLimited:
 					qDebug("Process token elevation type: Limited -> not elevated.\n");
+					if(bIsUacEnabled) *bIsUacEnabled = true;
+					break;
+				default:
+					qWarning("Unknown tokenElevationType value: %d", tokenElevationType);
 					break;
 				}
+			}
+			else
+			{
+				qWarning("GetTokenInformation() return an unexpected size!");
 			}
 		}
 		CloseHandle(hToken);
@@ -930,7 +937,7 @@ static bool lamexp_check_elevation(void)
 		qWarning("Failed to open process token!");
 	}
 
-	return !bIsProcessElevated;
+	return bIsProcessElevated;
 }
 
 /*
@@ -1098,7 +1105,7 @@ bool lamexp_init_qt(int argc, char* argv[])
 	lamexp_translation_init();
 
 	//Check for process elevation
-	if((!lamexp_check_elevation()) && (!lamexp_detect_wine()))
+	if(lamexp_process_is_elevated() && (!lamexp_detect_wine()))
 	{
 		QMessageBox messageBox(QMessageBox::Warning, "LameXP", "<nobr>LameXP was started with 'elevated' rights, altough LameXP does not need these rights.<br>Running an applications with unnecessary rights is a potential security risk!</nobr>", QMessageBox::NoButton, NULL, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
 		messageBox.addButton("Quit Program (Recommended)", QMessageBox::NoRole);
@@ -1852,15 +1859,15 @@ bool lamexp_bring_process_to_front(const unsigned long pid)
 }
 
 /*
- * Check the network connection status
+ * Check the network connectivity status
  */
 int lamexp_network_status(void)
 {
 	DWORD dwFlags;
-	const BOOL ret = (IsNetworkAlive(&dwFlags) == TRUE);
+	const BOOL ret = IsNetworkAlive(&dwFlags);
 	if(GetLastError() == 0)
 	{
-		return (ret == TRUE) ? lamexp_network_yes : lamexp_network_non;
+		return (ret != FALSE) ? lamexp_network_yes : lamexp_network_non;
 	}
 	return lamexp_network_err;
 }
@@ -2161,6 +2168,103 @@ QColor lamexp_system_color(const int color_id)
 	const DWORD rgb = GetSysColor(nIndex);
 	QColor color(GetRValue(rgb), GetGValue(rgb), GetBValue(rgb));
 	return color;
+}
+
+/*
+ * Check if the current user is an administartor (helper function)
+ */
+static bool lamexp_user_is_admin_helper(void)
+{
+	HANDLE hToken = NULL;
+	if(!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
+	{
+		return false;
+	}
+
+	DWORD dwSize = 0;
+	if(!GetTokenInformation(hToken, TokenGroups, NULL, 0, &dwSize))
+	{
+		if(GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+		{
+			CloseHandle(hToken);
+			return false;
+		}
+	}
+
+	PTOKEN_GROUPS lpGroups = (PTOKEN_GROUPS) malloc(dwSize);
+	if(!lpGroups)
+	{
+		CloseHandle(hToken);
+		return false;
+	}
+
+	if(!GetTokenInformation(hToken, TokenGroups, lpGroups, dwSize, &dwSize))
+	{
+		free(lpGroups);
+		CloseHandle(hToken);
+		return false;
+	}
+
+	PSID lpSid = NULL; SID_IDENTIFIER_AUTHORITY Authority = {SECURITY_NT_AUTHORITY};
+	if(!AllocateAndInitializeSid(&Authority, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &lpSid))
+	{
+		free(lpGroups);
+		CloseHandle(hToken);
+		return false;
+	}
+
+	bool bResult = false;
+	for(DWORD i = 0; i < lpGroups->GroupCount; i++)
+	{
+		if(EqualSid(lpSid, lpGroups->Groups[i].Sid))
+		{
+			bResult = true;
+			break;
+		}
+	}
+
+	FreeSid(lpSid);
+	free(lpGroups);
+	CloseHandle(hToken);
+	return bResult;
+}
+
+/*
+ * Check if the current user is an administartor
+ */
+bool lamexp_user_is_admin(void)
+{
+	bool isAdmin = false;
+
+	//Check for process elevation and UAC support first!
+	if(lamexp_process_is_elevated(&isAdmin))
+	{
+		qWarning("Process is elevated -> user is admin!");
+		return true;
+	}
+	
+	//If not elevated and UAC is not available -> user must be in admin group!
+	if(!isAdmin)
+	{
+		qDebug("UAC is disabled/unavailable -> checking for Administrators group");
+		isAdmin = lamexp_user_is_admin_helper();
+	}
+
+	return isAdmin;
+}
+
+/*
+ * Check if file is a valid Win32/Win64 executable
+ */
+bool lamexp_is_executable(const QString &path)
+{
+	bool bIsExecutable = false;
+	DWORD binaryType;
+	if(GetBinaryType(QWCHAR(QDir::toNativeSeparators(path)), &binaryType))
+	{
+		bIsExecutable = (binaryType == SCS_32BIT_BINARY || binaryType == SCS_64BIT_BINARY);
+	}
+	return bIsExecutable;
 }
 
 /*
