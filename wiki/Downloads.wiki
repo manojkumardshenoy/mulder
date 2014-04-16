@@ -1,12 +1,15 @@
 = Downloads =
 
-*All downloads have been moved to our SourceForge.net mirror at:*<br>
+*All downloads have been moved to the corresponding Github projects:*<br>
+*[https://github.com/lordmulder?tab=repositories]*
+
+*Additional downloads can be found at our SourceForge.net mirror:*<br>
 *[https://sourceforge.net/projects/muldersoft/files/]*
 
 *More information available from the official Muldersoft web-site at:*<br>
 *[http://muldersoft.com/]*
 
-(Google Code will not support creating new downloads starting January 15th, 2014. That's why!)
+(Google Code does not support creating new downloads since January 15th, 2014. That's why!)
 
 <br><hr><br>
 
