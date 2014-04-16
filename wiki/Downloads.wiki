@@ -1,9 +1,9 @@
 = Downloads =
 
-*All downloads have been moved to the corresponding Github projects:*<br>
+*All downloads have been moved to the corresponding Github.com projects:*<br>
 *[https://github.com/lordmulder?tab=repositories]*
 
-*Additional downloads can be found at our SourceForge.net mirror:*<br>
+*Additional downloads can be found at our SourceForge.net mirror site:*<br>
 *[https://sourceforge.net/projects/muldersoft/files/]*
 
 *More information available from the official Muldersoft web-site at:*<br>
