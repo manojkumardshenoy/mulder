@@ -1,0 +1,6 @@
+| <font color='red' size='5'><b>Important:</b></font><br><br><font color='red' size='3'>We have moved <u>all projects</u> to GitHub.com, so the GoogleCode mirror will <u>not</u> be up-to-date anymore.</font><br><br><font color='red' size='3'>Please check <b><a href='https://github.com/lordmulder?tab=repositories'>https://github.com/lordmulder?tab=repositories</a></b> for the latest updates!</font><br><br><font color='red' size='3'>Also check <a href='http://muldersoft.com'>http://muldersoft.com</a> and <a href='http://sourceforge.net/projects/muldersoft/files/'>http://sourceforge.net/projects/muldersoft/files/</a> for additional information and downloads!</font><br><br><font color='red' size='3'>(Google Code does <u>not</u> allow creating new downloads since January 15th, 2014. That's why!)</font> </tbody></table>
+
+<br><br>
+
+The downloads previously hosted on GoogleCode.com currently can still be found here:<br>
+<a href='http://code.google.com/p/mulder/downloads/list?can=1&q=&sort=-uploaded'>http://code.google.com/p/mulder/downloads/list?can=1&amp;q=&amp;sort=-uploaded</a>
